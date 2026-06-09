@@ -1507,7 +1507,7 @@
             }
         });
 
-        // REAL SERVER KREAVERSE BLOB DL (Diperbarui: Super Canggih - Force Filename "Kreaverse AI" & Kunci MP3)
+        // REAL SERVER KREAVERSE BLOB DL (Diperbarui: Full Stream Internal Website & Penamaan Paten Kreaverse AI)
         realDownloadBtn.addEventListener('click', async () => {
             if (!resolvedMediaUrl) return;
             const container = document.getElementById('real-download-progress-container');
@@ -1516,13 +1516,14 @@
             const speedEl = document.getElementById('real-download-speed');
             
             container.classList.remove('hidden');
-            fill.style.width = '0%'; text.innerText = '0%'; speedEl.innerText = 'Menyiapkan Format...';
+            fill.style.background = 'linear-gradient(90deg, #10B981, #34D399)';
+            fill.style.width = '0%'; text.innerText = '0%'; speedEl.innerText = 'Menyiapkan Koneksi...';
             
             try {
-                // 1. MEMASTIKAN NAMA FILE SELALU DIAWALI "Kreaverse AI -"
+                // 1. KUNCI NAMA FILE PATEN: "Kreaverse AI - [Judul].[ext]"
                 let finalName = resolvedFileName;
-                if (!finalName.toLowerCase().includes('kreaverse')) {
-                    finalName = `Kreaverse AI - ${finalName}`;
+                if (!finalName.toLowerCase().startsWith('kreaverse ai - ')) {
+                    finalName = `Kreaverse AI - ${finalName.replace(/^(Kreaverse AI - |Kreaverse AI|kreaverse)/i, '').trim()}`;
                 }
                 
                 const targetExt = finalName.split('.').pop().toLowerCase();
@@ -1532,12 +1533,11 @@
                 else if (targetExt === 'm4a') forcedMime = 'audio/mp4';
                 else if (targetExt === 'webm') forcedMime = 'video/webm';
 
-                // STRATEGI CANGGIH: Menggunakan Proxy Lokal + Public API untuk menembus CORS 
-                // agar file bisa didownload sebagai BLOB (Satu-satunya cara agar nama file & Ekstensi MP3 terkunci 100%)
+                // 2. STRATEGI MULTI-PROXY (Agar tetap di dalam website dan TIDAK REDIRECT)
                 const encodedUrl = encodeURIComponent(resolvedMediaUrl);
                 const fetchStrategies = [
-                    "/api/ytdl?targetUrl=" + encodedUrl, // Prioritas: API Server Sendiri (Abaikan warning Node.js, tetap jalan)
                     "https://corsproxy.io/?" + encodedUrl,
+                    "/api/ytdl?targetUrl=" + encodedUrl,
                     "https://api.allorigins.win/raw?url=" + encodedUrl,
                     resolvedMediaUrl
                 ];
@@ -1545,53 +1545,67 @@
                 let finalResponse = null;
                 for (const url of fetchStrategies) {
                     try {
-                        speedEl.innerText = 'Menembus jalur aman...';
-                        const res = await fetch(url, { 
-                            method: 'GET',
-                            mode: 'cors',
-                            referrerPolicy: 'no-referrer'
-                        });
-                        if (res.ok) {
-                            const contentType = res.headers.get('content-type') || '';
-                            // Pastikan bukan halaman error HTML
-                            if (!contentType.includes('text/html')) {
-                                finalResponse = res;
-                                break; 
-                            }
+                        speedEl.innerText = 'Menghubungkan Server...';
+                        const res = await fetch(url, { method: 'GET', mode: 'cors', referrerPolicy: 'no-referrer' });
+                        if (res.ok && !(res.headers.get('content-type') || '').includes('text/html')) {
+                            finalResponse = res;
+                            break; 
                         }
-                    } catch (err) {
-                        continue; 
-                    }
+                    } catch (err) { continue; }
                 }
 
                 if (!finalResponse) throw new Error('CORS_BLOCKED');
 
-                speedEl.innerText = 'Mengunduh & Konversi ke ' + targetExt.toUpperCase() + '...';
+                // 3. SISTEM STREAMING CHUNK: Mengambil Kecepatan Asli & Ukuran Asli
+                const contentLength = finalResponse.headers.get('content-length');
+                const total = contentLength ? parseInt(contentLength, 10) : 0;
+                let loaded = 0;
                 
-                let simProgress = 0;
-                const simInt = setInterval(() => {
-                    simProgress += Math.random() * 5;
-                    if(simProgress > 95) simProgress = 95;
-                    fill.style.width = Math.floor(simProgress) + '%';
-                    text.innerText = Math.floor(simProgress) + '%';
-                }, 400);
+                const reader = finalResponse.body.getReader();
+                const chunks = [];
+                let lastTime = Date.now();
+                let lastLoaded = 0;
 
-                // Mengambil data utuh ke memori untuk diubah ekstensinya
-                const blobData = await finalResponse.blob();
-                clearInterval(simInt);
+                while(true) {
+                    const {done, value} = await reader.read();
+                    if (done) break;
+                    chunks.push(value);
+                    loaded += value.length;
+                    
+                    const now = Date.now();
+                    if (now - lastTime > 400) { 
+                        const diffTime = (now - lastTime) / 1000;
+                        const speed = (loaded - lastLoaded) / diffTime; 
+                        const speedMB = (speed / (1024*1024)).toFixed(1);
+                        const loadedMB = (loaded / (1024*1024)).toFixed(1);
+                        
+                        if (total) {
+                            const totalMB = (total / (1024*1024)).toFixed(1);
+                            let percent = Math.round((loaded / total) * 100);
+                            fill.style.width = percent + '%';
+                            text.innerText = `${percent}% (${loadedMB}MB / ${totalMB}MB)`;
+                        } else {
+                            fill.style.width = '100%';
+                            text.innerText = `${loadedMB} MB`;
+                        }
+                        speedEl.innerText = `${speedMB} MB/s | Format: ${targetExt.toUpperCase()}`;
+                        
+                        lastTime = now; lastLoaded = loaded;
+                    }
+                }
                 
                 fill.style.width = '100%';
                 text.innerText = '100%';
-                speedEl.innerText = `Menyimpan sebagai ${finalName}...`;
+                speedEl.innerText = 'Menyimpan File...';
 
-                // 2. MENGUNCI EKSTENSI DAN NAMA FILE DENGAN BLOB HIDDEN ANCHOR
-                const finalBlob = new Blob([blobData], { type: forcedMime });
-                const objUrl = URL.createObjectURL(finalBlob);
+                // 4. DOWNLOAD INTERNAL WEBSITE DENGAN NAMA PATEN (Tanpa Pindah Tab/Redirect)
+                const blob = new Blob(chunks, { type: forcedMime });
+                const objUrl = URL.createObjectURL(blob);
                 
                 const a = document.createElement('a');
                 a.style.display = 'none';
                 a.href = objUrl;
-                a.download = finalName; // PASTI menggunakan "Kreaverse AI - Judul.mp3"
+                a.download = finalName; 
                 document.body.appendChild(a);
                 a.click();
                 
@@ -1601,44 +1615,42 @@
                     container.classList.add('hidden');
                 }, 3000);
 
-                showIphoneNotif('Berhasil!', `Disimpan sebagai: ${finalName}`, 'fa-circle-check');
+                showIphoneNotif('Berhasil!', `Tersimpan sebagai: ${finalName}`, 'fa-circle-check');
 
             } catch(e) {
                 console.error(e);
-                text.innerText = 'Bypass Ekstraksi'; 
-                speedEl.innerText = 'Server memblokir konversi Blob...';
+                text.innerText = 'Proxy Gagal'; 
+                speedEl.innerText = 'Mencoba mode background...';
                 fill.style.background = '#F59E0B'; 
                 
-                // 3. FALLBACK TERAKHIR: Memanipulasi URL agar parameter nama file dikirim ke server asal
+                // 5. FALLBACK BACKGROUND FRAME (Menghindari visual redirect ke web lain)
                 setTimeout(() => {
                     let finalName = resolvedFileName;
-                    if (!finalName.toLowerCase().includes('kreaverse')) finalName = `Kreaverse AI - ${finalName}`;
-                    const targetExt = finalName.split('.').pop().toLowerCase();
+                    if (!finalName.toLowerCase().startsWith('kreaverse ai - ')) {
+                        finalName = `Kreaverse AI - ${finalName.replace(/^(Kreaverse AI - |Kreaverse AI|kreaverse)/i, '').trim()}`;
+                    }
                     
                     let finalDirectUrl = resolvedMediaUrl;
                     try {
                         const urlObj = new URL(resolvedMediaUrl);
-                        // Mengirim sinyal ke server asal untuk mengubah nama file (Bekerja di banyak API)
                         urlObj.searchParams.set('title', finalName.replace(/\.[^/.]+$/, "")); 
                         urlObj.searchParams.set('filename', finalName);
-                        urlObj.searchParams.set('name', finalName);
                         urlObj.searchParams.set('dl', '1');
                         finalDirectUrl = urlObj.toString();
                     } catch(err) {}
 
-                    const a = document.createElement('a');
-                    a.style.display = 'none';
-                    a.href = finalDirectUrl;
-                    a.download = finalName; // Mencoba memaksa atribut download HTML5
-                    a.target = '_blank';
-                    document.body.appendChild(a);
-                    a.click();
-                    document.body.removeChild(a);
-                    
+                    // Menggunakan iframe tersembunyi untuk memicu download native tanpa pindah URL page
+                    const iframe = document.createElement('iframe');
+                    iframe.style.display = 'none';
+                    iframe.src = finalDirectUrl;
+                    document.body.appendChild(iframe);
+
                     container.classList.add('hidden');
                     fill.style.background = 'linear-gradient(90deg, #10B981, #34D399)'; 
-                    showIphoneNotif('Mengalihkan', `Mencoba menyimpan sebagai ${targetExt.toUpperCase()}...`, 'fa-cloud-arrow-down');
-                }, 2500);
+                    showIphoneNotif('Mengunduh', `Proses berjalan di latar belakang`, 'fa-cloud-arrow-down');
+
+                    setTimeout(() => document.body.removeChild(iframe), 15000); // Cleanup iframe
+                }, 2000);
             }
         });
 
