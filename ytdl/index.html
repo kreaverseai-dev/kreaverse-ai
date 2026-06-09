@@ -31,16 +31,15 @@
         a { text-decoration: none; color: inherit; }
         .hidden { display: none !important; }
 
-        /* NAVBAR (Presisi Tengah & Diperbesar) */
+        /* NAVBAR */
         .navbar { display: flex; justify-content: space-between; align-items: center; padding: 16px 5%; background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(10px); position: fixed; top: 0; width: 100%; z-index: 1000; border-bottom: 1px solid rgba(229, 231, 235, 0.5); }
         .back-btn { font-size: 1.2rem; color: var(--text-secondary); transition: var(--transition); padding: 8px; border-radius: 50%; display: flex; align-items: center; justify-content: center; position: relative; z-index: 10; cursor: pointer; }
         .back-btn:hover { color: var(--text-primary); background-color: #F3F4F6; }
-        
-        .logo-container { display: flex; align-items: center; justify-content: center; width: 160px; height: 38px; position: absolute; left: 50%; transform: translateX(-50%); z-index: 5; pointer-events: none; }
+        .logo-container { display: flex; align-items: center; justify-content: center; width: 185px; height: 46px; position: absolute; left: 50%; transform: translateX(-50%); z-index: 5; pointer-events: none; }
         .krea-logo-svg { width: 100%; height: 100%; display: block; }
         .nav-right { width: 36px; } 
 
-        /* HERO SECTION TYPOGRAPHY EKSKLUSIF */
+        /* HERO SECTION */
         .hero-section {
             position: relative;
             padding: 110px 20px 40px;
@@ -52,7 +51,7 @@
             flex-direction: column;
             align-items: center;
         }
-        .hero-title { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 2.6rem; font-weight: 900; color: #111827; margin-bottom: 15px; line-height: 1.1; letter-spacing: -1.5px; }
+        .hero-title { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 2.4rem; font-weight: 900; color: #111827; margin-bottom: 15px; line-height: 1.1; letter-spacing: -1.5px; }
         .hero-subtitle { font-family: 'Inter', sans-serif; font-size: 0.95rem; font-weight: 500; color: var(--text-secondary); max-width: 600px; margin: 0 auto 25px; line-height: 1.6; }
 
         /* FORMAT TOGGLE TAB BERSIH */
@@ -100,22 +99,21 @@
         .result-section.active { display: block; }
         .result-card { background: var(--surface-color); border-radius: 24px; padding: 20px; box-shadow: var(--shadow-xl); border: 1px solid var(--border-color); }
         
-        /* MEDIA PLAYER */
+        /* REVISI 2&3: MEDIA PLAYER DENGAN INTRINSIC WRAPPER / DYNAMIC SIZER */
         .media-player-wrapper { position: relative; width: 100%; border-radius: 16px; overflow: hidden; background: #000; margin-bottom: 20px; display: flex; align-items: center; justify-content: center; aspect-ratio: 16/9; z-index: 1; }
-        .media-player-wrapper.audio-mode { background: linear-gradient(135deg, #1E1B4B, #4338CA); aspect-ratio: auto; padding: 60px 20px 20px; flex-direction: column; }
-        .media-player-wrapper:fullscreen { width: 100vw; height: 100vh; border-radius: 0; }
-        .media-player-wrapper:-webkit-full-screen { width: 100vw; height: 100vh; border-radius: 0; }
+        .media-player-wrapper:-webkit-full-screen { width: 100vw; height: 100vh; border-radius: 0; aspect-ratio: auto; }
+        .media-player-wrapper:fullscreen { width: 100vw; height: 100vh; border-radius: 0; aspect-ratio: auto; }
         
-        .video-element { width: 100%; height: 100%; object-fit: contain; display: block; transition: all 0.2s;}
-        .media-player-wrapper:fullscreen .video-element { max-height: 100vh; }
-        
+        .video-inner-container { position: relative; display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; margin: auto; max-width: 100%; max-height: 100%; /* Akan di-inject rasio otomatis lewat JS agar pas kotak video */ }
+        .video-element { width: 100%; height: 100%; object-fit: fill; display: block; transition: all 0.2s; }
+        .touch-overlay-sensor { position: absolute; inset: 0; z-index: 5; cursor: pointer; } /* REVISI 4: Sensor Ketuk Video Lapis Atas */
+
         /* AUDIO UI */
-        .audio-ui-container { display: none; flex-direction: column; align-items: center; gap: 15px; width: 100%; }
-        .media-player-wrapper.audio-mode .audio-ui-container { display: flex; }
-        .spotify-thumbnail { width: 180px; height: 180px; border-radius: 16px; object-fit: cover; box-shadow: 0 15px 35px rgba(0,0,0,0.5); background: #222; transition: transform 0.3s ease; }
+        .audio-ui-container { display: none; flex-direction: column; align-items: center; justify-content: center; gap: 15px; width: 100%; height: 100%; padding: 40px 20px; background: linear-gradient(135deg, #1E1B4B, #4338CA); }
+        .spotify-thumbnail { width: 180px; height: 180px; border-radius: 16px; object-fit: cover; box-shadow: 0 15px 35px rgba(0,0,0,0.5); background: #222; transition: transform 0.3s ease; z-index: 2; position: relative;}
         .spotify-thumbnail.playing { transform: scale(1.05); }
-        .audio-title-display { color: #FFF; font-weight: 800; font-size: 1.15rem; text-align: center; max-width: 90%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 10px; }
-        .audio-artist-display { color: rgba(255,255,255,0.7); font-size: 0.9rem; font-weight: 600; text-align: center; }
+        .audio-title-display { color: #FFF; font-weight: 800; font-size: 1.15rem; text-align: center; max-width: 90%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 10px; z-index: 2; position: relative;}
+        .audio-artist-display { color: rgba(255,255,255,0.7); font-size: 0.9rem; font-weight: 600; text-align: center; z-index: 2; position: relative;}
 
         /* EQUALIZER */
         .equalizer-container { display: flex; align-items: flex-end; justify-content: center; gap: 4px; height: 30px; margin-bottom: 10px; }
@@ -128,36 +126,37 @@
         @keyframes eqBounce { 0% { transform: scaleY(0.3); } 100% { transform: scaleY(1); } }
 
         /* THUMBNAIL PREVIEW UI */
-        .thumb-preview-container { display: none; position: relative; width: 100%; aspect-ratio: 16/9; background: #000; border-radius: 16px; overflow: hidden; justify-content: center; align-items: center; margin-bottom: 20px;}
+        .thumb-preview-container { display: none; position: relative; width: 100%; aspect-ratio: 16/9; background: #000; overflow: hidden; justify-content: center; align-items: center; }
         .thumb-image { width: 100%; height: 100%; object-fit: contain; }
         .thumb-watermark-overlay { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; pointer-events: none; background: rgba(0,0,0,0.15); z-index: 5;}
-
-        /* WATERMARK KIRI KE KANAN MEWAH (Durasi 7 Detik) */
+        
+        /* WATERMARK KHUSUS VIDEO: Karena ditaruh di dalam video-inner-container, dia dijamin menempel persis di sisi kanan atas gambar video meskipun ada ruang hitam */
         .player-watermark { position: absolute; top: 15px; right: 15px; width: 125px; height: 32px; z-index: 10; pointer-events: none; filter: drop-shadow(0 1px 2px rgba(0,0,0,0.4)); overflow: hidden; transition: all 0.2s; }
-        .media-player-wrapper.audio-mode .player-watermark { top: 15px; right: 20px; display: block; width: 125px; height: 32px;}
-        .media-player-wrapper:fullscreen .player-watermark { width: 155px; height: 40px; }
+        .media-player-wrapper:fullscreen .player-watermark { width: 155px; height: 40px; top: 25px; right: 25px;}
 
-        /* CONTROLS (Ikon Play Lebih Kecil Premium) */
-        .player-controls { position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(to top, rgba(0,0,0,0.9), transparent); padding: 30px 20px 15px; display: flex; align-items: center; gap: 15px; z-index: 10; transition: opacity 0.3s; }
-        .media-player-wrapper.audio-mode .player-controls { position: relative; background: transparent; padding: 15px 0 0; width: 100%; max-width: 400px; }
+        /* REVISI 4: KONTROL PEMUTAR BISA FADE OUT PADA SAAT DIKETUK */
+        .player-controls { position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(to top, rgba(0,0,0,0.9), transparent); padding: 40px 20px 15px; display: flex; align-items: center; gap: 15px; z-index: 10; transition: opacity 0.3s ease, visibility 0.3s ease; }
+        /* Kelas untuk menghilangkan kontrol ala YouTube */
+        .hidden-controls { opacity: 0 !important; visibility: hidden !important; }
         
         .play-pause-btn { width: 38px; height: 38px; border-radius: 50%; background: var(--accent-color); color: #FFF; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 1rem; flex-shrink: 0; transition: 0.2s; box-shadow: 0 4px 10px rgba(99, 102, 241, 0.4); }
         .play-pause-btn:hover { transform: scale(1.08); background: var(--accent-hover); }
         
-        .progress-area { flex: 1; display: flex; flex-direction: column; gap: 8px; }
-        .progress-bar-bg { width: 100%; height: 6px; background: rgba(255,255,255,0.3); border-radius: 4px; cursor: pointer; position: relative; overflow: hidden; }
-        .progress-bar-fill { height: 100%; background: var(--accent-color); width: 0%; border-radius: 4px; transition: width 0.1s linear; }
+        /* Area Garis Menit Dipertebal Piksel-Hitboxnya agar Empuk Digeser */
+        .progress-area { flex: 1; display: flex; flex-direction: column; gap: 4px; }
+        .progress-bar-bg { width: 100%; height: 24px; background: transparent; cursor: pointer; position: relative; display: flex; align-items: center; } /* Ukuran sentuh 24px */
+        .progress-bar-track { width: 100%; height: 6px; background: rgba(255,255,255,0.3); border-radius: 4px; overflow: hidden; position: relative; pointer-events: none; }
+        .progress-bar-fill { height: 100%; background: var(--accent-color); width: 0%; border-radius: 4px; transition: width 0.1s linear; pointer-events: none; }
         .time-display { font-size: 0.75rem; color: rgba(255,255,255,0.9); font-weight: 700; display: flex; justify-content: space-between; font-family: monospace; }
         
         .control-icon-btn { background: none; border: none; color: #FFF; font-size: 1.3rem; cursor: pointer; padding: 5px; transition: 0.2s; opacity: 0.9; }
         .control-icon-btn:hover { opacity: 1; transform: scale(1.1); }
-        .media-player-wrapper.audio-mode .fullscreen-btn { display: none; }
-
-        /* LOADING DI TENGAH TANPA BLOKIR KLIK */
+        
+        /* LOADING TENGAH */
         .centered-overlay-box { position: absolute; inset: 0; margin: auto; z-index: 20; width: max-content; height: max-content; max-width: 85%; display: flex; align-items: center; justify-content: center; pointer-events: none; }
         .centered-box-content { background: rgba(0,0,0,0.85); padding: 18px 24px; border-radius: 16px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.5); pointer-events: none; }
 
-        /* RESULT INFO & BUTTONS (Z-Index Tinggi agar Anti-Kunci) */
+        /* RESULT INFO & BUTTONS */
         .result-info { text-align: left; margin-bottom: 20px; padding: 15px; background: #F9FAFB; border-radius: 12px; border: 1px solid var(--border-color); }
         .result-info p { font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 6px; line-height: 1.5; font-weight: 500; }
         .result-info strong { color: var(--text-primary); font-weight: 700; }
@@ -175,85 +174,18 @@
         .real-dl-progress-box { width: 100%; background: #F3F4F6; border-radius: 12px; padding: 5px; margin-top: 5px; position: relative; border: 1px solid var(--border-color); }
         .real-dl-fill { width: 0%; height: 12px; background: linear-gradient(90deg, #10B981, #34D399); border-radius: 8px; transition: width 0.3s linear; }
         .real-dl-info { display: flex; justify-content: space-between; font-size: 0.8rem; color: var(--text-secondary); margin-top: 6px; padding: 0 6px; font-weight: 700; font-family: monospace; }
-/* HOW IT WORKS & FEATURES SECTION */
-        .section-container { padding: 40px 20px; max-width: 1000px; margin: 0 auto; text-align: center; }
-        .section-title { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 1.8rem; font-weight: 900; margin-bottom: 30px; color: var(--text-primary); letter-spacing: -0.5px; }
-        
-        .steps-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 30px; }
-        .step-card { display: flex; flex-direction: column; align-items: center; }
-        .step-icon-wrapper { width: 80px; height: 80px; background: #EEF2FF; border-radius: 24px; display: flex; align-items: center; justify-content: center; font-size: 2rem; color: var(--accent-color); margin-bottom: 20px; transform: rotate(-5deg); transition: var(--transition); }
-        .step-card:hover .step-icon-wrapper { transform: rotate(0deg) scale(1.05); background: var(--accent-color); color: #FFF; }
-        .step-title { font-size: 1.1rem; font-weight: 800; margin-bottom: 10px; }
-        .step-desc { font-size: 0.9rem; color: var(--text-secondary); line-height: 1.6; }
-
-        .features-bg { background-color: #FFFFFF; border-top: 1px solid var(--border-color); border-bottom: 1px solid var(--border-color); }
-        .features-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 24px; text-align: left; }
-        .feature-card { padding: 24px; border: 1px solid var(--border-color); border-radius: 20px; background: #FAFAFA; transition: var(--transition); }
-        .feature-card:hover { background: #FFFFFF; box-shadow: var(--shadow-md); border-color: #D1D5DB; transform: translateY(-2px); }
-        .feature-icon { width: 48px; height: 48px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; margin-bottom: 16px; }
-        .fi-1 { background: #FEE2E2; color: #EF4444; } .fi-2 { background: #D1FAE5; color: #10B981; } .fi-3 { background: #E0E7FF; color: #6366F1; } .fi-4 { background: #FEF3C7; color: #F59E0B; }
-        .feature-title { font-size: 1.05rem; font-weight: 800; margin-bottom: 8px; }
-        .feature-desc { font-size: 0.85rem; color: var(--text-secondary); line-height: 1.6; }
-
-        /* FOOTER (Revisi 7: Clean White Theme & Diperkecil di Layar HP) */
-        .footer { background: #FFFFFF; color: var(--text-secondary); padding: 40px 20px 30px; text-align: center; border-top: 1px solid var(--border-color); }
-        .footer-logo { color: var(--text-primary); font-size: 1.5rem; font-weight: 900; margin-bottom: 20px; letter-spacing: -0.5px; }
-        .footer-links { display: flex; justify-content: center; gap: 24px; margin-bottom: 20px; flex-wrap: wrap; }
-        .footer-links a { color: var(--text-secondary); transition: color 0.2s; font-size: 0.9rem; font-weight: 600; }
-        .footer-links a:hover { color: var(--accent-color); }
-        .footer-bottom { border-top: 1px solid var(--border-color); padding-top: 20px; font-size: 0.85rem; display: flex; flex-direction: column; align-items: center; gap: 10px; color: var(--text-light); }
-
-        /* BOTTOM SHEETS */
-        .bottom-sheet-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); z-index: 99999; display: flex; align-items: flex-end; justify-content: center; opacity: 0; visibility: hidden; transition: var(--transition); }
-        .bottom-sheet-overlay.active { opacity: 1; visibility: visible; }
-        .bottom-sheet-content { background: var(--surface-color); width: 100%; max-width: 600px; border-radius: 24px 24px 0 0; padding: 24px; transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1); max-height: 85vh; display: flex; flex-direction: column; box-shadow: 0 -10px 40px rgba(0,0,0,0.2); }
-        .bottom-sheet-overlay.active .bottom-sheet-content { transform: translateY(0); }
-        
-        .sheet-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-shrink: 0; }
-        .sheet-title { font-size: 1.2rem; font-weight: 800; }
-        .sheet-close { background: none; border: none; font-size: 1.2rem; color: var(--text-light); cursor: pointer; padding: 5px; }
-        .sheet-options { display: flex; flex-direction: column; gap: 10px; overflow-y: auto; padding-bottom: 20px; }
-        
-        .sheet-opt-btn { display: flex; justify-content: space-between; align-items: center; width: 100%; padding: 14px 16px; background: #FAFAFA; border: 1px solid var(--border-color); border-radius: 16px; font-size: 0.95rem; font-weight: 700; color: var(--text-primary); cursor: pointer; transition: var(--transition); text-align: left;}
-        .sheet-opt-btn:active { background: #F3F4F6; }
-        .sheet-opt-btn.selected { border-color: var(--accent-color); background: #EEF2FF; }
-        .sheet-opt-btn.selected i.fa-check { color: var(--accent-color); }
-        
-        .q-badge { background: #E0E7FF; color: var(--accent-color); font-size: 0.7rem; padding: 4px 10px; border-radius: 20px; font-weight: 800; margin-left: 10px; }
-        .q-badge.audio { background: #F3E8FF; color: #9333EA; }
-        .q-badge.format { background: #E5E7EB; color: #374151;} 
-        
-        .audio-indicator-badge { font-size: 0.7rem; padding: 4px 8px; border-radius: 6px; margin-left: 8px; font-weight: 800; display: inline-flex; align-items: center; gap: 6px; }
-        .audio-indicator-badge.has-audio { background: #D1FAE5; color: #059669; }
-        .audio-indicator-badge.no-audio { background: #FEE2E2; color: #DC2626; }
-
-        /* IN-PLAYER MODAL */
-        .in-player-sheet-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(4px); z-index: 99999; display: flex; align-items: flex-end; justify-content: center; opacity: 0; visibility: hidden; transition: var(--transition); }
-        .in-player-sheet-overlay.active { opacity: 1; visibility: visible; }
-        .in-player-sheet-content { background: var(--surface-color); width: 100%; max-width: 600px; border-radius: 20px 20px 0 0; padding: 15px; transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1); max-height: 80%; display: flex; flex-direction: column; overflow-y: auto; }
-        .in-player-sheet-overlay.active .in-player-sheet-content { transform: translateY(0); }
-        .in-player-sheet-content .sheet-opt-btn { padding: 10px 14px; font-size: 0.85rem; margin-bottom: 8px; border-radius: 12px; }
-
-        /* IPHONE TOAST */
-        .iphone-toast-container { position: fixed; top: 15px; left: 50%; transform: translateX(-50%) translateY(-120%); background: rgba(20, 20, 20, 0.95); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); color: #FFFFFF; padding: 12px 24px; border-radius: 30px; display: flex; align-items: center; gap: 12px; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2); opacity: 0; transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1); z-index: 100000; width: max-content; max-width: 90vw; pointer-events: none; }
-        .iphone-toast-container.show { top: 85px; transform: translateX(-50%) translateY(0); opacity: 1; }
-        .iphone-toast-icon { font-size: 1.2rem; flex-shrink: 0; }
-        .iphone-toast-content { display: flex; flex-direction: column; text-align: left; }
-        .iphone-toast-title { font-size: 0.9rem; font-weight: 700; line-height: 1.2; margin-bottom: 2px; }
-        .iphone-toast-desc { font-size: 0.8rem; color: #E5E5EA; line-height: 1.3; font-weight: 500; }
-
-        /* RESPONSIVE MOBILE */
+/* RESPONSIVE MOBILE */
         @media (max-width: 640px) {
-            .logo-container { width: 180px; height: 42px; } /* REVISI 9: Diperbesar di Mobile */
+            .logo-container { width: 200px; height: 48px; }
             .hero-title { font-size: 2.1rem; letter-spacing: -1px; }
             .hero-subtitle { font-size: 0.85rem; padding: 0 10px; margin-bottom: 15px; }
             
-            /* REVISI 1: Input Actions Menyatu Sangat Rapi di Mobile */
             .input-wrapper { flex-direction: row; border-radius: 50px; padding: 6px 6px 6px 16px; gap: 8px; margin-bottom: 15px; }
             .url-input-area { display: flex; flex: 1; align-items: center; min-width: 0; }
             .url-input { padding: 10px 0; width: 100%; font-size: 0.95rem; margin:0;}
             .url-icon { display: none; }
             .input-actions { margin-right: 0; justify-content: flex-end; gap: 4px; }
+            
             .download-btn { width: 100%; justify-content: center; padding: 12px 24px; margin: 0 auto !important; display: block; }
             
             .settings-pills { padding: 0; gap: 8px; margin-bottom: 10px; }
@@ -262,7 +194,6 @@
             .format-btn { padding: 8px 10px; font-size: 0.8rem;}
             .format-toggle { gap: 10px; }
             
-            /* Carousel Scroll untuk Fitur & Cara Kerja (Tidak Banyak Makan Scroll Bawah) */
             .section-title { font-size: 1.4rem; margin-bottom: 20px; }
             .steps-grid, .features-grid { display: flex; flex-wrap: nowrap; overflow-x: auto; scroll-snap-type: x mandatory; padding-bottom: 15px; gap: 15px; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
             .steps-grid::-webkit-scrollbar, .features-grid::-webkit-scrollbar { display: none; }
@@ -282,7 +213,6 @@
             .audio-indicator-badge { font-size: 0.65rem; padding: 3px 6px; }
             .btn-save-gallery, .btn-server-kreaverse, .btn-secondary-action { font-size: 0.9rem; padding: 14px; }
 
-            /* REVISI 7: Footer lebih kecil dan rapi di HP */
             .footer { padding: 30px 15px 20px; }
             .footer-logo { font-size: 1.3rem; }
             .footer-links { gap: 15px; }
@@ -290,13 +220,16 @@
             .footer-bottom { font-size: 0.75rem; }
             #live-clock-footer { font-size: 0.8rem; }
         }
+
+        /* REVISI 4: Hitbox Seekbar diperbesar agar empuk digeser & Transisi Kontrol YouTube */
+        .progress-bar-bg { padding: 10px 0; margin: -10px 0; }
+        .hidden-controls { opacity: 0 !important; visibility: hidden !important; pointer-events: none !important; }
     </style>
 </head>
 <body>
 
     <nav class="navbar">
         <a href="/" class="back-btn" title="Kembali"><i class="fa-solid fa-arrow-left"></i></a>
-        <!-- REVISI 9: Logo Container Diperbesar Skalanya -->
         <div class="logo-container">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 60" class="krea-logo-svg">
                 <defs><linearGradient id="kreaGrad" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#D97757" /><stop offset="50%" stop-color="#AF52DE" /><stop offset="100%" stop-color="#007AFF" /></linearGradient></defs>
@@ -307,14 +240,12 @@
         <div class="nav-right"></div>
     </nav>
 
-    <!-- REVISI 5: Teks Header Mengikuti Referensi Atlantic Server (Extra Bold) -->
     <section class="hero-section">
         <h1 class="hero-title">Downloader<br>Kreaverse AI</h1>
         <div class="hero-subtitle">
             Platform pengunduh media premium. Unduh video dan audio resolusi tinggi dari berbagai platform sosial media secara instan, aman, dan tanpa watermark.
         </div>
 
-        <!-- REVISI 1: Pilihan Format Tab Dibuat Bersih Tanpa Bubble Background -->
         <div class="format-toggle">
             <button class="format-btn active" id="seg-video" onclick="changeFormat('video')"><i class="fa-solid fa-video"></i> VIDEO</button>
             <button class="format-btn" id="seg-audio" onclick="changeFormat('audio')"><i class="fa-solid fa-music"></i> AUDIO</button>
@@ -322,7 +253,6 @@
         </div>
 
         <div class="input-container">
-            <!-- REVISI 1: Input Actions Menyatu Sangat Rapi & Tidak Memakan Tempat -->
             <div class="input-wrapper">
                 <div class="url-input-area">
                     <i class="fa-solid fa-link url-icon"></i>
@@ -333,7 +263,6 @@
                     <button class="input-action-btn" id="clear-btn" title="Hapus Tautan"><i class="fa-solid fa-xmark"></i></button>
                 </div>
             </div>
-            <!-- Tombol unduh diletakkan rapi di bawah input pada mobile, menyatu pada desktop -->
             <button id="download-btn" class="download-btn" style="margin: 20px auto 0; display: flex; width: max-content;">
                 <span id="btn-text">Unduh Sekarang</span>
             </button>
@@ -371,41 +300,25 @@
             
             <div class="media-player-wrapper" id="media-wrapper">
                 
-                <!-- REVISI 4 & 5: WATERMARK UKURAN DIPERBESAR DAN ANIMASI DIBALIK (KIRI KE KANAN) -->
-                <div class="player-watermark" id="player-watermark">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 60" style="width:100%; height:100%;">
-                        <defs>
-                            <linearGradient id="kreaGradWM" x1="0%" y1="0%" x2="100%" y2="100%">
-                                <stop offset="0%" stop-color="#D97757" />
-                                <stop offset="50%" stop-color="#AF52DE" />
-                                <stop offset="100%" stop-color="#007AFF" />
-                            </linearGradient>
-                            <!-- Menyapu halus dari KIRI ke KANAN -->
-                            <linearGradient id="shimmerGlow" x1="-100%" y1="0%" x2="0%" y2="0%">
-                                <stop offset="0%" stop-color="rgba(255,255,255,0)" />
-                                <stop offset="45%" stop-color="rgba(255,255,255,0)" />
-                                <stop offset="50%" stop-color="rgba(255,255,255,0.9)" />
-                                <stop offset="55%" stop-color="rgba(255,255,255,0)" />
-                                <stop offset="100%" stop-color="rgba(255,255,255,0)" />
-                                <animate attributeName="x1" values="-100%; 200%" dur="7s" repeatCount="indefinite" />
-                                <animate attributeName="x2" values="0%; 300%" dur="7s" repeatCount="indefinite" />
-                            </linearGradient>
-                        </defs>
-                        <g>
-                            <path d="M 30,10 Q 30,30 50,30 Q 30,30 30,50 Q 30,30 10,30 Q 30,30 30,10 Z" fill="url(#kreaGradWM)" />
-                            <path d="M 30,17 Q 30,30 43,30 Q 30,30 30,43 Q 30,30 17,30 Q 30,30 30,17 Z" fill="url(#kreaGradWM)" transform="rotate(45, 30, 30)" opacity="0.85" />
-                            <text x="65" y="38" font-family="'Plus Jakarta Sans', sans-serif" font-weight="800" font-size="21" fill="url(#kreaGradWM)" letter-spacing="-0.5px">Kreaverse<tspan font-weight="500"> AI</tspan></text>
-                        </g>
-                        <!-- Efek cahaya putih menumpang khusus di logonya saja -->
-                        <g style="mix-blend-mode: overlay;">
-                            <path d="M 30,10 Q 30,30 50,30 Q 30,30 30,50 Q 30,30 10,30 Q 30,30 30,10 Z" fill="url(#shimmerGlow)" />
-                            <path d="M 30,17 Q 30,30 43,30 Q 30,30 30,43 Q 30,30 17,30 Q 30,30 30,17 Z" fill="url(#shimmerGlow)" transform="rotate(45, 30, 30)" />
-                            <text x="65" y="38" font-family="'Plus Jakarta Sans', sans-serif" font-weight="800" font-size="21" fill="url(#shimmerGlow)" letter-spacing="-0.5px">Kreaverse<tspan font-weight="500"> AI</tspan></text>
-                        </g>
-                    </svg>
-                </div>
-
                 <div class="audio-ui-container" id="audio-ui">
+                    <!-- WATERMARK AUDIO (Hanya tampil di mode audio) -->
+                    <div class="player-watermark">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 60" style="width:100%; height:100%;">
+                            <defs>
+                                <linearGradient id="kreaGradAWM" x1="0%" y1="0%" x2="100%" y2="100%">
+                                    <stop offset="0%" stop-color="#D97757" />
+                                    <stop offset="50%" stop-color="#AF52DE" />
+                                    <stop offset="100%" stop-color="#007AFF" />
+                                </linearGradient>
+                            </defs>
+                            <g>
+                                <path d="M 30,10 Q 30,30 50,30 Q 30,30 30,50 Q 30,30 10,30 Q 30,30 30,10 Z" fill="url(#kreaGradAWM)" />
+                                <path d="M 30,17 Q 30,30 43,30 Q 30,30 30,43 Q 30,30 17,30 Q 30,30 30,17 Z" fill="url(#kreaGradAWM)" transform="rotate(45, 30, 30)" opacity="0.85" />
+                                <text x="65" y="38" font-family="'Plus Jakarta Sans', sans-serif" font-weight="800" font-size="21" fill="url(#kreaGradAWM)" letter-spacing="-0.5px">Kreaverse<tspan font-weight="500"> AI</tspan></text>
+                            </g>
+                        </svg>
+                    </div>
+
                     <img src="" id="audio-thumbnail" class="spotify-thumbnail" alt="Cover Music" onerror="this.src='https://i.postimg.cc/mZdwnfsm/Claude-ai-icon-svg.png'">
                     <div style="width:100%; padding: 0 10px;">
                         <div class="audio-title-display" id="audio-title-display">Judul Lagu</div>
@@ -413,7 +326,6 @@
                     </div>
                 </div>
 
-                <!-- PREVIEW THUMBNAIL DENGAN WATERMARK TRANSPARAN 30% -->
                 <div class="thumb-preview-container" id="thumb-preview">
                     <img src="" id="thumb-image" class="thumb-image" alt="Thumbnail Preview">
                     <div class="thumb-watermark-overlay">
@@ -424,22 +336,60 @@
                     </div>
                 </div>
 
-                <!-- LOADING & ERROR BOX (Tepat di tengah layar, compact, shadow gelap. Tidak mengunci layar) -->
                 <div class="centered-overlay-box hidden" id="buffering-spinner">
-                    <div class="centered-box-content" id="buffering-content">
-                        <!-- Konten diisi dari Javascript -->
-                    </div>
+                    <div class="centered-box-content" id="buffering-content"></div>
                 </div>
                 
-                <video id="custom-video" class="video-element" playsinline preload="metadata" referrerpolicy="no-referrer"></video>
+                <!-- REVISI 2: DYNAMIC SIZER INNER CONTAINER (Mencegah Watermark Terbang Keluar) -->
+                <div id="video-inner-container" style="position: relative; display: none; margin: auto; max-width: 100%; max-height: 100%;">
+                    <video id="custom-video" class="video-element" playsinline preload="metadata" referrerpolicy="no-referrer"></video>
+                    
+                    <!-- Watermark Video (Di dalam Inner Container) -->
+                    <div class="player-watermark" id="video-watermark" style="top: 15px; right: 15px;">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 60" style="width:100%; height:100%;">
+                            <defs>
+                                <linearGradient id="kreaGradVWM" x1="0%" y1="0%" x2="100%" y2="100%">
+                                    <stop offset="0%" stop-color="#D97757" />
+                                    <stop offset="50%" stop-color="#AF52DE" />
+                                    <stop offset="100%" stop-color="#007AFF" />
+                                </linearGradient>
+                                <linearGradient id="shimmerGlow" x1="-100%" y1="0%" x2="0%" y2="0%">
+                                    <stop offset="0%" stop-color="rgba(255,255,255,0)" />
+                                    <stop offset="45%" stop-color="rgba(255,255,255,0)" />
+                                    <stop offset="50%" stop-color="rgba(255,255,255,0.9)" />
+                                    <stop offset="55%" stop-color="rgba(255,255,255,0)" />
+                                    <stop offset="100%" stop-color="rgba(255,255,255,0)" />
+                                    <animate attributeName="x1" values="-100%; 200%" dur="7s" repeatCount="indefinite" />
+                                    <animate attributeName="x2" values="0%; 300%" dur="7s" repeatCount="indefinite" />
+                                </linearGradient>
+                            </defs>
+                            <g>
+                                <path d="M 30,10 Q 30,30 50,30 Q 30,30 30,50 Q 30,30 10,30 Q 30,30 30,10 Z" fill="url(#kreaGradVWM)" />
+                                <path d="M 30,17 Q 30,30 43,30 Q 30,30 30,43 Q 30,30 17,30 Q 30,30 30,17 Z" fill="url(#kreaGradVWM)" transform="rotate(45, 30, 30)" opacity="0.85" />
+                                <text x="65" y="38" font-family="'Plus Jakarta Sans', sans-serif" font-weight="800" font-size="21" fill="url(#kreaGradVWM)" letter-spacing="-0.5px">Kreaverse<tspan font-weight="500"> AI</tspan></text>
+                            </g>
+                            <g style="mix-blend-mode: overlay;">
+                                <path d="M 30,10 Q 30,30 50,30 Q 30,30 30,50 Q 30,30 10,30 Q 30,30 30,10 Z" fill="url(#shimmerGlow)" />
+                                <path d="M 30,17 Q 30,30 43,30 Q 30,30 30,43 Q 30,30 17,30 Q 30,30 30,17 Z" fill="url(#shimmerGlow)" transform="rotate(45, 30, 30)" />
+                                <text x="65" y="38" font-family="'Plus Jakarta Sans', sans-serif" font-weight="800" font-size="21" fill="url(#shimmerGlow)" letter-spacing="-0.5px">Kreaverse<tspan font-weight="500"> AI</tspan></text>
+                            </g>
+                        </svg>
+                    </div>
+
+                    <!-- REVISI 4: Sensor Sentuh Layar Ala YouTube (Tap untuk sembunyikan kontrol) -->
+                    <div id="video-touch-sensor" style="position:absolute; inset:0; z-index:5; cursor:pointer;"></div>
+                </div>
+
                 <audio id="custom-audio" class="hidden" preload="metadata" referrerpolicy="no-referrer"></audio>
                 
+                <!-- KONTROL PLAYER -->
                 <div class="player-controls" id="player-controls">
-                    <!-- REVISI 6: Tombol Play Ikon Diperkecil Lebih Elegan -->
                     <button class="play-pause-btn" id="play-pause-btn"><i class="fa-solid fa-play" style="margin-left:2px;"></i></button>
                     <div class="progress-area">
                         <div class="progress-bar-bg" id="progress-bg">
-                            <div class="progress-bar-fill" id="progress-fill"></div>
+                            <div class="progress-bar-track">
+                                <div class="progress-bar-fill" id="progress-fill"></div>
+                            </div>
                         </div>
                         <div class="time-display">
                             <span id="current-time">0:00</span>
@@ -482,7 +432,7 @@
         </div>
     </section>
 
-    <!-- CARA KERJA & FITUR (REVISI 7: Update Konten Terkait Thumbnail & Format Khusus) -->
+    <!-- CARA KERJA & FITUR -->
     <section class="section-container">
         <h2 class="section-title">Cara Kerja</h2>
         <div class="steps-grid">
@@ -491,7 +441,6 @@
                 <h3 class="step-title">1. Salin Tautan</h3>
                 <p class="step-desc">Buka aplikasi sosial media favorit Anda, cari video, musik, atau postingan, lalu salin tautannya.</p>
             </div>
-            <!-- REVISI 7: Teks Cara Kerja Thumbnail -->
             <div class="step-card">
                 <div class="step-icon-wrapper"><i class="fa-solid fa-paste"></i></div>
                 <h3 class="step-title">2. Tempel & Pilih</h3>
@@ -527,13 +476,13 @@
                 <div class="feature-card">
                     <div class="feature-icon fi-4"><i class="fa-solid fa-image"></i></div>
                     <h3 class="feature-title">Kreaverse Thumbnail</h3>
-                    <p class="feature-desc">Tarik secara otomatis gambar sampul (thumbnail) eksklusif resolusi tinggi dari tautan yang Anda berikan.</p>
+                    <p class="feature-desc">Tarik secara otomatis gambar sampul (thumbnail) eksklusif resolusi tinggi dari tautan langsung.</p>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- FOOTER (Revisi 7: Clean White Theme & Teks Di HP tidak kebesaran) -->
+    <!-- FOOTER -->
     <footer class="footer">
         <div class="footer-logo">Kreaverse AI</div>
         <div class="footer-links">
@@ -577,7 +526,8 @@
             <div class="sheet-options" id="scanned-media-list"></div>
         </div>
     </div>
-<script type="module">
+
+    <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
         import { getFirestore, doc, onSnapshot, collection, addDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
@@ -632,6 +582,8 @@
         let processSeconds = 0;
         let globalScannedOptions = []; 
         let isDualAudio = false; 
+        let controlsHidden = false; // REVISI 4: Flag penanda kontrol layar
+        let controlsTimeout;
 
         const btnText = document.getElementById('btn-text');
         const resultContainer = document.getElementById('result-container');
@@ -643,12 +595,15 @@
         const customAudio = document.getElementById('custom-audio');
         const customVideo = document.getElementById('custom-video');
         const mediaWrapper = document.getElementById('media-wrapper');
+        const videoInnerCont = document.getElementById('video-inner-container');
+        
         const audioThumbnail = document.getElementById('audio-thumbnail');
         const audioTitleDisplay = document.getElementById('audio-title-display');
         
         const bufferingSpinner = document.getElementById('buffering-spinner');
         const bufferingContent = document.getElementById('buffering-content'); 
         
+        const playerControls = document.getElementById('player-controls');
         const playPauseBtn = document.getElementById('play-pause-btn');
         const fullscreenBtn = document.getElementById('fullscreen-btn');
         const progressFill = document.getElementById('progress-fill');
@@ -677,11 +632,8 @@
             overlay.addEventListener('click', (e) => { if (e.target === overlay) overlay.classList.remove('active'); });
         });
 
-        // REVISI 3: AUTO RESET KEADAAN SAAT GANTI TAB AGAR TIDAK ERROR/STUCK
         window.changeFormat = (format) => {
-            if (currentFormat !== format) {
-                resetUI(); 
-            }
+            if (currentFormat !== format) resetUI(); 
             
             currentFormat = format;
             localStorage.setItem('kreaverse_ytdl_format', format); 
@@ -822,15 +774,14 @@
             clearInterval(processTimer); document.getElementById('progress-container').classList.remove('active');
             document.getElementById('real-download-progress-container').classList.add('hidden');
             
-            // REVISI: Pastikan box Error Merah sembunyi saat ganti tab / reset
             bufferingSpinner.classList.add('hidden'); 
             
             document.getElementById('thumb-preview').style.display = "none";
             document.getElementById('thumb-image').src = "";
             document.getElementById('audio-ui').style.display = "none";
-            customVideo.style.display = "block"; 
-            document.getElementById('player-controls').style.display = "flex";
-            document.getElementById('player-watermark').style.display = "block";
+            videoInnerCont.style.display = "flex"; 
+            playerControls.style.display = "flex";
+            playerControls.classList.remove('hidden-controls'); // Tampilkan dari awal
             mediaWrapper.classList.remove('audio-mode');
             globalScannedOptions = [];
         }
@@ -1034,7 +985,7 @@
                         { url: `https://i.ytimg.com/vi/${ytid}/mqdefault.jpg`, quality: 'MQ (Kualitas Ringan)', type: 'thumb', ext: 'JPG' }
                     ];
                 } else if (extractedData.thumbnail) {
-                    thumbOpts.push({ url: extractedData.thumbnail, quality: 'Original Asli', type: 'thumb', ext: 'JPG' });
+                    thumbOpts.push({ url: extractedData.thumbnail, quality: 'Original (Kualitas Asli)', type: 'thumb', ext: 'JPG' });
                 } else {
                     throw new Error("Gambar thumbnail/cover tidak ditemukan untuk platform ini.");
                 }
@@ -1137,10 +1088,11 @@
             audioTitleDisplay.innerText = title;
             
             if (type === 'thumb') {
-                mediaWrapper.classList.remove('audio-mode'); customVideo.style.display = "none";
+                mediaWrapper.classList.remove('audio-mode'); 
+                videoInnerCont.style.display = "none";
                 document.getElementById('audio-ui').style.display = "none";
-                document.getElementById('player-controls').style.display = "none";
-                document.getElementById('player-watermark').style.display = "none";
+                playerControls.style.display = "none";
+                document.getElementById('player-watermark').style.display = "none"; // Hide main watermark
                 document.getElementById('real-download-btn').classList.add('hidden'); 
                 
                 document.getElementById('thumb-preview').style.display = "flex";
@@ -1151,7 +1103,6 @@
                 isDualAudio = false;
                 const bestAudio = globalScannedOptions.filter(o => o.type === 'audio').sort((a, b) => parseInt(b.quality) - parseInt(a.quality))[0];
                 
-                // Mencegah error jika audio track tidak valid/kosong
                 if (bestAudio && bestAudio.url) { 
                     customAudio.src = bestAudio.url; 
                     isDualAudio = true; 
@@ -1161,19 +1112,33 @@
                 }
                 
                 activeMedia = customVideo; customVideo.src = url;
-                mediaWrapper.classList.remove('audio-mode'); customVideo.style.display = "block";
+                mediaWrapper.classList.remove('audio-mode'); 
+                videoInnerCont.style.display = "flex";
                 document.getElementById('audio-ui').style.display = "none";
                 document.getElementById('thumb-preview').style.display = "none";
-                document.getElementById('player-controls').style.display = "flex";
+                playerControls.style.display = "flex";
                 document.getElementById('player-watermark').style.display = "block";
                 document.getElementById('real-download-btn').classList.remove('hidden');
+                
+                // MENGATUR RASIO BINGKAI SEMPURNA DYNAMIC VIDEO SIZER (REVISI 2 & 3)
+                customVideo.onloadedmetadata = () => {
+                    const ratio = customVideo.videoWidth / customVideo.videoHeight;
+                    videoInnerCont.style.aspectRatio = `${ratio}`;
+                    // Saat aspect ratio sudah fix, watermark di dalam container akan pas sudut!
+                    if (document.fullscreenElement) {
+                        videoInnerCont.style.width = 'auto'; // biarkan flexbox mengatur
+                    } else {
+                        videoInnerCont.style.width = '100%';
+                    }
+                };
 
             } else {
                 activeMedia = customAudio; customAudio.src = url; customAudio.muted = false;
-                mediaWrapper.classList.add('audio-mode'); customVideo.style.display = "none";
+                mediaWrapper.classList.add('audio-mode'); 
+                videoInnerCont.style.display = "none";
                 document.getElementById('audio-ui').style.display = "flex";
                 document.getElementById('thumb-preview').style.display = "none";
-                document.getElementById('player-controls').style.display = "flex";
+                playerControls.style.display = "flex";
                 document.getElementById('player-watermark').style.display = "block";
                 document.getElementById('real-download-btn').classList.remove('hidden');
             }
@@ -1268,34 +1233,6 @@
             showIphoneNotif('Resolusi Diubah', `Kualitas disesuaikan ke ${qualityName}`, 'fa-wand-magic-sparkles');
         };
 
-        function adjustVideoWatermark() {
-            if (currentFormat !== 'video' || activeMedia !== customVideo || !customVideo.videoWidth) return;
-            const wrapper = document.getElementById('media-wrapper');
-            const wm = document.getElementById('player-watermark');
-            if(!wm || document.getElementById('thumb-preview').style.display === "flex") return;
-            
-            const wRect = wrapper.getBoundingClientRect();
-            const wRatio = wRect.width / wRect.height;
-            const vRatio = customVideo.videoWidth / customVideo.videoHeight;
-            
-            let actW, actH;
-            if (wRatio > vRatio) {
-                actH = wRect.height;
-                actW = actH * vRatio;
-            } else {
-                actW = wRect.width;
-                actH = actW / vRatio;
-            }
-            
-            const offX = (wRect.width - actW) / 2;
-            const offY = (wRect.height - actH) / 2;
-            
-            wm.style.right = (offX + 10) + 'px';
-            wm.style.top = (offY + 15) + 'px';
-        }
-
-        window.addEventListener('resize', adjustVideoWatermark);
-
         function formatTime(sec) {
             if(isNaN(sec)) return "0:00";
             const m = Math.floor(sec / 60); const s = Math.floor(sec % 60);
@@ -1324,13 +1261,40 @@
             }
         });
 
+        // REVISI 4: FUNGSI KETUK LAYAR UNTUK MENGHILANGKANKAN KONTROL ALA YOUTUBE
+        const videoTouchSensor = document.getElementById('video-touch-sensor');
+        let hideControlsTimer;
+        
+        function toggleControls() {
+            if(playerControls.classList.contains('hidden-controls')) {
+                playerControls.classList.remove('hidden-controls');
+                resetHideTimer();
+            } else {
+                playerControls.classList.add('hidden-controls');
+            }
+        }
+        
+        function resetHideTimer() {
+            clearTimeout(hideControlsTimer);
+            if(!activeMedia || activeMedia.paused) return; // kalau pause biarkan tertampil
+            hideControlsTimer = setTimeout(() => {
+                playerControls.classList.add('hidden-controls');
+            }, 3000); // 3 detik tidak ada respon otomatis hilang
+        }
+
+        videoTouchSensor.addEventListener('click', toggleControls);
+        videoTouchSensor.addEventListener('mousemove', resetHideTimer); // PC hover
+        
         document.addEventListener('fullscreenchange', () => {
             if (document.fullscreenElement) {
+                videoInnerCont.style.width = 'auto'; // Biarkan CSS Aspect Ratio menahan frame
                 if (activeMedia && activeMedia.videoWidth > activeMedia.videoHeight) { try { screen.orientation.lock('landscape').catch(e=>{}); } catch(e){} }
+                resetHideTimer();
             } else { 
+                videoInnerCont.style.width = '100%'; 
+                playerControls.classList.remove('hidden-controls'); // Jangan hide pas normal screen
                 try { screen.orientation.unlock().catch(e=>{}); } catch(e){} 
             }
-            setTimeout(adjustVideoWatermark, 100); 
         });
 
         let bufferSimInterval;
@@ -1344,11 +1308,11 @@
             media.addEventListener('loadedmetadata', () => {
                 if(media !== activeMedia) return;
                 totalTimeEl.innerText = formatTime(media.duration);
-                setTimeout(adjustVideoWatermark, 100);
             });
             media.addEventListener('ended', () => {
                 if(media !== activeMedia) return;
                 updatePlayPauseUI(false); progressFill.style.width = '0%';
+                playerControls.classList.remove('hidden-controls');
             });
             media.addEventListener('seeked', () => {
                 if(media === activeMedia && isDualAudio) customAudio.currentTime = activeMedia.currentTime;
@@ -1373,8 +1337,13 @@
                     bufferingSpinner.classList.add('hidden'); 
                     clearInterval(bufferSimInterval);
                     if(isDualAudio && !activeMedia.paused) customAudio.play().catch(e=>{});
-                    adjustVideoWatermark();
+                    resetHideTimer();
                 } 
+            });
+            media.addEventListener('pause', () => { 
+                if(media === activeMedia) {
+                    playerControls.classList.remove('hidden-controls');
+                }
             });
             media.addEventListener('error', () => {
                 if(media === activeMedia) {
@@ -1391,40 +1360,38 @@
             });
         });
 
+        // REVISI 4: PENGGESER AREA BAR (HATI-HATI JANGAN DISENTUH)
         progressBg.addEventListener('click', (e) => {
             if(!activeMedia || !activeMedia.duration) return;
             const rect = progressBg.getBoundingClientRect();
-            activeMedia.currentTime = ((e.clientX - rect.left) / rect.width) * activeMedia.duration;
+            // Menghitung posisi klik X relatif ke panjang bar
+            const xPos = e.clientX - rect.left;
+            let percent = xPos / rect.width;
+            if(percent < 0) percent = 0;
+            if(percent > 1) percent = 1;
+            activeMedia.currentTime = percent * activeMedia.duration;
             if(isDualAudio) customAudio.currentTime = activeMedia.currentTime;
+            resetHideTimer();
+            // Optional: putar langsung jika di geser pas sedah dipause
+            // if(activeMedia.paused) { activeMedia.play(); updatePlayPauseUI(true); } 
         });
 
-        // REVISI 2: DOWNLOAD STANDAR + FALLBACK THUMBNAIL
+        // REVISI 1: FUNGSI UNDUH (BULLETPROOF)
         directDownloadLink.addEventListener('click', async () => {
             if (!resolvedMediaUrl) return;
             showIphoneNotif('Menyiapkan Berkas...', 'Mengamankan jalur unduhan ke perangkat Anda.', 'fa-cloud-arrow-down');
             
-            // JIKA THUMBNAIL, COBA UNDUH LANGSUNG/PROXY, JIKA GAGAL JALUR STANDAR (REVISI PENTING)
-            if (currentFormat === 'thumb') {
-                try {
-                    const response = await fetch("/api/ytdl?targetUrl=" + encodeURIComponent(resolvedMediaUrl));
-                    if (!response.ok) throw new Error('Proxy Gagal');
-                    const blob = await response.blob();
-                    const objUrl = URL.createObjectURL(blob);
-                    const a = document.createElement('a'); 
-                    a.href = objUrl; a.download = resolvedFileName;
-                    document.body.appendChild(a); a.click(); document.body.removeChild(a);
-                    setTimeout(() => URL.revokeObjectURL(objUrl), 5000);
-                    return;
-                } catch(e) {
-                    console.log('Fallback ke download thumbnail biasa', e);
-                }
-            }
-
-            // STANDAR (BUKA TAB BARU ATAU DOWNLOAD LANGSUNG)
-            setTimeout(() => {
-                const a = document.createElement('a'); a.href = resolvedMediaUrl; a.target = '_blank'; a.rel = 'noopener noreferrer'; a.download = resolvedFileName;
+            // JIKA TIPE GAMBAR ATAU VIDEO PADA CHROME ANDROID
+            try {
+                // Memompa lokasi HREF, sistem Android akan memotong bypass dan melempar ke Download Manager.
+                // Jika fail, kita akan ganti tab seperti metode kuno.
+                setTimeout(()=>{ window.location.href = resolvedMediaUrl; }, 100);
+            } catch(e) {
+                // FALLBACK CARA BIASA
+                const a = document.createElement('a'); 
+                a.href = resolvedMediaUrl; a.target = '_blank'; a.rel = 'noopener noreferrer'; a.download = resolvedFileName;
                 document.body.appendChild(a); a.click(); document.body.removeChild(a);
-            }, 800);
+            }
         });
 
         realDownloadBtn.addEventListener('click', async () => {
