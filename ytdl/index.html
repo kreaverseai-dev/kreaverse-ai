@@ -1507,7 +1507,15 @@
             }
         });
 
-        // REAL SERVER KREAVERSE BLOB DL (Diperbarui: Full Stream Internal Website & Penamaan Paten Kreaverse AI)
+        // PEMBERITAHUAN UNTUK ANDA (PENTING!):
+        // Error log [DEP0169] DeprecationWarning: `url.parse()` BUKAN berasal dari kode frontend ini.
+        // Error tersebut berasal dari script API Server/Backend Node.js Anda (kemungkinan di file api/ytdl.js atau file backend lainnya).
+        // CARA MEMPERBAIKI DI BACKEND ANDA: Cari tulisan `const url = require('url'); url.parse(...)` lalu ganti dengan sintaks modern `new URL(...)`.
+        //
+        // Sambil menunggu Anda memperbaiki backend, saya merevisi kode di bawah ini 
+        // agar menghindari API Anda yang sedang error dan menggunakan proxy publik sehingga fungsi MP3 tetap berjalan.
+
+        // REAL SERVER KREAVERSE BLOB DL (Diperbarui: Anti-Crash Backend & Fallback Lapis Baja)
         realDownloadBtn.addEventListener('click', async () => {
             if (!resolvedMediaUrl) return;
             const container = document.getElementById('real-download-progress-container');
@@ -1533,12 +1541,13 @@
                 else if (targetExt === 'm4a') forcedMime = 'audio/mp4';
                 else if (targetExt === 'webm') forcedMime = 'video/webm';
 
-                // 2. STRATEGI MULTI-PROXY (Agar tetap di dalam website dan TIDAK REDIRECT)
+                // 2. STRATEGI MULTI-PROXY TAHAN BANTING
                 const encodedUrl = encodeURIComponent(resolvedMediaUrl);
                 const fetchStrategies = [
                     "https://corsproxy.io/?" + encodedUrl,
-                    "/api/ytdl?targetUrl=" + encodedUrl,
                     "https://api.allorigins.win/raw?url=" + encodedUrl,
+                    "https://api.codetabs.com/v1/proxy?quest=" + encodedUrl,
+                    "/api/ytdl?targetUrl=" + encodedUrl, // Dipindah ke bawah karena ada issue url.parse() di API backend Anda
                     resolvedMediaUrl
                 ];
 
@@ -1619,37 +1628,57 @@
 
             } catch(e) {
                 console.error(e);
-                text.innerText = 'Proxy Gagal'; 
-                speedEl.innerText = 'Mencoba mode background...';
+                text.innerText = 'Proxy Utama Gagal'; 
+                speedEl.innerText = 'Mencari jalur alternatif...';
                 fill.style.background = '#F59E0B'; 
                 
-                // 5. FALLBACK BACKGROUND FRAME (Menghindari visual redirect ke web lain)
-                setTimeout(() => {
+                // 5. FALLBACK KE-2 (Fetch Blob Utuh Langsung - bypass error streaming/API internal)
+                setTimeout(async () => {
                     let finalName = resolvedFileName;
                     if (!finalName.toLowerCase().startsWith('kreaverse ai - ')) {
                         finalName = `Kreaverse AI - ${finalName.replace(/^(Kreaverse AI - |Kreaverse AI|kreaverse)/i, '').trim()}`;
                     }
+                    const targetExt = finalName.split('.').pop().toLowerCase();
                     
-                    let finalDirectUrl = resolvedMediaUrl;
                     try {
-                        const urlObj = new URL(resolvedMediaUrl);
-                        urlObj.searchParams.set('title', finalName.replace(/\.[^/.]+$/, "")); 
-                        urlObj.searchParams.set('filename', finalName);
-                        urlObj.searchParams.set('dl', '1');
-                        finalDirectUrl = urlObj.toString();
-                    } catch(err) {}
+                        const directRes = await fetch(resolvedMediaUrl);
+                        const blobData = await directRes.blob();
+                        const forcedBlob = new Blob([blobData], { type: targetExt === 'mp3' ? 'audio/mpeg' : 'video/mp4' });
+                        const objUrl = URL.createObjectURL(forcedBlob);
+                        
+                        const a = document.createElement('a');
+                        a.style.display = 'none';
+                        a.href = objUrl;
+                        a.download = finalName;
+                        document.body.appendChild(a);
+                        a.click();
+                        document.body.removeChild(a);
+                        
+                        container.classList.add('hidden');
+                        fill.style.background = 'linear-gradient(90deg, #10B981, #34D399)'; 
+                        showIphoneNotif('Berhasil!', `Tersimpan sebagai: ${finalName}`, 'fa-circle-check');
+                    } catch (err) {
+                        // 6. FALLBACK TERAKHIR BACKGROUND FRAME (Menghindari visual redirect ke web lain jika diblokir mutlak)
+                        let finalDirectUrl = resolvedMediaUrl;
+                        try {
+                            const urlObj = new URL(resolvedMediaUrl);
+                            urlObj.searchParams.set('title', finalName.replace(/\.[^/.]+$/, "")); 
+                            urlObj.searchParams.set('filename', finalName);
+                            urlObj.searchParams.set('dl', '1');
+                            finalDirectUrl = urlObj.toString();
+                        } catch(error) {}
 
-                    // Menggunakan iframe tersembunyi untuk memicu download native tanpa pindah URL page
-                    const iframe = document.createElement('iframe');
-                    iframe.style.display = 'none';
-                    iframe.src = finalDirectUrl;
-                    document.body.appendChild(iframe);
+                        const iframe = document.createElement('iframe');
+                        iframe.style.display = 'none';
+                        iframe.src = finalDirectUrl;
+                        document.body.appendChild(iframe);
 
-                    container.classList.add('hidden');
-                    fill.style.background = 'linear-gradient(90deg, #10B981, #34D399)'; 
-                    showIphoneNotif('Mengunduh', `Proses berjalan di latar belakang`, 'fa-cloud-arrow-down');
+                        container.classList.add('hidden');
+                        fill.style.background = 'linear-gradient(90deg, #10B981, #34D399)'; 
+                        showIphoneNotif('Mengunduh', `Proses berjalan di latar belakang`, 'fa-cloud-arrow-down');
 
-                    setTimeout(() => document.body.removeChild(iframe), 15000); // Cleanup iframe
+                        setTimeout(() => document.body.removeChild(iframe), 15000); // Cleanup iframe
+                    }
                 }, 2000);
             }
         });
