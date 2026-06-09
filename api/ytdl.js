@@ -17,19 +17,35 @@ export default async function handler(req, res) {
     }
 
     try {
-        // Mengambil data dari API tujuan (misal: Neoxr / Botcahx)
-        const response = await fetch(targetUrl, {
+        // SOLUSI DEP0169: Memastikan URL valid menggunakan API 'new URL()' modern 
+        const safeUrl = new URL(targetUrl).href;
+
+        // Mengambil data dari API tujuan (Bisa berupa JSON, MP3, atau MP4)
+        const response = await fetch(safeUrl, {
             method: 'GET',
             headers: {
                 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
             }
         });
 
-        const data = await response.json();
+        const contentType = response.headers.get('content-type') || '';
+
+        // SOLUSI ERROR 500 VERCEL: Jika data adalah JSON (Fetch API Awal), kembalikan sebagai JSON
+        if (contentType.includes('application/json')) {
+            const data = await response.json();
+            return res.status(200).json(data);
+        }
         
-        // Mengembalikan data ke frontend Kreaverse
-        res.status(200).json(data);
+        // SOLUSI ERROR 500 VERCEL: Jika data adalah File Video/Audio, alirkan sebagai Buffer Binary
+        // Ini yang membuat API Anda sebelumnya Error 500 (karena file video dipaksa dibaca sebagai JSON)
+        const arrayBuffer = await response.arrayBuffer();
+        const buffer = Buffer.from(arrayBuffer);
+        
+        res.setHeader('Content-Type', contentType);
+        res.setHeader('Content-Length', buffer.length);
+        return res.status(200).send(buffer);
+
     } catch (error) {
-        res.status(500).json({ error: "Gagal mengambil data dari server tujuan: " + error.message });
+        res.status(500).json({ error: "Gagal memproses target: " + error.message });
     }
 }
