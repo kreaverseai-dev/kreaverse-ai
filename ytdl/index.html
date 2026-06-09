@@ -941,8 +941,13 @@
                 const fullUrl = `${baseUrl}${path}${separator}${encodeURIComponent(mediaUrl)}`;
                 try {
                     let response;
-                    try { response = await fetch(fullUrl); } catch (directErr) {
-                        const proxyUrl = "/api/ytdl?targetUrl=" + encodeURIComponent(fullUrl);
+                    try { 
+                        response = await fetch(fullUrl); 
+                    } catch (directErr) {
+                        // MENGHAPUS TOTAL /api/ytdl DARI SISTEM UNTUK MENGHINDARI ERROR VERCEL [DEP0169] url.parse()
+                        // Menggunakan proxy publik yang stabil untuk mengambil data JSON/Metadata media
+                        const encodedFullUrl = encodeURIComponent(fullUrl);
+                        const proxyUrl = "https://corsproxy.io/?" + encodedFullUrl;
                         response = await fetch(proxyUrl);
                     }
                     if (response.headers.get("content-type")?.includes("application/json")) {
