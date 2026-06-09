@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Harga - Kreaverse AI</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Playfair+Display:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <link rel="stylesheet" href="/harga/style.css">
+</head>
+<body>
+
+    <!-- Tombol Kembali -->
+    <nav class="top-nav">
+        <a href="/" class="back-btn"><i class="fa-solid fa-arrow-left"></i></a>
+    </nav>
+
+    <main class="pricing-container">
+        
+        <div class="pricing-header">
+            <h1>Paket yang berkembang bersama Anda</h1>
+            
+            <!-- Tombol Tab Bulanan & Lifetime -->
+            <div class="billing-toggle">
+                <button class="toggle-btn active" id="btn-bulanan" onclick="pindahTab('bulanan')">Bulanan</button>
+                <button class="toggle-btn" id="btn-lifetime" onclick="pindahTab('lifetime')">Lifetime / Sekali Bayar</button>
+            </div>
+        </div>
+
+        <!-- BUNGKUSAN PAKET BULANAN (Tampil saat tab Bulanan diklik) -->
+        <div class="pricing-grid" id="paket-bulanan">
+            
+            <!-- PAKET 1: BASIC -->
+            <div class="pricing-card">
+                <div class="card-icon"><i class="fa-solid fa-seedling"></i></div>
+                <h3 class="plan-name">Basic</h3>
+                <p class="plan-desc">Mulai perjalanan AI Anda</p>
+                
+                <div class="price-box">
+                    <span class="currency">Rp</span>
+                    <span class="amount">350rb</span>
+                    <span class="period">/bulan</span>
+                </div>
+
+                <button class="btn-outline" onclick="beliPaket('Basic')">Dapatkan paket Basic</button>
+
+                <div class="features-list">
+                    <p class="feature-title">Yang Anda dapatkan:</p>
+                    <ul>
+                        <li><i class="fa-solid fa-check"></i> <b>500 Kredit</b> per bulan</li>
+                        <li><i class="fa-solid fa-check"></i> Akses Chat AI (LLM) tingkat lanjut</li>
+                        <li><i class="fa-solid fa-check"></i> Studio Media AI (Suno, Gambar, Video)</li>
+                        <li><i class="fa-solid fa-check"></i> Media Downloader tanpa watermark</li>
+                        <li><i class="fa-solid fa-check"></i> Temp Email & Privasi aman</li>
+                        <li><i class="fa-solid fa-check"></i> Cloud Storage terintegrasi</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- PAKET 2: PRO -->
+            <div class="pricing-card pro-card">
+                <div class="card-icon"><i class="fa-solid fa-tree"></i></div>
+                <h3 class="plan-name">Pro</h3>
+                <p class="plan-desc">Lebih banyak kredit, lebih leluasa</p>
+                
+                <div class="price-box">
+                    <span class="currency">Rp</span>
+                    <span class="amount">550rb</span>
+                    <span class="period">/bulan</span>
+                </div>
+
+                <button class="btn-solid" onclick="beliPaket('Pro')">Dapatkan paket Pro</button>
+
+                <div class="features-list">
+                    <p class="feature-title">Semua fitur Basic, ditambah:</p>
+                    <ul>
+                        <li><i class="fa-solid fa-check"></i> <b>1.500 Kredit</b> per bulan</li>
+                        <li><i class="fa-solid fa-check"></i> Prioritas antrean server tinggi</li>
+                        <li><i class="fa-solid fa-check"></i> Generasi media lebih cepat</li>
+                        <li><i class="fa-solid fa-check"></i> Akses awal ke fitur AI terbaru</li>
+                        <li><i class="fa-solid fa-check"></i> Kualitas output maksimal</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- PAKET 3: MAX (Biasa) -->
+            <div class="pricing-card">
+                <div class="card-icon"><i class="fa-solid fa-crown"></i></div>
+                <h3 class="plan-name">Max</h3>
+                <p class="plan-desc">Pengalaman AI maksimal</p>
+                
+                <div class="price-box">
+                    <span class="currency">Rp</span>
+                    <span class="amount">950rb</span>
+                    <span class="period">/bulan</span>
+                </div>
+
+                <button class="btn-outline btn-dark" onclick="beliPaket('Max Bulanan')">Dapatkan paket Max</button>
+
+                <div class="features-list">
+                    <p class="feature-title">Semua fitur Pro, ditambah:</p>
+                    <ul>
+                        <li><i class="fa-solid fa-check"></i> <b>Kredit Unlimited</b> (Tanpa Batas)</li>
+                        <li><i class="fa-solid fa-check"></i> Dukungan VIP 24/7</li>
+                        <li><i class="fa-solid fa-check"></i> Kebebasan komersial penuh</li>
+                    </ul>
+                </div>
+            </div>
+
+        </div> <!-- Akhir Bungkusan Bulanan -->
+
+
+        <!-- BUNGKUSAN PAKET LIFETIME -->
+        <div id="paket-lifetime" style="display: none; max-width: 450px; margin: 0 auto 30px;">
+            
+            <div class="pricing-card promo-card-special">
+                <div class="promo-ribbon">SPESIAL DISKON</div>
+                <div class="card-icon" style="color: #e74c3c;"><i class="fa-solid fa-gem"></i></div>
+                <h3 class="plan-name">Max (Lifetime)</h3>
+                <p class="plan-desc">Investasi sekali, nikmati AI selamanya tanpa tagihan bulanan.</p>
+                
+                <div class="price-box" style="margin-bottom: 24px;">
+                    <span class="currency" style="align-self: flex-end; margin-bottom: 8px;">Rp</span>
+                    <div class="price-stack">
+                        <span class="amount-slashed">2,35jt</span>
+                        <span class="amount" style="color: #e74c3c;">1,95jt</span>
+                    </div>
+                    <span class="period" style="align-self: flex-end; margin-bottom: 8px;">sekali bayar</span>
+                </div>
+
+                <button class="btn-solid special-btn" onclick="beliPaket('Max Lifetime (Promo Diskon)')">Dapatkan Akses Lifetime</button>
+
+                <div class="features-list">
+                    <p class="feature-title">Yang Anda dapatkan selamanya:</p>
+                    <ul>
+                        <li><i class="fa-solid fa-check" style="color: #e74c3c;"></i> <b>Kredit Unlimited</b> seumur hidup</li>
+                        <li><i class="fa-solid fa-check" style="color: #e74c3c;"></i> Tidak ada biaya langganan bulanan</li>
+                        <li><i class="fa-solid fa-check" style="color: #e74c3c;"></i> Semua model AI premium terbuka</li>
+                        <li><i class="fa-solid fa-check" style="color: #e74c3c;"></i> Dukungan VIP Prioritas 24/7</li>
+                        <li><i class="fa-solid fa-check" style="color: #e74c3c;"></i> Hak lisensi komersial penuh</li>
+                    </ul>
+                </div>
+            </div>
+
+        </div> <!-- Akhir Bungkusan Lifetime -->
+
+        <p class="footer-note">*Ketentuan penggunaan berlaku. Harga dan paket dapat berubah sewaktu-waktu.</p>
+
+    </main>
+
+    <!-- SCRIPT UNTUK TAB, WHATSAPP, & MEMORI DIAMOND -->
+    <script>
+        // Fungsi Pindah Tab Bulanan vs Lifetime
+        function pindahTab(jenis) {
+            const bulanan = document.getElementById('paket-bulanan');
+            const lifetime = document.getElementById('paket-lifetime');
+            const btnBulanan = document.getElementById('btn-bulanan');
+            const btnLifetime = document.getElementById('btn-lifetime');
+
+            if (jenis === 'bulanan') {
+                bulanan.style.display = 'grid';
+                lifetime.style.display = 'none';
+                btnBulanan.classList.add('active');
+                btnLifetime.classList.remove('active');
+            } else {
+                bulanan.style.display = 'none';
+                lifetime.style.display = 'block';
+                btnBulanan.classList.remove('active');
+                btnLifetime.classList.add('active');
+            }
+        }
+
+        // Fungsi Otomatis WhatsApp
+        function beliPaket(namaPaket) {
+            const nomorAdmin = "6285119821813";
+            const pesan = `Halo admin Kreaverse AI,\n\nSaya tertarik dan ingin berlangganan paket *${namaPaket}*.\n\nBerikut data diri saya:\n- Nama: \n- Alamat: \n\nMohon petunjuk pembayarannya. Terima kasih!`;
+            const urlWhatsApp = `https://wa.me/${nomorAdmin}?text=${encodeURIComponent(pesan)}`;
+            window.open(urlWhatsApp, '_blank');
+        }
+
+        // REVISI: Kontrol Pintar agar Diamond hanya animasi 1 kali per jam
+        function kontrolAnimasiDiamond() {
+            const diamond = document.querySelector('.promo-card-special .card-icon i');
+            if (!diamond) return;
+
+            const SEKARANG = Date.now();
+            const SATU_JAM = 60 * 60 * 1000; // 1 Jam dalam Milidetik (3.600.000 ms)
+            const waktuTerakhir = localStorage.getItem('kreaverse_diamond_last_anim');
+
+            // Jika belum pernah animasi, ATAU sudah lewat dari 1 jam sejak animasi terakhir
+            if (!waktuTerakhir || (SEKARANG - waktuTerakhir) > SATU_JAM) {
+                // Tambahkan class agar animasi berjalan 10 detik penuh
+                diamond.classList.add('animate-diamond');
+                // Simpan waktu eksekusi saat ini di browser pengguna
+                localStorage.setItem('kreaverse_diamond_last_anim', SEKARANG);
+            }
+        }
+
+        // Jalankan saat halaman dibuka
+        window.addEventListener('load', kontrolAnimasiDiamond);
+    </script>
+</body>
+</html>
