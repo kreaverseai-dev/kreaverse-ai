@@ -1507,7 +1507,7 @@
             }
         });
 
-        // REAL SERVER KREAVERSE BLOB DL (Diperbarui: Super Proxy Routing & Force Convert Ext)
+        // REAL SERVER KREAVERSE BLOB DL (Diperbarui: Canggih Force MP3 & Anti-Redirect Raw Webm)
         realDownloadBtn.addEventListener('click', async () => {
             if (!resolvedMediaUrl) return;
             const container = document.getElementById('real-download-progress-container');
@@ -1516,7 +1516,7 @@
             const speedEl = document.getElementById('real-download-speed');
             
             container.classList.remove('hidden');
-            fill.style.width = '0%'; text.innerText = '0%'; speedEl.innerText = 'Mencari rute server...';
+            fill.style.width = '0%'; text.innerText = '0%'; speedEl.innerText = 'Menganalisis keamanan...';
             
             try {
                 let response = null;
@@ -1525,11 +1525,10 @@
                 // SUPER ROUTING: Daftar proxy yang tangguh untuk mem-bypass CORS & Security
                 const fetchRoutes = [
                     resolvedMediaUrl,
+                    "/api/ytdl?targetUrl=" + encodedUrl,
                     "https://api.allorigins.win/raw?url=" + encodedUrl,
                     "https://corsproxy.io/?" + encodedUrl,
-                    "/api/ytdl?targetUrl=" + encodedUrl,
-                    "https://thingproxy.freeboard.io/fetch/" + resolvedMediaUrl,
-                    "https://cors-proxy.htmldriven.com/?url=" + encodedUrl
+                    "https://api.codetabs.com/v1/proxy?quest=" + encodedUrl
                 ];
 
                 for (const route of fetchRoutes) {
@@ -1547,9 +1546,8 @@
 
                 if (!response) throw new Error('Semua rute server terblokir');
                 
-                speedEl.innerText = 'Menghubungkan...';
+                speedEl.innerText = 'Mengekstrak file...';
                 
-                // Gunakan mode array buffer jika getReader tidak didukung dengan baik oleh proxy
                 const targetExt = resolvedFileName.split('.').pop().toLowerCase();
                 let forcedMime = 'application/octet-stream';
                 if (targetExt === 'mp3') forcedMime = 'audio/mpeg';
@@ -1557,7 +1555,6 @@
                 else if (targetExt === 'm4a') forcedMime = 'audio/mp4';
                 else if (targetExt === 'webm') forcedMime = 'video/webm';
 
-                // Teknik Fallback ganda: Coba baca stream, jika gagal gunakan blob langsung
                 try {
                     const contentLength = response.headers.get('content-length');
                     const total = contentLength ? parseInt(contentLength, 10) : 0;
@@ -1590,7 +1587,7 @@
                         }
                     }
                     
-                    text.innerText = '100%'; speedEl.innerText = 'Menyematkan Format...';
+                    text.innerText = '100%'; speedEl.innerText = 'Konversi ke ' + targetExt.toUpperCase() + '...';
                     
                     const blob = new Blob(chunks, { type: forcedMime });
                     const objUrl = URL.createObjectURL(blob);
@@ -1600,7 +1597,6 @@
                     setTimeout(() => URL.revokeObjectURL(objUrl), 10000);
 
                 } catch (streamErr) {
-                    // Jika Stream gagal (beberapa proxy memblokir chunk), gunakan Blob langsung
                     speedEl.innerText = 'Memproses data utuh...';
                     const rawBlob = await response.blob();
                     const finalBlob = new Blob([rawBlob], { type: forcedMime });
@@ -1612,29 +1608,21 @@
                 }
 
                 setTimeout(() => { container.classList.add('hidden'); }, 3000);
-                showIphoneNotif('Unduhan Selesai', `Format sukses dipaksa ke ${targetExt.toUpperCase()}`, 'fa-server');
+                showIphoneNotif('Unduhan Selesai', `Format file berhasil dipaksa ke ${targetExt.toUpperCase()}`, 'fa-server');
                 
             } catch(e) {
                 console.error(e);
-                text.innerText = 'Jalur Alternatif...'; 
-                speedEl.innerText = 'Mengunduh via bypass lokal';
+                text.innerText = 'Gagal Dikonversi'; 
+                speedEl.innerText = 'Server memblokir ekstraksi Blob';
+                fill.style.background = 'var(--danger-color)';
                 
-                // JIKA SEMUA PROXY GAGAL (Sistem Super Ketat)
-                // Kita gunakan trik HTML5 force download attributes melalui element virtual
-                // Trik ini melempar URL ke browser namun memintanya menyimpan sesuai nama file.
+                // MENGHAPUS SEMUA REDIRECT RAW KE BROWSER AGAR TIDAK TER-DOWNLOAD WEBM
                 setTimeout(() => {
-                    const targetExt = resolvedFileName.split('.').pop().toLowerCase();
-                    const a = document.createElement('a');
-                    a.href = resolvedMediaUrl;
-                    a.download = resolvedFileName;
-                    a.target = '_blank';
-                    document.body.appendChild(a);
-                    a.click();
-                    document.body.removeChild(a);
-                    
                     container.classList.add('hidden');
-                    showIphoneNotif('Membuka Browser', `Menyimpan sebagai ${targetExt.toUpperCase()}`, 'fa-cloud-arrow-down');
-                }, 2000);
+                    fill.style.background = 'linear-gradient(90deg, #10B981, #34D399)'; // reset warna
+                }, 4000);
+                
+                showIphoneNotif('Akses Ditolak', 'Silakan gunakan tombol "Simpan ke Galeri".', 'fa-circle-xmark');
             }
         });
 
