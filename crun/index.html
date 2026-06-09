@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Crun AI Studio - Kreaverse AI</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+    
+    <link rel="stylesheet" href="../style.css">
+    <style>
+        .crun-card { background: var(--surface-color); border: 1px solid var(--border-color); border-radius: 16px; padding: 24px; box-shadow: var(--shadow-soft); margin-bottom: 30px; }
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; font-weight: 600; font-size: 0.9rem; margin-bottom: 8px; color: var(--text-primary); }
+        .form-control { width: 100%; padding: 14px; border: 1px solid var(--border-color); border-radius: 12px; font-family: 'Inter', sans-serif; font-size: 0.95rem; background: var(--bg-color); color: var(--text-primary); outline: none; transition: 0.2s; }
+        .form-control:focus { border-color: #AF52DE; box-shadow: 0 0 0 3px rgba(175, 82, 222, 0.1); }
+        
+        .upload-area { border: 2px dashed #AF52DE; border-radius: 12px; padding: 30px 20px; text-align: center; cursor: pointer; background: rgba(175, 82, 222, 0.02); transition: 0.2s; }
+        .upload-area:hover { background: rgba(175, 82, 222, 0.05); }
+        .upload-preview { width: 100%; max-height: 250px; object-fit: contain; border-radius: 8px; margin-top: 15px; display: none; }
+        
+        .suno-box { background:#F9F9F9; padding:20px; border-radius:12px; margin-bottom:20px; border:1px solid #EAEAEA; }
+        .flex-row { display: flex; gap: 15px; flex-wrap: wrap; margin-bottom: 15px; }
+        .flex-col { flex: 1; min-width: 150px; }
+        
+        .btn-generate { width: 100%; padding: 16px; background: linear-gradient(90deg, #AF52DE, #D97757); color: #fff; border: none; border-radius: 12px; font-weight: 700; font-size: 1.05rem; cursor: pointer; transition: 0.2s; display: flex; justify-content: center; align-items: center; gap: 10px; }
+        .btn-generate:hover:not(:disabled) { opacity: 0.9; transform: translateY(-2px); box-shadow: 0 8px 20px rgba(175, 82, 222, 0.3); }
+        .btn-generate:disabled { background: #ccc; cursor: not-allowed; transform: none; box-shadow: none; }
+        
+        .result-box { background: #fdfcf8; border: 1px solid var(--border-color); border-radius: 16px; padding: 24px; text-align: center; display: none; }
+        .status-badge { display: inline-block; padding: 6px 14px; border-radius: 20px; font-size: 0.85rem; font-weight: 600; margin-bottom: 15px; }
+        .status-badge.loading { background: #EBF5FF; color: #007AFF; }
+        .status-badge.success { background: #EAFDF0; color: #34C759; }
+        .status-badge.error { background: #FEE2E2; color: #EF4444; }
+    </style>
+</head>
+<body class="claude-layout">
+
+    <nav class="chat-navbar-top">
+        <a href="/media-ai/index.html" style="color:var(--text-primary); font-size:1.2rem; margin-right:15px;"><i class="fa-solid fa-arrow-left"></i></a>
+        <div class="navbar-center-model">
+            <span class="model-badge">
+                <i class="fa-solid fa-wand-magic-sparkles" style="color:#AF52DE;"></i>
+                <span class="model-btn-text-span" style="margin-left:8px;">Studio Crun AI</span>
+            </span>
+        </div>
+    </nav>
+
+    <main class="claude-container" style="justify-content: flex-start; padding-top: 90px; overflow-y: auto;">
+        <div style="width: 100%; max-width: 700px;">
+            
+            <div class="crun-card">
+                <div class="form-group">
+                    <label>Pilih Mode Generasi</label>
+                    <select id="model-select" class="form-control">
+                        <option value="suno/music-generate" data-mode="suno">Suno AI (Teks ke Musik)</option>
+                        <option value="suno/music-cover" data-mode="suno-cover">Suno AI (Cover Musik)</option>
+                        <option value="google/veo" data-mode="video">Veo (Foto ke Video)</option>
+                        <option value="x-ai/grok-2-vision" data-mode="video">Grok Vision (Foto ke Video)</option>
+                        <option value="kling/v2-5-turbo-pro" data-mode="video">Kling AI (Foto ke Video)</option>
+                        <option value="openai/gpt-image-2" data-mode="text2img">GPT Image (Teks ke Foto)</option>
+                    </select>
+                </div>
+
+                <div class="form-group" id="ui-upload-media" style="display: none;">
+                    <label id="upload-label">Unggah File Referensi</label>
+                    <div class="upload-area" onclick="document.getElementById('media-input').click()">
+                        <i id="upload-icon" class="fa-solid fa-image" style="font-size:2.5rem; color:#AF52DE; margin-bottom:10px;"></i>
+                        <div id="media-name" style="font-size:0.9rem; color:var(--text-secondary);">Klik untuk mengunggah file</div>
+                        <input type="file" id="media-input" style="display: none;">
+                    </div>
+                    <img id="image-preview" class="upload-preview">
+                </div>
+
+                <div id="ui-suno-params" class="suno-box" style="display: none;">
+                    <div class="flex-row">
+                        <label style="display:flex; align-items:center; gap:8px; font-weight:600; cursor:pointer; color:var(--text-primary);">
+                            <input type="checkbox" id="suno-custom-mode" checked> Custom Mode
+                        </label>
+                        <label style="display:flex; align-items:center; gap:8px; font-weight:600; cursor:pointer; color:var(--text-primary);">
+                            <input type="checkbox" id="suno-instrumental"> Instrumental
+                        </label>
+                    </div>
+
+                    <div class="flex-row">
+                        <div class="flex-col">
+                            <label>Judul Lagu (Title)</label>
+                            <input type="text" id="suno-title" class="form-control" placeholder="Contoh: Rise Through the Storm">
+                        </div>
+                        <div class="flex-col">
+                            <label>Vocal Gender</label>
+                            <select id="suno-gender" class="form-control">
+                                <option value="auto">Auto</option>
+                                <option value="f">Female (Wanita)</option>
+                                <option value="m">Male (Pria)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group" id="suno-lyrics-group">
+                        <label>Lirik Lagu (Lyrics)</label>
+                        <textarea id="suno-lyrics" class="form-control" rows="4" placeholder="[Verse 1]\nKetik lirik di sini..."></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Gaya Musik (Style / Tags)</label>
+                        <textarea id="suno-style" class="form-control" rows="2" placeholder="Contoh: pop acoustic, J-Pop, dll"></textarea>
+                    </div>
+                </div>
+
+                <div class="form-group" id="ui-general-prompt">
+                    <label id="prompt-label">Deskripsi (Prompt) / Modifikasi</label>
+                    <textarea id="prompt-input" class="form-control" rows="3" placeholder="Deskripsikan perintah Anda di sini..."></textarea>
+                </div>
+
+                <button id="btn-generate" class="btn-generate">
+                    <i class="fa-solid fa-bolt"></i> Generate Sekarang
+                </button>
+            </div>
+
+            <div id="result-box" class="result-box">
+                <div id="result-status" class="status-badge loading"><i class="fa-solid fa-circle-notch fa-spin"></i> Memproses...</div>
+                <div id="result-content" style="margin-top: 15px; word-break: break-all; text-align: left;"></div>
+            </div>
+
+        </div>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+        import { getFirestore, collection, getDocs, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+
+        // FIREBASE CONFIG
+        const firebaseConfig = {
+            apiKey: "AIzaSyAO8JV4jkJmbHChYvjUCS7wqfVbKr94tHM",
+            authDomain: "kreaverse-ai0107.firebaseapp.com",
+            projectId: "kreaverse-ai0107"
+        };
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const modelSelect = document.getElementById('model-select');
+            
+            const uiUploadMedia = document.getElementById('ui-upload-media');
+            const mediaInput = document.getElementById('media-input');
+            const mediaName = document.getElementById('media-name');
+            const imagePreview = document.getElementById('image-preview');
+            const uploadLabel = document.getElementById('upload-label');
+            const uploadIcon = document.getElementById('upload-icon');
+            
+            const uiSunoParams = document.getElementById('ui-suno-params');
+            const sunoCustomMode = document.getElementById('suno-custom-mode');
+            const sunoInstrumental = document.getElementById('suno-instrumental');
+            const sunoTitle = document.getElementById('suno-title');
+            const sunoGender = document.getElementById('suno-gender');
+            const sunoLyricsGroup = document.getElementById('suno-lyrics-group');
+            const sunoLyrics = document.getElementById('suno-lyrics');
+            const sunoStyle = document.getElementById('suno-style');
+            
+            const uiGeneralPrompt = document.getElementById('ui-general-prompt');
+            const promptLabel = document.getElementById('prompt-label');
+            const promptInput = document.getElementById('prompt-input');
+            
+            const btnGenerate = document.getElementById('btn-generate');
+            const resultBox = document.getElementById('result-box');
+            const resultStatus = document.getElementById('result-status');
+            const resultContent = document.getElementById('result-content');
+
+            let selectedFile = null;
+
+            function updateUI() {
+                const mode = modelSelect.options[modelSelect.selectedIndex].getAttribute('data-mode');
+                
+                uiUploadMedia.style.display = 'none';
+                uiSunoParams.style.display = 'none';
+                uiGeneralPrompt.style.display = 'none';
+                
+                if (mode === 'suno' || mode === 'suno-cover') {
+                    uiSunoParams.style.display = 'block';
+                    if (mode === 'suno-cover') {
+                        uiUploadMedia.style.display = 'block';
+                        uploadLabel.innerText = "Unggah Audio Asli (Cover)";
+                        uploadIcon.className = "fa-solid fa-music";
+                        mediaInput.accept = "audio/*";
+                        mediaName.innerText = "Klik untuk mengunggah (MP3/WAV)";
+                        imagePreview.style.display = 'none';
+                    }
+                } else if (mode === 'video' || mode === 'img2img') {
+                    uiUploadMedia.style.display = 'block';
+                    uiGeneralPrompt.style.display = 'block';
+                    uploadLabel.innerText = "Unggah Foto Referensi";
+                    uploadIcon.className = "fa-solid fa-image";
+                    mediaInput.accept = "image/*";
+                    mediaName.innerText = "Klik untuk mengunggah (JPG/PNG)";
+                    promptLabel.innerText = "Prompt Pergerakan (Opsional)";
+                } else if (mode === 'text2img') {
+                    uiGeneralPrompt.style.display = 'block';
+                    promptLabel.innerText = "Deskripsi Gambar (Prompt)";
+                }
+            }
+
+            modelSelect.addEventListener('change', updateUI);
+            updateUI();
+
+            sunoCustomMode.addEventListener('change', () => {
+                sunoLyricsGroup.style.display = sunoCustomMode.checked ? 'block' : 'none';
+            });
+
+            mediaInput.addEventListener('change', function() {
+                selectedFile = this.files[0];
+                if (selectedFile) {
+                    mediaName.innerText = selectedFile.name;
+                    if (selectedFile.type.startsWith('image/')) {
+                        const reader = new FileReader();
+                        reader.onload = function(e) {
+                            imagePreview.src = e.target.result;
+                            imagePreview.style.display = 'block';
+                        };
+                        reader.readAsDataURL(selectedFile);
+                    } else {
+                        imagePreview.style.display = 'none';
+                    }
+                }
+            });
+
+            // UPLOAD KE CLOUDINARY (LOGIKA REAL-TIME)
+            async function uploadToCloudinaryReal(file) {
+                // 1. Ambil Data Akun Cloudinary Aktif dari Firebase
+                const snap = await getDocs(collection(db, "cloudinary_accounts"));
+                let activeAccounts = [];
+                snap.forEach(d => {
+                    if(d.data().status !== "limit") {
+                        activeAccounts.push({ id: d.id, ...d.data() });
+                    }
+                });
+
+                if (activeAccounts.length === 0) {
+                    throw new Error("Semua penyimpanan Cloud sementara (Cloudinary) telah mencapai limit. Silakan hubungi Admin.");
+                }
+
+                const resourceType = file.type.startsWith('video/') || file.type.startsWith('audio/') ? 'video' : 'image';
+
+                // 2. Coba upload ke masing-masing akun yang aktif
+                for (let acc of activeAccounts) {
+                    const formData = new FormData();
+                    formData.append("file", file);
+                    formData.append("upload_preset", acc.uploadPreset); // Menggunakan Preset (Unsigned)
+
+                    try {
+                        const response = await fetch(`https://api.cloudinary.com/v1_1/${acc.cloudName}/${resourceType}/upload`, {
+                            method: 'POST',
+                            body: formData
+                        });
+                        
+                        const data = await response.json();
+
+                        if (!response.ok) {
+                            // Jika Cloudinary membalas dengan error limit/quota
+                            if (data.error && data.error.message.toLowerCase().includes('quota')) {
+                                console.warn(`Akun ${acc.cloudName} mencapai limit. Mematikan akun secara otomatis...`);
+                                // Tandai akun sebagai Limit di Firebase agar tidak digunakan lagi
+                                await updateDoc(doc(db, "cloudinary_accounts", acc.id), { status: "limit" });
+                                continue; // Lanjut mencoba akun berikutnya di daftar
+                            } else {
+                                throw new Error(data.error.message || "Upload gagal dari server Cloudinary.");
+                            }
+                        }
+
+                        // Jika Berhasil, tambah +1 ke Total Upload Berhasil di Firebase
+                        await updateDoc(doc(db, "cloudinary_accounts", acc.id), {
+                            usageCount: (acc.usageCount || 0) + 1
+                        });
+
+                        return data.secure_url; // Mengembalikan URL file
+                        
+                    } catch (err) {
+                        console.error(`Gagal upload di akun ${acc.cloudName}:`, err);
+                        // Loop berlanjut jika masih ada akun lain
+                    }
+                }
+                
+                throw new Error("Gagal mengunggah file. Seluruh server Cloudinary mungkin menolak permintaan.");
+            }
+
+            // TOMBOL GENERATE
+            btnGenerate.addEventListener('click', async () => {
+                const mode = modelSelect.options[modelSelect.selectedIndex].getAttribute('data-mode');
+                const topLevelModel = modelSelect.value;
+                let inputPayload = {};
+
+                if (mode === 'suno-cover' && !selectedFile) return Swal.fire('Oops', 'Wajib unggah Audio Asli!', 'warning');
+                if ((mode === 'video' || mode === 'img2img') && !selectedFile) return Swal.fire('Oops', 'Wajib unggah Foto Referensi!', 'warning');
+                if (mode === 'text2img' && !promptInput.value.trim()) return Swal.fire('Oops', 'Deskripsi gambar wajib diisi!', 'warning');
+
+                btnGenerate.disabled = true;
+                resultBox.style.display = 'block';
+                
+                let fileCloudUrl = null;
+                try {
+                    // Eksekusi Logika Cloudinary Dinamis
+                    if (selectedFile) {
+                        btnGenerate.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> Mengunggah File...';
+                        resultStatus.className = 'status-badge loading';
+                        resultStatus.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> Sedang mengunggah file ke Cloud...';
+                        fileCloudUrl = await uploadToCloudinaryReal(selectedFile);
+                    }
+
+                    btnGenerate.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Mengirim ke AI...';
+                    resultStatus.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Menghubungkan ke Server Crun...';
+
+                    if (mode === 'suno' || mode === 'suno-cover') {
+                        inputPayload = {
+                            mode: sunoCustomMode.checked ? "custom" : "simple",
+                            model: "v5.5", 
+                            instrumental: sunoInstrumental.checked
+                        };
+                        
+                        if (sunoCustomMode.checked) {
+                            if (sunoTitle.value.trim()) inputPayload.title = sunoTitle.value.trim();
+                            if (sunoStyle.value.trim()) inputPayload.tags = sunoStyle.value.trim();
+                            if (!sunoInstrumental.checked) inputPayload.lyrics = sunoLyrics.value.trim();
+                            if (sunoGender.value !== 'auto') inputPayload.vocal_gender = sunoGender.value; 
+                        } else {
+                            inputPayload.prompt = sunoStyle.value.trim();
+                        }
+
+                        if (mode === 'suno-cover' && fileCloudUrl) {
+                            inputPayload.audio_url = fileCloudUrl;
+                        }
+                    } 
+                    else {
+                        inputPayload.prompt = promptInput.value.trim();
+                        if (fileCloudUrl) inputPayload.image_url = fileCloudUrl;
+                    }
+
+                    const createReq = await fetch('/api/crun', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ 
+                            model: topLevelModel,
+                            input: inputPayload 
+                        })
+                    });
+                    
+                    const responseData = await createReq.json();
+
+                    if (!createReq.ok) {
+                        throw new Error(responseData.error || responseData.message || "Gagal menghubungi Crun API");
+                    }
+
+                    resultStatus.className = 'status-badge success';
+                    resultStatus.innerHTML = '<i class="fa-solid fa-check"></i> Tugas Berhasil Dibuat!';
+                    
+                    resultContent.innerHTML = `
+                        <p style="font-size:0.85rem; color:var(--text-secondary); margin-bottom:10px;">Berhasil masuk antrean. Gunakan task_id di bawah ini untuk melihat hasilnya nanti.</p>
+                        <pre style="background:#111; color:#0f0; padding:15px; border-radius:10px; font-size:0.8rem; overflow:auto; max-height: 300px;">${JSON.stringify(responseData, null, 2)}</pre>
+                    `;
+                    
+                    btnGenerate.disabled = false;
+                    btnGenerate.innerHTML = '<i class="fa-solid fa-bolt"></i> Buat Lagi';
+
+                } catch (err) {
+                    resultStatus.className = 'status-badge error';
+                    resultStatus.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i> Gagal';
+                    resultContent.innerHTML = `<p style="color:#EF4444; font-size:0.9rem;">${err.message}</p>`;
+                    if(err.details) {
+                        resultContent.innerHTML += `<br><pre style="background:#fde8e8; color:#9b1c1c; padding:10px; border-radius:8px; font-size:0.75rem;">${err.details}</pre>`;
+                    }
+                    
+                    btnGenerate.disabled = false;
+                    btnGenerate.innerHTML = '<i class="fa-solid fa-rotate-right"></i> Coba Lagi';
+                }
+            });
+        });
+    </script>
+</body>
+</html>
