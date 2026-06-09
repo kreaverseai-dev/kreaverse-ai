@@ -1507,7 +1507,7 @@
             }
         });
 
-        // REAL SERVER KREAVERSE BLOB DL (Diperbarui: Hapus Redirect Paksa & Kunci Ekstensi MP3/MP4)
+        // REAL SERVER KREAVERSE BLOB DL (Diperbarui: Solusi CORS Server Sibuk dengan Multi-Proxy Routing)
         realDownloadBtn.addEventListener('click', async () => {
             if (!resolvedMediaUrl) return;
             const container = document.getElementById('real-download-progress-container');
@@ -1516,17 +1516,32 @@
             const speedEl = document.getElementById('real-download-speed');
             
             container.classList.remove('hidden');
-            fill.style.width = '0%'; text.innerText = '0%'; speedEl.innerText = 'Menghubungkan...';
+            fill.style.width = '0%'; text.innerText = '0%'; speedEl.innerText = 'Mencari rute server...';
             
             try {
-                let response;
-                try {
-                    response = await fetch(resolvedMediaUrl);
-                    if (!response.ok) throw new Error('Gagal');
-                } catch (corsErr) {
-                    response = await fetch("/api/ytdl?targetUrl=" + encodeURIComponent(resolvedMediaUrl));
-                    if (!response.ok) throw new Error('Gagal proxy');
+                let response = null;
+                // MULTI-LAYER ROUTING: Mencegah 'Server Sibuk' akibat blokir CORS dari platform asal
+                const fetchRoutes = [
+                    resolvedMediaUrl, // 1. Direct fetch
+                    "https://corsproxy.io/?" + encodeURIComponent(resolvedMediaUrl), // 2. Public proxy 1 (handal untuk media)
+                    "/api/ytdl?targetUrl=" + encodeURIComponent(resolvedMediaUrl) // 3. Local proxy Kreaverse
+                ];
+
+                for (const route of fetchRoutes) {
+                    try {
+                        const testRes = await fetch(route);
+                        if (testRes.ok) {
+                            response = testRes;
+                            break; // Berhenti jika salah satu rute berhasil menembus keamanan
+                        }
+                    } catch (err) {
+                        continue; // Jika rute ini diblokir, coba rute selanjutnya
+                    }
                 }
+
+                if (!response) throw new Error('Semua rute server terblokir');
+                
+                speedEl.innerText = 'Menghubungkan...';
                 
                 const contentLength = response.headers.get('content-length');
                 const total = contentLength ? parseInt(contentLength, 10) : 0;
@@ -1580,13 +1595,12 @@
                 
             } catch(e) {
                 console.error(e);
-                text.innerText = 'Koneksi Terputus'; 
-                speedEl.innerText = 'Gagal memproses via server Kreaverse';
+                text.innerText = 'Gagal Mengunduh'; 
+                speedEl.innerText = 'Sistem keamanan media ketat';
                 setTimeout(() => {
                     container.classList.add('hidden');
                 }, 3500);
-                // Dihapus: window.location.href = resolvedMediaUrl; agar tidak redirect ke link raw yang bikin format berubah
-                showIphoneNotif('Server Sibuk', 'Gunakan tombol Simpan ke Galeri', 'fa-triangle-exclamation');
+                showIphoneNotif('Gunakan Tombol Lain', 'Server gagal tembus. Coba klik Simpan ke Galeri', 'fa-triangle-exclamation');
             }
         });
 
