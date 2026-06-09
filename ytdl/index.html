@@ -1507,7 +1507,7 @@
             }
         });
 
-        // REAL SERVER KREAVERSE BLOB DL (Diperbarui untuk Force MIME/Ext)
+        // REAL SERVER KREAVERSE BLOB DL (Diperbarui: Hapus Redirect Paksa & Kunci Ekstensi MP3/MP4)
         realDownloadBtn.addEventListener('click', async () => {
             if (!resolvedMediaUrl) return;
             const container = document.getElementById('real-download-progress-container');
@@ -1580,11 +1580,13 @@
                 
             } catch(e) {
                 console.error(e);
-                text.innerText = 'Rute alternatif...'; speedEl.innerText = 'Mengalihkan ke Browser...';
+                text.innerText = 'Koneksi Terputus'; 
+                speedEl.innerText = 'Gagal memproses via server Kreaverse';
                 setTimeout(() => {
                     container.classList.add('hidden');
-                    window.location.href = resolvedMediaUrl; // Paksa download di HP
-                }, 2000);
+                }, 3500);
+                // Dihapus: window.location.href = resolvedMediaUrl; agar tidak redirect ke link raw yang bikin format berubah
+                showIphoneNotif('Server Sibuk', 'Gunakan tombol Simpan ke Galeri', 'fa-triangle-exclamation');
             }
         });
 
