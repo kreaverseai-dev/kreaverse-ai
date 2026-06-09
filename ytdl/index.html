@@ -50,8 +50,8 @@
             flex-direction: column;
             align-items: center;
         }
-        .hero-title { font-size: 1.7rem; font-weight: 800; color: var(--text-primary); margin-bottom: 12px; line-height: 1.3; letter-spacing: -0.3px; }
-        .hero-subtitle { font-size: 0.9rem; color: var(--text-secondary); max-width: 650px; margin: 0 auto 25px; line-height: 1.5; }
+        .hero-title { font-size: 2rem; font-weight: 800; color: var(--text-primary); margin-bottom: 12px; line-height: 1.3; letter-spacing: -0.5px; }
+        .hero-subtitle { font-size: 0.95rem; color: var(--text-secondary); max-width: 650px; margin: 0 auto 25px; line-height: 1.6; }
 
         /* FORMAT TOGGLE */
         .format-toggle { display: inline-flex; background: #FFFFFF; border-radius: 30px; padding: 4px; box-shadow: var(--shadow-sm); border: 1px solid var(--border-color); margin-bottom: 30px; }
@@ -80,7 +80,7 @@
         @keyframes shimmerProgress { 0% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
         .progress-footer { display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--text-light); margin-top: 8px; font-family: monospace; }
 
-        /* SETTINGS PILLS - REVISI 10 (Lebih Rapi & Elegan) */
+        /* SETTINGS PILLS */
         .settings-pills { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 12px; max-width: 800px; margin: 0 auto 30px; }
         .pill { background: #FFFFFF; border: 1px solid var(--border-color); padding: 10px 18px; border-radius: 30px; font-size: 0.85rem; font-weight: 600; color: var(--text-secondary); cursor: pointer; transition: var(--transition); display: inline-flex; align-items: center; gap: 8px; box-shadow: var(--shadow-sm); }
         .pill:hover { border-color: var(--accent-color); color: var(--text-primary); transform: translateY(-2px); box-shadow: var(--shadow-md); }
@@ -94,7 +94,7 @@
         
         /* MEDIA PLAYER */
         .media-player-wrapper { position: relative; width: 100%; border-radius: 16px; overflow: hidden; background: #000; margin-bottom: 20px; display: flex; align-items: center; justify-content: center; aspect-ratio: 16/9; z-index: 1; }
-        .media-player-wrapper.audio-mode { background: linear-gradient(135deg, #1E1B4B, #4338CA); aspect-ratio: auto; padding: 40px 20px 20px; flex-direction: column; }
+        .media-player-wrapper.audio-mode { background: linear-gradient(135deg, #1E1B4B, #4338CA); aspect-ratio: auto; padding: 60px 20px 20px; flex-direction: column; }
         .media-player-wrapper:fullscreen { width: 100vw; height: 100vh; border-radius: 0; }
         .media-player-wrapper:-webkit-full-screen { width: 100vw; height: 100vh; border-radius: 0; }
         
@@ -120,12 +120,14 @@
         .eq-bar:nth-child(5) { animation-delay: 0.2s; height: 50%; }
         @keyframes eqBounce { 0% { transform: scaleY(0.3); } 100% { transform: scaleY(1); } }
 
-        /* WATERMARK (REVISI 3 & 7 - Shimmer Sweep pada Bintang 8 Penjuru) */
-        .player-watermark { position: absolute; top: 15px; right: 15px; width: 120px; height: 35px; z-index: 10; pointer-events: none; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.6)); }
-        .media-player-wrapper.audio-mode .player-watermark { top: 20px; right: 20px; display: block; }
+        /* WATERMARK Sempurna 100% (Identik & Shimmer Putih) */
+        .player-watermark { position: absolute; top: 15px; right: 15px; width: 130px; height: 35px; z-index: 10; pointer-events: none; filter: drop-shadow(0 2px 6px rgba(0,0,0,0.7)); overflow: hidden; }
         .media-player-wrapper:fullscreen .player-watermark { width: 150px; height: 45px; top: 25px; right: 25px; }
+        /* Animasi kilau cahaya menyapu (sweep) */
+        .shimmer-sweep { position: absolute; top: 0; left: -100%; width: 50%; height: 100%; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.7), transparent); transform: skewX(-20deg); animation: sweepAnim 3s linear infinite; }
+        @keyframes sweepAnim { 0% { left: -100%; } 100% { left: 200%; } }
 
-        /* CONTROLS (REVISI 2 & 8 - Z-Index diperbaiki) */
+        /* CONTROLS */
         .player-controls { position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(to top, rgba(0,0,0,0.8), transparent); padding: 30px 20px 15px; display: flex; align-items: center; gap: 15px; z-index: 10; transition: opacity 0.3s; }
         .media-player-wrapper.audio-mode .player-controls { position: relative; background: transparent; padding: 15px 0 0; width: 100%; max-width: 400px; }
         
@@ -147,7 +149,6 @@
         .result-info strong { color: var(--text-primary); }
         .action-buttons { display: flex; flex-direction: column; gap: 12px; }
         
-        /* REVISI 9 - Tombol Unduh Premium */
         .btn-save-gallery { width: 100%; padding: 16px; background: linear-gradient(135deg, var(--accent-color), #8B5CF6); color: #FFF; border: none; border-radius: 16px; font-size: 1.05rem; font-weight: 700; cursor: pointer; transition: var(--transition); display: flex; align-items: center; justify-content: center; gap: 10px; box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3); }
         .btn-save-gallery:hover { background: linear-gradient(135deg, #4F46E5, #7C3AED); transform: translateY(-2px); box-shadow: 0 8px 20px rgba(99, 102, 241, 0.4); }
         
@@ -175,15 +176,6 @@
         .feature-title { font-size: 1.05rem; font-weight: 700; margin-bottom: 8px; }
         .feature-desc { font-size: 0.85rem; color: var(--text-secondary); line-height: 1.6; }
 
-        /* FAQ SECTION */
-        .faq-container { max-width: 800px; margin: 0 auto; text-align: left; }
-        .faq-item { border-bottom: 1px solid var(--border-color); }
-        .faq-question { width: 100%; text-align: left; padding: 20px 0; background: none; border: none; font-size: 1rem; font-weight: 600; color: var(--text-primary); cursor: pointer; display: flex; justify-content: space-between; align-items: center; font-family: 'Plus Jakarta Sans', sans-serif; }
-        .faq-icon { transition: transform 0.3s; color: var(--text-light); }
-        .faq-item.active .faq-icon { transform: rotate(45deg); color: var(--accent-color); }
-        .faq-answer { max-height: 0; overflow: hidden; transition: max-height 0.3s ease-out; }
-        .faq-answer-inner { padding-bottom: 20px; font-size: 0.9rem; color: var(--text-secondary); line-height: 1.6; }
-
         /* FOOTER */
         .footer { background: #111827; color: #9CA3AF; padding: 60px 20px 30px; text-align: center; }
         .footer-logo { color: #FFFFFF; font-size: 1.5rem; font-weight: 800; margin-bottom: 20px; letter-spacing: -0.5px; }
@@ -192,8 +184,8 @@
         .footer-links a:hover { color: #FFFFFF; }
         .footer-bottom { border-top: 1px solid #374151; padding-top: 20px; font-size: 0.85rem; display: flex; flex-direction: column; align-items: center; gap: 10px; }
 
-        /* BOTTOM SHEETS & MODALS (REVISI 2 & 8 - Z-Index 99999 agar tidak tertutup player) */
-        .bottom-sheet-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); z-index: 99999 !important; display: flex; align-items: flex-end; justify-content: center; opacity: 0; visibility: hidden; transition: var(--transition); }
+        /* BOTTOM SHEETS */
+        .bottom-sheet-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); z-index: 99999; display: flex; align-items: flex-end; justify-content: center; opacity: 0; visibility: hidden; transition: var(--transition); }
         .bottom-sheet-overlay.active { opacity: 1; visibility: visible; }
         .bottom-sheet-content { background: var(--surface-color); width: 100%; max-width: 600px; border-radius: 24px 24px 0 0; padding: 24px; transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1); max-height: 85vh; display: flex; flex-direction: column; box-shadow: 0 -10px 40px rgba(0,0,0,0.2); }
         .bottom-sheet-overlay.active .bottom-sheet-content { transform: translateY(0); }
@@ -211,10 +203,15 @@
         .q-badge { background: #E0E7FF; color: var(--accent-color); font-size: 0.7rem; padding: 4px 10px; border-radius: 20px; font-weight: 700; margin-left: 10px; }
         .q-badge.audio { background: #F3E8FF; color: #9333EA; }
         
-        /* AUDIO BADGE IN VIDEO LIST */
         .audio-indicator-badge { font-size: 0.7rem; padding: 4px 8px; border-radius: 6px; margin-left: 8px; font-weight: 700; display: inline-flex; align-items: center; gap: 6px; }
         .audio-indicator-badge.has-audio { background: #D1FAE5; color: #059669; }
         .audio-indicator-badge.no-audio { background: #FEE2E2; color: #DC2626; }
+
+        /* IN-PLAYER MODAL (Untuk Fullscreen/Video) */
+        .in-player-sheet-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); z-index: 99999; display: flex; align-items: flex-end; justify-content: center; opacity: 0; visibility: hidden; transition: var(--transition); }
+        .in-player-sheet-overlay.active { opacity: 1; visibility: visible; }
+        .in-player-sheet-content { background: var(--surface-color); width: 100%; max-width: 600px; border-radius: 20px 20px 0 0; padding: 20px; transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1); max-height: 80%; display: flex; flex-direction: column; overflow-y: auto; }
+        .in-player-sheet-overlay.active .in-player-sheet-content { transform: translateY(0); }
 
         /* IPHONE TOAST */
         .iphone-toast-container { position: fixed; top: 15px; left: 50%; transform: translateX(-50%) translateY(-120%); background: rgba(20, 20, 20, 0.95); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); color: #FFFFFF; padding: 12px 24px; border-radius: 30px; display: flex; align-items: center; gap: 12px; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2); opacity: 0; transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1); z-index: 100000; width: max-content; max-width: 90vw; pointer-events: none; }
@@ -227,15 +224,35 @@
         /* ANIMATIONS */
         @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
         
-        /* RESPONSIVE */
+        /* RESPONSIVE KHUSUS MOBILE AGAR TIDAK KEBESARAN */
         @media (max-width: 640px) {
-            .hero-title { font-size: 1.45rem; }
-            .input-wrapper { flex-direction: column; border-radius: 24px; padding: 16px; gap: 16px; }
-            .url-input { width: 100%; text-align: center; padding: 0; }
+            .hero-title { font-size: 1.6rem; }
+            .hero-subtitle { font-size: 0.85rem; padding: 0 10px; }
+            .input-wrapper { flex-direction: column; border-radius: 24px; padding: 14px; gap: 12px; }
+            .url-input { width: 100%; text-align: center; padding: 0; font-size: 0.95rem; }
             .url-icon { display: none; }
-            .download-btn { width: 100%; justify-content: center; }
-            .settings-pills { padding: 0 10px; }
-            .pill { padding: 8px 14px; font-size: 0.8rem; }
+            .download-btn { width: 100%; justify-content: center; padding: 12px 24px; }
+            .settings-pills { padding: 0; gap: 8px; }
+            .pill { padding: 8px 12px; font-size: 0.75rem; border-radius: 20px; }
+            .pill i { font-size: 0.85rem; }
+            
+            /* Pengecilan "Cara Kerja" & "Fitur" */
+            .section-title { font-size: 1.4rem; margin-bottom: 25px; }
+            .steps-grid { gap: 20px; }
+            .step-icon-wrapper { width: 60px; height: 60px; font-size: 1.5rem; border-radius: 18px; margin-bottom: 15px; }
+            .step-title { font-size: 1rem; }
+            .step-desc { font-size: 0.85rem; }
+            .features-grid { gap: 16px; }
+            .feature-card { padding: 16px; border-radius: 16px; }
+            .feature-icon { width: 40px; height: 40px; font-size: 1.1rem; border-radius: 12px; margin-bottom: 12px; }
+            .feature-title { font-size: 0.95rem; }
+            .feature-desc { font-size: 0.8rem; }
+            
+            /* Pengecilan Pop-up Resolusi */
+            .bottom-sheet-content, .in-player-sheet-content { padding: 16px; }
+            .sheet-title { font-size: 1.05rem; }
+            .sheet-opt-btn { padding: 12px 14px; font-size: 0.85rem; border-radius: 12px; }
+            .audio-indicator-badge { font-size: 0.65rem; padding: 3px 6px; }
         }
     </style>
 </head>
@@ -245,7 +262,7 @@
     <nav class="navbar">
         <a href="/" class="back-btn" title="Kembali"><i class="fa-solid fa-arrow-left"></i></a>
         <div class="logo-container">
-            <!-- Logo Utama Atas Tengah (Bintang 8 Penjuru) -->
+            <!-- Logo Utama Kreaverse AI -->
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 60" class="krea-logo-svg">
                 <defs><linearGradient id="kreaGrad" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#D97757" /><stop offset="50%" stop-color="#AF52DE" /><stop offset="100%" stop-color="#007AFF" /></linearGradient></defs>
                 <g><path d="M 30,10 Q 30,30 50,30 Q 30,30 30,50 Q 30,30 10,30 Q 30,30 30,10 Z" fill="url(#kreaGrad)" /><path d="M 30,17 Q 30,30 43,30 Q 30,30 30,43 Q 30,30 17,30 Q 30,30 30,17 Z" fill="url(#kreaGrad)" transform="rotate(45, 30, 30)" opacity="0.85" /></g>
@@ -255,11 +272,11 @@
         <div class="nav-right"></div>
     </nav>
 
-    <!-- HERO & INPUT SECTION -->
+    <!-- HERO SECTION (Teks Diperbaiki) -->
     <section class="hero-section">
-        <h1 class="hero-title">Pusat Unduhan Kreaverse AI</h1>
+        <h1 class="hero-title">Downloader Kreaverse AI</h1>
         <div class="hero-subtitle">
-            Platform konverter media premium Anda. Unduh video dan audio secara aman dari berbagai jaringan sosial dengan kecepatan pemrosesan tinggi.
+            Platform pengunduh media premium. Unduh video dan audio resolusi tinggi dari berbagai platform sosial media secara instan, aman, dan tanpa watermark.
         </div>
 
         <div class="format-toggle">
@@ -277,7 +294,7 @@
             </div>
         </div>
 
-        <!-- PROGRESS BAR ANIMASI -->
+        <!-- PROGRESS BAR -->
         <div class="progress-container" id="progress-container">
             <div class="progress-header">
                 <span id="progress-text">Memproses dari Kreaverse AI... 0%</span>
@@ -292,12 +309,12 @@
             </div>
         </div>
 
-        <!-- REVISI 10 - TATA LETAK PILLS LEBIH RAPI & ELEGAN -->
+        <!-- SETTINGS PILLS -->
         <div class="settings-pills">
             <button class="pill" onclick="openSheet('sheet-platform')"><i class="fa-solid fa-globe"></i> <span id="label-platform">Otomatis Deteksi Link</span></button>
             <button class="pill" onclick="openSheet('sheet-server')"><i class="fa-solid fa-server"></i> <span id="label-server">Otomatis (Paling Cepat)</span></button>
             <button class="pill" onclick="openSheet('sheet-quality')"><i class="fa-solid fa-wand-magic-sparkles"></i> <span id="label-quality">Resolusi Terbaik</span></button>
-            <button class="pill" onclick="pingSemuaServer()"><i class="fa-solid fa-bolt"></i> <span id="ping-status-text">375 ms</span></button>
+            <button class="pill" onclick="pingSemuaServer()"><i class="fa-solid fa-bolt"></i> <span id="ping-status-text" style="font-weight:700;">Memuat...</span></button>
             <button class="pill" onclick="window.location.href='/berkas/'"><i class="fa-solid fa-folder-open"></i> File Kreaverse AI</button>
         </div>
         
@@ -312,41 +329,27 @@
             <!-- MEDIA PLAYER -->
             <div class="media-player-wrapper" id="media-wrapper">
                 
-                <!-- WATERMARK (REVISI 3 & 7 - Shimmer Sweep Kiri ke Kanan tanpa ubah warna logo asli) -->
+                <!-- WATERMARK (Identik dengan Header + Cahaya Nyapu) -->
                 <div class="player-watermark">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 60">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 60" style="width:100%; height:100%;">
                         <defs>
-                            <!-- Warna Base -->
-                            <linearGradient id="kreaGradBase" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <linearGradient id="kreaGradWM" x1="0%" y1="0%" x2="100%" y2="100%">
                                 <stop offset="0%" stop-color="#D97757" />
                                 <stop offset="50%" stop-color="#AF52DE" />
                                 <stop offset="100%" stop-color="#007AFF" />
                             </linearGradient>
-                            <!-- Efek Kilap Putih Berjalan -->
-                            <linearGradient id="shimmerSweep" x1="-100%" y1="0%" x2="0%" y2="0%">
-                                <stop offset="0%" stop-color="rgba(255,255,255,0)" />
-                                <stop offset="50%" stop-color="rgba(255,255,255,0.9)" />
-                                <stop offset="100%" stop-color="rgba(255,255,255,0)" />
-                                <animate attributeName="x1" values="-100%; 200%" dur="3s" repeatCount="indefinite" />
-                                <animate attributeName="x2" values="0%; 300%" dur="3s" repeatCount="indefinite" />
-                            </linearGradient>
                         </defs>
-                        <!-- Layer 1: Logo Berwarna -->
                         <g>
-                            <path d="M 30,10 Q 30,30 50,30 Q 30,30 30,50 Q 30,30 10,30 Q 30,30 30,10 Z" fill="url(#kreaGradBase)" />
-                            <path d="M 30,17 Q 30,30 43,30 Q 30,30 30,43 Q 30,30 17,30 Q 30,30 30,17 Z" fill="url(#kreaGradBase)" transform="rotate(45, 30, 30)" opacity="0.85" />
-                            <text x="65" y="38" font-family="'Plus Jakarta Sans', sans-serif" font-weight="800" font-size="21" fill="url(#kreaGradBase)" letter-spacing="-0.5px">Kreaverse<tspan font-weight="500"> AI</tspan></text>
-                        </g>
-                        <!-- Layer 2: Animasi Cahaya Putih (Overlap) -->
-                        <g style="mix-blend-mode: overlay;">
-                            <path d="M 30,10 Q 30,30 50,30 Q 30,30 30,50 Q 30,30 10,30 Q 30,30 30,10 Z" fill="url(#shimmerSweep)" />
-                            <path d="M 30,17 Q 30,30 43,30 Q 30,30 30,43 Q 30,30 17,30 Q 30,30 30,17 Z" fill="url(#shimmerSweep)" transform="rotate(45, 30, 30)" opacity="0.85" />
-                            <text x="65" y="38" font-family="'Plus Jakarta Sans', sans-serif" font-weight="800" font-size="21" fill="url(#shimmerSweep)" letter-spacing="-0.5px">Kreaverse<tspan font-weight="500"> AI</tspan></text>
+                            <path d="M 30,10 Q 30,30 50,30 Q 30,30 30,50 Q 30,30 10,30 Q 30,30 30,10 Z" fill="url(#kreaGradWM)" />
+                            <path d="M 30,17 Q 30,30 43,30 Q 30,30 30,43 Q 30,30 17,30 Q 30,30 30,17 Z" fill="url(#kreaGradWM)" transform="rotate(45, 30, 30)" opacity="0.85" />
+                            <text x="65" y="38" font-family="'Plus Jakarta Sans', sans-serif" font-weight="800" font-size="21" fill="url(#kreaGradWM)" letter-spacing="-0.5px">Kreaverse<tspan font-weight="500"> AI</tspan></text>
                         </g>
                     </svg>
+                    <!-- Kotak Putih yang Nyapu dari kiri ke kanan -->
+                    <div class="shimmer-sweep"></div>
                 </div>
 
-                <!-- AUDIO UI (Spotify Style) -->
+                <!-- AUDIO UI -->
                 <div class="audio-ui-container" id="audio-ui">
                     <img src="" id="audio-thumbnail" class="spotify-thumbnail" alt="Cover Music" onerror="this.src='https://i.postimg.cc/mZdwnfsm/Claude-ai-icon-svg.png'">
                     <div style="width:100%; padding: 0 10px;">
@@ -357,8 +360,9 @@
 
                 <div class="buffering-spinner hidden" id="buffering-spinner"><i class="fa-solid fa-circle-notch fa-spin" style="font-size: 2rem; color: #FFF;"></i><span id="buffering-text" style="font-size:0.85rem; margin-top:5px; color:#FFF;">Memuat media...</span></div>
                 
-                <video id="custom-video" class="video-element" playsinline preload="metadata" crossorigin="anonymous" referrerpolicy="no-referrer"></video>
-                <audio id="custom-audio" class="hidden" preload="metadata" crossorigin="anonymous" referrerpolicy="no-referrer"></audio>
+                <!-- MEDIA TAGS (Crossorigin Dihapus Agar Lancar) -->
+                <video id="custom-video" class="video-element" playsinline preload="metadata" referrerpolicy="no-referrer"></video>
+                <audio id="custom-audio" class="hidden" preload="metadata" referrerpolicy="no-referrer"></audio>
                 
                 <div class="player-controls">
                     <button class="play-pause-btn" id="play-pause-btn"><i class="fa-solid fa-play" style="margin-left:2px;"></i></button>
@@ -371,23 +375,32 @@
                             <span id="total-time">0:00</span>
                         </div>
                     </div>
-                    <!-- Menu Tiga Titik -->
-                    <button class="control-icon-btn" id="player-menu-btn" title="Pengaturan Resolusi/Kualitas"><i class="fa-solid fa-ellipsis-vertical"></i></button>
+                    <button class="control-icon-btn" id="player-menu-btn" title="Pengaturan Resolusi"><i class="fa-solid fa-ellipsis-vertical"></i></button>
                     <button class="control-icon-btn fullscreen-btn" id="fullscreen-btn" title="Layar Penuh"><i class="fa-solid fa-expand"></i></button>
+                </div>
+
+                <!-- MODAL IN-PLAYER (Akan muncul DI DALAM video saat layar penuh) -->
+                <div class="in-player-sheet-overlay" id="player-settings-sheet">
+                    <div class="in-player-sheet-content">
+                        <div class="sheet-header">
+                            <div class="sheet-title" id="player-menu-title">Pengaturan Media</div>
+                            <button class="sheet-close" onclick="closeSheet('player-settings-sheet')"><i class="fa-solid fa-xmark"></i></button>
+                        </div>
+                        <div class="sheet-options" id="player-menu-options"></div>
+                    </div>
                 </div>
             </div>
 
             <div class="result-info" id="download-stats"></div>
 
             <div class="action-buttons">
-                <!-- REVISI 9 - Tombol Unduh Premium -->
                 <button id="direct-download-link" class="btn-save-gallery"><i class="fa-solid fa-cloud-arrow-down"></i> Simpan ke Galeri</button>
                 <button id="reset-btn" class="btn-secondary-action">Unduh Link Lainnya</button>
             </div>
         </div>
     </section>
 
-    <!-- HOW IT WORKS & FEATURES... (Sama seperti sebelumnya) -->
+    <!-- HOW IT WORKS & FEATURES SECTION (Sudah Dikecilkan untuk Mobile via CSS) -->
     <section class="section-container">
         <h2 class="section-title">Cara Kerja</h2>
         <div class="steps-grid">
@@ -447,13 +460,11 @@
         </div>
     </footer>
 
-    <!-- BOTTOM SHEETS -->
+    <!-- BOTTOM SHEETS UTAMA -->
     <div class="bottom-sheet-overlay" id="sheet-platform">
         <div class="bottom-sheet-content">
             <div class="sheet-header"><div class="sheet-title">Pilih Platform</div><button class="sheet-close" onclick="closeSheet('sheet-platform')"><i class="fa-solid fa-xmark"></i></button></div>
-            <div class="sheet-options" id="platform-options-container">
-                <div style="text-align:center; padding:20px; color:#999;">Memuat platform dari server...</div>
-            </div>
+            <div class="sheet-options" id="platform-options-container"><div style="text-align:center; padding:20px; color:#999;">Memuat platform...</div></div>
         </div>
     </div>
 
@@ -467,33 +478,15 @@
     <div class="bottom-sheet-overlay" id="sheet-server">
         <div class="bottom-sheet-content">
             <div class="sheet-header"><div class="sheet-title">Pilih Server</div><button class="sheet-close" onclick="closeSheet('sheet-server')"><i class="fa-solid fa-xmark"></i></button></div>
-            <div class="sheet-options" id="server-options-container">
-                <div style="text-align:center; padding:20px; color:#999;">Memuat server...</div>
-            </div>
+            <div class="sheet-options" id="server-options-container"><div style="text-align:center; padding:20px; color:#999;">Memuat server...</div></div>
         </div>
     </div>
 
-    <!-- SHEET PILIHAN KUALITAS HASIL SCANNER -->
     <div class="bottom-sheet-overlay" id="sheet-select-media">
         <div class="bottom-sheet-content">
             <div class="sheet-header"><div class="sheet-title">Format Ditemukan</div><button class="sheet-close" onclick="closeSheet('sheet-select-media'); resetUI();"><i class="fa-solid fa-xmark"></i></button></div>
             <p style="font-size:0.85rem; color:var(--text-secondary); margin-bottom:15px;">Kami menemukan beberapa variasi kualitas untuk link ini. Silakan pilih:</p>
-            <div class="sheet-options" id="scanned-media-list">
-                <!-- Diisi otomatis oleh Scanner -->
-            </div>
-        </div>
-    </div>
-
-    <!-- SHEET MENU DALAM PEMUTAR MEDIA (Diperbaiki z-index nya) -->
-    <div class="bottom-sheet-overlay" id="player-settings-sheet">
-        <div class="bottom-sheet-content">
-            <div class="sheet-header">
-                <div class="sheet-title" id="player-menu-title">Pengaturan Media</div>
-                <button class="sheet-close" onclick="closeSheet('player-settings-sheet')"><i class="fa-solid fa-xmark"></i></button>
-            </div>
-            <div class="sheet-options" id="player-menu-options">
-                <!-- Diisi otomatis oleh JavaScript -->
-            </div>
+            <div class="sheet-options" id="scanned-media-list"></div>
         </div>
     </div>
 
@@ -533,35 +526,21 @@
 
         const DEFAULT_CONFIG = { baseUrls: {}, endpoints: {} };
         let dbConfig = DEFAULT_CONFIG;
+        let isConfigLoaded = false;
 
-        // REVISI 6: Load Config Paksa saat Halaman Terbuka (Tanpa Refresh Manual)
-        async function loadConfigForce() {
-            try {
-                const docRef = doc(db, "settings", "downloader_api");
-                const docSnap = await getDoc(docRef);
-                if (docSnap.exists()) {
-                    dbConfig = docSnap.data();
-                    renderDynamicOptions();
-                    setTimeout(() => window.pingSemuaServer(), 300); 
-                }
-            } catch(e) { console.error("Auto-Fetch Config Gagal:", e); }
-        }
-        
-        // Panggil langsung
-        loadConfigForce();
-
-        // Tetap gunakan onSnapshot untuk real-time update jika admin ubah config
+        // Auto-Fetch Firebase (Tanpa Refresh)
         onSnapshot(doc(db, "settings", "downloader_api"), (docSnap) => {
             if (docSnap.exists()) {
                 dbConfig = docSnap.data();
+                isConfigLoaded = true;
                 renderDynamicOptions();
+                window.pingSemuaServer();
             }
         });
 
         let currentFormat = localStorage.getItem('kreaverse_ytdl_format') || 'video';
         let currentServer = 'auto';
         let currentPlatform = 'auto'; 
-        
         let resolvedMediaUrl = ""; 
         let resolvedFileName = "";
         let processTimer = null;
@@ -595,13 +574,15 @@
 
         const savedUrl = localStorage.getItem('kreaverse_ytdl_saved_url');
         if (savedUrl) urlInput.value = savedUrl;
-        urlInput.addEventListener('input', () => { 
-            localStorage.setItem('kreaverse_ytdl_saved_url', urlInput.value);
-        });
+        urlInput.addEventListener('input', () => { localStorage.setItem('kreaverse_ytdl_saved_url', urlInput.value); });
 
         window.openSheet = (id) => document.getElementById(id).classList.add('active');
         window.closeSheet = (id) => document.getElementById(id).classList.remove('active');
+        
         document.querySelectorAll('.bottom-sheet-overlay').forEach(overlay => {
+            overlay.addEventListener('click', (e) => { if (e.target === overlay) overlay.classList.remove('active'); });
+        });
+        document.querySelectorAll('.in-player-sheet-overlay').forEach(overlay => {
             overlay.addEventListener('click', (e) => { if (e.target === overlay) overlay.classList.remove('active'); });
         });
 
@@ -615,11 +596,8 @@
 
         function updateLiveClock() {
             const d = new Date();
-            let hours = d.getHours();
-            let minutes = d.getMinutes();
-            let ampm = hours >= 12 ? 'PM' : 'AM';
-            hours = hours % 12 || 12; 
-            minutes = minutes < 10 ? '0' + minutes : minutes;
+            let hours = d.getHours(); let minutes = d.getMinutes(); let ampm = hours >= 12 ? 'PM' : 'AM';
+            hours = hours % 12 || 12; minutes = minutes < 10 ? '0' + minutes : minutes;
             const footerEl = document.getElementById('live-clock-footer');
             if(footerEl) footerEl.innerText = `Waktu Server: ${hours}:${minutes} ${ampm} WIB`;
         }
@@ -629,9 +607,7 @@
             if ('mediaSession' in navigator) {
                 const artworkSrc = thumbSrc && !thumbSrc.includes('Claude') ? thumbSrc : 'https://i.postimg.cc/mZdwnfsm/Claude-ai-icon-svg.png';
                 navigator.mediaSession.metadata = new MediaMetadata({
-                    title: title,
-                    artist: 'Kreaverse AI Player',
-                    album: isAudio ? 'Audio Premium' : 'Video Player',
+                    title: title, artist: 'Kreaverse AI Player', album: isAudio ? 'Audio Premium' : 'Video Player',
                     artwork: [{ src: artworkSrc, sizes: '512x512', type: 'image/png' }]
                 });
                 navigator.mediaSession.setActionHandler('play', () => { if(activeMedia) { activeMedia.play(); updatePlayPauseUI(true); } });
@@ -687,18 +663,14 @@
         };
 
         window.selectServer = (val, text) => { 
-            currentServer = val; 
-            document.getElementById('label-server').innerText = text; 
-            renderDynamicOptions(); closeSheet('sheet-server'); 
-            window.pingSemuaServer(); 
+            currentServer = val; document.getElementById('label-server').innerText = text; 
+            renderDynamicOptions(); closeSheet('sheet-server'); window.pingSemuaServer(); 
         };
 
         window.pingSemuaServer = async () => {
-            const pingText = document.getElementById('ping-status-text');
-            pingText.innerText = "Menguji...";
-            pingText.style.color = "var(--text-secondary)";
-            let fastestPing = 9999;
-            let fastestServerKey = null;
+            const pingPillText = document.getElementById('ping-status-text');
+            pingPillText.innerText = "Menguji..."; pingPillText.style.color = "var(--text-secondary)";
+            let fastestPing = 9999; let fastestServerKey = null;
 
             const pingPromises = Object.entries(dbConfig.baseUrls || {}).map(async ([key, srv]) => {
                 if(!srv || !srv.url) return;
@@ -723,31 +695,29 @@
             await Promise.allSettled(pingPromises);
 
             if(fastestServerKey) {
-                pingText.innerText = `${fastestPing} ms`;
+                pingPillText.innerText = `${fastestPing} ms`;
+                if(fastestPing < 300) pingPillText.style.color = 'var(--success-color)';
+                else if(fastestPing < 800) pingPillText.style.color = '#F59E0B';
+                else pingPillText.style.color = 'var(--danger-color)';
                 return fastestServerKey;
             } else {
-                pingText.innerText = "Offline";
+                pingPillText.innerText = "Offline";
+                pingPillText.style.color = 'var(--danger-color)';
                 return null;
             }
         };
 
         function resetUI() {
             resultContainer.classList.remove('active');
-            customAudio.src = ""; customVideo.src = ""; 
-            activeMedia = null;
-            updatePlayPauseUI(false);
-            progressFill.style.width = '0%';
+            customAudio.src = ""; customVideo.src = ""; activeMedia = null;
+            updatePlayPauseUI(false); progressFill.style.width = '0%';
             currentTimeEl.innerText = '0:00'; totalTimeEl.innerText = '0:00';
-            clearInterval(processTimer);
-            document.getElementById('progress-container').classList.remove('active');
+            clearInterval(processTimer); document.getElementById('progress-container').classList.remove('active');
         }
 
         // UNIVERSAL SCANNER
         function extractMediaLinks(dataObj) {
-            let extracted = [];
-            let globalTitle = "Media Kreaverse";
-            let globalDuration = "";
-            let globalThumbnail = "";
+            let extracted = []; let globalTitle = "Media Kreaverse"; let globalDuration = ""; let globalThumbnail = "";
             const MAX_DEPTH = 10; 
 
             function findMeta(obj, depth = 0) {
@@ -859,15 +829,12 @@
             throw lastError || new Error(`Semua jalur pada server ${serverName} gagal.`);
         }
 
-        let simProgress = 0;
-        let simInterval;
+        let simProgress = 0; let simInterval;
         function startSimulatedProgress() {
-            simProgress = 0;
-            document.getElementById('progress-container').classList.add('active');
+            simProgress = 0; document.getElementById('progress-container').classList.add('active');
             simInterval = setInterval(() => {
                 if (simProgress < 90) {
-                    simProgress += Math.random() * 15;
-                    if (simProgress > 90) simProgress = 90;
+                    simProgress += Math.random() * 15; if (simProgress > 90) simProgress = 90;
                     document.getElementById('progress-bar-fill').style.width = `${simProgress}%`;
                     document.getElementById('progress-text').innerText = `Memproses... ${Math.floor(simProgress)}%`;
                     document.getElementById('progress-speed').innerText = `${(Math.random() * 5 + 2).toFixed(1)} MB/s`;
@@ -877,17 +844,18 @@
         }
 
         function completeProgress() {
-            clearInterval(simInterval);
-            document.getElementById('progress-bar-fill').style.width = `100%`;
+            clearInterval(simInterval); document.getElementById('progress-bar-fill').style.width = `100%`;
             document.getElementById('progress-text').innerText = `Selesai 100%`;
             setTimeout(() => { document.getElementById('progress-container').classList.remove('active'); }, 1000);
         }
 
         async function processDownload(mediaUrl) {
-            // REVISI 6: Pastikan Config sudah masuk sebelum memproses
-            if (!dbConfig || !dbConfig.baseUrls || Object.keys(dbConfig.baseUrls).length === 0) {
-                document.getElementById('progress-status-desc').innerText = "Membuka koneksi aman...";
-                await loadConfigForce();
+            // Force fetch jika koneksi pertama belum sukses
+            if (!isConfigLoaded || !dbConfig.baseUrls || Object.keys(dbConfig.baseUrls).length === 0) {
+                try {
+                    const docSnap = await getDoc(doc(db, "settings", "downloader_api"));
+                    if (docSnap.exists()) { dbConfig = docSnap.data(); isConfigLoaded = true; }
+                } catch(e) { console.error(e); }
             }
 
             let targetServerKey = currentServer;
@@ -1025,7 +993,7 @@
                 mediaWrapper.classList.remove('audio-mode'); customVideo.style.display = "block";
             }
 
-            // REVISI 5: Force Unmute agar jika ada file suaranya, otomatis bunyi
+            // Unmute paksa saat dimuat
             activeMedia.muted = false;
             activeMedia.volume = 1.0;
 
@@ -1033,23 +1001,15 @@
             resultContainer.classList.add('active');
             setTimeout(() => { resultContainer.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 100);
 
-            // Simpan riwayat
             if(isLoggedIn && userId) {
                 addDoc(collection(db, "users", userId, "downloads"), { url: urlInput.value.trim(), fileName: title, provider: provider, type: type, directUrl: url, size: size||"", thumbnail: finalThumb, timestamp: Date.now() }).catch(e=>console.log(e));
             }
             showIphoneNotif('Berhasil diproses', `Media siap dinikmati`, 'fa-circle-check');
         };
 
-        // REVISI 1, 2, 4, 8: Menu Titik Tiga & Ganti Kualitas
+        // MENU DALAM PEMUTAR - Berjalan sempurna di atas video fullscreen!
         playerMenuBtn.addEventListener('click', (e) => {
             e.stopPropagation();
-            
-            // Keluar dari Fullscreen agar modal tidak tertutup layar hitam
-            if (document.fullscreenElement || document.webkitFullscreenElement) {
-                if(document.exitFullscreen) document.exitFullscreen();
-                else if(document.webkitExitFullscreen) document.webkitExitFullscreen();
-            }
-
             const sheetList = document.getElementById('player-menu-options');
             let html = '';
             
@@ -1093,27 +1053,26 @@
             `;
 
             sheetList.innerHTML = html;
-            setTimeout(() => { openSheet('player-settings-sheet'); }, 150); // Delay sedikit agar exitFullscreen selesai
+            openSheet('player-settings-sheet'); 
         });
 
-        // REVISI 4 & 8: Ganti Source dan Reload agar tidak Blank Hitam
+        // Ganti Resolusi (Langsung di muat)
         window.changeVideoQuality = (newUrl, qualityName) => {
             if(!activeMedia) return;
             const currentTime = activeMedia.currentTime; 
             const wasPlaying = !activeMedia.paused;
             
             closeSheet('player-settings-sheet');
-            bufferingSpinner.classList.remove('hidden'); // Tampilkan loading
+            bufferingSpinner.classList.remove('hidden'); 
             
             resolvedMediaUrl = newUrl;
             activeMedia.src = newUrl;
-            activeMedia.load(); // Wajib dipanggil agar source direfresh
+            activeMedia.load(); 
             
-            // Gunakan oncanplay agar tahu kapan video siap diputar lagi
             activeMedia.oncanplay = () => {
                 activeMedia.currentTime = currentTime; 
-                activeMedia.muted = false; // REVISI 5: Pastikan tidak mute
-                if(wasPlaying) activeMedia.play().catch(e=>console.log("Auto-play distop browser", e)); 
+                activeMedia.muted = false; 
+                if(wasPlaying) activeMedia.play().catch(e=>console.log(e)); 
                 else updatePlayPauseUI(false);
                 
                 bufferingSpinner.classList.add('hidden');
@@ -1131,7 +1090,6 @@
 
         playPauseBtn.addEventListener('click', () => {
             if(!activeMedia) return;
-            // REVISI 5: Pastikan unmute jika user interaksi
             activeMedia.muted = false; 
             if (activeMedia.paused) { activeMedia.play(); updatePlayPauseUI(true); } 
             else { activeMedia.pause(); updatePlayPauseUI(false); }
@@ -1181,7 +1139,7 @@
             });
             media.addEventListener('error', () => {
                 if(media === activeMedia) {
-                    bufferingSpinner.innerHTML = `<i class="fa-solid fa-triangle-exclamation" style="font-size:2rem; color:var(--danger-color);"></i><span style="font-size:0.8rem; text-align:center; padding-top:10px;">Video Dilindungi Penyedia.<br>Silakan langsung <strong>Simpan ke Galeri</strong>.</span>`;
+                    bufferingSpinner.innerHTML = `<i class="fa-solid fa-triangle-exclamation" style="font-size:2rem; color:var(--danger-color);"></i><span style="font-size:0.8rem; text-align:center; padding-top:10px;">Media Dilindungi Penyedia.<br>Silakan langsung <strong>Simpan ke Galeri</strong>.</span>`;
                     bufferingSpinner.classList.remove('hidden');
                     updatePlayPauseUI(false);
                 }
