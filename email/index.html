@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Temp Email - Kreaverse AI</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+    
+    <link rel="stylesheet" href="../style.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <nav class="navbar">
+        <a href="/" class="back-btn"><i class="fa-solid fa-arrow-left"></i></a>
+        <div class="logo-container">
+            <i class="fa-solid fa-envelope logo-icon"></i>
+            <span class="logo-text">Temp Email</span>
+        </div>
+        <button id="theme-toggle" class="theme-btn"><i class="fa-solid fa-moon"></i></button>
+    </nav>
+
+    <main class="container">
+        <header class="hero">
+            <h1>Kotak Masuk Instan.</h1>
+            <p>Email otomatis dibuat untuk Anda. Aman dari spam, cocok untuk OTP & Verifikasi.</p>
+        </header>
+
+        <div class="email-card">
+            <div class="email-display">
+                <input type="text" id="email-address" readonly placeholder="Menghubungkan ke server...">
+                <button id="copy-btn" class="icon-btn" aria-label="Copy Email">
+                    <i class="fa-regular fa-copy"></i>
+                </button>
+            </div>
+            <button id="refresh-btn" class="primary-btn">
+                <i class="fa-solid fa-rotate-right"></i> Perbarui Kotak Masuk
+            </button>
+        </div>
+
+        <div class="inbox-section">
+            <h2>Pesan Masuk</h2>
+            <div id="inbox-container" class="inbox-container">
+                <div class="empty-state">
+                    <i class="fa-solid fa-inbox"></i><br>
+                    Menunggu pesan masuk...
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <p>&copy; 2024 Kreaverse AI. All rights reserved.</p>
+    </footer>
+
+    <div id="watermark" class="watermark">Kreaverse AI</div>
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="../script.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
