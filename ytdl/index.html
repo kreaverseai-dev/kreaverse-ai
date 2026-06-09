@@ -31,16 +31,15 @@
         a { text-decoration: none; color: inherit; }
         .hidden { display: none !important; }
 
-        /* NAVBAR (Presisi Tengah & Diperbesar) */
+        /* NAVBAR */
         .navbar { display: flex; justify-content: space-between; align-items: center; padding: 16px 5%; background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(10px); position: fixed; top: 0; width: 100%; z-index: 1000; border-bottom: 1px solid rgba(229, 231, 235, 0.5); }
         .back-btn { font-size: 1.2rem; color: var(--text-secondary); transition: var(--transition); padding: 8px; border-radius: 50%; display: flex; align-items: center; justify-content: center; position: relative; z-index: 10; cursor: pointer; }
         .back-btn:hover { color: var(--text-primary); background-color: #F3F4F6; }
-        
         .logo-container { display: flex; align-items: center; justify-content: center; width: 160px; height: 38px; position: absolute; left: 50%; transform: translateX(-50%); z-index: 5; pointer-events: none; }
         .krea-logo-svg { width: 100%; height: 100%; display: block; }
         .nav-right { width: 36px; } 
 
-        /* HERO SECTION TYPOGRAPHY EKSKLUSIF */
+        /* HERO SECTION */
         .hero-section {
             position: relative;
             padding: 110px 20px 40px;
@@ -55,21 +54,19 @@
         .hero-title { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 2.6rem; font-weight: 900; color: #111827; margin-bottom: 15px; line-height: 1.1; letter-spacing: -1.5px; }
         .hero-subtitle { font-family: 'Inter', sans-serif; font-size: 0.95rem; font-weight: 500; color: var(--text-secondary); max-width: 600px; margin: 0 auto 25px; line-height: 1.6; }
 
-        /* FORMAT TOGGLE TAB BERSIH */
+        /* FORMAT TOGGLE */
         .format-toggle { display: inline-flex; flex-wrap: wrap; justify-content: center; background: transparent; padding: 0; box-shadow: none; border: none; margin-bottom: 30px; gap: 20px; border-bottom: 2px solid var(--border-color); border-radius: 0; }
         .format-btn { padding: 8px 6px; border-radius: 0; background: transparent; font-size: 0.9rem; font-weight: 800; color: var(--text-secondary); cursor: pointer; transition: 0.2s; display: flex; align-items: center; gap: 6px; text-transform: uppercase; border-bottom: 3px solid transparent; letter-spacing: 0.5px; margin-bottom: -2px; }
         .format-btn.active { color: var(--accent-color); border-bottom-color: var(--accent-color); }
 
-        /* INPUT AREA DENGAN PASTE & CLEAR */
+        /* INPUT AREA */
         .input-container { width: 100%; max-width: 700px; position: relative; margin-bottom: 20px; z-index: 10; }
         .input-wrapper { display: flex; align-items: center; background: var(--surface-color); border-radius: 50px; padding: 6px 8px 6px 20px; box-shadow: var(--shadow-lg); border: 1px solid var(--border-color); transition: var(--transition); }
         .input-wrapper:focus-within { border-color: var(--accent-color); box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1), var(--shadow-lg); }
-        
         .url-input-area { display: flex; flex: 1; align-items: center; min-width: 0; }
         .url-icon { color: var(--text-light); font-size: 1.2rem; margin-right: 12px; }
         .url-input { flex: 1; border: none; outline: none; font-family: 'Plus Jakarta Sans', sans-serif; font-size: 1rem; color: var(--text-primary); background: transparent; padding: 12px 0; min-width: 50px; }
         .url-input::placeholder { color: var(--text-light); }
-        
         .input-actions { display: flex; align-items: center; gap: 4px; margin-right: 10px; }
         .input-action-btn { background: #F3F4F6; border: none; color: var(--text-secondary); width: 32px; height: 32px; border-radius: 50%; cursor: pointer; transition: 0.2s; font-size: 0.9rem; display: flex; align-items: center; justify-content: center; }
         .input-action-btn:hover { background: #E5E7EB; color: var(--text-primary); transform: scale(1.05); }
@@ -78,7 +75,7 @@
         .download-btn:hover:not(:disabled) { background: var(--accent-hover); transform: translateY(-2px); box-shadow: 0 6px 15px rgba(99, 102, 241, 0.4); }
         .download-btn:disabled { background: #D1D5DB; cursor: not-allowed; transform: none; box-shadow: none; }
 
-        /* PROGRESS BAR ANIMASI */
+        /* PROGRESS BAR */
         .progress-container { width: 100%; max-width: 700px; margin: 0 auto 15px; background: var(--surface-color); padding: 16px 20px; border-radius: 16px; border: 1px solid var(--border-color); box-shadow: var(--shadow-md); display: none; animation: slideUp 0.3s ease; }
         .progress-container.active { display: block; }
         .progress-header { display: flex; justify-content: space-between; font-size: 0.85rem; font-weight: 700; color: var(--text-secondary); margin-bottom: 10px; }
@@ -95,19 +92,19 @@
         .pill i { color: var(--accent-color); font-size: 1rem; }
         .yt-warning { width: 100%; text-align: center; font-size: 0.8rem; color: #F59E0B; font-weight: 800; margin-bottom: 10px; }
 
-        /* RESULT AREA */
+        /* RESULT AREA & DYNAMIC VIDEO CONTAINER */
         .result-section { width: 100%; max-width: 700px; margin: 0 auto 30px; display: none; animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1); }
         .result-section.active { display: block; }
         .result-card { background: var(--surface-color); border-radius: 24px; padding: 20px; box-shadow: var(--shadow-xl); border: 1px solid var(--border-color); }
         
-        /* MEDIA PLAYER */
         .media-player-wrapper { position: relative; width: 100%; border-radius: 16px; overflow: hidden; background: #000; margin-bottom: 20px; display: flex; align-items: center; justify-content: center; aspect-ratio: 16/9; z-index: 1; }
         .media-player-wrapper.audio-mode { background: linear-gradient(135deg, #1E1B4B, #4338CA); aspect-ratio: auto; padding: 60px 20px 20px; flex-direction: column; }
         .media-player-wrapper:fullscreen { width: 100vw; height: 100vh; border-radius: 0; }
         .media-player-wrapper:-webkit-full-screen { width: 100vw; height: 100vh; border-radius: 0; }
         
-        .video-element { width: 100%; height: 100%; object-fit: contain; display: block; transition: all 0.2s;}
-        .media-player-wrapper:fullscreen .video-element { max-height: 100vh; }
+        /* WADAH DALAM (Ini adalah kunci agar watermark tidak melayang ke area hitam) */
+        .video-container { position: relative; display: flex; align-items: center; justify-content: center; max-width: 100%; max-height: 100%; width: 100%; height: 100%; }
+        .video-element { width: 100%; height: 100%; object-fit: cover; display: block; }
         
         /* AUDIO UI */
         .audio-ui-container { display: none; flex-direction: column; align-items: center; gap: 15px; width: 100%; }
@@ -131,31 +128,33 @@
         .thumb-preview-container { display: none; position: relative; width: 100%; aspect-ratio: 16/9; background: #000; border-radius: 16px; overflow: hidden; justify-content: center; align-items: center; margin-bottom: 20px;}
         .thumb-image { width: 100%; height: 100%; object-fit: contain; }
         .thumb-watermark-overlay { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; pointer-events: none; background: rgba(0,0,0,0.15); z-index: 5;}
-
-        /* WATERMARK KIRI KE KANAN MEWAH (Durasi 7 Detik) */
-        .player-watermark { position: absolute; top: 15px; right: 15px; width: 125px; height: 32px; z-index: 10; pointer-events: none; filter: drop-shadow(0 1px 2px rgba(0,0,0,0.4)); overflow: hidden; transition: all 0.2s; }
+        
+        /* WATERMARK (Berada 100% di dalam Container) */
+        .player-watermark { position: absolute; top: 12px; right: 12px; width: 125px; height: 32px; z-index: 10; pointer-events: none; filter: drop-shadow(0 1px 2px rgba(0,0,0,0.4)); overflow: hidden; transition: opacity 0.3s; }
         .media-player-wrapper.audio-mode .player-watermark { top: 15px; right: 20px; display: block; width: 125px; height: 32px;}
-        .media-player-wrapper:fullscreen .player-watermark { width: 155px; height: 40px; }
+        .media-player-wrapper:fullscreen .player-watermark { width: 155px; height: 40px; top: 20px; right: 20px; }
 
-        /* CONTROLS (Ikon Play Lebih Kecil Premium) */
-        .player-controls { position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(to top, rgba(0,0,0,0.9), transparent); padding: 30px 20px 15px; display: flex; align-items: center; gap: 15px; z-index: 10; transition: opacity 0.3s; }
+        /* CONTROLS (Ikon Play Lebih Kecil Premium & Menghilang) */
+        .player-controls { position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(to top, rgba(0,0,0,0.9), transparent); padding: 30px 20px 15px; display: flex; align-items: center; gap: 15px; z-index: 10; transition: opacity 0.4s; opacity: 1; }
         .media-player-wrapper.audio-mode .player-controls { position: relative; background: transparent; padding: 15px 0 0; width: 100%; max-width: 400px; }
+        .hide-controls .player-controls { opacity: 0; pointer-events: none; }
         
         .play-pause-btn { width: 38px; height: 38px; border-radius: 50%; background: var(--accent-color); color: #FFF; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 1rem; flex-shrink: 0; transition: 0.2s; box-shadow: 0 4px 10px rgba(99, 102, 241, 0.4); }
         .play-pause-btn:hover { transform: scale(1.08); background: var(--accent-hover); }
         
-        .progress-area { flex: 1; display: flex; flex-direction: column; gap: 8px; }
-        .progress-bar-bg { width: 100%; height: 6px; background: rgba(255,255,255,0.3); border-radius: 4px; cursor: pointer; position: relative; overflow: hidden; }
-        .progress-bar-fill { height: 100%; background: var(--accent-color); width: 0%; border-radius: 4px; transition: width 0.1s linear; }
-        .time-display { font-size: 0.75rem; color: rgba(255,255,255,0.9); font-weight: 700; display: flex; justify-content: space-between; font-family: monospace; }
+        /* Pertebal sentuhan hitbox Progress Area untuk Slider Menit Jari */
+        .progress-area { flex: 1; display: flex; flex-direction: column; gap: 8px; padding: 10px 0; margin: -10px 0; cursor: pointer; }
+        .progress-bar-bg { width: 100%; height: 6px; background: rgba(255,255,255,0.3); border-radius: 4px; position: relative; overflow: hidden; pointer-events: none; }
+        .progress-bar-fill { height: 100%; background: var(--accent-color); width: 0%; border-radius: 4px; pointer-events: none; }
+        .time-display { font-size: 0.75rem; color: rgba(255,255,255,0.9); font-weight: 700; display: flex; justify-content: space-between; font-family: monospace; pointer-events: none; }
         
         .control-icon-btn { background: none; border: none; color: #FFF; font-size: 1.3rem; cursor: pointer; padding: 5px; transition: 0.2s; opacity: 0.9; }
         .control-icon-btn:hover { opacity: 1; transform: scale(1.1); }
         .media-player-wrapper.audio-mode .fullscreen-btn { display: none; }
 
-        /* LOADING DI TENGAH TANPA BLOKIR KLIK */
+        /* LOADING DI TENGAH */
         .centered-overlay-box { position: absolute; inset: 0; margin: auto; z-index: 20; width: max-content; height: max-content; max-width: 85%; display: flex; align-items: center; justify-content: center; pointer-events: none; }
-        .centered-box-content { background: rgba(0,0,0,0.85); padding: 18px 24px; border-radius: 16px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.5); pointer-events: none; }
+        .centered-box-content { background: rgba(0,0,0,0.85); padding: 18px 24px; border-radius: 16px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
 
         /* RESULT INFO & BUTTONS (Z-Index Tinggi agar Anti-Kunci) */
         .result-info { text-align: left; margin-bottom: 20px; padding: 15px; background: #F9FAFB; border-radius: 12px; border: 1px solid var(--border-color); }
@@ -244,11 +243,10 @@
 
         /* RESPONSIVE MOBILE */
         @media (max-width: 640px) {
-            .logo-container { width: 180px; height: 42px; } /* REVISI 9: Diperbesar di Mobile */
+            .logo-container { width: 200px; height: 48px; } 
             .hero-title { font-size: 2.1rem; letter-spacing: -1px; }
             .hero-subtitle { font-size: 0.85rem; padding: 0 10px; margin-bottom: 15px; }
             
-            /* REVISI 1: Input Actions Menyatu Sangat Rapi di Mobile */
             .input-wrapper { flex-direction: row; border-radius: 50px; padding: 6px 6px 6px 16px; gap: 8px; margin-bottom: 15px; }
             .url-input-area { display: flex; flex: 1; align-items: center; min-width: 0; }
             .url-input { padding: 10px 0; width: 100%; font-size: 0.95rem; margin:0;}
@@ -282,7 +280,6 @@
             .audio-indicator-badge { font-size: 0.65rem; padding: 3px 6px; }
             .btn-save-gallery, .btn-server-kreaverse, .btn-secondary-action { font-size: 0.9rem; padding: 14px; }
 
-            /* REVISI 7: Footer lebih kecil dan rapi di HP */
             .footer { padding: 30px 15px 20px; }
             .footer-logo { font-size: 1.3rem; }
             .footer-links { gap: 15px; }
@@ -296,8 +293,8 @@
 
     <nav class="navbar">
         <a href="/" class="back-btn" title="Kembali"><i class="fa-solid fa-arrow-left"></i></a>
-        <!-- REVISI 9: Logo Container Diperbesar Skalanya -->
         <div class="logo-container">
+            <!-- Logo Utama Kreaverse AI -->
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 60" class="krea-logo-svg">
                 <defs><linearGradient id="kreaGrad" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#D97757" /><stop offset="50%" stop-color="#AF52DE" /><stop offset="100%" stop-color="#007AFF" /></linearGradient></defs>
                 <g><path d="M 30,10 Q 30,30 50,30 Q 30,30 30,50 Q 30,30 10,30 Q 30,30 30,10 Z" fill="url(#kreaGrad)" /><path d="M 30,17 Q 30,30 43,30 Q 30,30 30,43 Q 30,30 17,30 Q 30,30 30,17 Z" fill="url(#kreaGrad)" transform="rotate(45, 30, 30)" opacity="0.85" /></g>
@@ -307,14 +304,13 @@
         <div class="nav-right"></div>
     </nav>
 
-    <!-- REVISI 5: Teks Header Mengikuti Referensi Atlantic Server (Extra Bold) -->
+    <!-- HERO SECTION (Teks Bold Ala Konsep Atlantic Server) -->
     <section class="hero-section">
         <h1 class="hero-title">Downloader<br>Kreaverse AI</h1>
         <div class="hero-subtitle">
             Platform pengunduh media premium. Unduh video dan audio resolusi tinggi dari berbagai platform sosial media secara instan, aman, dan tanpa watermark.
         </div>
 
-        <!-- REVISI 1: Pilihan Format Tab Dibuat Bersih Tanpa Bubble Background -->
         <div class="format-toggle">
             <button class="format-btn active" id="seg-video" onclick="changeFormat('video')"><i class="fa-solid fa-video"></i> VIDEO</button>
             <button class="format-btn" id="seg-audio" onclick="changeFormat('audio')"><i class="fa-solid fa-music"></i> AUDIO</button>
@@ -322,7 +318,6 @@
         </div>
 
         <div class="input-container">
-            <!-- REVISI 1: Input Actions Menyatu Sangat Rapi & Tidak Memakan Tempat -->
             <div class="input-wrapper">
                 <div class="url-input-area">
                     <i class="fa-solid fa-link url-icon"></i>
@@ -333,7 +328,6 @@
                     <button class="input-action-btn" id="clear-btn" title="Hapus Tautan"><i class="fa-solid fa-xmark"></i></button>
                 </div>
             </div>
-            <!-- Tombol unduh diletakkan rapi di bawah input pada mobile, menyatu pada desktop -->
             <button id="download-btn" class="download-btn" style="margin: 20px auto 0; display: flex; width: max-content;">
                 <span id="btn-text">Unduh Sekarang</span>
             </button>
@@ -371,7 +365,7 @@
             
             <div class="media-player-wrapper" id="media-wrapper">
                 
-                <!-- REVISI 4 & 5: WATERMARK UKURAN DIPERBESAR DAN ANIMASI DIBALIK (KIRI KE KANAN) -->
+                <!-- REVISI 2, 3: WATERMARK DI DALAM VIDEO (Bukan di background) & Fade Animasi -->
                 <div class="player-watermark" id="player-watermark">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 60" style="width:100%; height:100%;">
                         <defs>
@@ -380,7 +374,6 @@
                                 <stop offset="50%" stop-color="#AF52DE" />
                                 <stop offset="100%" stop-color="#007AFF" />
                             </linearGradient>
-                            <!-- Menyapu halus dari KIRI ke KANAN -->
                             <linearGradient id="shimmerGlow" x1="-100%" y1="0%" x2="0%" y2="0%">
                                 <stop offset="0%" stop-color="rgba(255,255,255,0)" />
                                 <stop offset="45%" stop-color="rgba(255,255,255,0)" />
@@ -396,7 +389,7 @@
                             <path d="M 30,17 Q 30,30 43,30 Q 30,30 30,43 Q 30,30 17,30 Q 30,30 30,17 Z" fill="url(#kreaGradWM)" transform="rotate(45, 30, 30)" opacity="0.85" />
                             <text x="65" y="38" font-family="'Plus Jakarta Sans', sans-serif" font-weight="800" font-size="21" fill="url(#kreaGradWM)" letter-spacing="-0.5px">Kreaverse<tspan font-weight="500"> AI</tspan></text>
                         </g>
-                        <!-- Efek cahaya putih menumpang khusus di logonya saja -->
+                        <!-- Shimmer Sweep Menumpang di dalam area isi (Teks/Logo) -->
                         <g style="mix-blend-mode: overlay;">
                             <path d="M 30,10 Q 30,30 50,30 Q 30,30 30,50 Q 30,30 10,30 Q 30,30 30,10 Z" fill="url(#shimmerGlow)" />
                             <path d="M 30,17 Q 30,30 43,30 Q 30,30 30,43 Q 30,30 17,30 Q 30,30 30,17 Z" fill="url(#shimmerGlow)" transform="rotate(45, 30, 30)" />
@@ -413,7 +406,7 @@
                     </div>
                 </div>
 
-                <!-- PREVIEW THUMBNAIL DENGAN WATERMARK TRANSPARAN 30% -->
+                <!-- PREVIEW THUMBNAIL (Transparan) -->
                 <div class="thumb-preview-container" id="thumb-preview">
                     <img src="" id="thumb-image" class="thumb-image" alt="Thumbnail Preview">
                     <div class="thumb-watermark-overlay">
@@ -424,20 +417,19 @@
                     </div>
                 </div>
 
-                <!-- LOADING & ERROR BOX (Tepat di tengah layar, compact, shadow gelap. Tidak mengunci layar) -->
+                <!-- LOADING & ERROR BOX (Tengah, tidak memblokir tombol Z-index atas) -->
                 <div class="centered-overlay-box hidden" id="buffering-spinner">
                     <div class="centered-box-content" id="buffering-content">
-                        <!-- Konten diisi dari Javascript -->
                     </div>
                 </div>
                 
                 <video id="custom-video" class="video-element" playsinline preload="metadata" referrerpolicy="no-referrer"></video>
                 <audio id="custom-audio" class="hidden" preload="metadata" referrerpolicy="no-referrer"></audio>
                 
+                <!-- REVISI 4: PENEBALAN HITBOX SLIDER & AUTO KONTROL HILANG -->
                 <div class="player-controls" id="player-controls">
-                    <!-- REVISI 6: Tombol Play Ikon Diperkecil Lebih Elegan -->
                     <button class="play-pause-btn" id="play-pause-btn"><i class="fa-solid fa-play" style="margin-left:2px;"></i></button>
-                    <div class="progress-area">
+                    <div class="progress-area" id="progress-area-click">
                         <div class="progress-bar-bg" id="progress-bg">
                             <div class="progress-bar-fill" id="progress-fill"></div>
                         </div>
@@ -463,10 +455,10 @@
 
             <div class="result-info" id="download-stats"></div>
 
-            <!-- BUTTONS DIJAMIN Z-INDEX TINGGI AGAR TIDAK TERKUNCI -->
+            <!-- BUTTONS DIJAMIN Z-INDEX TINGGI AGAR TERBEBAS DARI ERROR OVERLAY & BISA DIKLIK -->
             <div class="action-buttons">
+                <!-- METODE BARU: Direct Call to Window -->
                 <button id="direct-download-link" class="btn-save-gallery"><i class="fa-solid fa-cloud-arrow-down"></i> Simpan ke Galeri</button>
-                
                 <button id="real-download-btn" class="btn-save-gallery btn-server-kreaverse"><i class="fa-solid fa-server"></i> Unduh via Server Kreaverse AI</button>
                 
                 <div id="real-download-progress-container" class="real-dl-progress-box hidden">
@@ -482,7 +474,7 @@
         </div>
     </section>
 
-    <!-- CARA KERJA & FITUR (REVISI 7: Update Konten Terkait Thumbnail & Format Khusus) -->
+    <!-- CARA KERJA & FITUR (Revisi) -->
     <section class="section-container">
         <h2 class="section-title">Cara Kerja</h2>
         <div class="steps-grid">
@@ -491,11 +483,10 @@
                 <h3 class="step-title">1. Salin Tautan</h3>
                 <p class="step-desc">Buka aplikasi sosial media favorit Anda, cari video, musik, atau postingan, lalu salin tautannya.</p>
             </div>
-            <!-- REVISI 7: Teks Cara Kerja Thumbnail -->
             <div class="step-card">
                 <div class="step-icon-wrapper"><i class="fa-solid fa-paste"></i></div>
                 <h3 class="step-title">2. Tempel & Pilih</h3>
-                <p class="step-desc">Tempel tautan di atas, pilih format <strong style="color:var(--text-primary);">Video, Audio, atau Thumbnail</strong>, lalu klik Unduh Sekarang.</p>
+                <p class="step-desc">Tempel tautan di atas, pilih format <strong style="color:var(--text-primary);">Video, Audio, atau KREAVERSE AI THUMBNAIL</strong>, lalu klik Unduh.</p>
             </div>
             <div class="step-card">
                 <div class="step-icon-wrapper"><i class="fa-solid fa-download"></i></div>
@@ -533,7 +524,7 @@
         </div>
     </section>
 
-    <!-- FOOTER (Revisi 7: Clean White Theme & Teks Di HP tidak kebesaran) -->
+    <!-- FOOTER -->
     <footer class="footer">
         <div class="footer-logo">Kreaverse AI</div>
         <div class="footer-links">
@@ -581,6 +572,7 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
         import { getFirestore, doc, onSnapshot, collection, addDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
+        // FIREBASE SETUP
         const firebaseConfig = {
             apiKey: "AIzaSyAO8JV4jkJmbHChYvjUCS7wqfVbKr94tHM",
             authDomain: "kreaverse-ai0107.firebaseapp.com",
@@ -632,6 +624,8 @@
         let processSeconds = 0;
         let globalScannedOptions = []; 
         let isDualAudio = false; 
+        
+        let controlsTimeout; // Untuk sistem Hilang/Muncul kontrol Pemutar
 
         const btnText = document.getElementById('btn-text');
         const resultContainer = document.getElementById('result-container');
@@ -655,15 +649,17 @@
         const currentTimeEl = document.getElementById('current-time');
         const totalTimeEl = document.getElementById('total-time');
         const playerMenuBtn = document.getElementById('player-menu-btn'); 
+        const playerControlsArea = document.getElementById('player-controls');
         const ytWarningDesc = document.getElementById('yt-warning-text');
         let activeMedia = null;
 
+        // IKON TOMBOL TEMPEL & HAPUS
         document.getElementById('clear-btn').addEventListener('click', () => {
             urlInput.value = ''; urlInput.focus();
         });
         document.getElementById('paste-btn').addEventListener('click', async () => {
             try { urlInput.value = await navigator.clipboard.readText(); } 
-            catch(e) { console.log('Paste gagal', e); }
+            catch(e) { showIphoneNotif('Akses Gagal', 'Gagal membaca clipboard/salinan.', 'fa-triangle-exclamation'); }
         });
 
         const savedUrl = localStorage.getItem('kreaverse_ytdl_saved_url');
@@ -677,11 +673,9 @@
             overlay.addEventListener('click', (e) => { if (e.target === overlay) overlay.classList.remove('active'); });
         });
 
-        // REVISI 3: AUTO RESET KEADAAN SAAT GANTI TAB AGAR TIDAK ERROR/STUCK
+        // REVISI: PASTIKAN AUTO-RESET MENGHILANGKAN SEMUA ERROR LAMA SAAT GANTI TAB FORMAT
         window.changeFormat = (format) => {
-            if (currentFormat !== format) {
-                resetUI(); 
-            }
+            if (currentFormat !== format) resetUI(); 
             
             currentFormat = format;
             localStorage.setItem('kreaverse_ytdl_format', format); 
@@ -822,8 +816,9 @@
             clearInterval(processTimer); document.getElementById('progress-container').classList.remove('active');
             document.getElementById('real-download-progress-container').classList.add('hidden');
             
-            // REVISI: Pastikan box Error Merah sembunyi saat ganti tab / reset
+            // PENGHAPUSAN ERROR LAMA SECARA BERSIH
             bufferingSpinner.classList.add('hidden'); 
+            bufferingContent.innerHTML = '';
             
             document.getElementById('thumb-preview').style.display = "none";
             document.getElementById('thumb-image').src = "";
@@ -1034,7 +1029,7 @@
                         { url: `https://i.ytimg.com/vi/${ytid}/mqdefault.jpg`, quality: 'MQ (Kualitas Ringan)', type: 'thumb', ext: 'JPG' }
                     ];
                 } else if (extractedData.thumbnail) {
-                    thumbOpts.push({ url: extractedData.thumbnail, quality: 'Original Asli', type: 'thumb', ext: 'JPG' });
+                    thumbOpts.push({ url: extractedData.thumbnail, quality: 'Original (Kualitas Asli)', type: 'thumb', ext: 'JPG' });
                 } else {
                     throw new Error("Gambar thumbnail/cover tidak ditemukan untuk platform ini.");
                 }
@@ -1139,6 +1134,7 @@
             if (type === 'thumb') {
                 mediaWrapper.classList.remove('audio-mode'); customVideo.style.display = "none";
                 document.getElementById('audio-ui').style.display = "none";
+                
                 document.getElementById('player-controls').style.display = "none";
                 document.getElementById('player-watermark').style.display = "none";
                 document.getElementById('real-download-btn').classList.add('hidden'); 
@@ -1150,20 +1146,16 @@
             } else if (type === 'video') {
                 isDualAudio = false;
                 const bestAudio = globalScannedOptions.filter(o => o.type === 'audio').sort((a, b) => parseInt(b.quality) - parseInt(a.quality))[0];
-                
-                // Mencegah error jika audio track tidak valid/kosong
                 if (bestAudio && bestAudio.url) { 
-                    customAudio.src = bestAudio.url; 
-                    isDualAudio = true; 
-                    customVideo.muted = true; 
-                } else { 
-                    customVideo.muted = false; 
-                }
+                    customAudio.src = bestAudio.url; isDualAudio = true; customVideo.muted = true; 
+                } 
+                else { customVideo.muted = false; }
                 
                 activeMedia = customVideo; customVideo.src = url;
                 mediaWrapper.classList.remove('audio-mode'); customVideo.style.display = "block";
                 document.getElementById('audio-ui').style.display = "none";
                 document.getElementById('thumb-preview').style.display = "none";
+                
                 document.getElementById('player-controls').style.display = "flex";
                 document.getElementById('player-watermark').style.display = "block";
                 document.getElementById('real-download-btn').classList.remove('hidden');
@@ -1173,6 +1165,7 @@
                 mediaWrapper.classList.add('audio-mode'); customVideo.style.display = "none";
                 document.getElementById('audio-ui').style.display = "flex";
                 document.getElementById('thumb-preview').style.display = "none";
+                
                 document.getElementById('player-controls').style.display = "flex";
                 document.getElementById('player-watermark').style.display = "block";
                 document.getElementById('real-download-btn').classList.remove('hidden');
@@ -1184,6 +1177,7 @@
 
             if(isLoggedIn && userId) {
                 addDoc(collection(db, "users", userId, "downloads"), { url: urlInput.value.trim(), fileName: title, provider: provider, type: type, ext: finalExt.toUpperCase(), directUrl: url, size: size||"", thumbnail: finalThumb, timestamp: Date.now() })
+                .then(()=>console.log("Riwayat Disimpan"))
                 .catch(e=>console.log(e));
             }
             showIphoneNotif('Berhasil diproses', `Media siap dinikmati`, 'fa-circle-check');
@@ -1268,6 +1262,7 @@
             showIphoneNotif('Resolusi Diubah', `Kualitas disesuaikan ke ${qualityName}`, 'fa-wand-magic-sparkles');
         };
 
+        // PELACAKAN BINGKAI WATERMARK VIDEO DINAMIS (Sangat Akurat)
         function adjustVideoWatermark() {
             if (currentFormat !== 'video' || activeMedia !== customVideo || !customVideo.videoWidth) return;
             const wrapper = document.getElementById('media-wrapper');
@@ -1280,11 +1275,9 @@
             
             let actW, actH;
             if (wRatio > vRatio) {
-                actH = wRect.height;
-                actW = actH * vRatio;
+                actH = wRect.height; actW = actH * vRatio;
             } else {
-                actW = wRect.width;
-                actH = actW / vRatio;
+                actW = wRect.width; actH = actW / vRatio;
             }
             
             const offX = (wRect.width - actW) / 2;
@@ -1302,6 +1295,33 @@
             return `${m}:${s < 10 ? '0' : ''}${s}`;
         }
 
+        // SISTEM TAP HILANGKAN KONTROL (SEPERTI YOUTUBE)
+        function togglePlayerControls() {
+            if(currentFormat !== 'video') return; 
+            playerControlsArea.parentNode.classList.toggle('hide-controls');
+        }
+        
+        // Timer otomatis menyembunyikan kontrol jika mouse diam (khusus Desktop)
+        function resetControlsTimer() {
+            if(currentFormat !== 'video') return;
+            playerControlsArea.parentNode.classList.remove('hide-controls');
+            clearTimeout(controlsTimeout);
+            controlsTimeout = setTimeout(() => {
+                if(activeMedia && !activeMedia.paused) {
+                    playerControlsArea.parentNode.classList.add('hide-controls');
+                }
+            }, 3000);
+        }
+
+        // Tap di area mana pun pada video memanggil interaksi/hilang
+        mediaWrapper.addEventListener('click', (e) => {
+            // Jangan memicu jika yang diklik adalah progress bar atau tombol
+            if(e.target.closest('#player-controls')) return; 
+            togglePlayerControls();
+        });
+
+        mediaWrapper.addEventListener('mousemove', resetControlsTimer);
+
         playPauseBtn.addEventListener('click', () => {
             if(!activeMedia) return;
             if (activeMedia.paused) { 
@@ -1311,6 +1331,7 @@
                 activeMedia.pause(); updatePlayPauseUI(false); 
                 if(isDualAudio) customAudio.pause();
             }
+            resetControlsTimer();
         });
 
         fullscreenBtn.addEventListener('click', () => {
@@ -1322,6 +1343,7 @@
                 if (document.exitFullscreen) document.exitFullscreen();
                 else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
             }
+            resetControlsTimer();
         });
 
         document.addEventListener('fullscreenchange', () => {
@@ -1349,6 +1371,7 @@
             media.addEventListener('ended', () => {
                 if(media !== activeMedia) return;
                 updatePlayPauseUI(false); progressFill.style.width = '0%';
+                playerControlsArea.parentNode.classList.remove('hide-controls');
             });
             media.addEventListener('seeked', () => {
                 if(media === activeMedia && isDualAudio) customAudio.currentTime = activeMedia.currentTime;
@@ -1374,6 +1397,7 @@
                     clearInterval(bufferSimInterval);
                     if(isDualAudio && !activeMedia.paused) customAudio.play().catch(e=>{});
                     adjustVideoWatermark();
+                    resetControlsTimer();
                 } 
             });
             media.addEventListener('error', () => {
@@ -1391,42 +1415,55 @@
             });
         });
 
-        progressBg.addEventListener('click', (e) => {
+        // HITBOX TEBAL PADA GARIS WAKTU (KLIK DARI KOTAK LUAR)
+        const progressAreaClick = document.getElementById('progress-area-click');
+        progressAreaClick.addEventListener('click', (e) => {
             if(!activeMedia || !activeMedia.duration) return;
-            const rect = progressBg.getBoundingClientRect();
-            activeMedia.currentTime = ((e.clientX - rect.left) / rect.width) * activeMedia.duration;
+            const rect = progressAreaClick.getBoundingClientRect();
+            // Cek posisinya berdasarkan padding terluar, agar sentuhan lebih peka
+            const relativeX = (e.clientX - rect.left);
+            const percentage = Math.max(0, Math.min(1, relativeX / rect.width));
+            activeMedia.currentTime = percentage * activeMedia.duration;
             if(isDualAudio) customAudio.currentTime = activeMedia.currentTime;
+            resetControlsTimer();
         });
 
-        // REVISI 2: DOWNLOAD STANDAR + FALLBACK THUMBNAIL
+        // REVISI 2: DOWNLOAD DIRECT (WINDOW.LOCATION UNTUK PAKSA HP MENGUNDUH)
         directDownloadLink.addEventListener('click', async () => {
             if (!resolvedMediaUrl) return;
             showIphoneNotif('Menyiapkan Berkas...', 'Mengamankan jalur unduhan ke perangkat Anda.', 'fa-cloud-arrow-down');
             
-            // JIKA THUMBNAIL, COBA UNDUH LANGSUNG/PROXY, JIKA GAGAL JALUR STANDAR (REVISI PENTING)
+            // JIKA THUMBNAIL, GUNAKAN FETCH LANGSUNG LALU JADIKAN BLOB LOCAL
             if (currentFormat === 'thumb') {
                 try {
-                    const response = await fetch("/api/ytdl?targetUrl=" + encodeURIComponent(resolvedMediaUrl));
-                    if (!response.ok) throw new Error('Proxy Gagal');
+                    const response = await fetch(resolvedMediaUrl);
+                    if (!response.ok) throw new Error('CORS');
                     const blob = await response.blob();
                     const objUrl = URL.createObjectURL(blob);
+                    
                     const a = document.createElement('a'); 
-                    a.href = objUrl; a.download = resolvedFileName;
-                    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+                    a.href = objUrl; 
+                    a.download = resolvedFileName;
+                    document.body.appendChild(a); 
+                    a.click(); 
+                    document.body.removeChild(a);
+                    
                     setTimeout(() => URL.revokeObjectURL(objUrl), 5000);
                     return;
                 } catch(e) {
-                    console.log('Fallback ke download thumbnail biasa', e);
+                    // Fallback (Lewat tab baru HP)
+                    window.open(resolvedMediaUrl, '_blank');
+                    return;
                 }
             }
 
-            // STANDAR (BUKA TAB BARU ATAU DOWNLOAD LANGSUNG)
+            // STANDAR MEDIA: Buka langsung di window HP (Otomatis ditangkap Pengunduh Sistem)
             setTimeout(() => {
-                const a = document.createElement('a'); a.href = resolvedMediaUrl; a.target = '_blank'; a.rel = 'noopener noreferrer'; a.download = resolvedFileName;
-                document.body.appendChild(a); a.click(); document.body.removeChild(a);
+                window.location.href = resolvedMediaUrl;
             }, 800);
         });
 
+        // REAL SERVER KREAVERSE BLOB DL
         realDownloadBtn.addEventListener('click', async () => {
             if (!resolvedMediaUrl) return;
             const container = document.getElementById('real-download-progress-container');
@@ -1490,10 +1527,10 @@
                 
             } catch(e) {
                 console.error(e);
-                text.innerText = 'Rute alternatif...'; speedEl.innerText = 'Mengalihkan...';
+                text.innerText = 'Rute alternatif...'; speedEl.innerText = 'Mengalihkan ke Browser...';
                 setTimeout(() => {
                     container.classList.add('hidden');
-                    document.getElementById('direct-download-link').click(); 
+                    window.location.href = resolvedMediaUrl; // Paksa download di HP
                 }, 2000);
             }
         });
