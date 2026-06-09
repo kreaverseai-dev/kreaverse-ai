@@ -1,0 +1,1303 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Kreaverse AI</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@500;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="claude-layout">
+
+    <header class="chat-navbar-top">
+        <button id="mobile-menu-btn" class="menu-hamburger-btn">
+            <div class="hamburger-lines">
+                <span></span>
+                <span></span>
+            </div>
+        </button>
+        
+        <div class="navbar-center-model">
+            <span class="model-badge" id="home-model-btn" style="white-space: nowrap;">
+                <img src="https://i.postimg.cc/mZdwnfsm/Claude-ai-icon-svg.png" class="model-logo-img claude-logo" alt="Claude AI">
+                <span class="model-btn-text-span">Claude Opus 4.8</span>
+                <i class="fa-solid fa-chevron-down dropdown-arrow-icon"></i>
+            </span>
+            
+            <div class="model-dropdown hidden" id="home-model-dropdown">
+                <div class="model-opt-row" data-model="GPT-5.5">
+                    <div class="model-header">
+                        <img src="https://i.postimg.cc/503k2nR3/Chat-GPT-logo-svg.png" class="model-logo-img openai-logo" alt="ChatGPT">
+                        <span class="model-text">GPT-5.5</span> 
+                        <span class="badge-premium">Premium</span>
+                        <span class="badge-new">New</span>
+                    </div>
+                    <div class="model-desc">Dioptimalkan untuk penalaran kompleks, pemrograman, multimodal, dan dokumen panjang.</div>
+                </div>
+
+                <div class="model-opt-row" data-model="Claude Opus 4.8">
+                    <div class="model-header">
+                        <img src="https://i.postimg.cc/mZdwnfsm/Claude-ai-icon-svg.png" class="model-logo-img" alt="Claude AI">
+                        <span class="model-text">Claude Opus 4.8</span>
+                        <span class="badge-premium">Premium</span>
+                        <span class="badge-new">New</span>
+                    </div>
+                    <div class="model-desc">Mengobrol dengan Claude Opus 4.8: Selesaikan tugas, buat kode, dan dapatkan jawaban andal secara instan.</div>
+                </div>
+
+                <div class="model-opt-row" data-model="Gemini 3.1 Pro">
+                    <div class="model-header">
+                        <img src="https://i.postimg.cc/FFPZ654G/Google-G-logo-svg.png" class="model-logo-img" alt="Gemini">
+                        <span class="model-text">Gemini 3.1 Pro</span>
+                        <span class="badge-premium">Premium</span>
+                    </div>
+                    <div class="model-desc">Gunakan Gemini 3.1 Pro untuk memecahkan masalah, menganalisis, berkreasi, mengode, dan membangun solusi cerdas.</div>
+                </div>
+
+                <div class="model-opt-row" data-model="DeepSeek V4 Pro">
+                    <div class="model-header">
+                        <img src="https://i.postimg.cc/7PBVR8kG/deepseek-color.png" class="model-logo-img" alt="DeepSeek">
+                        <span class="model-text">DeepSeek V4 Pro</span>
+                        <span class="badge-premium">Premium</span>
+                        <span class="badge-new">New</span>
+                    </div>
+                    <div class="model-desc">Dioptimalkan untuk penalaran kompleks, pemrograman, multimodal, dan dokumen panjang.</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="navbar-right">
+            <a href="/login/index.html" class="top-auth-btn-pill btn-masuk-notif" id="top-auth-btn">Masuk</a>
+            <div class="top-profile-circle hidden" id="top-user-avatar">P</div>
+        </div>
+    </header>
+
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
+    <aside id="sidebar" class="claude-sidebar">
+        <div class="sidebar-header" style="display:flex; align-items:center; justify-content:space-between; padding:15px 20px; border-bottom:1px solid var(--border-color); height:60px; flex-shrink:0;">
+            <div style="display:flex; align-items:center; width:160px; height:40px;">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 60" style="width:100%; height:100%; display:block;">
+                  <defs>
+                    <linearGradient id="kreaGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" stop-color="#D97757" />
+                      <stop offset="50%" stop-color="#AF52DE" />
+                      <stop offset="100%" stop-color="#007AFF" />
+                    </linearGradient>
+                  </defs>
+                  <g id="kreaverse-star">
+                    <path d="M 30,10 Q 30,30 50,30 Q 30,30 30,50 Q 30,30 10,30 Q 30,30 30,10 Z" fill="url(#kreaGradient)" />
+                    <path d="M 30,17 Q 30,30 43,30 Q 30,30 30,43 Q 30,30 17,30 Q 30,30 30,17 Z" fill="url(#kreaGradient)" transform="rotate(45, 30, 30)" opacity="0.85" />
+                  </g>
+                  <text x="65" y="38" font-family="'Poppins', 'Inter', -apple-system, sans-serif" font-weight="800" font-size="21" fill="currentColor" letter-spacing="-0.5px">
+                    Kreaverse<tspan font-weight="500" fill="#D97757"> AI</tspan>
+                  </text>
+                </svg>
+            </div>
+            <button class="close-btn" id="close-sidebar" style="background:none; border:none; width:32px; height:32px; cursor:pointer; display:flex; align-items:center; justify-content:center; color:var(--text-secondary); transition:0.2s;">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="3" width="18" height="18" rx="2" />
+                    <line x1="9" y1="3" x2="9" y2="21" />
+                </svg>
+            </button>
+        </div>
+
+        <div class="sidebar-menu">
+            <a href="/chat/" class="menu-item auth-required"><i class="fa-regular fa-comments"></i> <span>Chat AI</span><span class="sidebar-feature-badge locked" id="badge-chat-ai">Tingkatkan</span></a>
+            <a href="/media-ai/" class="menu-item auth-required"><i class="fa-solid fa-photo-film"></i> <span>Studio Media</span><span class="sidebar-feature-badge locked" id="badge-media-ai">Tingkatkan</span></a>
+            <a href="/ytdl/" class="menu-item auth-required"><i class="fa-solid fa-download"></i> <span>Downloader</span> <span class="badge-free">Gratis</span></a>
+            <a href="/email/" class="menu-item auth-required"><i class="fa-regular fa-envelope"></i> <span>Temp Email</span> <span class="badge-free">Gratis</span></a>
+            <a href="/otp/" class="menu-item auth-required"><i class="fa-solid fa-sim-card"></i> <span>OTP MURAH</span> <span class="badge-cheap">Termurah</span></a>
+            <a href="/upload/" class="menu-item auth-required"><i class="fa-solid fa-cloud-arrow-up"></i> <span>Cloud Storage</span> <span class="badge-free">Gratis</span></a>
+            <a href="/berkas/" id="berkas-ai-btn" class="menu-item auth-required"><i class="fa-solid fa-folder-open"></i> <span>Berkas AI</span></a>
+            <a href="/inbox/" id="inbox-link" class="menu-item auth-required"><i class="fa-solid fa-inbox"></i> <span>Inbox Pengumuman</span><span id="notif-badge" class="badge-cheap hidden" style="margin-left:auto; padding:2px 7px; border-radius:10px;">0</span></a>
+            <a href="/harga/index.html" id="guest-upgrade-menu-btn" class="menu-item"><i class="fa-solid fa-crown" style="color: #FFD700;"></i> <span>Tingkatkan Paket</span></a>
+            <div id="guest-help-menu-btn" class="menu-item" style="cursor: pointer;"><i class="fa-solid fa-circle-question" style="color: #FF9500;"></i> <span>Bantuan</span></div>
+            <a href="/admin/" id="admin-menu-btn" class="menu-item hidden-menu admin-style-link"><i class="fa-solid fa-user-shield"></i> <span>Admin Panel</span></a>
+        </div>
+
+        <div class="sidebar-footer">
+            <div class="guest-promo-card" id="guest-sidebar-promo">
+                <h4>Dapatkan respons yang disesuaikan dengan Anda</h4>
+                <p>Masuk untuk mendapatkan jawaban didasarkan pada obrolan yang disimpan, serta membuat gambar dan mengunggah file.</p>
+                <a href="/login/index.html" class="guest-login-btn-sidebar btn-masuk-notif">Masuk</a>
+            </div>
+
+            <div id="user-profile-btn" class="user-profile hidden">
+                <div class="user-avatar" id="ui-avatar">P</div>
+                <div class="user-info">
+                    <span class="user-name" id="ui-username">Pengguna</span>
+                    <span class="user-plan" id="ui-plan">Sesi Aktif</span>
+                </div>
+                <i class="fa-solid fa-ellipsis-vertical dots-btn-sidebar" id="sidebar-dots-btn"></i>
+            </div>
+            
+            <div id="user-popup" class="user-popup">
+                <div class="popup-item" id="btn-trigger-feedback"><i class="fa-solid fa-comment-dots"></i> <span>Kirim Masukan</span></div>
+                <div class="popup-item" id="btn-trigger-profile"><i class="fa-solid fa-user-gear"></i> <span>Pengaturan Profil</span></div>
+                <div class="popup-item" id="btn-trigger-vip" style="display:flex; align-items:center; justify-content:space-between; width:100%; cursor:pointer;">
+                    <div style="display:flex; align-items:center; gap:10px;"><i class="fa-solid fa-crown text-warning"></i> <span>Tingkatkan Paket</span></div>
+                    <span id="user-tier-badge" class="sidebar-feature-badge hidden" style="margin-left:auto;"></span>
+                </div>
+                <div class="popup-item" id="btn-trigger-help"><i class="fa-solid fa-circle-question"></i> <span>Bantuan</span></div>
+                <div class="popup-divider"></div>
+                <a href="/login/index.html" class="popup-item link-normal btn-masuk-notif" id="auth-action-btn"><i class="fa-solid fa-arrow-right-to-bracket"></i> <span>Masuk</span></a>
+                <div class="popup-item logout-btn hidden-menu" id="logout-action-btn"><i class="fa-solid fa-power-off"></i> <span>Keluar</span></div>
+            </div>
+        </div>
+    </aside>
+
+    <main class="claude-container" id="main-content">
+        <div class="greeting-section" id="greeting-box">
+            <h1 id="greeting-text">Dari mana kita harus mulai?</h1> 
+        </div>
+
+        <div class="central-input-box" id="chat-input-box">
+            <div class="file-preview-container" id="file-preview-box">
+                <i class="fa-solid fa-file-image" style="color:#D97757; font-size:1.2rem;"></i>
+                <span id="file-preview-name">nama_file.jpg</span>
+                <i class="fa-solid fa-xmark close-file-btn" id="close-file-btn"></i>
+            </div>
+
+            <textarea id="home-chat-input" placeholder="Tanyakan apa saja" rows="1"></textarea>
+            
+            <div class="input-actions">
+                <div class="action-left">
+                    <button class="icon-btn-plus" id="home-upload-btn" title="Unggah File"><i class="fa-solid fa-plus"></i></button>
+                    <input type="file" id="home-hidden-file" style="display: none;">
+                </div>                
+                <div class="action-right">
+                    <button class="icon-btn-mic" id="home-mic-btn" title="Gunakan Suara"><i class="fa-solid fa-microphone"></i></button>
+                    <button id="send-home-btn" class="send-btn hidden" title="Kirim Pesan"><i class="fa-solid fa-arrow-up"></i></button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="disclaimer-text">
+            <span>Dengan mengirim pesan ke Kreaverse, Anda menyetujui</span> <a href="/ketentuan/index.html">Ketentuan</a> & <a href="/privasi/index.html">Kebijakan Privasi</a> kami
+        </div>
+    </main>
+
+    <!-- MODAL PENGATURAN PROFIL -->
+    <div class="modal-overlay" id="profile-setup-modal">
+        <div class="modal-box spec-modal">
+            <h3>Pengaturan Profil</h3>
+            <p>Unggah foto profil Anda serta sesuaikan nama tampilan dan nama pengguna.</p>
+            
+            <div class="profile-upload-wrapper">
+                <div class="profile-upload-circle" id="profile-upload-avatar">
+                    <span id="profile-upload-letter">U</span>
+                    <img src="" id="profile-upload-preview-img" class="hidden" alt="Profile Preview">
+                </div>
+                <button class="profile-upload-btn-trigger" id="btn-select-profile-photo">
+                    <i class="fa-solid fa-camera"></i> <span>Unggah Foto</span>
+                </button>
+                <input type="file" id="hidden-profile-photo-input" accept="image/*" style="display:none;">
+            </div>
+
+            <div class="profile-form-inputs">
+                <label>Nama Tampilan</label>
+                <input type="text" id="profile-name-input" class="modal-input" placeholder="Contoh: kreaverse ai">
+                
+                <label>Nama Pengguna (@)</label>
+                <input type="text" id="profile-username-input" class="modal-input" placeholder="Contoh: kreaverse_ai">
+            </div>
+
+            <div class="modal-actions-horizontal">
+                <button class="modal-btn cancel" id="btn-cancel-profile-setup">Batal</button>
+                <button class="modal-btn primary" id="btn-save-profile-setup">Simpan</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- REVISI UI: MODAL STATUS VIP KLIEN -->
+    <div class="modal-overlay" id="vip-status-modal">
+        <div class="modal-box spec-modal" style="max-width:380px; border-radius: 24px; padding: 30px 24px;">
+            <h3 style="margin-bottom:20px; font-size: 1.3rem; color: #111; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                <i class="fa-solid fa-crown" style="color: #111;"></i> Status Keanggotaan VIP
+            </h3>
+            
+            <div style="background:#FAFAFA; border-radius:16px; padding:20px; text-align:left; margin-bottom:24px; display:flex; flex-direction:column; gap:16px; border:1px solid #EAEAEA;">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <span style="font-size:0.9rem; color:#666; font-weight:500;">Paket Aktif:</span>
+                    <span id="vip-plan-badge" style="padding:6px 12px; border-radius:20px; font-weight:600; font-size:0.85rem; background: #FEE2E2; color: #EF4444;">Max (Lifetime)</span>
+                </div>
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <span style="font-size:0.9rem; color:#666; font-weight:500;">Masa Berlangganan:</span>
+                    <span id="vip-expiry-text" style="font-size:0.9rem; font-weight:600; color:#111; text-align:right; line-height: 1.3;">Aktif Selamanya<br>(Seumur Hidup)</span>
+                </div>
+            </div>
+
+            <div style="text-align:left; margin-bottom:24px;">
+                <label style="font-size:0.85rem; font-weight:600; color:#666; display:block; margin-bottom:10px;">Pilih Tindakan</label>
+                <div style="position:relative;">
+                    <div class="modal-input" id="vip-action-trigger" style="display:flex; justify-content:space-between; align-items:center; cursor:pointer; margin-bottom:0; background:#FFF; padding: 14px 16px; border: 1px solid #EAEAEA; border-radius: 12px;">
+                        <span id="vip-action-label" style="font-size:0.95rem; font-weight:500; color:#666;">-- Pilih Tindakan --</span>
+                        <i class="fa-solid fa-chevron-down" style="font-size:0.8rem; color:#666;"></i>
+                    </div>
+                    <div id="vip-action-dropdown" class="hidden" style="position:absolute; top:calc(100% + 5px); left:0; right:0; background:#FFF; border:1px solid #EAEAEA; border-radius:12px; box-shadow:0 8px 24px rgba(0,0,0,0.1); z-index:100; overflow:hidden;">
+                        <div class="vip-dropdown-option" data-value="perpanjang" style="padding:14px 16px; font-size:0.95rem; cursor:pointer; font-weight:500; color:#111; border-bottom: 1px solid #F0F0F0;">Perpanjang Paket</div>
+                        <div class="vip-dropdown-option" data-value="upgrade" style="padding:14px 16px; font-size:0.95rem; cursor:pointer; font-weight:500; color:#111;">Upgrade Paket</div>
+                    </div>
+                </div>
+            </div>
+
+            <div style="display:flex; flex-direction:column; gap:12px;">
+                <button id="btn-vip-whatsapp" disabled style="width: 100%; padding: 14px; border-radius: 24px; font-weight: 600; font-size: 0.95rem; border: none; background: #7A7A7A; color: #FFF; cursor: not-allowed; display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.2s;">
+                    <i class="fa-brands fa-whatsapp"></i> Hubungi Admin
+                </button>
+                <button id="btn-close-vip-modal" style="width: 100%; padding: 14px; border-radius: 24px; font-weight: 600; font-size: 0.95rem; border: none; background: #F4F4F4; color: #666; cursor: pointer; transition: 0.2s;">
+                    Tutup
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- REVISI UI: MODAL KIRIM MASUKAN -->
+    <div class="modal-overlay" id="feedback-modal">
+        <div class="modal-box spec-modal" style="border-radius: 24px; padding: 30px 24px; max-width: 400px;">
+            <h3 style="margin-bottom:8px; font-size: 1.3rem; color: #111;">Kirim Masukan</h3>
+            <p style="font-size:0.9rem; color: #666; line-height: 1.5; margin-bottom:24px;">Bantu kami meningkatkan Kreaverse AI dengan memberikan detail yang lengkap.</p>
+            
+            <div style="text-align: left; margin-bottom: 20px;">
+                <label style="font-size:0.9rem; font-weight:600; color:#444; display:block; margin-bottom:10px;">1. Jelaskan masukan Anda (Wajib)</label>
+                <textarea id="feedback-text" style="width: 100%; padding: 14px; border: 1px solid #EAEAEA; border-radius: 12px; outline: none; font-family: 'Inter', sans-serif; font-size: 0.95rem; resize: none; background: #FFF;" rows="4" placeholder="Ketik masalah atau ide Anda secara lengkap..."></textarea>
+            </div>
+            
+            <div style="text-align: left; margin-bottom: 24px;">
+                <label style="font-size:0.9rem; font-weight:600; color:#444; display:block; margin-bottom:6px;">2. Upload file Screenshot (Wajib)</label>
+                <p style="font-size:0.8rem; color:#888; margin-bottom:12px; line-height:1.4;">Akan membantu kami memahami masukan Anda dengan lebih baik.</p>
+                
+                <div style="display: flex; align-items: center; gap: 12px;">
+                    <button id="btn-select-feedback-photo" style="background: #F4F4F4; border: 1px solid #EAEAEA; padding: 10px 16px; border-radius: 20px; font-size: 0.85rem; font-weight: 600; color: #444; cursor: pointer; display: inline-flex; align-items: center; gap: 8px;">
+                        <i class="fa-solid fa-image"></i> Pilih Gambar
+                    </button>
+                    <span id="feedback-file-name" style="font-size:0.8rem; color:#888; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 150px;">Belum ada file terpilih</span>
+                </div>
+                <input type="file" id="hidden-feedback-photo" accept="image/*" style="display:none;">
+                <img id="feedback-preview-img" class="hidden" style="width:100%; max-height:140px; object-fit:contain; margin-top:16px; border-radius:12px; border:1px solid #EAEAEA;">
+            </div>
+
+            <div style="display: flex; gap: 12px;">
+                <button id="btn-cancel-feedback" style="flex: 1; padding: 14px; border-radius: 24px; font-weight: 600; font-size: 0.95rem; border: none; background: #F4F4F4; color: #666; cursor: pointer;">Batal</button>
+                <button id="btn-save-feedback" disabled style="flex: 1; padding: 14px; border-radius: 24px; font-weight: 600; font-size: 0.95rem; border: none; background: #7A7A7A; color: #FFF; cursor: not-allowed; transition: 0.2s;">Kirim</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL BANTUAN -->
+    <div class="modal-overlay" id="help-info-modal">
+        <div class="modal-box spec-modal scrollable-modal-content">
+            <h3>Pusat Bantuan</h3>
+            <div class="help-rich-content">
+                <h4>Bagaimana Cara Menggunakan Website?</h4>
+                <p>Gunakan kotak input di beranda untuk memulai obrolan AI dengan model cerdas, atau buka menu di sebelah kiri untuk menggunakan Studio Gambar, Pengunduh Media, maupun Email Sementara.</p>
+                <h4>Bagaimana Cara Mendapatkan Akses Login?</h4>
+                <p>Kreaverse AI merupakan platform eksklusif. Untuk mendapatkan email login, silakan hubungi admin kami secara langsung melalui WhatsApp.</p>
+                <div class="help-contact-admin-box">
+                    <i class="fa-brands fa-whatsapp whatsapp-icon-help"></i>
+                    <div>
+                        <strong style="display: block; font-size: 0.85rem;">Hubungi WhatsApp Admin</strong>
+                        <p id="help-cs-title-display" style="margin-top: 2px; font-size: 0.8rem; font-weight: 500;">Cs - Putri</p>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-actions-vert" style="margin-top:20px;">
+                <button class="modal-btn whatsapp" id="btn-help-wa"><i class="fa-brands fa-whatsapp"></i> WhatsApp Admin</button>
+                <a href="/harga/index.html" class="modal-btn primary">Lihat Harga Paket</a>
+                <button class="modal-btn cancel" id="btn-close-help-modal">Tutup</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL LOGOUT -->
+    <div class="modal-overlay" id="logout-modal">
+        <div class="modal-box">
+            <h3>Konfirmasi Keluar</h3>
+            <p>Apakah Anda yakin ingin keluar dari akun Kreaverse AI?</p>
+            <div class="modal-actions">
+                <button class="modal-btn cancel" id="cancel-logout">Batal</button>
+                <button class="modal-btn confirm" id="confirm-logout">Keluar</button>
+            </div>
+        </div>
+    </div>
+<!-- FIREBASE MODULAR SDK (V10) -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+        import { getFirestore, collection, doc, getDoc, getDocs, setDoc, updateDoc, addDoc, query, where, orderBy, limit, onSnapshot, writeBatch } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+        import { getDatabase, ref, set, onValue, onDisconnect, serverTimestamp as rtdbTimestamp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
+        
+        // CONFIG TERBARU KREAVERSE-AI0107
+        const firebaseConfig = {
+            apiKey: "AIzaSyAO8JV4jkJmbHChYvjUCS7wqfVbKr94tHM",
+            authDomain: "kreaverse-ai0107.firebaseapp.com",
+            databaseURL: "https://kreaverse-ai0107-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "kreaverse-ai0107",
+            storageBucket: "kreaverse-ai0107.firebasestorage.app",
+            messagingSenderId: "1048550433011",
+            appId: "1:1048550433011:web:0cf2e4074b20fe09909786",
+            measurementId: "G-CJHMKKYQ4C"
+        };
+        
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const rtdb = getDatabase(app);
+
+        document.addEventListener("DOMContentLoaded", () => {
+            const sessionStartTime = Date.now();
+
+            function showIphoneNotif(title, desc, iconClass = 'fa-sparkles') {
+                const existing = document.getElementById('iphone-island-toast');
+                if (existing) existing.remove();
+
+                const toast = document.createElement('div');
+                toast.id = 'iphone-island-toast';
+                toast.className = 'iphone-toast-container';
+                
+                let iconColor = '#34C759'; 
+                if(iconClass.includes('fa-lock') || iconClass.includes('fa-triangle-exclamation')) iconColor = '#FF3B30';
+                if(iconClass.includes('fa-circle-info') || iconClass.includes('fa-circle-arrow-right') || iconClass.includes('fa-paper-plane') || iconClass.includes('fa-bullhorn')) iconColor = '#007AFF';
+
+                toast.innerHTML = `
+                    <div class="iphone-toast-icon" style="color: ${iconColor};">
+                        <i class="fa-solid ${iconClass}"></i>
+                    </div>
+                    <div class="iphone-toast-content">
+                        <span class="iphone-toast-title">${title}</span>
+                        <span class="iphone-toast-desc">${desc}</span>
+                    </div>
+                `;
+                document.body.appendChild(toast);
+                
+                setTimeout(() => { toast.classList.add('show'); }, 50);
+                setTimeout(() => {
+                    toast.classList.remove('show');
+                    setTimeout(() => toast.remove(), 400);
+                }, 4000);
+            }
+
+            const savedTheme = localStorage.getItem('kreaverse_theme') || 'light';
+            if (savedTheme === 'dark') document.body.classList.add('dark-theme');
+
+            let isLoggedIn = localStorage.getItem('kreaverse_logged_in') === 'true'; 
+            let userEmail = localStorage.getItem('kreaverse_user_email') || '';
+            let savedName = localStorage.getItem('kreaverse_user_name') || '';
+            let userId = localStorage.getItem('kreaverse_user_id') || '';
+
+            const uiUsername = document.getElementById('ui-username');
+            const uiPlan = document.getElementById('ui-plan');
+            const uiAvatar = document.getElementById('ui-avatar');
+            const greetingText = document.getElementById('greeting-text');
+            const authActionBtn = document.getElementById('auth-action-btn');
+            const logoutActionBtn = document.getElementById('logout-action-btn');
+            const adminMenuBtn = document.getElementById('admin-menu-btn');
+            const topAuthBtn = document.getElementById('top-auth-btn');
+            const topUserAvatar = document.getElementById('top-user-avatar');
+            const guestSidebarPromo = document.getElementById('guest-sidebar-promo');
+            const userProfileBtn = document.getElementById('user-profile-btn');
+            const guestUpgradeMenuBtn = document.getElementById('guest-upgrade-menu-btn');
+            const guestHelpMenuBtn = document.getElementById('guest-help-menu-btn');
+
+            function safeBindClick(id, handler) {
+                const el = document.getElementById(id);
+                if (el) { el.addEventListener('click', handler); }
+            }
+
+            const csNames = ["Putri", "Aisyah", "Nabila", "Zahra", "Salsabila", "Syifa", "Kania", "Adelia", "Aulia", "Nadhira", "Safira", "Almira", "Dhea", "Salma", "Nadya"];
+
+            function rotateCSName() {
+                const helpCsTitleDisplay = document.getElementById('help-cs-title-display');
+                if (helpCsTitleDisplay) {
+                    const currentCS = csNames[Math.floor(Date.now() / (3 * 60 * 1000)) % csNames.length];
+                    helpCsTitleDisplay.textContent = `Cs - ${currentCS}`;
+                }
+            }
+            rotateCSName();
+            setInterval(rotateCSName, 60000); 
+
+            let recognition = null;
+            if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+                const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+                recognition = new SpeechRecognition();
+                recognition.continuous = false;
+                recognition.interimResults = false;
+                recognition.lang = 'id-ID';
+
+                recognition.onresult = function(event) {
+                    const resultText = event.results[0][0].transcript;
+                    const chatInput = document.getElementById('home-chat-input');
+                    if (chatInput) {
+                        chatInput.value = resultText;
+                        chatInput.dispatchEvent(new Event('input')); 
+                    }
+                    stopVoiceRecognition();
+                };
+
+                recognition.onerror = function(event) { stopVoiceRecognition(); };
+                recognition.onend = function() { stopVoiceRecognition(); };
+            }
+
+            function stopVoiceRecognition() {
+                const micBtn = document.getElementById('home-mic-btn');
+                const chatInput = document.getElementById('home-chat-input');
+                if (micBtn) micBtn.classList.remove('recording');
+                if (chatInput) chatInput.placeholder = 'Tanyakan apa saja';
+                if (recognition) { try { recognition.stop(); } catch(e){} }
+            }
+
+            function startVoiceRecognition() {
+                const micBtn = document.getElementById('home-mic-btn');
+                const chatInput = document.getElementById('home-chat-input');
+                if (micBtn) micBtn.classList.add('recording');
+                if (chatInput) chatInput.placeholder = 'Mendengarkan... (Klik batal)';
+                if (recognition) { try { recognition.start(); } catch(e){} }
+            }
+
+            function manageUserPresence(uid) {
+                if(!uid || !rtdb) return;
+                const userRef = ref(rtdb, '/presence/' + uid);
+                const connectedRef = ref(rtdb, '.info/connected');
+                const onlineData = { state: 'online', last_changed: rtdbTimestamp(), user_agent: navigator.userAgent, page: window.location.pathname };
+                const offlineData = { state: 'offline', last_changed: rtdbTimestamp() };
+
+                onValue(connectedRef, (snapshot) => {
+                    if (snapshot.val() === true) {
+                        onDisconnect(userRef).set(offlineData).then(() => { set(userRef, onlineData); });
+                    }
+                });
+            }
+
+            function updateDynamicGreeting() {
+                if (isLoggedIn && greetingText) {
+                    const hour = new Date().getHours();
+                    let greetWord = "Selamat Pagi";
+                    if (hour >= 11 && hour < 15) greetWord = "Selamat Siang";
+                    else if (hour >= 15 && hour < 18) greetWord = "Selamat Sore";
+                    else if (hour >= 18 || hour < 5) greetWord = "Selamat Malam";
+                    
+                    greetingText.innerHTML = `${greetWord},<br>${savedName}`;
+                } else if (greetingText) {
+                    greetingText.textContent = "Dari mana kita harus mulai?";
+                }
+            }
+
+            function updateFeatureBadges() {
+                const chatBadge = document.getElementById('badge-chat-ai');
+                const mediaBadge = document.getElementById('badge-media-ai');
+                
+                if (isLoggedIn) {
+                    if(chatBadge) { chatBadge.textContent = "Fitur Terbuka"; chatBadge.className = 'sidebar-feature-badge unlocked'; }
+                    if(mediaBadge) { mediaBadge.textContent = "Fitur Terbuka"; mediaBadge.className = 'sidebar-feature-badge unlocked'; }
+                } else {
+                    if(chatBadge) { chatBadge.textContent = "Tingkatkan"; chatBadge.className = 'sidebar-feature-badge locked'; }
+                    if(mediaBadge) { mediaBadge.textContent = "Tingkatkan"; mediaBadge.className = 'sidebar-feature-badge locked'; }
+                }
+            }
+
+            let unsubNotifications = null;
+            let unsubRealtimeBroadcast = null;
+
+            function listenToNotifications(uid) {
+                if (unsubNotifications) unsubNotifications();
+                const q = query(collection(db, `users/${uid}/notifications`), where('isRead', '==', false));
+                unsubNotifications = onSnapshot(q, snapshot => {
+                    const count = snapshot.size;
+                    const badge = document.getElementById('notif-badge');
+                    if (badge) {
+                        if (count > 0) {
+                            badge.textContent = count;
+                            badge.classList.remove('hidden');
+                        } else {
+                            badge.classList.add('hidden');
+                        }
+                    }
+                }, error => {
+                    console.warn("Gagal listen inbox:", error);
+                });
+            }
+
+            function listenToRealtimeBroadcasts(uid) {
+                if (unsubRealtimeBroadcast) unsubRealtimeBroadcast();
+                const qRealtime = query(collection(db, `users/${uid}/notifications`), orderBy('timestamp', 'desc'), limit(1));
+                let isFirstLoad = true;
+                
+                unsubRealtimeBroadcast = onSnapshot(qRealtime, snapshot => {
+                    if (isFirstLoad) { isFirstLoad = false; return; }
+                    snapshot.docChanges().forEach(change => {
+                        if (change.type === 'added') {
+                            const data = change.doc.data();
+                            if (data.timestamp && data.timestamp > sessionStartTime) {
+                                showIphoneNotif('Pemberitahuan Baru!', data.message, 'fa-bullhorn');
+                            }
+                        }
+                    });
+                });
+            }
+
+            const inboxLink = document.getElementById('inbox-link');
+            if (inboxLink) {
+                inboxLink.addEventListener('click', async (e) => {
+                    e.preventDefault();
+                    closeSidebar();
+                    
+                    const currentRealId = localStorage.getItem('kreaverse_user_id');
+                    if (isLoggedIn && currentRealId) {
+                        try {
+                            const q = query(collection(db, `users/${currentRealId}/notifications`), where('isRead', '==', false));
+                            const snap = await getDocs(q);
+                            if (!snap.empty) {
+                                const batch = writeBatch(db);
+                                snap.docs.forEach(docSnap => { batch.update(docSnap.ref, { isRead: true }); });
+                                await batch.commit();
+                            }
+                        } catch (err) { console.warn("Gagal reset notif:", err); }
+                        showIphoneNotif('Membuka Fitur', 'Mengalihkan Anda ke Inbox Pengumuman...', 'fa-circle-arrow-right');
+                        setTimeout(() => { window.location.href = '/inbox/'; }, 1200);
+                    } else {
+                        showIphoneNotif('Akses Terkunci', 'Harap masuk ke akun untuk membuka Inbox Pengumuman', 'fa-lock');
+                        setTimeout(() => { window.location.href = '/login/index.html'; }, 1500);
+                    }
+                });
+            }
+
+            function drawUserProfileUI(name, username, photoBase64, tier) {
+                const displayName = name || 'User';
+                const displayHandle = username ? '@' + username : userEmail;
+                const initial = displayName.charAt(0).toUpperCase();
+
+                if(uiUsername) uiUsername.innerText = displayName;
+                if(uiPlan) uiPlan.innerText = displayHandle;
+                
+                const footerAvatar = document.getElementById('ui-avatar');
+                if(footerAvatar) {
+                    if(photoBase64) footerAvatar.innerHTML = `<img src="${photoBase64}" class="avatar-rendered-img" alt="Avatar">`;
+                    else footerAvatar.innerHTML = initial;
+                }
+
+                if(topUserAvatar) {
+                    if(photoBase64) topUserAvatar.innerHTML = `<img src="${photoBase64}" class="avatar-rendered-img" alt="Avatar">`;
+                    else topUserAvatar.innerHTML = initial;
+                    topUserAvatar.classList.remove('hidden');
+                }
+
+                const userTierBadge = document.getElementById('user-tier-badge');
+                if (userTierBadge) {
+                    const textMap = { basic: 'Basic', pro: 'Pro', max_monthly: 'Max', max_lifetime: 'Max' };
+                    userTierBadge.textContent = textMap[tier] || 'Basic';
+                    
+                    if (tier === 'max_lifetime' || tier === 'max_monthly' || tier === 'max') {
+                        userTierBadge.className = 'sidebar-feature-badge unlocked tier-max';
+                        userTierBadge.style.background = 'rgba(217,119,87,0.12)';
+                        userTierBadge.style.color = '#D97757';
+                        userTierBadge.style.fontWeight = '700';
+                    } else if (tier === 'pro') {
+                        userTierBadge.className = 'sidebar-feature-badge unlocked tier-pro';
+                        userTierBadge.style.background = 'rgba(175,82,222,0.12)';
+                        userTierBadge.style.color = '#AF52DE';
+                        userTierBadge.style.fontWeight = '700';
+                    } else {
+                        userTierBadge.className = 'sidebar-feature-badge unlocked tier-basic';
+                        userTierBadge.style.background = 'rgba(0,122,255,0.12)';
+                        userTierBadge.style.color = '#007AFF';
+                        userTierBadge.style.fontWeight = '700';
+                    }
+                    userTierBadge.classList.remove('hidden');
+                }
+            }
+
+            function applyGuestUI() {
+                if (greetingText) greetingText.textContent = "Dari mana kita harus mulai?";
+                if (topUserAvatar) topUserAvatar.classList.add('hidden');
+                const userTierBadge = document.getElementById('user-tier-badge');
+                if (userTierBadge) userTierBadge.classList.add('hidden');
+            }
+
+            function autoDeleteOldFeedbacks() {
+                const sevenDaysAgo = Date.now() - (7 * 24 * 60 * 60 * 1000);
+                const q = query(collection(db, 'feedbacks'), where('timestamp', '<', sevenDaysAgo));
+                getDocs(q).then(snapshot => {
+                    if (!snapshot.empty) {
+                        const batch = writeBatch(db);
+                        snapshot.docs.forEach(docSnap => batch.delete(docSnap.ref));
+                        batch.commit();
+                    }
+                }).catch(e => console.log(e));
+            }
+            autoDeleteOldFeedbacks();
+
+            function initUser() {
+                if(isLoggedIn) {
+                    if(userEmail === 'holifhidayah@gmail.com' || userEmail === 'alluraveylia@gmail.com' || userEmail === 'kreaverse.ai@gmail.com' || userEmail === 'habigeneratewebsite@gmail.com' || userEmail === 'habiwebsite@gmail.com') {
+                        if(adminMenuBtn) adminMenuBtn.classList.remove('hidden-menu');
+                    } else {
+                        if(adminMenuBtn) adminMenuBtn.classList.add('hidden-menu');
+                    }
+
+                    if(topAuthBtn) topAuthBtn.classList.add('hidden');
+                    if(guestSidebarPromo) guestSidebarPromo.classList.add('hidden');
+                    if(userProfileBtn) userProfileBtn.classList.remove('hidden');
+                    if(authActionBtn) authActionBtn.classList.add('hidden-menu');                     
+                    if(logoutActionBtn) logoutActionBtn.classList.remove('hidden-menu'); 
+                    if(guestUpgradeMenuBtn) guestUpgradeMenuBtn.classList.add('hidden-menu');
+                    if(guestHelpMenuBtn) guestHelpMenuBtn.classList.add('hidden-menu');
+
+                    if (userEmail && db) {
+                        const q = query(collection(db, 'users'), where('email', '==', userEmail), limit(1));
+                        getDocs(q).then((snapshot) => {
+                            if (!snapshot.empty) {
+                                const userDoc = snapshot.docs[0];
+                                const data = userDoc.data();
+                                const realDocId = userDoc.id; 
+
+                                // PERBAIKAN: Baca dari field nama ATAU name
+                                const nameVal = data.nama || data.name || savedName || 'User';
+                                const userVal = data.username || '';
+                                const photoVal = data.photo || '';
+                                const tierVal = data.tier || 'basic';
+                                
+                                localStorage.setItem('kreaverse_user_name', nameVal);
+                                localStorage.setItem('kreaverse_user_id', realDocId); 
+                                localStorage.setItem('kreaverse_tier', tierVal);
+
+                                drawUserProfileUI(nameVal, userVal, photoVal, tierVal);
+                                updateDynamicGreeting();
+                                updateFeatureBadges();
+                                
+                                listenToNotifications(realDocId);
+                                listenToRealtimeBroadcasts(realDocId);
+                                manageUserPresence(realDocId);
+                            } else {
+                                applyDefaultProfileSetup();
+                            }
+                        }).catch((err) => { 
+                            console.error("Gagal sinkron data user:", err);
+                            applyDefaultProfileSetup(); 
+                        });
+                    } else { applyDefaultProfileSetup(); }
+
+                    if (!localStorage.getItem('kreaverse_welcome_shown')) {
+                        setTimeout(() => {
+                            const activeName = localStorage.getItem('kreaverse_user_name') || 'Pengguna';
+                            showIphoneNotif('Berhasil Masuk', `Sesi Aktif - Selamat Datang Kembali, ${activeName}!`, 'fa-circle-check');
+                            localStorage.setItem('kreaverse_welcome_shown', 'true');
+                        }, 1000);
+                    }
+
+                } else {
+                    if(adminMenuBtn) adminMenuBtn.classList.add('hidden-menu');
+                    if(topAuthBtn) topAuthBtn.classList.remove('hidden');
+                    if(guestSidebarPromo) guestSidebarPromo.classList.remove('hidden');
+                    if(userProfileBtn) userProfileBtn.classList.add('hidden');
+                    if(guestUpgradeMenuBtn) guestUpgradeMenuBtn.classList.remove('hidden-menu');
+                    if(guestHelpMenuBtn) guestHelpMenuBtn.classList.remove('hidden-menu');
+
+                    updateFeatureBadges();
+                    applyGuestUI();
+                    if(authActionBtn) authActionBtn.classList.remove('hidden-menu');
+                    if(logoutActionBtn) logoutActionBtn.classList.add('hidden-menu');
+                }
+            }
+
+            function applyDefaultProfileSetup() {
+                if(savedName) {
+                    drawUserProfileUI(savedName, '', '', 'basic');
+                } else {
+                    applyGuestUI();
+                    const profModal = document.getElementById('profile-setup-modal');
+                    if(profModal) profModal.classList.add('active');
+                }
+            }
+            
+            initUser(); 
+
+            const requiredAuthLinks = document.querySelectorAll('.auth-required');
+            requiredAuthLinks.forEach(link => {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault(); 
+                    closeSidebar(); 
+
+                    const linkHref = link.getAttribute('href');
+                    const featName = link.querySelector('span').textContent;
+                    const isExceptionMenu = ['/berkas/', '/inbox/', '/admin/'].some(path => linkHref.includes(path));
+
+                    if(!isLoggedIn) {
+                        showIphoneNotif('Akses Terkunci', `Harap masuk ke akun untuk membuka ${featName}`, 'fa-lock');
+                        setTimeout(() => { window.location.href = '/login/index.html'; }, 1500);
+                    } else {
+                        if(!isExceptionMenu) {
+                            showIphoneNotif('Membuka Fitur', `Mengalihkan Anda ke ${featName}...`, 'fa-circle-arrow-right');
+                            setTimeout(() => { window.location.href = linkHref; }, 1200);
+                        } else {
+                            setTimeout(() => { window.location.href = linkHref; }, 300);
+                        }
+                    }
+                });
+            });
+
+            const btnMasukList = document.querySelectorAll('.btn-masuk-notif');
+            btnMasukList.forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    closeSidebar(); 
+                    showIphoneNotif('Arahkan ke Login', 'Membuka halaman masuk dengan aman...', 'fa-shield-halved');
+                    setTimeout(() => { window.location.href = '/login/index.html'; }, 1500);
+                });
+            });
+
+            const sendBtn = document.getElementById("send-home-btn");
+            if(sendBtn) {
+                sendBtn.addEventListener('click', (e) => {                    
+                    e.preventDefault();
+                    if(isLoggedIn) { 
+                        showIphoneNotif('Pesan Terkirim', 'AI sedang memproses permintaan Anda', 'fa-paper-plane');
+                        setTimeout(() => { window.location.href = '/chat/index.html'; }, 1500);
+                    } 
+                    else { 
+                        showIphoneNotif('Akses Terkunci', 'Harap masuk ke akun untuk mengirim pesan', 'fa-lock');
+                        setTimeout(() => { window.location.href = '/login/index.html'; }, 1600); 
+                    }
+                });
+            }
+
+            safeBindClick('cancel-logout', () => {
+                const logoutModal = document.getElementById('logout-modal');
+                if(logoutModal) logoutModal.classList.remove('active');
+            });
+
+            safeBindClick('confirm-logout', () => {
+                const userId = localStorage.getItem('kreaverse_user_id');
+                if(userId && rtdb) {
+                    set(ref(rtdb, '/presence/' + userId), { state: 'offline', last_changed: rtdbTimestamp() });
+                }
+                localStorage.removeItem('kreaverse_logged_in');
+                localStorage.removeItem('kreaverse_role');
+                localStorage.removeItem('kreaverse_user_email');
+                localStorage.removeItem('kreaverse_user_name');
+                localStorage.removeItem('kreaverse_user_id'); 
+                localStorage.removeItem('kreaverse_welcome_shown'); 
+                sessionStorage.removeItem('kreaverse_welcome_shown'); 
+                
+                isLoggedIn = false;
+                window.location.reload(); 
+            });
+
+            const userPopup = document.getElementById('user-popup');
+            const allSubmenus = document.querySelectorAll('.nested-menu');
+
+            function closeAllMenus() {
+                if(userPopup) userPopup.classList.remove('active');
+                allSubmenus.forEach(sub => sub.classList.remove('active'));
+            }
+
+            if(userProfileBtn && userPopup) {
+                userProfileBtn.addEventListener('click', (e) => {
+                    e.stopPropagation(); e.preventDefault();                    
+                    userPopup.classList.toggle('active');
+                });
+            }
+
+            if(userPopup) userPopup.addEventListener('click', (e) => { e.stopPropagation(); });
+
+            document.addEventListener('click', (e) => {
+                if(userPopup && userPopup.classList.contains('active')) {
+                    if(!userPopup.contains(e.target) && !userProfileBtn.contains(e.target)) {
+                        closeAllMenus();
+                    }
+                }
+            });
+
+            const chatInput = document.getElementById("home-chat-input");
+            const micBtn = document.getElementById("home-mic-btn");
+
+            if(chatInput) {
+                chatInput.addEventListener("input", function() {
+                    this.style.height = 'auto';                    
+                    this.style.height = (this.scrollHeight < 180 ? this.scrollHeight : 180) + 'px';
+                    if(this.value.trim().length > 0) {
+                        if (micBtn) micBtn.classList.add("hidden");   
+                        if (sendBtn) sendBtn.classList.remove("hidden"); 
+                    } else {
+                        if (micBtn) micBtn.classList.remove("hidden"); 
+                        if (sendBtn) sendBtn.classList.add("hidden");   
+                    }
+                });
+
+                chatInput.addEventListener("focus", () => { document.body.classList.add("keyboard-focused"); });
+                chatInput.addEventListener("blur", () => { document.body.classList.remove("keyboard-focused"); });
+            }
+
+            if(micBtn) {                
+                micBtn.addEventListener("click", (e) => {
+                    e.preventDefault();
+                    if (micBtn.classList.contains('recording')) stopVoiceRecognition();
+                    else startVoiceRecognition();
+                });
+            }
+
+            const modelBtn = document.getElementById("home-model-btn");
+            const modelDropdown = document.getElementById("home-model-dropdown");
+            const modelRows = document.querySelectorAll(".model-opt-row");
+
+            if(modelBtn) {
+                modelBtn.addEventListener("click", (e) => {
+                    e.preventDefault(); e.stopPropagation();                     
+                    if (modelDropdown) modelDropdown.classList.toggle("hidden");
+                });
+            }
+            
+            document.addEventListener("click", (e) => {
+                if (modelDropdown && !modelDropdown.classList.contains("hidden")) {
+                    if (modelBtn && !modelBtn.contains(e.target) && !modelDropdown.contains(e.target)) {
+                        modelDropdown.classList.add("hidden");
+                    }
+                }
+            });
+
+            modelRows.forEach(row => {
+                row.addEventListener("click", function(e) {
+                    e.preventDefault(); e.stopPropagation(); 
+                    const modelLogoHtml = this.querySelector(".model-logo-img").outerHTML;
+                    const modelText = this.querySelector(".model-text").innerText;
+                    if(modelBtn) modelBtn.innerHTML = `${modelLogoHtml} <span class="model-btn-text-span">${modelText}</span> <i class="fa-solid fa-chevron-down dropdown-arrow-icon"></i>`;
+                    if(modelDropdown) modelDropdown.classList.add("hidden");
+                    showIphoneNotif('Model AI Diganti', `Mengaktifkan ${modelText}...`, 'fa-circle-arrow-right');
+                });
+            });
+
+            const uploadBtn = document.getElementById("home-upload-btn");
+            const hiddenFileInput = document.getElementById("home-hidden-file");
+            const filePreviewBox = document.getElementById("file-preview-box");
+            const filePreviewName = document.getElementById("file-preview-name");
+            const closeFileBtn = document.getElementById("close-file-btn");
+
+            if(uploadBtn && hiddenFileInput) {
+                uploadBtn.addEventListener("click", (e) => { e.preventDefault(); hiddenFileInput.click(); });
+                hiddenFileInput.addEventListener("change", function() {
+                    if(this.files && this.files.length > 0) {
+                        if (filePreviewName) filePreviewName.innerText = this.files[0].name;                         
+                        if (filePreviewBox) filePreviewBox.classList.add("active"); 
+                        showIphoneNotif('File Ditambahkan', 'Berkas siap untuk diunggah', 'fa-file-import');
+                    }
+                });
+                if(closeFileBtn) {
+                    closeFileBtn.addEventListener("click", () => {
+                        hiddenFileInput.value = ""; 
+                        if (filePreviewBox) filePreviewBox.classList.remove("active"); 
+                    });                
+                }
+            }
+
+            safeBindClick('mobile-menu-btn', () => {
+                const sidebar = document.getElementById('sidebar');
+                const sidebarOverlay = document.getElementById('sidebar-overlay');
+                if (sidebar) sidebar.classList.add('open');
+                if (sidebarOverlay) sidebarOverlay.classList.add('active');
+            });
+
+            function closeSidebar() {
+                const sidebar = document.getElementById('sidebar');
+                const sidebarOverlay = document.getElementById('sidebar-overlay');
+                if (sidebar) sidebar.classList.remove('open');
+                if (sidebarOverlay) sidebarOverlay.classList.remove('active');
+            }
+
+            safeBindClick('sidebar-overlay', closeSidebar);
+
+            // ==========================================
+            // LOGIKA PENGATURAN PROFIL
+            // ==========================================
+            const profileModal = document.getElementById('profile-setup-modal');
+            const btnSelectPhoto = document.getElementById('btn-select-profile-photo');
+            const hiddenPhotoInput = document.getElementById('hidden-profile-photo-input');
+            const profilePreviewImg = document.getElementById('profile-upload-preview-img');
+            const profileLetter = document.getElementById('profile-upload-letter');
+            const profileNameInput = document.getElementById('profile-name-input');
+            const profileUsernameInput = document.getElementById('profile-username-input');
+            
+            let uploadedPhotoBase64 = "";
+
+            const btnTriggerProfile = document.getElementById('btn-trigger-profile');
+            if(btnTriggerProfile) {
+                btnTriggerProfile.addEventListener('click', (e) => {
+                    e.preventDefault(); e.stopPropagation();
+                    closeAllMenus(); closeSidebar(); openProfileModalLogic();
+                });
+            }
+
+            if(topUserAvatar) {
+                topUserAvatar.addEventListener('click', (e) => {
+                    e.preventDefault(); e.stopPropagation();
+                    if(isLoggedIn) openProfileModalLogic();
+                    else {
+                        showIphoneNotif('Akses Terkunci', 'Harap masuk ke akun Anda', 'fa-lock');
+                        setTimeout(() => { window.location.href = '/login/index.html'; }, 1500);
+                    }
+                });
+            }
+
+            function openProfileModalLogic() {
+                const currentRealId = localStorage.getItem('kreaverse_user_id');
+                if (currentRealId && db) {
+                    getDoc(doc(db, 'users', currentRealId)).then(docSnap => {
+                        if (docSnap.exists()) {
+                            const data = docSnap.data();
+                            // PERBAIKAN: Baca dari field nama ATAU name
+                            if (profileNameInput) profileNameInput.value = data.nama || data.name || '';
+                            if (profileUsernameInput) profileUsernameInput.value = data.username || '';
+                            uploadedPhotoBase64 = data.photo || '';
+                            
+                            if (uploadedPhotoBase64) {
+                                if (profilePreviewImg) { profilePreviewImg.src = uploadedPhotoBase64; profilePreviewImg.classList.remove('hidden'); }
+                                if (profileLetter) profileLetter.classList.add('hidden');
+                            } else {
+                                if (profilePreviewImg) profilePreviewImg.classList.add('hidden');
+                                if (profileLetter) { profileLetter.classList.remove('hidden'); profileLetter.innerText = (data.nama || data.name || 'U').charAt(0).toUpperCase(); }
+                            }
+                        }
+                        if (profileModal) profileModal.classList.add('active');
+                    });
+                } else { if (profileModal) profileModal.classList.add('active'); }
+            }
+
+            safeBindClick('btn-cancel-profile-setup', () => { if (profileModal) profileModal.classList.remove('active'); });
+
+            if(btnSelectPhoto && hiddenPhotoInput) {
+                btnSelectPhoto.addEventListener('click', () => { hiddenPhotoInput.click(); });
+
+                hiddenPhotoInput.addEventListener('change', function() {
+                    const file = this.files[0];
+                    if (file) {
+                        const reader = new FileReader();
+                        reader.onload = function(e) {
+                            const img = new Image();
+                            img.onload = function() {
+                                const canvas = document.createElement('canvas');
+                                canvas.width = 128; canvas.height = 128;
+                                const ctx = canvas.getContext('2d');
+                                ctx.drawImage(img, 0, 0, 128, 128);
+                                
+                                uploadedPhotoBase64 = canvas.toDataURL('image/jpeg', 0.7);
+                                if (profilePreviewImg) { profilePreviewImg.src = uploadedPhotoBase64; profilePreviewImg.classList.remove('hidden'); }
+                                if (profileLetter) profileLetter.classList.add('hidden');
+                                showIphoneNotif('Foto Terpilih', 'Memproses kompresi foto profil...', 'fa-crop-simple');
+                            };
+                            img.src = e.target.result;
+                        };
+                        reader.readAsDataURL(file);
+                    }
+                });
+            }
+
+            const btnSaveProfile = document.getElementById('btn-save-profile-setup');
+            if(btnSaveProfile) {
+                btnSaveProfile.addEventListener('click', () => {
+                    const nameVal = profileNameInput ? profileNameInput.value.trim() : '';
+                    const usernameVal = profileUsernameInput ? profileUsernameInput.value.trim().replace(/[@\s]/g, '') : '';
+
+                    if (!nameVal) {
+                        if (profileNameInput) {
+                            profileNameInput.style.borderColor = "red";
+                            setTimeout(() => profileNameInput.style.borderColor = "var(--border-color)", 1000);
+                        }
+                        return;
+                    }
+
+                    const currentRealId = localStorage.getItem('kreaverse_user_id');
+                    if (currentRealId && db) {
+                        // PERBAIKAN: Simpan ke field 'nama' (agar cocok dengan Form Pendaftaran Admin)
+                        setDoc(doc(db, 'users', currentRealId), {
+                            nama: nameVal, name: nameVal, username: usernameVal, photo: uploadedPhotoBase64
+                        }, { merge: true }).then(() => {
+                            localStorage.setItem('kreaverse_user_name', nameVal);
+                            drawUserProfileUI(nameVal, usernameVal, uploadedPhotoBase64, localStorage.getItem('kreaverse_tier') || 'basic');
+                            updateDynamicGreeting();
+                            if (profileModal) profileModal.classList.remove('active');
+                            showIphoneNotif('Berhasil Disimpan', 'Informasi profil Anda telah diperbarui', 'fa-user-check');
+                        });
+                    } else { if (profileModal) profileModal.classList.remove('active'); }
+                });
+            }
+
+            // ==========================================
+            // LOGIKA KIRIM MASUKAN (FEEDBACK) REVISI UI BARU
+            // ==========================================
+            const feedbackModal = document.getElementById('feedback-modal');
+            const btnTriggerFeedback = document.getElementById('btn-trigger-feedback');
+            const btnSelectFeedbackPhoto = document.getElementById('btn-select-feedback-photo');
+            const hiddenFeedbackPhoto = document.getElementById('hidden-feedback-photo');
+            const feedbackFileName = document.getElementById('feedback-file-name');
+            const feedbackPreviewImg = document.getElementById('feedback-preview-img');
+            const feedbackText = document.getElementById('feedback-text');
+            const btnCancelFeedback = document.getElementById('btn-cancel-feedback');
+            const btnSaveFeedback = document.getElementById('btn-save-feedback');
+            
+            let feedbackPhotoBase64 = "";
+
+            function checkFeedbackValidation() {
+                if (feedbackText.value.trim().length > 0 && feedbackPhotoBase64 !== "") {
+                    btnSaveFeedback.disabled = false;
+                    btnSaveFeedback.style.opacity = "1";
+                    btnSaveFeedback.style.background = "#111111"; // Warna tombol aktif
+                    btnSaveFeedback.style.cursor = "pointer";
+                } else {
+                    btnSaveFeedback.disabled = true;
+                    btnSaveFeedback.style.opacity = "1";
+                    btnSaveFeedback.style.background = "#7A7A7A"; // Warna tombol nonaktif
+                    btnSaveFeedback.style.cursor = "not-allowed";
+                }
+            }
+
+            if(btnTriggerFeedback) {
+                btnTriggerFeedback.addEventListener('click', (e) => {
+                    e.preventDefault(); e.stopPropagation();
+                    closeAllMenus(); closeSidebar();
+                    if(isLoggedIn) {
+                        if (feedbackModal) feedbackModal.classList.add('active');
+                    } else {
+                        showIphoneNotif('Akses Terkunci', 'Harap masuk ke akun Anda', 'fa-lock');
+                        setTimeout(() => { window.location.href = '/login/index.html'; }, 1500);
+                    }
+                });
+            }
+
+            if(btnCancelFeedback) {
+                btnCancelFeedback.addEventListener('click', () => { 
+                    if(feedbackModal) feedbackModal.classList.remove('active');
+                    feedbackText.value = "";
+                    feedbackPhotoBase64 = "";
+                    feedbackFileName.innerText = "Belum ada file terpilih";
+                    feedbackPreviewImg.classList.add('hidden');
+                    checkFeedbackValidation();
+                });
+            }
+
+            if (feedbackText) {
+                feedbackText.addEventListener('input', checkFeedbackValidation);
+            }
+
+            if (btnSelectFeedbackPhoto && hiddenFeedbackPhoto) {
+                btnSelectFeedbackPhoto.addEventListener('click', () => { hiddenFeedbackPhoto.click(); });
+
+                hiddenFeedbackPhoto.addEventListener('change', function() {
+                    const file = this.files[0];
+                    if (file) {
+                        feedbackFileName.innerText = file.name;
+                        const reader = new FileReader();
+                        reader.onload = function(e) {
+                            const img = new Image();
+                            img.onload = function() {
+                                const canvas = document.createElement('canvas');
+                                const MAX_WIDTH = 800;
+                                const scaleSize = MAX_WIDTH / img.width;
+                                canvas.width = MAX_WIDTH;
+                                canvas.height = img.height * scaleSize;
+                                
+                                const ctx = canvas.getContext('2d');
+                                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                                
+                                feedbackPhotoBase64 = canvas.toDataURL('image/jpeg', 0.6); 
+                                
+                                if (feedbackPreviewImg) { 
+                                    feedbackPreviewImg.src = feedbackPhotoBase64; 
+                                    feedbackPreviewImg.classList.remove('hidden'); 
+                                }
+                                showIphoneNotif('Screenshot Terpilih', 'Gambar siap dikirim ke sistem', 'fa-image');
+                                checkFeedbackValidation();
+                            };
+                            img.src = e.target.result;
+                        };
+                        reader.readAsDataURL(file);
+                    }
+                });
+            }
+
+            if(btnSaveFeedback) {
+                btnSaveFeedback.addEventListener('click', () => {
+                    if(btnSaveFeedback.disabled) return;
+                    
+                    btnSaveFeedback.innerText = "Mengirim...";
+                    btnSaveFeedback.disabled = true;
+
+                    if (userEmail && db) {
+                        addDoc(collection(db, 'feedbacks'), {
+                            email: userEmail,
+                            name: savedName || 'User',
+                            message: feedbackText.value.trim(),
+                            screenshot: feedbackPhotoBase64,
+                            timestamp: Date.now()
+                        }).then(() => {
+                            if (feedbackModal) feedbackModal.classList.remove('active');
+                            showIphoneNotif('Pesan Terkirim', 'Terima kasih! Masukan Anda telah kami terima', 'fa-paper-plane');
+                            
+                            feedbackText.value = "";
+                            feedbackPhotoBase64 = "";
+                            feedbackFileName.innerText = "Belum ada file terpilih";
+                            feedbackPreviewImg.classList.add('hidden');
+                            btnSaveFeedback.innerText = "Kirim";
+                        }).catch(err => {
+                            console.error("Gagal kirim masukan:", err);
+                            btnSaveFeedback.innerText = "Kirim";
+                            checkFeedbackValidation();
+                            showIphoneNotif('Gagal Mengirim', 'Pastikan koneksi internet Anda stabil', 'fa-triangle-exclamation');
+                        });
+                    }
+                });
+            }
+
+            // ==========================================
+            // LOGIKA MODAL POPUP STATUS VIP KLIEN REVISI BARU
+            // ==========================================
+            const btnTriggerVip = document.getElementById('btn-trigger-vip');
+            if(btnTriggerVip) {
+                btnTriggerVip.addEventListener('click', (e) => {
+                    e.preventDefault(); e.stopPropagation();
+                    closeAllMenus(); closeSidebar();
+                    if(isLoggedIn) {
+                        openVipModal();
+                    } else {
+                        showIphoneNotif('Akses Terkunci', 'Harap masuk ke akun Anda', 'fa-lock');
+                        setTimeout(() => { window.location.href = '/login/index.html'; }, 1500);
+                    }
+                });
+            }
+
+            function openVipModal() {
+                const currentRealId = localStorage.getItem('kreaverse_user_id');
+                if (!currentRealId || !userEmail) return;
+                
+                getDoc(doc(db, 'users', currentRealId)).then(docSnap => {
+                    if (docSnap.exists()) {
+                        const data = docSnap.data();
+                        const tier = data.tier || 'basic';
+                        const expiry = data.expiry;
+                        
+                        const badge = document.getElementById('vip-plan-badge');
+                        const textMap = { basic: 'Basic', pro: 'Pro', max_monthly: 'Max (Bulanan)', max_lifetime: 'Max (Lifetime)', max: 'Max' };
+                        badge.textContent = textMap[tier] || 'Free';
+                        
+                        // REVISI: WARNA VIP BADGE
+                        if (tier === 'max_lifetime' || tier === 'max_monthly' || tier === 'max') {
+                            badge.style.background = '#FEE2E2';
+                            badge.style.color = '#EF4444';
+                        } else if (tier === 'pro') {
+                            badge.style.background = 'rgba(175,82,222,0.12)';
+                            badge.style.color = '#AF52DE';
+                        } else {
+                            badge.style.background = 'rgba(0,122,255,0.12)';
+                            badge.style.color = '#007AFF';
+                        }
+                        
+                        const expiryText = document.getElementById('vip-expiry-text');
+                        if (tier === 'max_lifetime' || tier === 'max') {
+                            expiryText.innerHTML = 'Aktif Selamanya<br>(Seumur Hidup)';
+                        } else if (expiry) {
+                            const d = new Date(expiry);
+                            expiryText.textContent = d.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+                        } else {
+                            expiryText.textContent = 'Tidak Ada Batas';
+                        }
+                        
+                        document.getElementById('vip-action-label').textContent = '-- Pilih Tindakan --';
+                        const waBtn = document.getElementById('btn-vip-whatsapp');
+                        waBtn.disabled = true;
+                        waBtn.style.background = '#7A7A7A'; // Warna tombol disable abu-abu
+                        waBtn.style.cursor = 'not-allowed';
+                        
+                        document.getElementById('vip-status-modal').classList.add('active');
+                    }
+                }).catch(err => {
+                    console.error("Gagal muat data VIP:", err);
+                });
+            }
+
+            const vipActionTrigger = document.getElementById('vip-action-trigger');
+            const vipActionDropdown = document.getElementById('vip-action-dropdown');
+            const vipWaBtn = document.getElementById('btn-vip-whatsapp');
+            
+            if (vipActionTrigger && vipActionDropdown) {
+                vipActionTrigger.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    vipActionDropdown.classList.toggle('hidden');
+                });
+                
+                document.querySelectorAll('.vip-dropdown-option').forEach(option => {
+                    option.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        const val = option.getAttribute('data-value');
+                        const label = option.textContent.trim();
+                        
+                        document.getElementById('vip-action-label').textContent = label;
+                        vipActionDropdown.classList.add('hidden');
+                        
+                        if (val === 'perpanjang') {
+                            vipWaBtn.disabled = true;
+                            vipWaBtn.style.background = '#7A7A7A'; 
+                            vipWaBtn.style.cursor = 'not-allowed';
+                            showIphoneNotif('Info Perpanjang', 'Silakan pilih tindakan Upgrade untuk langsung menghubungi Admin.', 'fa-circle-info');
+                        } else if (val === 'upgrade') {
+                            vipWaBtn.disabled = false;
+                            vipWaBtn.style.background = '#111111'; // Warna tombol aktif
+                            vipWaBtn.style.cursor = 'pointer';
+                        }
+                    });
+                });
+                
+                document.addEventListener('click', () => {
+                    vipActionDropdown.classList.add('hidden');
+                });
+            }
+
+            if (vipWaBtn) {
+                vipWaBtn.addEventListener('click', () => {
+                    if (vipWaBtn.disabled) return;
+                    const textMessage = encodeURIComponent(`Halo Admin Kreaverse AI, saya ingin mengajukan peningkatan paket (UPGRADE) ke jenjang VIP yang lebih tinggi.\n\nDetail Akun:\n- Email Klien: ${userEmail}\n- Nama Klien: ${savedName}`);
+                    window.open(`https://wa.me/6285119821813?text=${textMessage}`, '_blank');
+                });
+            }
+
+            safeBindClick('btn-close-vip-modal', () => {
+                document.getElementById('vip-status-modal').classList.remove('active');
+            });
+
+            // ==========================================
+            // LOGIKA BANTUAN
+            // ==========================================
+            const helpModal = document.getElementById('help-info-modal');
+            const btnTriggerHelp = document.getElementById('btn-trigger-help');
+
+            if(btnTriggerHelp) {
+                btnTriggerHelp.addEventListener('click', (e) => {
+                    e.preventDefault(); e.stopPropagation();
+                    closeAllMenus(); closeSidebar();
+                    if (helpModal) helpModal.classList.add('active');
+                });
+            }
+
+            safeBindClick('guest-help-menu-btn', () => {
+                closeSidebar(); 
+                if (helpModal) helpModal.classList.add('active');
+            });
+
+            safeBindClick('btn-close-help-modal', () => { if (helpModal) helpModal.classList.remove('active'); });
+
+            safeBindClick('btn-help-wa', () => {
+                const text = encodeURIComponent("Halo Admin Kreaverse AI, saya ingin mendaftar dan meminta kode akses login untuk akun baru.\n\nMohon bantuannya, terima kasih!");
+                window.open(`https://wa.me/6285119821813?text=${text}`, '_blank');
+            });
+
+            const logoutTriggerBtn = document.getElementById('logout-action-btn');
+            if (logoutTriggerBtn) {
+                logoutTriggerBtn.addEventListener('click', (e) => {
+                    e.preventDefault(); e.stopPropagation();
+                    closeAllMenus(); closeSidebar();
+                    const logoutModal = document.getElementById('logout-modal');
+                    if (logoutModal) logoutModal.classList.add('active');
+                });
+            }
+        });
+    </script>
+</body>
+</html>
