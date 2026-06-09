@@ -1,0 +1,237 @@
+--- START OF FILE inbox/index.html ---
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inbox - Kreaverse AI</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --bg: #ECE5DD; --surface: #FFFFFF; --text: #111111; --text-sec: #667781;
+            --border: #E9EDEF; --accent: #D97757; --unread: #25D366;
+            --radius: 12px; --shadow: 0 1px 3px rgba(0,0,0,0.08);
+        }
+        * { box-sizing: border-box; font-family: 'Inter', sans-serif; margin: 0; padding: 0; }
+        body { background: var(--bg); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; }
+        
+        /* HEADER */
+        .inbox-header {
+            background: var(--surface); padding: 15px 20px; display: flex; align-items: center; gap: 15px;
+            border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100;
+        }
+        .back-btn { background: none; border: none; font-size: 1.2rem; color: var(--text); cursor: pointer; padding: 5px; }
+        .inbox-title { font-size: 1.1rem; font-weight: 600; }
+        .unread-count { background: var(--unread); color: #fff; font-size: 0.75rem; padding: 2px 8px; border-radius: 10px; margin-left: auto; font-weight: 600; }
+
+        /* LIST CONTAINER */
+        .inbox-list { flex: 1; padding: 10px; overflow-y: auto; }
+        .empty-state { text-align: center; padding: 60px 20px; color: var(--text-sec); }
+        .empty-state i { font-size: 3rem; margin-bottom: 15px; opacity: 0.3; display: block; }
+
+        /* WA-LIKE NOTIFICATION ITEM */
+        .notif-item {
+            background: var(--surface); border-radius: var(--radius); padding: 15px;
+            margin-bottom: 8px; display: flex; align-items: flex-start; gap: 12px;
+            cursor: pointer; transition: background 0.2s; border: 1px solid transparent;
+            position: relative; overflow: hidden;
+        }
+        .notif-item:hover { background: #F5F6F6; }
+        .notif-item.unread { background: #EBF5FF; border-color: #D6E9FF; }
+        .notif-item.unread::before {
+            content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; background: var(--accent);
+        }
+
+        .notif-icon {
+            width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            font-size: 1.1rem; flex-shrink: 0; background: #F0F2F5;
+        }
+        .notif-icon.info { background: rgba(0,122,255,0.1); color: #007AFF; }
+        .notif-icon.promo { background: rgba(52,199,89,0.1); color: #34C759; }        
+        .notif-icon.gangguan { background: rgba(255,59,48,0.1); color: #FF3B30; }
+        .notif-icon.update { background: rgba(175,82,222,0.1); color: #AF52DE; }
+
+        .notif-content { flex: 1; min-width: 0; }
+        .notif-msg { font-size: 0.95rem; line-height: 1.4; margin-bottom: 6px; word-break: break-word; }
+        .notif-meta { display: flex; align-items: center; gap: 8px; font-size: 0.75rem; color: var(--text-sec); }
+        .unread-dot { width: 8px; height: 8px; background: var(--accent); border-radius: 50%; flex-shrink: 0; }
+
+        /* RIPPLE EFFECT (WA STYLE) */
+        .ripple { position: absolute; border-radius: 50%; background: rgba(0,0,0,0.05); transform: scale(0); animation: ripple 0.6s linear; pointer-events: none; }
+        @keyframes ripple { to { transform: scale(4); opacity: 0; } }
+
+        /* LOADING */
+        .loading { text-align: center; padding: 40px; color: var(--text-sec); }
+        .loading i { animation: spin 1s linear infinite; display: inline-block; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* MOBILE OPTIMIZATION */
+        @media (max-width: 480px) {
+            .inbox-list { padding: 5px; }
+            .notif-item { padding: 12px; }
+        }
+    </style>
+</head>
+<body>
+
+    <header class="inbox-header">
+        <button class="back-btn" onclick="window.location.href='/index.html'"><i class="fa-solid fa-arrow-left"></i></button>
+        <div class="inbox-title">Inbox Pengumuman</div>
+        <div class="unread-count" id="unread-badge" style="display: none;">0</div>
+    </header>
+
+    <div class="inbox-list" id="inbox-list">
+        <div class="loading"><i class="fa-solid fa-circle-notch"></i> Memuat pengumuman...</div>
+    </div>
+
+    <!-- FIREBASE MODULAR SDK -->
+    <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+    import { getFirestore, collection, query, where, getDocs, writeBatch, doc, updateDoc, onSnapshot, orderBy } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+
+    // ============================================================
+    // FIREBASE CONFIG (SAMA PERSIS DENGAN FILE LAIN)
+    // ============================================================
+    const firebaseConfig = {
+        apiKey: "AIzaSyAO8JV4jkJmbHChYvjUCS7wqfVbKr94tHM",
+        authDomain: "kreaverse-ai0107.firebaseapp.com",
+        projectId: "kreaverse-ai0107",
+        storageBucket: "kreaverse-ai0107.firebasestorage.app",
+        messagingSenderId: "1048550433011",
+        appId: "1:1048550433011:web:0cf2e4074b20fe09909786",
+        measurementId: "G-CJHMKKYQ4C"
+    };
+    
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    // ============================================================
+    // CEK AUTENTIKASI
+    // ============================================================
+    const isLoggedIn = localStorage.getItem('kreaverse_logged_in') === 'true';
+    const userId = localStorage.getItem('kreaverse_user_id');
+    if (!isLoggedIn || !userId) {
+        window.location.href = '/login/index.html';
+    }
+
+    // ============================================================
+    // AUTO RESET 7 HARI (HAPUS OTOMATIS DARI DATABASE)
+    // ============================================================
+    async function cleanupOldNotifications() {
+        const sevenDaysAgo = Date.now() - (7 * 24 * 60 * 60 * 1000);
+        try {
+            const q = query(collection(db, `users/${userId}/notifications`), where('timestamp', '<', sevenDaysAgo));
+            const snapshot = await getDocs(q);
+            
+            if (snapshot.empty) return;
+
+            const batch = writeBatch(db);
+            snapshot.docs.forEach(docSnap => batch.delete(docSnap.ref));
+            await batch.commit();
+            console.log(`Cleaned up ${snapshot.size} old notifications (>7 days)`);
+        } catch (e) {
+            console.warn('Cleanup error:', e.message);
+        }
+    }
+
+    // ============================================================
+    // RENDER INBOX (WA-LIKE UI)
+    // ============================================================
+    const listEl = document.getElementById('inbox-list');
+    const badgeEl = document.getElementById('unread-badge');
+
+    function formatFullTime(ts) {
+        const d = new Date(ts);
+        const days = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
+        const months = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
+        return `${days[d.getDay()]}, ${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()} ÃÂ¢ÃÂÃÂ¢ ${d.getHours().toString().padStart(2,'0')}:${d.getMinutes().toString().padStart(2,'0')}`;
+    }
+
+    function getIcon(type) {
+        const map = { info: 'fa-circle-info', promo: 'fa-gift', gangguan: 'fa-triangle-exclamation', update: 'fa-bolt' };
+        return map[type] || 'fa-circle-info';
+    }
+
+    function renderNotif(notif) {
+        const isUnread = !notif.isRead;
+        const el = document.createElement('div');
+        el.className = `notif-item ${isUnread ? 'unread' : ''}`;
+        el.dataset.id = notif.id;
+        el.innerHTML = `
+            <div class="notif-icon ${notif.type || 'info'}"><i class="fa-solid ${getIcon(notif.type)}"></i></div>
+            <div class="notif-content">
+                <div class="notif-msg">${notif.message}</div>
+                <div class="notif-meta">
+                    <span>${formatFullTime(notif.timestamp)}</span>
+                    ${isUnread ? '<span class="unread-dot"></span>' : ''}
+                </div>
+            </div>
+        `;
+
+        // Ripple effect & Mark as read
+        el.addEventListener('click', async function(e) {
+            const ripple = document.createElement('span');
+            ripple.className = 'ripple';
+            const rect = this.getBoundingClientRect();
+            ripple.style.left = (e.clientX - rect.left) + 'px';
+            ripple.style.top = (e.clientY - rect.top) + 'px';
+            this.appendChild(ripple);
+            setTimeout(() => ripple.remove(), 600);
+
+            if (notif.isRead === false) {
+                try {
+                    await updateDoc(doc(db, `users/${userId}/notifications`, notif.id), { isRead: true });
+                    this.classList.remove('unread');
+                    const dot = this.querySelector('.unread-dot');
+                    if (dot) dot.remove();
+                    updateBadge();
+                } catch (error) {
+                    console.error("Gagal menandai telah dibaca:", error);
+                }
+            }
+        });
+
+        return el;
+    }
+
+    function updateBadge() {
+        const q = query(collection(db, `users/${userId}/notifications`), where('isRead', '==', false));
+        getDocs(q).then(snap => {
+            const count = snap.size;
+            badgeEl.textContent = count;
+            badgeEl.style.display = count > 0 ? 'block' : 'none';
+            // Sync badge to main page
+            localStorage.setItem('kreaverse_notif_unread', count);
+        }).catch(err => console.error("Gagal update badge:", err));
+    }
+
+    // ============================================================
+    // REAL-TIME LISTENER
+    // ============================================================
+    const sevenDaysAgo = Date.now() - (7 * 24 * 60 * 60 * 1000);
+    const qNotif = query(
+        collection(db, `users/${userId}/notifications`), 
+        where('timestamp', '>', sevenDaysAgo), 
+        orderBy('timestamp', 'desc')
+    );
+    
+    onSnapshot(qNotif, snapshot => {
+        listEl.innerHTML = '';
+        if (snapshot.empty) {
+            listEl.innerHTML = `<div class="empty-state"><i class="fa-regular fa-bell-slash"></i>Tidak ada pengumuman aktif.<br><small>Pengumuman otomatis dihapus setelah 7 hari.</small></div>`;
+        } else {
+            snapshot.forEach(docSnap => listEl.appendChild(renderNotif({ id: docSnap.id, ...docSnap.data() })));
+        }
+        updateBadge();
+    }, err => {
+        listEl.innerHTML = `<div class="empty-state" style="color:#FF3B30;"><i class="fa-solid fa-triangle-exclamation"></i>Gagal memuat inbox.</div>`;
+        console.error('Inbox error:', err);
+    });
+
+    // Jalankan cleanup saat load
+    cleanupOldNotifications();
+    </script>
+</body>
+</html>
