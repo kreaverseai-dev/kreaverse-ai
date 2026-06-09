@@ -891,7 +891,7 @@
                     
                     if(type === 'unknown') {
                         let ul = url.toLowerCase();
-                        if(ul.includes('.webm')) { type = 'video'; extAsli = 'MP4'; } // PERBAIKAN: Paksa MP4
+                        if(ul.includes('.webm')) { type = 'video'; extAsli = 'WEBM'; }
                         else if(ul.includes('.m4a')) { type = 'audio'; extAsli = 'M4A'; }
                         else if(ul.includes('.mp3') || ul.includes('audio')) { type = 'audio'; extAsli = 'MP3'; }
                         else type = 'video'; 
@@ -1115,18 +1115,7 @@
             closeSheet('sheet-select-media');
             resolvedMediaUrl = url;
             const safeTitle = (title || "Media").replace(/[\\/:*?"<>|]/g, '');
-            
-            // PERBAIKAN: Memaksa file akhir berformat sesuai kategori (Convert Semu Client-Side)
-            let finalExt = 'mp4';
-            let passedExt = ext ? ext.toLowerCase() : '';
-            if (type === 'audio') {
-                finalExt = (passedExt === 'm4a') ? 'm4a' : 'mp3'; // Paksa ke mp3 kecuali m4a
-            } else if (type === 'thumb') {
-                finalExt = 'jpg';
-            } else {
-                finalExt = 'mp4'; // Paksa video menjadi MP4
-            }
-            
+            const finalExt = ext ? ext.toLowerCase() : (type === 'audio' ? 'mp3' : (type === 'thumb' ? 'jpg' : 'mp4'));
             resolvedFileName = `${safeTitle}.${finalExt}`;
 
             let decodedThumb = '';
@@ -1254,12 +1243,7 @@
             if(extName) {
                 const arr = resolvedFileName.split('.');
                 arr.pop(); 
-                let newExt = extName.toLowerCase();
-                // PERBAIKAN: Pertahankan ekstensi MP4/MP3 meskipun parameter link aslinya berubah
-                if (currentFormat === 'video') newExt = 'mp4';
-                if (currentFormat === 'audio' && newExt !== 'm4a') newExt = 'mp3';
-                
-                resolvedFileName = arr.join('.') + '.' + newExt;
+                resolvedFileName = arr.join('.') + '.' + extName.toLowerCase();
             }
 
             activeMedia.src = newUrl;
@@ -1449,27 +1433,12 @@
             if (!resolvedMediaUrl) return;
             showIphoneNotif('Menyiapkan Berkas...', 'Mengamankan jalur unduhan ke perangkat Anda.', 'fa-cloud-arrow-down');
             
-            // PERBAIKAN: Gunakan Fetch & Blob untuk Audio dan Thumb agar nama & ekstensi (MP3/JPG) dipaksa & tidak diubah browser
-            if (currentFormat === 'thumb' || currentFormat === 'audio') {
+            // JIKA THUMBNAIL, GUNAKAN FETCH LANGSUNG LALU JADIKAN BLOB LOCAL
+            if (currentFormat === 'thumb') {
                 try {
-                    let response;
-                    try {
-                        response = await fetch(resolvedMediaUrl);
-                        if (!response.ok) throw new Error('CORS');
-                    } catch (err) {
-                        response = await fetch("/api/ytdl?targetUrl=" + encodeURIComponent(resolvedMediaUrl));
-                        if (!response.ok) throw new Error('Proxy Fail');
-                    }
-                    
-                    let blob = await response.blob();
-                    
-                    // Paksa Header Mime Type
-                    let mimeType = 'application/octet-stream';
-                    if (resolvedFileName.endsWith('.mp3')) mimeType = 'audio/mpeg';
-                    else if (resolvedFileName.endsWith('.m4a')) mimeType = 'audio/mp4';
-                    else if (resolvedFileName.endsWith('.jpg')) mimeType = 'image/jpeg';
-                    
-                    blob = new Blob([blob], { type: mimeType });
+                    const response = await fetch(resolvedMediaUrl);
+                    if (!response.ok) throw new Error('CORS');
+                    const blob = await response.blob();
                     const objUrl = URL.createObjectURL(blob);
                     
                     const a = document.createElement('a'); 
@@ -1482,12 +1451,13 @@
                     setTimeout(() => URL.revokeObjectURL(objUrl), 5000);
                     return;
                 } catch(e) {
+                    // Fallback (Lewat tab baru HP)
                     window.open(resolvedMediaUrl, '_blank');
                     return;
                 }
             }
 
-            // VIDEO: Buka langsung di window karena ukuran file terlalu besar jika disedot ke RAM browser HP
+            // STANDAR MEDIA: Buka langsung di window HP (Otomatis ditangkap Pengunduh Sistem)
             setTimeout(() => {
                 window.location.href = resolvedMediaUrl;
             }, 800);
@@ -1546,15 +1516,7 @@
                 }
                 
                 text.innerText = '100%'; speedEl.innerText = 'Menyimpan...';
-                
-                // PERBAIKAN: Penyesuaian identitas Mime Type agar OS/Gallery mendeteksi sebagai MP4 / MP3 asli yang valid
-                let mimeType = 'application/octet-stream';
-                if (resolvedFileName.endsWith('.mp4')) mimeType = 'video/mp4';
-                else if (resolvedFileName.endsWith('.mp3')) mimeType = 'audio/mpeg';
-                else if (resolvedFileName.endsWith('.m4a')) mimeType = 'audio/mp4';
-                else if (resolvedFileName.endsWith('.jpg')) mimeType = 'image/jpeg';
-                
-                const blob = new Blob(chunks, { type: mimeType });
+                const blob = new Blob(chunks, { type: 'application/octet-stream' });
                 const objUrl = URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 a.href = objUrl; a.download = resolvedFileName || 'download.mp4';
