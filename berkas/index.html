@@ -65,11 +65,14 @@
         .sub-tab-btn:hover { border-color: var(--accent-color); color: var(--accent-color); }
         .sub-tab-btn.active { background: #EEF2FF; border-color: var(--accent-color); color: var(--accent-color); }
 
-        /* CONTROLS (SORTING) */
+        /* CONTROLS (SORTING & HAPUS SEMUA) */
         .berkas-controls { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; padding: 0 5px; }
         .total-text { font-size: 0.9rem; color: var(--text-secondary); font-weight: 600; }
+        .control-btns { display: flex; gap: 8px; }
         .sort-btn { background: #FFFFFF; border: 1px solid var(--border-color); padding: 8px 16px; border-radius: 12px; font-size: 0.85rem; font-weight: 600; color: var(--text-primary); cursor: pointer; display: flex; align-items: center; gap: 8px; box-shadow: var(--shadow-sm); transition: var(--transition); }
         .sort-btn:hover { background: #F9FAFB; }
+        .delete-all-btn { background: #FEF2F2; border: 1px solid #FECACA; color: var(--danger-color); }
+        .delete-all-btn:hover { background: #FEE2E2; }
 
         /* LIST CONTAINER */
         .berkas-list { display: flex; flex-direction: column; gap: 12px; padding-bottom: 40px; }
@@ -112,25 +115,51 @@
         .sheet-opt-btn { display: flex; justify-content: space-between; align-items: center; width: 100%; padding: 16px; background: #FAFAFA; border: 1px solid var(--border-color); border-radius: 16px; font-size: 1rem; font-weight: 600; color: var(--text-primary); cursor: pointer; transition: var(--transition); margin-bottom: 10px; }
         .sheet-opt-btn.selected { border-color: var(--accent-color); background: #EEF2FF; color: var(--accent-color); }
 
-        /* IN-PAGE PLAYER MODAL */
+        /* IN-PAGE PLAYER MODAL (YTDL STYLE) */
         .player-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.9); backdrop-filter: blur(10px); z-index: 10000; display: flex; flex-direction: column; align-items: center; justify-content: center; opacity: 0; visibility: hidden; transition: 0.3s; padding: 20px; }
         .player-modal.active { opacity: 1; visibility: visible; }
-        .player-header { width: 100%; max-width: 800px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; color: #FFF; }
+        .player-header { width: 100%; max-width: 800px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; color: #FFF; }
         .player-title { font-size: 1.1rem; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding-right: 15px; }
         .close-player-btn { background: rgba(255,255,255,0.2); border: none; color: #FFF; width: 40px; height: 40px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.2s; flex-shrink: 0; font-size: 1.2rem; }
         .close-player-btn:hover { background: var(--danger-color); }
         
-        .player-content { width: 100%; max-width: 800px; background: #000; border-radius: 20px; overflow: hidden; position: relative; display: flex; align-items: center; justify-content: center; box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
-        .player-content video { width: 100%; max-height: 75vh; object-fit: contain; display: block; }
+        .media-player-wrapper { position: relative; width: 100%; max-width: 800px; border-radius: 16px; overflow: hidden; background: #000; display: flex; align-items: center; justify-content: center; aspect-ratio: 16/9; z-index: 1; box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
+        .media-player-wrapper.audio-mode { background: linear-gradient(135deg, #1E1B4B, #4338CA); aspect-ratio: auto; padding: 60px 20px 20px; flex-direction: column; }
+        .media-player-wrapper:fullscreen { width: 100vw; height: 100vh; max-width: none; border-radius: 0; }
+        .media-player-wrapper:-webkit-full-screen { width: 100vw; height: 100vh; max-width: none; border-radius: 0; }
         
-        /* AUDIO PLAYER UI */
-        .audio-player-ui { width: 100%; padding: 50px 20px; background: linear-gradient(135deg, #1E1B4B, #4338CA); display: none; flex-direction: column; align-items: center; gap: 30px; }
-        .vinyl-record { width: 180px; height: 180px; border-radius: 50%; background: #111; border: 6px solid #333; display: flex; align-items: center; justify-content: center; position: relative; box-shadow: 0 15px 35px rgba(0,0,0,0.6); }
-        .vinyl-record::before { content: ''; position: absolute; width: 60px; height: 60px; border-radius: 50%; background: var(--accent-color); border: 3px solid #111; }
-        .vinyl-record::after { content: ''; position: absolute; width: 15px; height: 15px; border-radius: 50%; background: #FFF; }
-        .vinyl-record.playing { animation: spinVinyl 4s linear infinite; }
-        @keyframes spinVinyl { 100% { transform: rotate(360deg); } }
-        audio { width: 100%; max-width: 500px; outline: none; }
+        .video-element { width: 100%; height: 100%; max-height: 75vh; object-fit: contain; display: block; }
+        .media-player-wrapper:fullscreen .video-element { max-height: 100vh; }
+        
+        /* AUDIO UI */
+        .audio-ui-container { display: none; flex-direction: column; align-items: center; gap: 15px; width: 100%; }
+        .media-player-wrapper.audio-mode .audio-ui-container { display: flex; }
+        
+        .spotify-thumbnail { width: 180px; height: 180px; border-radius: 16px; object-fit: cover; box-shadow: 0 15px 35px rgba(0,0,0,0.5); background: #222; transition: transform 0.3s ease; }
+        .spotify-thumbnail.playing { transform: scale(1.05); }
+
+        /* WATERMARK SEMPURNA */
+        .player-watermark { position: absolute; top: 15px; right: 10px; width: 105px; height: 26px; z-index: 10; pointer-events: none; filter: drop-shadow(0 1px 2px rgba(0,0,0,0.4)); overflow: hidden; }
+        .media-player-wrapper.audio-mode .player-watermark { top: 15px; right: 15px; display: block; }
+        .media-player-wrapper:fullscreen .player-watermark { width: 125px; height: 32px; top: 20px; right: 25px; }
+
+        /* CONTROLS */
+        .player-controls { position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(to top, rgba(0,0,0,0.9), transparent); padding: 30px 20px 15px; display: flex; align-items: center; gap: 15px; z-index: 10; transition: opacity 0.3s; }
+        .media-player-wrapper.audio-mode .player-controls { position: relative; background: transparent; padding: 15px 0 0; width: 100%; max-width: 400px; }
+        
+        .play-pause-btn { width: 45px; height: 45px; border-radius: 50%; background: var(--accent-color); color: #FFF; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; flex-shrink: 0; transition: 0.2s; box-shadow: 0 4px 10px rgba(99, 102, 241, 0.4); }
+        .play-pause-btn:hover { transform: scale(1.08); background: var(--accent-hover); }
+        
+        .progress-area { flex: 1; display: flex; flex-direction: column; gap: 8px; }
+        .progress-bar-bg { width: 100%; height: 6px; background: rgba(255,255,255,0.3); border-radius: 4px; cursor: pointer; position: relative; overflow: hidden; }
+        .progress-bar-fill { height: 100%; background: var(--accent-color); width: 0%; border-radius: 4px; transition: width 0.1s linear; }
+        .time-display { font-size: 0.75rem; color: rgba(255,255,255,0.9); font-weight: 700; display: flex; justify-content: space-between; font-family: monospace; }
+        
+        .control-icon-btn { background: none; border: none; color: #FFF; font-size: 1.3rem; cursor: pointer; padding: 5px; transition: 0.2s; opacity: 0.9; }
+        .control-icon-btn:hover { opacity: 1; transform: scale(1.1); }
+        .media-player-wrapper.audio-mode .fullscreen-btn { display: none; }
+
+        .buffering-spinner { position: absolute; z-index: 20; display: flex; align-items: center; justify-content: center; }
 
         /* IPHONE TOAST */
         .iphone-toast-container { position: fixed; top: 15px; left: 50%; transform: translateX(-50%) translateY(-120%); background: rgba(20, 20, 20, 0.95); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); color: #FFFFFF; padding: 12px 24px; border-radius: 30px; display: flex; align-items: center; gap: 12px; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2); opacity: 0; transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1); z-index: 100000; width: max-content; max-width: 90vw; pointer-events: none; }
@@ -144,6 +173,8 @@
             .berkas-item { flex-wrap: wrap; }
             .item-actions { width: 100%; justify-content: flex-end; border-top: 1px solid var(--border-color); padding-top: 12px; margin-top: 5px; }
             .berkas-title { font-size: 1.8rem; }
+            .control-btns { width: 100%; justify-content: space-between; margin-top: 10px; }
+            .berkas-controls { flex-direction: column; align-items: flex-start; }
         }
     </style>
 </head>
@@ -203,7 +234,6 @@
             </button>
         </div>
         <div class="sidebar-menu">
-            <!-- REVISI 2: Menu Sidebar disesuaikan -->
             <a href="/" class="menu-item"><i class="fa-solid fa-house"></i> <span>Kembali ke Beranda</span></a>
             <div class="menu-divider"></div>
             <a href="/otp/" class="menu-item"><i class="fa-solid fa-sim-card"></i> <span>OTP MURAH</span></a>
@@ -249,9 +279,13 @@
                 <button class="sub-tab-btn" onclick="setFilter('audio')"><i class="fa-solid fa-music"></i> Audio</button>
             </div>
 
+            <!-- KONTROL (SORTING & HAPUS SEMUA) -->
             <div class="berkas-controls">
                 <span class="total-text" id="total-files-text">Memuat data...</span>
-                <button class="sort-btn" onclick="openSortSheet()"><i class="fa-solid fa-arrow-down-wide-short"></i> <span id="sort-label">Terbaru</span></button>
+                <div class="control-btns">
+                    <button class="sort-btn delete-all-btn" onclick="deleteAllFiles()"><i class="fa-solid fa-trash"></i> Hapus Semua</button>
+                    <button class="sort-btn" onclick="openSortSheet()"><i class="fa-solid fa-arrow-down-wide-short"></i> <span id="sort-label">Terbaru</span></button>
+                </div>
             </div>
 
             <div class="berkas-list" id="berkas-list-container">
@@ -279,15 +313,66 @@
             <div class="player-title" id="player-title">Memutar Media...</div>
             <button class="close-player-btn" onclick="closePlayer()"><i class="fa-solid fa-xmark"></i></button>
         </div>
-        <div class="player-content">
-            <!-- VIDEO PLAYER (REVISI 1: Bypass CORS) -->
-            <video id="video-player" controls playsinline referrerpolicy="no-referrer" style="display: none;"></video>
+        <div class="media-player-wrapper" id="media-wrapper">
+            <!-- WATERMARK SEMPURNA -->
+            <div class="player-watermark">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 60" style="width:100%; height:100%;">
+                    <defs>
+                        <linearGradient id="kreaGradWM" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stop-color="#D97757" />
+                            <stop offset="50%" stop-color="#AF52DE" />
+                            <stop offset="100%" stop-color="#007AFF" />
+                        </linearGradient>
+                        <linearGradient id="shimmerGlow" x1="200%" y1="0%" x2="100%" y2="0%">
+                            <stop offset="0%" stop-color="rgba(255,255,255,0)" />
+                            <stop offset="45%" stop-color="rgba(255,255,255,0)" />
+                            <stop offset="50%" stop-color="rgba(255,255,255,0.9)" />
+                            <stop offset="55%" stop-color="rgba(255,255,255,0)" />
+                            <stop offset="100%" stop-color="rgba(255,255,255,0)" />
+                            <animate attributeName="x1" values="200%; -100%" dur="4s" repeatCount="indefinite" />
+                            <animate attributeName="x2" values="300%; 0%" dur="4s" repeatCount="indefinite" />
+                        </linearGradient>
+                    </defs>
+                    <g>
+                        <path d="M 30,10 Q 30,30 50,30 Q 30,30 30,50 Q 30,30 10,30 Q 30,30 30,10 Z" fill="url(#kreaGradWM)" />
+                        <path d="M 30,17 Q 30,30 43,30 Q 30,30 30,43 Q 30,30 17,30 Q 30,30 30,17 Z" fill="url(#kreaGradWM)" transform="rotate(45, 30, 30)" opacity="0.85" />
+                        <text x="65" y="38" font-family="'Plus Jakarta Sans', sans-serif" font-weight="800" font-size="21" fill="url(#kreaGradWM)" letter-spacing="-0.5px">Kreaverse<tspan font-weight="500"> AI</tspan></text>
+                    </g>
+                    <g style="mix-blend-mode: overlay;">
+                        <path d="M 30,10 Q 30,30 50,30 Q 30,30 30,50 Q 30,30 10,30 Q 30,30 30,10 Z" fill="url(#shimmerGlow)" />
+                        <path d="M 30,17 Q 30,30 43,30 Q 30,30 30,43 Q 30,30 17,30 Q 30,30 30,17 Z" fill="url(#shimmerGlow)" transform="rotate(45, 30, 30)" />
+                        <text x="65" y="38" font-family="'Plus Jakarta Sans', sans-serif" font-weight="800" font-size="21" fill="url(#shimmerGlow)" letter-spacing="-0.5px">Kreaverse<tspan font-weight="500"> AI</tspan></text>
+                    </g>
+                </svg>
+            </div>
+
+            <!-- AUDIO UI -->
+            <div class="audio-ui-container" id="audio-ui">
+                <img src="" id="audio-thumbnail" class="spotify-thumbnail" alt="Cover Music" onerror="this.src='https://i.postimg.cc/mZdwnfsm/Claude-ai-icon-svg.png'">
+            </div>
+
+            <div class="buffering-spinner hidden" id="buffering-spinner">
+                <div style="background:rgba(0,0,0,0.8); padding:20px; border-radius:16px; display:flex; flex-direction:column; align-items:center;">
+                    <i class="fa-solid fa-circle-notch fa-spin" style="font-size: 2rem; color: var(--accent-color);"></i>
+                    <span id="buffering-text" style="font-size:0.85rem; font-weight:600; margin-top:10px; color:#FFF;">Memuat media...</span>
+                </div>
+            </div>
             
-            <!-- AUDIO PLAYER UI -->
-            <div class="audio-player-ui" id="audio-player-ui">
-                <div class="vinyl-record" id="vinyl-record"><i class="fa-solid fa-music" style="color:#FFF; font-size:3rem;"></i></div>
-                <!-- REVISI 1: Bypass CORS -->
-                <audio id="audio-player" controls referrerpolicy="no-referrer"></audio>
+            <video id="custom-video" class="video-element" playsinline preload="metadata" referrerpolicy="no-referrer"></video>
+            <audio id="custom-audio" class="hidden" preload="metadata" referrerpolicy="no-referrer"></audio>
+            
+            <div class="player-controls">
+                <button class="play-pause-btn" id="play-pause-btn"><i class="fa-solid fa-play" style="margin-left:2px;"></i></button>
+                <div class="progress-area">
+                    <div class="progress-bar-bg" id="progress-bg">
+                        <div class="progress-bar-fill" id="progress-fill"></div>
+                    </div>
+                    <div class="time-display">
+                        <span id="current-time">0:00</span>
+                        <span id="total-time">0:00</span>
+                    </div>
+                </div>
+                <button class="control-icon-btn fullscreen-btn" id="fullscreen-btn" title="Layar Penuh"><i class="fa-solid fa-expand"></i></button>
             </div>
         </div>
     </div>
@@ -423,6 +508,7 @@
             }
         }
 
+        // FUNGSI FORMAT TANGGAL DENGAN BULLET TITIK BENAR
         function formatDate(ts) {
             const d = new Date(ts);
             const months = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
@@ -432,7 +518,7 @@
             hours = hours % 12;
             hours = hours ? hours : 12; 
             minutes = minutes < 10 ? '0' + minutes : minutes;
-            return `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()} â¢ ${hours}:${minutes} ${ampm}`;
+            return `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()} • ${hours}:${minutes} ${ampm}`;
         }
 
         window.renderList = function() {
@@ -473,6 +559,7 @@
                     const iconClass = isAudio ? 'fa-music' : 'fa-video';
                     const bgClass = isAudio ? 'audio' : 'video';
                     const sizeBadge = item.size ? `<span class="meta-badge">${item.size}</span>` : '';
+                    const safeThumb = item.thumbnail ? btoa(item.thumbnail) : '';
                     
                     html += `
                         <div class="berkas-item">
@@ -487,7 +574,7 @@
                                 </div>
                             </div>
                             <div class="item-actions">
-                                <button class="action-btn play" onclick="openPlayer('${item.directUrl}', '${item.fileName.replace(/'/g, "\\'")}', '${item.type}')" title="Putar"><i class="fa-solid fa-play"></i></button>
+                                <button class="action-btn play" onclick="openPlayer('${item.directUrl}', '${item.fileName.replace(/'/g, "\\'")}', '${item.type}', '${safeThumb}')" title="Putar"><i class="fa-solid fa-play"></i></button>
                                 <button class="action-btn dl" onclick="downloadFile('${item.directUrl}', '${item.fileName.replace(/'/g, "\\'")}')" title="Unduh"><i class="fa-solid fa-download"></i></button>
                                 <button class="action-btn del" onclick="deleteFile('${item.id}', 'dl')" title="Hapus"><i class="fa-solid fa-trash"></i></button>
                             </div>
@@ -515,7 +602,7 @@
                             <div class="item-actions">
                                 ${isImage ? 
                                     `<button class="action-btn play" onclick="window.open('${item.url}', '_blank')" title="Lihat"><i class="fa-solid fa-eye"></i></button>` : 
-                                    `<button class="action-btn play" onclick="openPlayer('${item.url}', 'AI Generate', '${item.type}')" title="Putar"><i class="fa-solid fa-play"></i></button>`
+                                    `<button class="action-btn play" onclick="openPlayer('${item.url}', 'AI Generate', '${item.type}', '')" title="Putar"><i class="fa-solid fa-play"></i></button>`
                                 }
                                 <button class="action-btn dl" onclick="downloadFile('${item.url}', 'Kreaverse_AI_Generate')" title="Unduh"><i class="fa-solid fa-download"></i></button>
                                 <button class="action-btn del" onclick="deleteFile('${item.id}', 'gen')" title="Hapus"><i class="fa-solid fa-trash"></i></button>
@@ -528,42 +615,148 @@
             container.innerHTML = html;
         };
 
-        // FUNGSI PLAYER
+        // FUNGSI PLAYER BERKAS ALA YTDL (MODERN)
+        let activeMedia = null;
         const playerModal = document.getElementById('player-modal');
-        const videoPlayer = document.getElementById('video-player');
-        const audioPlayer = document.getElementById('audio-player');
-        const audioUi = document.getElementById('audio-player-ui');
-        const vinylRecord = document.getElementById('vinyl-record');
+        const customAudio = document.getElementById('custom-audio');
+        const customVideo = document.getElementById('custom-video');
+        const mediaWrapper = document.getElementById('media-wrapper');
+        const audioThumbnail = document.getElementById('audio-thumbnail');
+        const playPauseBtn = document.getElementById('play-pause-btn');
+        const progressFill = document.getElementById('progress-fill');
+        const currentTimeEl = document.getElementById('current-time');
+        const totalTimeEl = document.getElementById('total-time');
+        const bufferingSpinner = document.getElementById('buffering-spinner');
         const playerTitle = document.getElementById('player-title');
 
-        window.openPlayer = function(url, title, type) {
+        window.openPlayer = function(url, title, type, base64Thumb) {
             playerTitle.innerText = title;
             playerModal.classList.add('active');
 
+            let decodedThumb = '';
+            try { if(base64Thumb) decodedThumb = atob(base64Thumb); } catch(e){}
+            const finalThumb = decodedThumb || 'https://i.postimg.cc/mZdwnfsm/Claude-ai-icon-svg.png';
+            audioThumbnail.src = finalThumb;
+
             if (type === 'audio') {
-                videoPlayer.style.display = 'none';
-                audioUi.style.display = 'flex';
-                audioPlayer.src = url;
-                audioPlayer.play();
+                activeMedia = customAudio; 
+                customAudio.src = url;
+                mediaWrapper.classList.add('audio-mode'); 
+                customVideo.style.display = "none";
+                customAudio.play();
             } else {
-                audioUi.style.display = 'none';
-                videoPlayer.style.display = 'block';
-                videoPlayer.src = url;
-                videoPlayer.play();
+                activeMedia = customVideo; 
+                customVideo.src = url;
+                mediaWrapper.classList.remove('audio-mode'); 
+                customVideo.style.display = "block";
+                customVideo.play();
+            }
+        };
+        
+        window.closePlayer = function() {
+            playerModal.classList.remove('active');
+            if(activeMedia) {
+                activeMedia.pause();
+                activeMedia.src = "";
+                activeMedia = null;
+            }
+            updatePlayPauseUI(false);
+            progressFill.style.width = '0%';
+            currentTimeEl.innerText = '0:00'; 
+            totalTimeEl.innerText = '0:00';
+            bufferingSpinner.classList.add('hidden');
+            
+            if (document.fullscreenElement || document.webkitFullscreenElement) {
+                if (document.exitFullscreen) document.exitFullscreen();
+                else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
             }
         };
 
-        window.closePlayer = function() {
-            playerModal.classList.remove('active');
-            videoPlayer.pause();
-            videoPlayer.src = "";
-            audioPlayer.pause();
-            audioPlayer.src = "";
-        };
+        function updatePlayPauseUI(isPlaying) {
+            if (isPlaying) {
+                playPauseBtn.innerHTML = '<i class="fa-solid fa-pause"></i>';
+                if (mediaWrapper.classList.contains('audio-mode')) audioThumbnail.classList.add('playing');
+            } else {
+                playPauseBtn.innerHTML = '<i class="fa-solid fa-play" style="margin-left:2px;"></i>';
+                if (mediaWrapper.classList.contains('audio-mode')) audioThumbnail.classList.remove('playing');
+            }
+        }
 
-        // Animasi Vinyl saat audio diputar
-        audioPlayer.addEventListener('play', () => vinylRecord.classList.add('playing'));
-        audioPlayer.addEventListener('pause', () => vinylRecord.classList.remove('playing'));
+        function formatTime(sec) {
+            if(isNaN(sec)) return "0:00";
+            const m = Math.floor(sec / 60); const s = Math.floor(sec % 60);
+            return `${m}:${s < 10 ? '0' : ''}${s}`;
+        }
+
+        playPauseBtn.addEventListener('click', () => {
+            if(!activeMedia) return;
+            if (activeMedia.paused) { 
+                activeMedia.play(); updatePlayPauseUI(true); 
+            } else { 
+                activeMedia.pause(); updatePlayPauseUI(false); 
+            }
+        });
+
+        const fullscreenBtn = document.getElementById('fullscreen-btn');
+        fullscreenBtn.addEventListener('click', () => {
+            if(!activeMedia || mediaWrapper.classList.contains('audio-mode')) return;
+            if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+                if (mediaWrapper.requestFullscreen) mediaWrapper.requestFullscreen();
+                else if (mediaWrapper.webkitRequestFullscreen) mediaWrapper.webkitRequestFullscreen(); 
+            } else {
+                if (document.exitFullscreen) document.exitFullscreen();
+                else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
+            }
+        });
+
+        document.addEventListener('fullscreenchange', () => {
+            if (document.fullscreenElement) {
+                if (activeMedia && activeMedia.videoWidth > activeMedia.videoHeight) { try { screen.orientation.lock('landscape').catch(e=>{}); } catch(e){} }
+            } else { try { screen.orientation.unlock().catch(e=>{}); } catch(e){} }
+        });
+
+        [customAudio, customVideo].forEach(media => {
+            media.addEventListener('timeupdate', () => {
+                if(media !== activeMedia) return;
+                const percent = (media.duration) ? (media.currentTime / media.duration) * 100 : 0;
+                progressFill.style.width = `${percent}%`;
+                currentTimeEl.innerText = formatTime(media.currentTime);
+            });
+            media.addEventListener('loadedmetadata', () => {
+                if(media !== activeMedia) return;
+                totalTimeEl.innerText = formatTime(media.duration);
+            });
+            media.addEventListener('ended', () => {
+                if(media !== activeMedia) return;
+                updatePlayPauseUI(false); progressFill.style.width = '0%';
+            });
+            media.addEventListener('waiting', () => { 
+                if(media === activeMedia) bufferingSpinner.classList.remove('hidden'); 
+            });
+            media.addEventListener('playing', () => { 
+                if(media === activeMedia) {
+                    bufferingSpinner.classList.add('hidden'); 
+                    updatePlayPauseUI(true);
+                }
+            });
+            media.addEventListener('pause', () => { 
+                if(media === activeMedia) updatePlayPauseUI(false);
+            });
+            media.addEventListener('error', () => {
+                if(media === activeMedia) {
+                    bufferingSpinner.innerHTML = `<div style="background:rgba(0,0,0,0.85); padding:20px; border-radius:16px; display:flex; flex-direction:column; align-items:center;"><i class="fa-solid fa-triangle-exclamation" style="font-size:2.5rem; color:var(--danger-color);"></i><span style="font-size:0.9rem; text-align:center; padding-top:12px; color:#FFF; font-weight:600; line-height:1.5;">Media Dilindungi Penyedia.<br>Silakan Unduh file.</span></div>`;
+                    bufferingSpinner.classList.remove('hidden');
+                    updatePlayPauseUI(false);
+                }
+            });
+        });
+
+        const progressBg = document.getElementById('progress-bg');
+        progressBg.addEventListener('click', (e) => {
+            if(!activeMedia || !activeMedia.duration) return;
+            const rect = progressBg.getBoundingClientRect();
+            activeMedia.currentTime = ((e.clientX - rect.left) / rect.width) * activeMedia.duration;
+        });
 
         // FUNGSI DOWNLOAD
         window.downloadFile = function(url, fileName) {
@@ -577,7 +770,7 @@
             document.body.removeChild(a);
         };
 
-        // FUNGSI HAPUS PERMANEN DARI FIREBASE
+        // FUNGSI HAPUS SATUAN DARI FIREBASE
         window.deleteFile = async function(docId, tabType) {
             if (confirm("Hapus file ini secara permanen dari database?")) {
                 try {
@@ -590,6 +783,38 @@
                 } catch (error) {
                     console.error("Gagal menghapus:", error);
                     showIphoneNotif('Gagal', 'Terjadi kesalahan saat menghapus.', 'fa-triangle-exclamation');
+                }
+            }
+        };
+
+        // FUNGSI HAPUS SEMUA DARI TAB YANG AKTIF & FIREBASE
+        window.deleteAllFiles = async function() {
+            let dataToDelete = currentMainTab === 'dl' ? [...dlData] : [...genData];
+            if (currentFilter !== 'all') {
+                dataToDelete = dataToDelete.filter(item => item.type === currentFilter);
+            }
+
+            if (dataToDelete.length === 0) {
+                showIphoneNotif('Perhatian', 'Tidak ada file untuk dihapus pada tab ini.', 'fa-triangle-exclamation');
+                return;
+            }
+
+            if (confirm("AWAS! Apakah Anda yakin ingin menghapus SEMUA file pada tab ini secara PERMANEN? File yang dihapus tidak dapat dikembalikan.")) {
+                showIphoneNotif('Menghapus...', 'Sedang memproses penghapusan massal.', 'fa-circle-notch fa-spin');
+                try {
+                    const deletePromises = dataToDelete.map(item => {
+                        if (currentMainTab === 'dl') {
+                            return deleteDoc(doc(db, "users", userId, "downloads", item.id));
+                        } else {
+                            return deleteDoc(doc(db, "render_gallery", item.id));
+                        }
+                    });
+                    
+                    await Promise.all(deletePromises);
+                    showIphoneNotif('Berhasil', 'Semua file di tab ini telah dihapus permanen.', 'fa-trash');
+                } catch (error) {
+                    console.error("Gagal menghapus semua:", error);
+                    showIphoneNotif('Gagal', 'Terjadi kesalahan jaringan saat menghapus massal.', 'fa-triangle-exclamation');
                 }
             }
         };
