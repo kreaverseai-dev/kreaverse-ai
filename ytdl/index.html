@@ -1428,11 +1428,15 @@
             resetControlsTimer();
         });
 
-        // REVISI 2: DOWNLOAD DIRECT (WINDOW.LOCATION UNTUK PAKSA HP MENGUNDUH)
+        // REVISI 2: DOWNLOAD DIRECT (CONVERT SECARA EKSTENSI / FORCE MIME TYPE & FILENAME)
         directDownloadLink.addEventListener('click', async () => {
             if (!resolvedMediaUrl) return;
-            showIphoneNotif('Menyiapkan Berkas...', 'Mengamankan jalur unduhan ke perangkat Anda.', 'fa-cloud-arrow-down');
+            showIphoneNotif('Menyiapkan Berkas...', 'Memproses format & mengamankan jalur unduhan.', 'fa-cloud-arrow-down');
             
+            const originalText = directDownloadLink.innerHTML;
+            directDownloadLink.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Memproses...';
+            directDownloadLink.disabled = true;
+
             // JIKA THUMBNAIL, GUNAKAN FETCH LANGSUNG LALU JADIKAN BLOB LOCAL
             if (currentFormat === 'thumb') {
                 try {
@@ -1449,21 +1453,61 @@
                     document.body.removeChild(a);
                     
                     setTimeout(() => URL.revokeObjectURL(objUrl), 5000);
-                    return;
                 } catch(e) {
-                    // Fallback (Lewat tab baru HP)
                     window.open(resolvedMediaUrl, '_blank');
-                    return;
+                } finally {
+                    directDownloadLink.innerHTML = originalText;
+                    directDownloadLink.disabled = false;
                 }
+                return;
             }
 
-            // STANDAR MEDIA: Buka langsung di window HP (Otomatis ditangkap Pengunduh Sistem)
-            setTimeout(() => {
-                window.location.href = resolvedMediaUrl;
-            }, 800);
+            // STANDAR MEDIA: Gunakan Fetch -> Blob untuk FORCE EKSTENSI (Convert SE) agar MP3/MP4 sesuai
+            try {
+                let response;
+                try {
+                    response = await fetch(resolvedMediaUrl);
+                    if (!response.ok) throw new Error('CORS');
+                } catch (err) {
+                    response = await fetch("/api/ytdl?targetUrl=" + encodeURIComponent(resolvedMediaUrl));
+                    if (!response.ok) throw new Error('Proxy Fail');
+                }
+
+                const blob = await response.blob();
+                
+                // MENGUBAH MIME TYPE AGAR SESUAI DENGAN EKSTENSI PILIHAN USER (CONVERT SE)
+                const targetExt = resolvedFileName.split('.').pop().toLowerCase();
+                let forcedMime = blob.type;
+                if (targetExt === 'mp3') forcedMime = 'audio/mpeg';
+                else if (targetExt === 'mp4') forcedMime = 'video/mp4';
+                else if (targetExt === 'm4a') forcedMime = 'audio/mp4';
+                else if (targetExt === 'webm') forcedMime = 'video/webm';
+                
+                const finalBlob = new Blob([blob], { type: forcedMime });
+                const objUrl = URL.createObjectURL(finalBlob);
+
+                const a = document.createElement('a');
+                a.href = objUrl;
+                a.download = resolvedFileName; // Memaksa nama file & ekstensi
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+
+                setTimeout(() => URL.revokeObjectURL(objUrl), 10000);
+                showIphoneNotif('Berhasil Disimpan!', `File diunduh sebagai ${targetExt.toUpperCase()}`, 'fa-circle-check');
+            } catch (error) {
+                // Fallback jika file terlalu besar dan memori penuh
+                showIphoneNotif('Mengalihkan...', 'File besar, mengunduh via browser sistem.', 'fa-server');
+                setTimeout(() => {
+                    window.location.href = resolvedMediaUrl;
+                }, 1000);
+            } finally {
+                directDownloadLink.innerHTML = originalText;
+                directDownloadLink.disabled = false;
+            }
         });
 
-        // REAL SERVER KREAVERSE BLOB DL
+        // REAL SERVER KREAVERSE BLOB DL (Diperbarui untuk Force MIME/Ext)
         realDownloadBtn.addEventListener('click', async () => {
             if (!resolvedMediaUrl) return;
             const container = document.getElementById('real-download-progress-container');
@@ -1516,14 +1560,23 @@
                 }
                 
                 text.innerText = '100%'; speedEl.innerText = 'Menyimpan...';
-                const blob = new Blob(chunks, { type: 'application/octet-stream' });
+                
+                // MENGUBAH MIME TYPE AGAR SESUAI (CONVERT SE)
+                const targetExt = resolvedFileName.split('.').pop().toLowerCase();
+                let forcedMime = 'application/octet-stream';
+                if (targetExt === 'mp3') forcedMime = 'audio/mpeg';
+                else if (targetExt === 'mp4') forcedMime = 'video/mp4';
+                else if (targetExt === 'm4a') forcedMime = 'audio/mp4';
+                else if (targetExt === 'webm') forcedMime = 'video/webm';
+
+                const blob = new Blob(chunks, { type: forcedMime });
                 const objUrl = URL.createObjectURL(blob);
                 const a = document.createElement('a');
-                a.href = objUrl; a.download = resolvedFileName || 'download.mp4';
+                a.href = objUrl; a.download = resolvedFileName || `download.${targetExt}`;
                 document.body.appendChild(a); a.click(); document.body.removeChild(a);
                 setTimeout(() => URL.revokeObjectURL(objUrl), 10000);
                 setTimeout(() => { container.classList.add('hidden'); }, 3000);
-                showIphoneNotif('Unduhan Selesai', 'File telah sukses tersimpan di HP Anda.', 'fa-server');
+                showIphoneNotif('Unduhan Selesai', `Format file berhasil dipaksa ke ${targetExt.toUpperCase()}`, 'fa-server');
                 
             } catch(e) {
                 console.error(e);
