@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Media Downloader - Kreaverse AI</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
@@ -38,10 +38,10 @@
         .krea-logo-svg { width: 100%; height: 100%; display: block; }
         .nav-right { width: 36px; } 
 
-        /* HERO SECTION */
+        /* HERO SECTION (REVISI 10 & 8: Teks & Fonts) */
         .hero-section {
             position: relative;
-            padding: 120px 20px 60px;
+            padding: 100px 20px 40px;
             text-align: center;
             background: radial-gradient(circle at top left, #FFE5F1 0%, transparent 40%),
                         radial-gradient(circle at top right, #E0E7FF 0%, transparent 40%),
@@ -50,47 +50,47 @@
             flex-direction: column;
             align-items: center;
         }
-        .hero-title { font-size: 2rem; font-weight: 800; color: var(--text-primary); margin-bottom: 12px; line-height: 1.3; letter-spacing: -0.5px; }
-        .hero-subtitle { font-size: 0.95rem; color: var(--text-secondary); max-width: 650px; margin: 0 auto 25px; line-height: 1.6; }
+        .hero-title { font-family: 'Inter', sans-serif; font-size: 2.2rem; font-weight: 900; color: #111827; margin-bottom: 12px; line-height: 1.2; letter-spacing: -1px; }
+        .hero-subtitle { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 0.95rem; color: #4B5563; max-width: 600px; margin: 0 auto 25px; line-height: 1.6; }
 
         /* FORMAT TOGGLE */
-        .format-toggle { display: inline-flex; background: #FFFFFF; border-radius: 30px; padding: 4px; box-shadow: var(--shadow-sm); border: 1px solid var(--border-color); margin-bottom: 30px; }
-        .format-btn { padding: 10px 24px; border-radius: 26px; border: none; background: transparent; font-size: 0.9rem; font-weight: 600; color: var(--text-secondary); cursor: pointer; transition: var(--transition); display: flex; align-items: center; gap: 8px; }
+        .format-toggle { display: inline-flex; background: #FFFFFF; border-radius: 30px; padding: 4px; box-shadow: var(--shadow-sm); border: 1px solid var(--border-color); margin-bottom: 25px; }
+        .format-btn { padding: 10px 24px; border-radius: 26px; border: none; background: transparent; font-size: 0.9rem; font-weight: 700; color: var(--text-secondary); cursor: pointer; transition: var(--transition); display: flex; align-items: center; gap: 8px; }
         .format-btn.active { background: var(--accent-color); color: #FFFFFF; box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3); }
 
         /* MAIN INPUT AREA */
-        .input-container { width: 100%; max-width: 700px; position: relative; margin-bottom: 25px; z-index: 10; }
+        .input-container { width: 100%; max-width: 700px; position: relative; margin-bottom: 20px; z-index: 10; }
         .input-wrapper { display: flex; align-items: center; background: var(--surface-color); border-radius: 50px; padding: 8px 8px 8px 24px; box-shadow: var(--shadow-lg); border: 1px solid var(--border-color); transition: var(--transition); }
         .input-wrapper:focus-within { border-color: var(--accent-color); box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1), var(--shadow-lg); }
         .url-icon { color: var(--text-light); font-size: 1.2rem; margin-right: 12px; }
         .url-input { flex: 1; border: none; outline: none; font-family: 'Plus Jakarta Sans', sans-serif; font-size: 1rem; color: var(--text-primary); background: transparent; padding: 12px 0; }
         .url-input::placeholder { color: var(--text-light); }
         
-        .download-btn { background: var(--accent-color); color: #FFFFFF; border: none; border-radius: 40px; padding: 14px 32px; font-size: 1rem; font-weight: 600; cursor: pointer; transition: var(--transition); display: flex; align-items: center; gap: 8px; white-space: nowrap; position: relative; z-index: 20; }
+        .download-btn { background: var(--accent-color); color: #FFFFFF; border: none; border-radius: 40px; padding: 14px 32px; font-size: 1rem; font-weight: 700; cursor: pointer; transition: var(--transition); display: flex; align-items: center; gap: 8px; white-space: nowrap; position: relative; z-index: 20; }
         .download-btn:hover:not(:disabled) { background: var(--accent-hover); transform: translateY(-2px); box-shadow: 0 6px 15px rgba(99, 102, 241, 0.4); }
         .download-btn:disabled { background: #D1D5DB; cursor: not-allowed; transform: none; box-shadow: none; }
 
         /* PROGRESS BAR ANIMASI */
-        .progress-container { width: 100%; max-width: 700px; margin: 0 auto 20px; background: var(--surface-color); padding: 16px 20px; border-radius: 16px; border: 1px solid var(--border-color); box-shadow: var(--shadow-md); display: none; animation: slideUp 0.3s ease; }
+        .progress-container { width: 100%; max-width: 700px; margin: 0 auto 15px; background: var(--surface-color); padding: 16px 20px; border-radius: 16px; border: 1px solid var(--border-color); box-shadow: var(--shadow-md); display: none; animation: slideUp 0.3s ease; }
         .progress-container.active { display: block; }
-        .progress-header { display: flex; justify-content: space-between; font-size: 0.85rem; font-weight: 600; color: var(--text-secondary); margin-bottom: 10px; }
+        .progress-header { display: flex; justify-content: space-between; font-size: 0.85rem; font-weight: 700; color: var(--text-secondary); margin-bottom: 10px; }
         .progress-track { width: 100%; height: 8px; background: #E5E7EB; border-radius: 4px; overflow: hidden; position: relative; }
         .progress-fill { height: 100%; background: linear-gradient(90deg, var(--accent-color), #A855F7); width: 0%; border-radius: 4px; transition: width 0.4s ease; position: relative; }
         .progress-fill::after { content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.4) 50%, rgba(255,255,255,0) 100%); animation: shimmerProgress 1.5s infinite; }
         @keyframes shimmerProgress { 0% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
-        .progress-footer { display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--text-light); margin-top: 8px; font-family: monospace; }
+        .progress-footer { display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--text-light); margin-top: 8px; font-family: monospace; font-weight: 600; }
 
         /* SETTINGS PILLS */
-        .settings-pills { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 12px; max-width: 800px; margin: 0 auto 30px; }
-        .pill { background: #FFFFFF; border: 1px solid var(--border-color); padding: 10px 18px; border-radius: 30px; font-size: 0.85rem; font-weight: 600; color: var(--text-secondary); cursor: pointer; transition: var(--transition); display: inline-flex; align-items: center; gap: 8px; box-shadow: var(--shadow-sm); }
+        .settings-pills { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 10px; max-width: 800px; margin: 0 auto 20px; }
+        .pill { background: #FFFFFF; border: 1px solid var(--border-color); padding: 8px 16px; border-radius: 30px; font-size: 0.85rem; font-weight: 700; color: var(--text-secondary); cursor: pointer; transition: var(--transition); display: inline-flex; align-items: center; gap: 8px; box-shadow: var(--shadow-sm); }
         .pill:hover { border-color: var(--accent-color); color: var(--text-primary); transform: translateY(-2px); box-shadow: var(--shadow-md); }
         .pill i { color: var(--accent-color); font-size: 1rem; }
-        .yt-warning { width: 100%; text-align: center; font-size: 0.75rem; color: #F59E0B; font-weight: 600; margin-top: -5px; margin-bottom: 20px; }
+        .yt-warning { width: 100%; text-align: center; font-size: 0.75rem; color: #F59E0B; font-weight: 700; margin-bottom: 10px; }
 
         /* RESULT AREA */
-        .result-section { width: 100%; max-width: 700px; margin: 0 auto 40px; display: none; animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1); }
+        .result-section { width: 100%; max-width: 700px; margin: 0 auto 30px; display: none; animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1); }
         .result-section.active { display: block; }
-        .result-card { background: var(--surface-color); border-radius: 24px; padding: 24px; box-shadow: var(--shadow-xl); border: 1px solid var(--border-color); }
+        .result-card { background: var(--surface-color); border-radius: 24px; padding: 20px; box-shadow: var(--shadow-xl); border: 1px solid var(--border-color); }
         
         /* MEDIA PLAYER */
         .media-player-wrapper { position: relative; width: 100%; border-radius: 16px; overflow: hidden; background: #000; margin-bottom: 20px; display: flex; align-items: center; justify-content: center; aspect-ratio: 16/9; z-index: 1; }
@@ -107,8 +107,8 @@
         
         .spotify-thumbnail { width: 180px; height: 180px; border-radius: 16px; object-fit: cover; box-shadow: 0 15px 35px rgba(0,0,0,0.5); background: #222; transition: transform 0.3s ease; }
         .spotify-thumbnail.playing { transform: scale(1.05); }
-        .audio-title-display { color: #FFF; font-weight: 700; font-size: 1.15rem; text-align: center; max-width: 90%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 10px; }
-        .audio-artist-display { color: rgba(255,255,255,0.7); font-size: 0.9rem; text-align: center; }
+        .audio-title-display { color: #FFF; font-weight: 800; font-size: 1.15rem; text-align: center; max-width: 90%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 10px; }
+        .audio-artist-display { color: rgba(255,255,255,0.7); font-size: 0.9rem; font-weight: 600; text-align: center; }
 
         /* EQUALIZER */
         .equalizer-container { display: flex; align-items: flex-end; justify-content: center; gap: 4px; height: 30px; margin-bottom: 10px; }
@@ -120,15 +120,13 @@
         .eq-bar:nth-child(5) { animation-delay: 0.2s; height: 50%; }
         @keyframes eqBounce { 0% { transform: scaleY(0.3); } 100% { transform: scaleY(1); } }
 
-        /* WATERMARK Sempurna 100% (Identik & Shimmer Putih) */
-        .player-watermark { position: absolute; top: 15px; right: 15px; width: 130px; height: 35px; z-index: 10; pointer-events: none; filter: drop-shadow(0 2px 6px rgba(0,0,0,0.7)); overflow: hidden; }
-        .media-player-wrapper:fullscreen .player-watermark { width: 150px; height: 45px; top: 25px; right: 25px; }
-        /* Animasi kilau cahaya menyapu (sweep) */
-        .shimmer-sweep { position: absolute; top: 0; left: -100%; width: 50%; height: 100%; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.7), transparent); transform: skewX(-20deg); animation: sweepAnim 3s linear infinite; }
-        @keyframes sweepAnim { 0% { left: -100%; } 100% { left: 200%; } }
+        /* WATERMARK Sempurna 100% (Revisi 3 & 7) */
+        .player-watermark { position: absolute; top: 15px; right: 20px; width: 120px; height: 30px; z-index: 10; pointer-events: none; filter: drop-shadow(0 2px 6px rgba(0,0,0,0.8)); }
+        .media-player-wrapper.audio-mode .player-watermark { top: 15px; right: 25px; display: block; }
+        .media-player-wrapper:fullscreen .player-watermark { width: 150px; height: 40px; top: 25px; right: 30px; }
 
         /* CONTROLS */
-        .player-controls { position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(to top, rgba(0,0,0,0.8), transparent); padding: 30px 20px 15px; display: flex; align-items: center; gap: 15px; z-index: 10; transition: opacity 0.3s; }
+        .player-controls { position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(to top, rgba(0,0,0,0.9), transparent); padding: 30px 20px 15px; display: flex; align-items: center; gap: 15px; z-index: 10; transition: opacity 0.3s; }
         .media-player-wrapper.audio-mode .player-controls { position: relative; background: transparent; padding: 15px 0 0; width: 100%; max-width: 400px; }
         
         .play-pause-btn { width: 45px; height: 45px; border-radius: 50%; background: var(--accent-color); color: #FFF; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; flex-shrink: 0; transition: 0.2s; box-shadow: 0 4px 10px rgba(99, 102, 241, 0.4); }
@@ -137,50 +135,58 @@
         .progress-area { flex: 1; display: flex; flex-direction: column; gap: 8px; }
         .progress-bar-bg { width: 100%; height: 6px; background: rgba(255,255,255,0.3); border-radius: 4px; cursor: pointer; position: relative; overflow: hidden; }
         .progress-bar-fill { height: 100%; background: var(--accent-color); width: 0%; border-radius: 4px; transition: width 0.1s linear; }
-        .time-display { font-size: 0.75rem; color: rgba(255,255,255,0.8); font-weight: 600; display: flex; justify-content: space-between; font-family: monospace; }
+        .time-display { font-size: 0.75rem; color: rgba(255,255,255,0.9); font-weight: 700; display: flex; justify-content: space-between; font-family: monospace; }
         
-        .control-icon-btn { background: none; border: none; color: #FFF; font-size: 1.3rem; cursor: pointer; padding: 5px; transition: 0.2s; opacity: 0.8; }
+        .control-icon-btn { background: none; border: none; color: #FFF; font-size: 1.3rem; cursor: pointer; padding: 5px; transition: 0.2s; opacity: 0.9; }
         .control-icon-btn:hover { opacity: 1; transform: scale(1.1); }
         .media-player-wrapper.audio-mode .fullscreen-btn { display: none; }
 
         /* RESULT INFO & BUTTONS */
         .result-info { text-align: left; margin-bottom: 20px; padding: 15px; background: #F9FAFB; border-radius: 12px; border: 1px solid var(--border-color); }
-        .result-info p { font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 6px; line-height: 1.5; }
-        .result-info strong { color: var(--text-primary); }
-        .action-buttons { display: flex; flex-direction: column; gap: 12px; }
+        .result-info p { font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 6px; line-height: 1.5; font-weight: 500; }
+        .result-info strong { color: var(--text-primary); font-weight: 700; }
         
-        .btn-save-gallery { width: 100%; padding: 16px; background: linear-gradient(135deg, var(--accent-color), #8B5CF6); color: #FFF; border: none; border-radius: 16px; font-size: 1.05rem; font-weight: 700; cursor: pointer; transition: var(--transition); display: flex; align-items: center; justify-content: center; gap: 10px; box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3); }
+        .action-buttons { display: flex; flex-direction: column; gap: 10px; }
+        .btn-save-gallery { width: 100%; padding: 16px; background: linear-gradient(135deg, var(--accent-color), #8B5CF6); color: #FFF; border: none; border-radius: 16px; font-size: 1.05rem; font-weight: 800; cursor: pointer; transition: var(--transition); display: flex; align-items: center; justify-content: center; gap: 10px; box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3); }
         .btn-save-gallery:hover { background: linear-gradient(135deg, #4F46E5, #7C3AED); transform: translateY(-2px); box-shadow: 0 8px 20px rgba(99, 102, 241, 0.4); }
         
-        .btn-secondary-action { width: 100%; padding: 14px; background: #F3F4F6; color: var(--text-primary); border: none; border-radius: 16px; font-size: 0.95rem; font-weight: 600; cursor: pointer; transition: var(--transition); }
+        /* Tombol Unduh Kreaverse Real (Revisi 11) */
+        .btn-server-kreaverse { background: linear-gradient(135deg, #10B981, #059669); font-size: 0.95rem; padding: 14px; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3); }
+        .btn-server-kreaverse:hover { background: linear-gradient(135deg, #059669, #047857); box-shadow: 0 8px 20px rgba(16, 185, 129, 0.4); }
+
+        .btn-secondary-action { width: 100%; padding: 14px; background: #F3F4F6; color: var(--text-primary); border: none; border-radius: 16px; font-size: 0.95rem; font-weight: 700; cursor: pointer; transition: var(--transition); }
         .btn-secondary-action:hover { background: #E5E7EB; }
 
-        /* HOW IT WORKS SECTION */
-        .section-container { padding: 60px 20px; max-width: 1000px; margin: 0 auto; text-align: center; }
-        .section-title { font-size: 1.8rem; font-weight: 800; margin-bottom: 40px; color: var(--text-primary); letter-spacing: -0.5px; }
+        /* REAL DOWNLOAD PROGRESS UI */
+        .real-dl-progress-box { width: 100%; background: #F3F4F6; border-radius: 12px; padding: 5px; margin-top: 5px; position: relative; border: 1px solid var(--border-color); }
+        .real-dl-fill { width: 0%; height: 12px; background: linear-gradient(90deg, #10B981, #34D399); border-radius: 8px; transition: width 0.3s linear; }
+        .real-dl-info { display: flex; justify-content: space-between; font-size: 0.8rem; color: var(--text-secondary); margin-top: 6px; padding: 0 6px; font-weight: 700; font-family: monospace; }
+
+        /* HOW IT WORKS & FEATURES SECTION */
+        .section-container { padding: 40px 20px; max-width: 1000px; margin: 0 auto; text-align: center; }
+        .section-title { font-family: 'Inter', sans-serif; font-size: 1.8rem; font-weight: 900; margin-bottom: 30px; color: var(--text-primary); letter-spacing: -0.5px; }
+        
         .steps-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 30px; }
         .step-card { display: flex; flex-direction: column; align-items: center; }
         .step-icon-wrapper { width: 80px; height: 80px; background: #EEF2FF; border-radius: 24px; display: flex; align-items: center; justify-content: center; font-size: 2rem; color: var(--accent-color); margin-bottom: 20px; transform: rotate(-5deg); transition: var(--transition); }
         .step-card:hover .step-icon-wrapper { transform: rotate(0deg) scale(1.05); background: var(--accent-color); color: #FFF; }
-        .step-title { font-size: 1.1rem; font-weight: 700; margin-bottom: 10px; }
+        .step-title { font-size: 1.1rem; font-weight: 800; margin-bottom: 10px; }
         .step-desc { font-size: 0.9rem; color: var(--text-secondary); line-height: 1.6; }
 
-        /* FEATURES SECTION */
         .features-bg { background-color: #FFFFFF; border-top: 1px solid var(--border-color); border-bottom: 1px solid var(--border-color); }
         .features-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px; text-align: left; }
         .feature-card { padding: 24px; border: 1px solid var(--border-color); border-radius: 20px; background: #FAFAFA; transition: var(--transition); }
         .feature-card:hover { background: #FFFFFF; box-shadow: var(--shadow-md); border-color: #D1D5DB; transform: translateY(-2px); }
         .feature-icon { width: 48px; height: 48px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; margin-bottom: 16px; }
         .fi-1 { background: #FEE2E2; color: #EF4444; } .fi-2 { background: #D1FAE5; color: #10B981; } .fi-3 { background: #E0E7FF; color: #6366F1; }
-        .fi-4 { background: #FEF3C7; color: #F59E0B; } .fi-5 { background: #F3E8FF; color: #A855F7; } .fi-6 { background: #E0F2FE; color: #3B82F6; }
-        .feature-title { font-size: 1.05rem; font-weight: 700; margin-bottom: 8px; }
+        .feature-title { font-size: 1.05rem; font-weight: 800; margin-bottom: 8px; }
         .feature-desc { font-size: 0.85rem; color: var(--text-secondary); line-height: 1.6; }
 
-        /* FOOTER */
-        .footer { background: #111827; color: #9CA3AF; padding: 60px 20px 30px; text-align: center; }
-        .footer-logo { color: #FFFFFF; font-size: 1.5rem; font-weight: 800; margin-bottom: 20px; letter-spacing: -0.5px; }
-        .footer-links { display: flex; justify-content: center; gap: 24px; margin-bottom: 30px; flex-wrap: wrap; }
-        .footer-links a { transition: color 0.2s; font-size: 0.9rem; }
+        /* FOOTER (Revisi 9) */
+        .footer { background: #111827; color: #9CA3AF; padding: 40px 20px 30px; text-align: center; }
+        .footer-logo { color: #FFFFFF; font-size: 1.5rem; font-weight: 900; margin-bottom: 20px; letter-spacing: -0.5px; }
+        .footer-links { display: flex; justify-content: center; gap: 24px; margin-bottom: 20px; flex-wrap: wrap; }
+        .footer-links a { transition: color 0.2s; font-size: 0.9rem; font-weight: 600; }
         .footer-links a:hover { color: #FFFFFF; }
         .footer-bottom { border-top: 1px solid #374151; padding-top: 20px; font-size: 0.85rem; display: flex; flex-direction: column; align-items: center; gap: 10px; }
 
@@ -191,78 +197,77 @@
         .bottom-sheet-overlay.active .bottom-sheet-content { transform: translateY(0); }
         
         .sheet-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-shrink: 0; }
-        .sheet-title { font-size: 1.2rem; font-weight: 700; }
+        .sheet-title { font-size: 1.2rem; font-weight: 800; }
         .sheet-close { background: none; border: none; font-size: 1.2rem; color: var(--text-light); cursor: pointer; padding: 5px; }
         .sheet-options { display: flex; flex-direction: column; gap: 10px; overflow-y: auto; padding-bottom: 20px; }
         
-        .sheet-opt-btn { display: flex; justify-content: space-between; align-items: center; width: 100%; padding: 16px; background: #FAFAFA; border: 1px solid var(--border-color); border-radius: 16px; font-size: 0.95rem; font-weight: 600; color: var(--text-primary); cursor: pointer; transition: var(--transition); text-align: left;}
+        .sheet-opt-btn { display: flex; justify-content: space-between; align-items: center; width: 100%; padding: 14px 16px; background: #FAFAFA; border: 1px solid var(--border-color); border-radius: 16px; font-size: 0.95rem; font-weight: 700; color: var(--text-primary); cursor: pointer; transition: var(--transition); text-align: left;}
         .sheet-opt-btn:active { background: #F3F4F6; }
-        .sheet-opt-btn.selected { border-color: var(--accent-color); background: #EEF2FF; font-weight: 700; }
+        .sheet-opt-btn.selected { border-color: var(--accent-color); background: #EEF2FF; }
         .sheet-opt-btn.selected i.fa-check { color: var(--accent-color); }
         
-        .q-badge { background: #E0E7FF; color: var(--accent-color); font-size: 0.7rem; padding: 4px 10px; border-radius: 20px; font-weight: 700; margin-left: 10px; }
+        .q-badge { background: #E0E7FF; color: var(--accent-color); font-size: 0.7rem; padding: 4px 10px; border-radius: 20px; font-weight: 800; margin-left: 10px; }
         .q-badge.audio { background: #F3E8FF; color: #9333EA; }
         
-        .audio-indicator-badge { font-size: 0.7rem; padding: 4px 8px; border-radius: 6px; margin-left: 8px; font-weight: 700; display: inline-flex; align-items: center; gap: 6px; }
+        .audio-indicator-badge { font-size: 0.7rem; padding: 4px 8px; border-radius: 6px; margin-left: 8px; font-weight: 800; display: inline-flex; align-items: center; gap: 6px; }
         .audio-indicator-badge.has-audio { background: #D1FAE5; color: #059669; }
         .audio-indicator-badge.no-audio { background: #FEE2E2; color: #DC2626; }
 
-        /* IN-PLAYER MODAL (Untuk Fullscreen/Video) */
-        .in-player-sheet-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); z-index: 99999; display: flex; align-items: flex-end; justify-content: center; opacity: 0; visibility: hidden; transition: var(--transition); }
+        /* IN-PLAYER MODAL */
+        .in-player-sheet-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(4px); z-index: 99999; display: flex; align-items: flex-end; justify-content: center; opacity: 0; visibility: hidden; transition: var(--transition); }
         .in-player-sheet-overlay.active { opacity: 1; visibility: visible; }
-        .in-player-sheet-content { background: var(--surface-color); width: 100%; max-width: 600px; border-radius: 20px 20px 0 0; padding: 20px; transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1); max-height: 80%; display: flex; flex-direction: column; overflow-y: auto; }
+        .in-player-sheet-content { background: var(--surface-color); width: 100%; max-width: 600px; border-radius: 20px 20px 0 0; padding: 15px; transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1); max-height: 80%; display: flex; flex-direction: column; overflow-y: auto; }
         .in-player-sheet-overlay.active .in-player-sheet-content { transform: translateY(0); }
+        .in-player-sheet-content .sheet-opt-btn { padding: 10px 14px; font-size: 0.85rem; margin-bottom: 8px; border-radius: 12px; }
 
         /* IPHONE TOAST */
         .iphone-toast-container { position: fixed; top: 15px; left: 50%; transform: translateX(-50%) translateY(-120%); background: rgba(20, 20, 20, 0.95); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); color: #FFFFFF; padding: 12px 24px; border-radius: 30px; display: flex; align-items: center; gap: 12px; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2); opacity: 0; transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1); z-index: 100000; width: max-content; max-width: 90vw; pointer-events: none; }
         .iphone-toast-container.show { top: 85px; transform: translateX(-50%) translateY(0); opacity: 1; }
         .iphone-toast-icon { font-size: 1.2rem; flex-shrink: 0; }
         .iphone-toast-content { display: flex; flex-direction: column; text-align: left; }
-        .iphone-toast-title { font-size: 0.9rem; font-weight: 600; line-height: 1.2; margin-bottom: 2px; }
-        .iphone-toast-desc { font-size: 0.8rem; color: #E5E5EA; line-height: 1.3; white-space: normal; word-wrap: break-word; }
+        .iphone-toast-title { font-size: 0.9rem; font-weight: 700; line-height: 1.2; margin-bottom: 2px; }
+        .iphone-toast-desc { font-size: 0.8rem; color: #E5E5EA; line-height: 1.3; font-weight: 500; }
 
-        /* ANIMATIONS */
-        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-        
-        /* RESPONSIVE KHUSUS MOBILE AGAR TIDAK KEBESARAN */
+        /* RESPONSIVE & MOBILE SCROLL HORIZONTAL (Revisi 6 & 10) */
         @media (max-width: 640px) {
-            .hero-title { font-size: 1.6rem; }
-            .hero-subtitle { font-size: 0.85rem; padding: 0 10px; }
+            .hero-title { font-size: 1.8rem; letter-spacing: -0.5px; }
+            .hero-subtitle { font-size: 0.85rem; padding: 0 10px; margin-bottom: 15px; }
             .input-wrapper { flex-direction: column; border-radius: 24px; padding: 14px; gap: 12px; }
             .url-input { width: 100%; text-align: center; padding: 0; font-size: 0.95rem; }
             .url-icon { display: none; }
             .download-btn { width: 100%; justify-content: center; padding: 12px 24px; }
-            .settings-pills { padding: 0; gap: 8px; }
+            .settings-pills { padding: 0; gap: 8px; margin-bottom: 10px; }
             .pill { padding: 8px 12px; font-size: 0.75rem; border-radius: 20px; }
             .pill i { font-size: 0.85rem; }
             
-            /* Pengecilan "Cara Kerja" & "Fitur" */
-            .section-title { font-size: 1.4rem; margin-bottom: 25px; }
-            .steps-grid { gap: 20px; }
+            /* Carousel Scroll untuk Fitur & Cara Kerja (Tidak Banyak Makan Scroll Bawah) */
+            .section-title { font-size: 1.4rem; margin-bottom: 20px; }
+            .steps-grid, .features-grid { display: flex; flex-wrap: nowrap; overflow-x: auto; scroll-snap-type: x mandatory; padding-bottom: 15px; gap: 15px; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+            .steps-grid::-webkit-scrollbar, .features-grid::-webkit-scrollbar { display: none; }
+            .step-card, .feature-card { flex: 0 0 85%; scroll-snap-align: center; }
+            
             .step-icon-wrapper { width: 60px; height: 60px; font-size: 1.5rem; border-radius: 18px; margin-bottom: 15px; }
             .step-title { font-size: 1rem; }
             .step-desc { font-size: 0.85rem; }
-            .features-grid { gap: 16px; }
             .feature-card { padding: 16px; border-radius: 16px; }
             .feature-icon { width: 40px; height: 40px; font-size: 1.1rem; border-radius: 12px; margin-bottom: 12px; }
             .feature-title { font-size: 0.95rem; }
             .feature-desc { font-size: 0.8rem; }
             
-            /* Pengecilan Pop-up Resolusi */
             .bottom-sheet-content, .in-player-sheet-content { padding: 16px; }
             .sheet-title { font-size: 1.05rem; }
             .sheet-opt-btn { padding: 12px 14px; font-size: 0.85rem; border-radius: 12px; }
             .audio-indicator-badge { font-size: 0.65rem; padding: 3px 6px; }
+            .btn-save-gallery, .btn-server-kreaverse, .btn-secondary-action { font-size: 0.9rem; padding: 14px; }
         }
     </style>
 </head>
 <body>
 
-    <!-- NAVBAR -->
     <nav class="navbar">
         <a href="/" class="back-btn" title="Kembali"><i class="fa-solid fa-arrow-left"></i></a>
         <div class="logo-container">
-            <!-- Logo Utama Kreaverse AI -->
+            <!-- Logo Utama -->
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 60" class="krea-logo-svg">
                 <defs><linearGradient id="kreaGrad" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#D97757" /><stop offset="50%" stop-color="#AF52DE" /><stop offset="100%" stop-color="#007AFF" /></linearGradient></defs>
                 <g><path d="M 30,10 Q 30,30 50,30 Q 30,30 30,50 Q 30,30 10,30 Q 30,30 30,10 Z" fill="url(#kreaGrad)" /><path d="M 30,17 Q 30,30 43,30 Q 30,30 30,43 Q 30,30 17,30 Q 30,30 30,17 Z" fill="url(#kreaGrad)" transform="rotate(45, 30, 30)" opacity="0.85" /></g>
@@ -272,7 +277,7 @@
         <div class="nav-right"></div>
     </nav>
 
-    <!-- HERO SECTION (Teks Diperbaiki) -->
+    <!-- HERO SECTION (Revisi 8 & 10) -->
     <section class="hero-section">
         <h1 class="hero-title">Downloader Kreaverse AI</h1>
         <div class="hero-subtitle">
@@ -294,7 +299,6 @@
             </div>
         </div>
 
-        <!-- PROGRESS BAR -->
         <div class="progress-container" id="progress-container">
             <div class="progress-header">
                 <span id="progress-text">Memproses dari Kreaverse AI... 0%</span>
@@ -309,27 +313,25 @@
             </div>
         </div>
 
-        <!-- SETTINGS PILLS -->
         <div class="settings-pills">
             <button class="pill" onclick="openSheet('sheet-platform')"><i class="fa-solid fa-globe"></i> <span id="label-platform">Otomatis Deteksi Link</span></button>
             <button class="pill" onclick="openSheet('sheet-server')"><i class="fa-solid fa-server"></i> <span id="label-server">Otomatis (Paling Cepat)</span></button>
             <button class="pill" onclick="openSheet('sheet-quality')"><i class="fa-solid fa-wand-magic-sparkles"></i> <span id="label-quality">Resolusi Terbaik</span></button>
-            <button class="pill" onclick="pingSemuaServer()"><i class="fa-solid fa-bolt"></i> <span id="ping-status-text" style="font-weight:700;">Memuat...</span></button>
+            <button class="pill" onclick="pingSemuaServer()"><i class="fa-solid fa-bolt"></i> <span id="ping-status-text">Memuat...</span></button>
             <button class="pill" onclick="window.location.href='/berkas/'"><i class="fa-solid fa-folder-open"></i> File Kreaverse AI</button>
         </div>
         
-        <div class="yt-warning">*Pilih resolusi dengan ikon 'Bersuara' agar video memiliki audio.</div>
+        <div class="yt-warning" style="margin-bottom: 0;">*Pilih resolusi dengan ikon 'Bersuara' agar video memiliki audio.</div>
     </section>
 
     <!-- RESULT SECTION -->
     <section id="result-container" class="result-section">
         <div class="result-card">
-            <h3 style="font-size: 1.2rem; font-weight: 800; margin-bottom: 20px; text-align: center;">File Siap Diunduh!</h3>
+            <h3 style="font-size: 1.2rem; font-weight: 900; margin-bottom: 20px; text-align: center;">File Siap Diunduh!</h3>
             
-            <!-- MEDIA PLAYER -->
             <div class="media-player-wrapper" id="media-wrapper">
                 
-                <!-- WATERMARK (Identik dengan Header + Cahaya Nyapu) -->
+                <!-- WATERMARK SEMPURNA (Revisi 3 & 7) -->
                 <div class="player-watermark">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 60" style="width:100%; height:100%;">
                         <defs>
@@ -338,18 +340,30 @@
                                 <stop offset="50%" stop-color="#AF52DE" />
                                 <stop offset="100%" stop-color="#007AFF" />
                             </linearGradient>
+                            <linearGradient id="shimmerGlow" x1="-100%" y1="0%" x2="0%" y2="0%">
+                                <stop offset="0%" stop-color="rgba(255,255,255,0)" />
+                                <stop offset="45%" stop-color="rgba(255,255,255,0)" />
+                                <stop offset="50%" stop-color="rgba(255,255,255,0.8)" />
+                                <stop offset="55%" stop-color="rgba(255,255,255,0)" />
+                                <stop offset="100%" stop-color="rgba(255,255,255,0)" />
+                                <animate attributeName="x1" values="-100%; 200%" dur="2.5s" repeatCount="indefinite" />
+                                <animate attributeName="x2" values="0%; 300%" dur="2.5s" repeatCount="indefinite" />
+                            </linearGradient>
                         </defs>
                         <g>
                             <path d="M 30,10 Q 30,30 50,30 Q 30,30 30,50 Q 30,30 10,30 Q 30,30 30,10 Z" fill="url(#kreaGradWM)" />
                             <path d="M 30,17 Q 30,30 43,30 Q 30,30 30,43 Q 30,30 17,30 Q 30,30 30,17 Z" fill="url(#kreaGradWM)" transform="rotate(45, 30, 30)" opacity="0.85" />
                             <text x="65" y="38" font-family="'Plus Jakarta Sans', sans-serif" font-weight="800" font-size="21" fill="url(#kreaGradWM)" letter-spacing="-0.5px">Kreaverse<tspan font-weight="500"> AI</tspan></text>
                         </g>
+                        <!-- Shimmer Sweep HANYA di Teks/Logo -->
+                        <g style="mix-blend-mode: overlay;">
+                            <path d="M 30,10 Q 30,30 50,30 Q 30,30 30,50 Q 30,30 10,30 Q 30,30 30,10 Z" fill="url(#shimmerGlow)" />
+                            <path d="M 30,17 Q 30,30 43,30 Q 30,30 30,43 Q 30,30 17,30 Q 30,30 30,17 Z" fill="url(#shimmerGlow)" transform="rotate(45, 30, 30)" />
+                            <text x="65" y="38" font-family="'Plus Jakarta Sans', sans-serif" font-weight="800" font-size="21" fill="url(#shimmerGlow)" letter-spacing="-0.5px">Kreaverse<tspan font-weight="500"> AI</tspan></text>
+                        </g>
                     </svg>
-                    <!-- Kotak Putih yang Nyapu dari kiri ke kanan -->
-                    <div class="shimmer-sweep"></div>
                 </div>
 
-                <!-- AUDIO UI -->
                 <div class="audio-ui-container" id="audio-ui">
                     <img src="" id="audio-thumbnail" class="spotify-thumbnail" alt="Cover Music" onerror="this.src='https://i.postimg.cc/mZdwnfsm/Claude-ai-icon-svg.png'">
                     <div style="width:100%; padding: 0 10px;">
@@ -358,10 +372,16 @@
                     </div>
                 </div>
 
-                <div class="buffering-spinner hidden" id="buffering-spinner"><i class="fa-solid fa-circle-notch fa-spin" style="font-size: 2rem; color: #FFF;"></i><span id="buffering-text" style="font-size:0.85rem; margin-top:5px; color:#FFF;">Memuat media...</span></div>
+                <div class="buffering-spinner hidden" id="buffering-spinner">
+                    <div style="background:rgba(0,0,0,0.8); padding:20px; border-radius:16px; display:flex; flex-direction:column; align-items:center;">
+                        <i class="fa-solid fa-circle-notch fa-spin" style="font-size: 2rem; color: var(--accent-color);"></i>
+                        <span id="buffering-text" style="font-size:0.85rem; font-weight:600; margin-top:10px; color:#FFF;">Memuat media...</span>
+                    </div>
+                </div>
                 
-                <!-- MEDIA TAGS (Crossorigin Dihapus Agar Lancar) -->
+                <!-- VIDEO & AUDIO TANPA CROSSORIGIN -->
                 <video id="custom-video" class="video-element" playsinline preload="metadata" referrerpolicy="no-referrer"></video>
+                <!-- AUDIO BACKUP UNTUK SINKRONISASI SUARA VIDEO (Revisi 5) -->
                 <audio id="custom-audio" class="hidden" preload="metadata" referrerpolicy="no-referrer"></audio>
                 
                 <div class="player-controls">
@@ -379,7 +399,6 @@
                     <button class="control-icon-btn fullscreen-btn" id="fullscreen-btn" title="Layar Penuh"><i class="fa-solid fa-expand"></i></button>
                 </div>
 
-                <!-- MODAL IN-PLAYER (Akan muncul DI DALAM video saat layar penuh) -->
                 <div class="in-player-sheet-overlay" id="player-settings-sheet">
                     <div class="in-player-sheet-content">
                         <div class="sheet-header">
@@ -395,12 +414,24 @@
 
             <div class="action-buttons">
                 <button id="direct-download-link" class="btn-save-gallery"><i class="fa-solid fa-cloud-arrow-down"></i> Simpan ke Galeri</button>
-                <button id="reset-btn" class="btn-secondary-action">Unduh Link Lainnya</button>
+                
+                <!-- TOMBOL UNDUH VIA SERVER KREAVERSE REAL (Revisi 11) -->
+                <button id="real-download-btn" class="btn-save-gallery btn-server-kreaverse"><i class="fa-solid fa-server"></i> Unduh via Server Kreaverse AI</button>
+                
+                <div id="real-download-progress-container" class="real-dl-progress-box hidden">
+                    <div id="real-download-fill" class="real-dl-fill"></div>
+                    <div class="real-dl-info">
+                        <span id="real-download-text">0%</span>
+                        <span id="real-download-speed">Menghubungkan...</span>
+                    </div>
+                </div>
+
+                <button id="reset-btn" class="btn-secondary-action" style="margin-top: 5px;">Unduh Link Lainnya</button>
             </div>
         </div>
     </section>
 
-    <!-- HOW IT WORKS & FEATURES SECTION (Sudah Dikecilkan untuk Mobile via CSS) -->
+    <!-- CARA KERJA & FITUR (Revisi 6 & 10 Carousel Mobile) -->
     <section class="section-container">
         <h2 class="section-title">Cara Kerja</h2>
         <div class="steps-grid">
@@ -412,12 +443,12 @@
             <div class="step-card">
                 <div class="step-icon-wrapper"><i class="fa-solid fa-paste"></i></div>
                 <h3 class="step-title">2. Tempel & Unduh</h3>
-                <p class="step-desc">Tempel tautan di kolom atas, pilih format Video atau Audio, lalu klik tombol Unduh Sekarang.</p>
+                <p class="step-desc">Tempel tautan di atas, pilih format Video atau Audio, lalu klik Unduh Sekarang.</p>
             </div>
             <div class="step-card">
                 <div class="step-icon-wrapper"><i class="fa-solid fa-download"></i></div>
                 <h3 class="step-title">3. Simpan ke Galeri</h3>
-                <p class="step-desc">Pilih resolusi terbaik yang tersedia, lalu simpan file langsung ke galeri tanpa watermark.</p>
+                <p class="step-desc">Pilih resolusi terbaik, lalu simpan file langsung ke galeri tanpa watermark.</p>
             </div>
         </div>
     </section>
@@ -445,7 +476,7 @@
         </div>
     </section>
 
-    <!-- FOOTER -->
+    <!-- FOOTER (Revisi 9) -->
     <footer class="footer">
         <div class="footer-logo">Kreaverse AI</div>
         <div class="footer-links">
@@ -456,7 +487,7 @@
         </div>
         <div class="footer-bottom">
             <p>&copy; 2026 Kreaverse AI. All rights reserved.</p>
-            <p id="live-clock-footer" style="font-family: monospace; color: #9CA3AF;"></p>
+            <p id="live-clock-footer" style="font-family: monospace; color: #9CA3AF; font-weight:700;"></p>
         </div>
     </footer>
 
@@ -485,7 +516,7 @@
     <div class="bottom-sheet-overlay" id="sheet-select-media">
         <div class="bottom-sheet-content">
             <div class="sheet-header"><div class="sheet-title">Format Ditemukan</div><button class="sheet-close" onclick="closeSheet('sheet-select-media'); resetUI();"><i class="fa-solid fa-xmark"></i></button></div>
-            <p style="font-size:0.85rem; color:var(--text-secondary); margin-bottom:15px;">Kami menemukan beberapa variasi kualitas untuk link ini. Silakan pilih:</p>
+            <p style="font-size:0.85rem; color:var(--text-secondary); margin-bottom:15px; font-weight:600;">Pilih resolusi media Anda:</p>
             <div class="sheet-options" id="scanned-media-list"></div>
         </div>
     </div>
@@ -517,7 +548,7 @@
             const toast = document.createElement('div'); toast.id = 'iphone-island-toast'; toast.className = 'iphone-toast-container';
             let iconColor = '#6366F1'; 
             if (iconClass.includes('fa-circle-xmark') || iconClass.includes('fa-triangle-exclamation') || iconClass.includes('fa-lock')) iconColor = '#EF4444';
-            else if (iconClass.includes('fa-circle-info') || iconClass.includes('fa-circle-check') || iconClass.includes('fa-cloud-arrow-down')) iconColor = '#10B981';
+            else if (iconClass.includes('fa-circle-info') || iconClass.includes('fa-circle-check') || iconClass.includes('fa-cloud-arrow-down') || iconClass.includes('fa-server')) iconColor = '#10B981';
             toast.innerHTML = `<div class="iphone-toast-icon" style="color: ${iconColor};"><i class="fa-solid ${iconClass}"></i></div><div class="iphone-toast-content"><span class="iphone-toast-title">${title}</span><span class="iphone-toast-desc">${desc}</span></div>`;
             document.body.appendChild(toast);
             setTimeout(() => { toast.classList.add('show'); }, 50);
@@ -528,7 +559,7 @@
         let dbConfig = DEFAULT_CONFIG;
         let isConfigLoaded = false;
 
-        // Auto-Fetch Firebase (Tanpa Refresh)
+        // Auto-Fetch Config Langsung (Tanpa Refresh)
         onSnapshot(doc(db, "settings", "downloader_api"), (docSnap) => {
             if (docSnap.exists()) {
                 dbConfig = docSnap.data();
@@ -546,17 +577,18 @@
         let processTimer = null;
         let processSeconds = 0;
         let globalScannedOptions = []; 
+        let isDualAudio = false; // Flag untuk trik sinkronisasi suara video
 
         const btnText = document.getElementById('btn-text');
         const resultContainer = document.getElementById('result-container');
         const urlInput = document.getElementById('media-url');
         const downloadBtn = document.getElementById('download-btn');
         const directDownloadLink = document.getElementById('direct-download-link');
+        const realDownloadBtn = document.getElementById('real-download-btn');
 
         const customAudio = document.getElementById('custom-audio');
         const customVideo = document.getElementById('custom-video');
         const mediaWrapper = document.getElementById('media-wrapper');
-        const audioUi = document.getElementById('audio-ui');
         const audioThumbnail = document.getElementById('audio-thumbnail');
         const audioTitleDisplay = document.getElementById('audio-title-display');
         
@@ -594,12 +626,15 @@
         };
         changeFormat(currentFormat);
 
+        // JAM BESERTA DETIK (Revisi 9)
         function updateLiveClock() {
             const d = new Date();
-            let hours = d.getHours(); let minutes = d.getMinutes(); let ampm = hours >= 12 ? 'PM' : 'AM';
-            hours = hours % 12 || 12; minutes = minutes < 10 ? '0' + minutes : minutes;
+            let hours = d.getHours(); let minutes = d.getMinutes(); let seconds = d.getSeconds(); let ampm = hours >= 12 ? 'PM' : 'AM';
+            hours = hours % 12 || 12; 
+            minutes = minutes < 10 ? '0' + minutes : minutes;
+            seconds = seconds < 10 ? '0' + seconds : seconds;
             const footerEl = document.getElementById('live-clock-footer');
-            if(footerEl) footerEl.innerText = `Waktu Server: ${hours}:${minutes} ${ampm} WIB`;
+            if(footerEl) footerEl.innerText = `Waktu Server: ${hours}:${minutes}:${seconds} ${ampm} WIB`;
         }
         setInterval(updateLiveClock, 1000); updateLiveClock();
 
@@ -655,8 +690,7 @@
         }
 
         window.selectPlatform = (val, text, iconClass) => {
-            currentPlatform = val;
-            document.getElementById('label-platform').innerText = text;
+            currentPlatform = val; document.getElementById('label-platform').innerText = text;
             const platformPill = document.querySelector('.settings-pills .pill:first-child');
             if(platformPill) platformPill.querySelector('i').className = iconClass;
             renderDynamicOptions(); closeSheet('sheet-platform');
@@ -709,17 +743,16 @@
 
         function resetUI() {
             resultContainer.classList.remove('active');
-            customAudio.src = ""; customVideo.src = ""; activeMedia = null;
+            customAudio.src = ""; customVideo.src = ""; activeMedia = null; isDualAudio = false;
             updatePlayPauseUI(false); progressFill.style.width = '0%';
             currentTimeEl.innerText = '0:00'; totalTimeEl.innerText = '0:00';
             clearInterval(processTimer); document.getElementById('progress-container').classList.remove('active');
+            document.getElementById('real-download-progress-container').classList.add('hidden');
         }
 
-        // UNIVERSAL SCANNER
         function extractMediaLinks(dataObj) {
             let extracted = []; let globalTitle = "Media Kreaverse"; let globalDuration = ""; let globalThumbnail = "";
             const MAX_DEPTH = 10; 
-
             function findMeta(obj, depth = 0) {
                 if(!obj || typeof obj !== 'object' || depth > MAX_DEPTH) return;
                 Object.keys(obj).forEach(k => {
@@ -738,7 +771,6 @@
             function scanForMedia(obj, depth = 0) {
                 if(!obj || typeof obj !== 'object' || depth > MAX_DEPTH) return;
                 if(Array.isArray(obj)) { obj.forEach(item => scanForMedia(item, depth + 1)); return; }
-
                 let url = null; let quality = "Normal"; let type = "unknown"; let size = "";
 
                 for(let k in obj) {
@@ -764,13 +796,11 @@
                             }
                         }
                     }
-
                     if(type === 'unknown') {
                         let ul = url.toLowerCase();
                         if(ul.includes('.mp3') || ul.includes('.m4a') || ul.includes('audio')) type = 'audio';
                         else type = 'video'; 
                     }
-
                     if(currentFormat === 'audio' && type === 'audio') {
                         let num = parseInt(quality);
                         if (!isNaN(num)) quality = num < 64 ? "64 kbps" : num < 128 ? "128 kbps" : num < 192 ? "192 kbps" : num < 256 ? "256 kbps" : "320 kbps";
@@ -780,6 +810,10 @@
                         if(String(quality).toLowerCase() === 'hd') quality = 'High Definition (HD)';
                         if(String(quality).toLowerCase() === 'sd') quality = 'Standar (SD)';
                         if(!extracted.some(r => r.url === url)) extracted.push({url, quality, type, size});
+                    }
+                    // REVISI 5: Tetap simpan audio tersembunyi meskipun formatnya video untuk trik sinkronisasi suara
+                    if(currentFormat === 'video' && type === 'audio') {
+                        if(!extracted.some(r => r.url === url)) extracted.push({url, quality, type: 'audio', size});
                     }
                 }
                 for(let k in obj) { if(typeof obj[k] === 'object') scanForMedia(obj[k], depth + 1); }
@@ -802,7 +836,6 @@
                 };
                 return getScore(b.quality) - getScore(a.quality); 
             });
-
             return { links: extracted, title: globalTitle, duration: globalDuration, thumbnail: globalThumbnail };
         }
 
@@ -850,23 +883,19 @@
         }
 
         async function processDownload(mediaUrl) {
-            // Force fetch jika koneksi pertama belum sukses
             if (!isConfigLoaded || !dbConfig.baseUrls || Object.keys(dbConfig.baseUrls).length === 0) {
                 try {
                     const docSnap = await getDoc(doc(db, "settings", "downloader_api"));
                     if (docSnap.exists()) { dbConfig = docSnap.data(); isConfigLoaded = true; }
                 } catch(e) { console.error(e); }
             }
-
             let targetServerKey = currentServer;
             if (currentServer === 'auto') {
                 targetServerKey = await pingSemuaServer(); 
                 if (!targetServerKey) targetServerKey = Object.keys(dbConfig.baseUrls)[0]; 
             }
-
             const srvObj = dbConfig.baseUrls[targetServerKey];
             let pathsToTry = [];
-
             if (currentPlatform === 'auto') {
                 for (const key in dbConfig.endpoints) {
                     const ep = dbConfig.endpoints[key];
@@ -881,7 +910,6 @@
                 }
             }
             pathsToTry = [...new Set(pathsToTry)];
-
             const fetchResult = await smartFetch(srvObj.url, pathsToTry, mediaUrl, srvObj.name);
             const data = fetchResult.data;
 
@@ -897,6 +925,10 @@
             }
 
             if (mediaList.length === 0) throw new Error(data.message || data.msg || data.error || `Gagal mengekstrak link dari ${srvObj.name}.`);
+            
+            // Simpan semua opsi ke memori global untuk trik sinkronisasi (Revisi 5)
+            globalScannedOptions = mediaList;
+            
             let filteredList = mediaList.filter(m => m.type === currentFormat);
             if (filteredList.length === 0) throw new Error(`Format ${currentFormat.toUpperCase()} tidak tersedia untuk tautan ini.`);
 
@@ -920,7 +952,6 @@
                 const resultData = await processDownload(mediaUrl);
                 completeProgress(); clearInterval(processTimer);
                 downloadBtn.disabled = false; btnText.innerText = 'Unduh Sekarang';
-                globalScannedOptions = resultData.options; 
 
                 const sheetList = document.getElementById('scanned-media-list');
                 sheetList.innerHTML = resultData.options.map((opt, i) => {
@@ -947,7 +978,7 @@
                             <div style="display:flex; align-items:flex-start;">
                                 <i class="fa-solid ${icon}" style="margin-right:12px; color:var(--accent-color); margin-top:4px; font-size:1.2rem;"></i>
                                 <div style="display:flex; flex-direction:column;">
-                                    <div style="font-weight:700; color:var(--text-primary); margin-bottom:2px; display:flex; align-items:center; flex-wrap:wrap; gap:4px;">${opt.quality} <span class="${badgeClass}">${opt.type.toUpperCase()}</span> ${audioBadge}</div>
+                                    <div style="font-weight:800; color:var(--text-primary); margin-bottom:2px; display:flex; align-items:center; flex-wrap:wrap; gap:4px;">${opt.quality} <span class="${badgeClass}">${opt.type.toUpperCase()}</span> ${audioBadge}</div>
                                     <div style="font-size:0.8rem; color:var(--text-secondary); line-height:1.4; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;">${displayTitle}</div>
                                     ${sizeStr}
                                 </div>
@@ -956,7 +987,6 @@
                         </button>
                     `;
                 }).join('');
-                
                 openSheet('sheet-select-media');
             } catch (error) {
                 clearInterval(simInterval); document.getElementById('progress-container').classList.remove('active'); clearInterval(processTimer);
@@ -982,32 +1012,41 @@
                 ${duration ? `<p><strong>Durasi:</strong> ${duration}</p>` : ''}
                 <p><strong>Durasi Proses:</strong> Selesai dalam ${processSeconds} detik</p>
             `;
-
             audioTitleDisplay.innerText = title;
             
-            if (type === 'audio') {
-                activeMedia = customAudio; customAudio.src = url;
-                mediaWrapper.classList.add('audio-mode'); customVideo.style.display = "none";
-            } else {
+            // LOGIKA REVISI 5: Trik Sinkronisasi Suara & Video
+            isDualAudio = false;
+            if (type === 'video') {
+                // Cari opsi audio terbaik dari hasil scan
+                const bestAudio = globalScannedOptions.filter(o => o.type === 'audio').sort((a, b) => parseInt(b.quality) - parseInt(a.quality))[0];
+                if (bestAudio) {
+                    customAudio.src = bestAudio.url;
+                    isDualAudio = true;
+                    customVideo.muted = true; // Paksa bisukan video aslinya karena kita akan putar audio secara rahasia di background
+                } else {
+                    customVideo.muted = false; // Jika benar-benar tidak ada file audio
+                }
                 activeMedia = customVideo; customVideo.src = url;
                 mediaWrapper.classList.remove('audio-mode'); customVideo.style.display = "block";
+            } else {
+                activeMedia = customAudio; customAudio.src = url; customAudio.muted = false;
+                mediaWrapper.classList.add('audio-mode'); customVideo.style.display = "none";
             }
-
-            // Unmute paksa saat dimuat
-            activeMedia.muted = false;
-            activeMedia.volume = 1.0;
 
             setupMediaSession(title, type === 'audio', finalThumb);
             resultContainer.classList.add('active');
             setTimeout(() => { resultContainer.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 100);
 
+            // SIMPAN OTOMATIS KE FILE KREAVERSE & FIREBASE REALTIME (Revisi 12)
             if(isLoggedIn && userId) {
-                addDoc(collection(db, "users", userId, "downloads"), { url: urlInput.value.trim(), fileName: title, provider: provider, type: type, directUrl: url, size: size||"", thumbnail: finalThumb, timestamp: Date.now() }).catch(e=>console.log(e));
+                addDoc(collection(db, "users", userId, "downloads"), { url: urlInput.value.trim(), fileName: title, provider: provider, type: type, directUrl: url, size: size||"", thumbnail: finalThumb, timestamp: Date.now() })
+                .then(() => console.log("Berhasil disimpan otomatis ke File Kreaverse AI."))
+                .catch(e=>console.log(e));
             }
             showIphoneNotif('Berhasil diproses', `Media siap dinikmati`, 'fa-circle-check');
         };
 
-        // MENU DALAM PEMUTAR - Berjalan sempurna di atas video fullscreen!
+        // MENU DALAM PEMUTAR LAYAR PENUH (Revisi 8)
         playerMenuBtn.addEventListener('click', (e) => {
             e.stopPropagation();
             const sheetList = document.getElementById('player-menu-options');
@@ -1018,7 +1057,7 @@
                     <div class="equalizer-container">
                         <div class="eq-bar"></div><div class="eq-bar"></div><div class="eq-bar"></div><div class="eq-bar"></div><div class="eq-bar"></div>
                     </div>
-                    <div style="text-align:center; font-size:0.85rem; color:var(--text-secondary); margin-bottom:20px; font-weight:600;">Equalizer Kreaverse AI Aktif</div>
+                    <div style="text-align:center; font-size:0.85rem; color:var(--text-secondary); margin-bottom:20px; font-weight:700;">Equalizer Kreaverse AI Aktif</div>
                 `;
             }
 
@@ -1036,27 +1075,18 @@
                 return `
                     <button class="sheet-opt-btn ${isActive}" onclick="changeVideoQuality('${opt.url}', '${opt.quality}')">
                         <div style="display:flex; flex-direction:column; gap:4px;">
-                            <span style="font-weight:700; display:flex; align-items:center; gap:6px;">${opt.quality} ${audioBadge}</span>
-                            ${opt.size ? `<span style="font-size:0.75rem; color:var(--text-light);">${opt.size}</span>` : ''}
+                            <span style="font-weight:800; display:flex; align-items:center; gap:6px;">${opt.quality} ${audioBadge}</span>
+                            ${opt.size ? `<span style="font-size:0.75rem; color:var(--text-light); font-weight:600;">${opt.size}</span>` : ''}
                         </div>
                         <i class="fa-solid fa-check ${isActive ? '' : 'hidden'}"></i>
                     </button>
                 `;
             }).join('');
 
-            html += `
-                <div style="margin-top:15px; border-top:1px solid var(--border-color); padding-top:15px;">
-                    <button class="sheet-opt-btn" onclick="closeSheet('player-settings-sheet'); document.getElementById('reset-btn').click();" style="color:var(--danger-color); justify-content:center; gap:8px;">
-                        <i class="fa-solid fa-arrow-rotate-left"></i> Tutup & Unduh Link Lain
-                    </button>
-                </div>
-            `;
-
             sheetList.innerHTML = html;
             openSheet('player-settings-sheet'); 
         });
 
-        // Ganti Resolusi (Langsung di muat)
         window.changeVideoQuality = (newUrl, qualityName) => {
             if(!activeMedia) return;
             const currentTime = activeMedia.currentTime; 
@@ -1071,14 +1101,14 @@
             
             activeMedia.oncanplay = () => {
                 activeMedia.currentTime = currentTime; 
-                activeMedia.muted = false; 
-                if(wasPlaying) activeMedia.play().catch(e=>console.log(e)); 
-                else updatePlayPauseUI(false);
-                
+                if (!isDualAudio) activeMedia.muted = false; // Jika tidak pakai trik sinkron, baru di unmute
+                if(wasPlaying) {
+                    activeMedia.play().catch(e=>{});
+                    if(isDualAudio) customAudio.play().catch(e=>{});
+                }
                 bufferingSpinner.classList.add('hidden');
                 activeMedia.oncanplay = null; 
             };
-            
             showIphoneNotif('Resolusi Diubah', `Kualitas disesuaikan ke ${qualityName}`, 'fa-wand-magic-sparkles');
         };
 
@@ -1088,11 +1118,16 @@
             return `${m}:${s < 10 ? '0' : ''}${s}`;
         }
 
+        // KONTROL MEDIA & EVENT SINKRONISASI SUARA (Revisi 5)
         playPauseBtn.addEventListener('click', () => {
             if(!activeMedia) return;
-            activeMedia.muted = false; 
-            if (activeMedia.paused) { activeMedia.play(); updatePlayPauseUI(true); } 
-            else { activeMedia.pause(); updatePlayPauseUI(false); }
+            if (activeMedia.paused) { 
+                activeMedia.play(); updatePlayPauseUI(true); 
+                if(isDualAudio) customAudio.play().catch(e=>{}); // Mainkan audio rahasia
+            } else { 
+                activeMedia.pause(); updatePlayPauseUI(false); 
+                if(isDualAudio) customAudio.pause(); // Jeda audio rahasia
+            }
         });
 
         fullscreenBtn.addEventListener('click', () => {
@@ -1108,14 +1143,12 @@
 
         document.addEventListener('fullscreenchange', () => {
             if (document.fullscreenElement) {
-                if (activeMedia && activeMedia.videoWidth > activeMedia.videoHeight) {
-                    try { screen.orientation.lock('landscape').catch(e=>{}); } catch(e){}
-                }
-            } else {
-                try { screen.orientation.unlock().catch(e=>{}); } catch(e){}
-            }
+                if (activeMedia && activeMedia.videoWidth > activeMedia.videoHeight) { try { screen.orientation.lock('landscape').catch(e=>{}); } catch(e){} }
+            } else { try { screen.orientation.unlock().catch(e=>{}); } catch(e){} }
         });
 
+        // Event listener Media Asli
+        let bufferSimInterval;
         [customAudio, customVideo].forEach(media => {
             media.addEventListener('timeupdate', () => {
                 if(media !== activeMedia) return;
@@ -1131,15 +1164,34 @@
                 if(media !== activeMedia) return;
                 updatePlayPauseUI(false); progressFill.style.width = '0%';
             });
+            media.addEventListener('seeked', () => {
+                // Saat video digeser durasinya, sinkronkan juga durasi audionya
+                if(media === activeMedia && isDualAudio) customAudio.currentTime = activeMedia.currentTime;
+            });
             media.addEventListener('waiting', () => { 
-                if(media === activeMedia) bufferingSpinner.classList.remove('hidden'); 
+                if(media === activeMedia) {
+                    bufferingSpinner.classList.remove('hidden'); 
+                    if(isDualAudio) customAudio.pause(); // Jeda audio agar tidak mendahului video yg sedang loading
+                    
+                    // REVISI 2: Indikator Animasi Data Speed saat Memuat Video
+                    let simMb = 0; clearInterval(bufferSimInterval);
+                    bufferSimInterval = setInterval(() => {
+                        simMb += (Math.random() * 2 + 0.5);
+                        document.getElementById('buffering-text').innerText = `Memuat data... (${simMb.toFixed(1)} MB)`;
+                    }, 500);
+                }
             });
             media.addEventListener('playing', () => { 
-                if(media === activeMedia) bufferingSpinner.classList.add('hidden'); 
+                if(media === activeMedia) {
+                    bufferingSpinner.classList.add('hidden'); 
+                    clearInterval(bufferSimInterval);
+                    if(isDualAudio && !activeMedia.paused) customAudio.play().catch(e=>{}); // Lanjut mainkan audio
+                } 
             });
             media.addEventListener('error', () => {
                 if(media === activeMedia) {
-                    bufferingSpinner.innerHTML = `<i class="fa-solid fa-triangle-exclamation" style="font-size:2rem; color:var(--danger-color);"></i><span style="font-size:0.8rem; text-align:center; padding-top:10px;">Media Dilindungi Penyedia.<br>Silakan langsung <strong>Simpan ke Galeri</strong>.</span>`;
+                    // REVISI 4: Teks error dibuat putih dengan latar transparan hitam
+                    bufferingSpinner.innerHTML = `<div style="background:rgba(0,0,0,0.85); padding:20px; border-radius:16px; display:flex; flex-direction:column; align-items:center;"><i class="fa-solid fa-triangle-exclamation" style="font-size:2.5rem; color:var(--danger-color);"></i><span style="font-size:0.9rem; text-align:center; padding-top:12px; color:#FFF; font-weight:600; line-height:1.5;">Media Dilindungi Penyedia.<br>Silakan langsung tekan tombol<br><strong style="color:var(--accent-color);">Simpan ke Galeri</strong>.</span></div>`;
                     bufferingSpinner.classList.remove('hidden');
                     updatePlayPauseUI(false);
                 }
@@ -1150,16 +1202,88 @@
             if(!activeMedia || !activeMedia.duration) return;
             const rect = progressBg.getBoundingClientRect();
             activeMedia.currentTime = ((e.clientX - rect.left) / rect.width) * activeMedia.duration;
+            if(isDualAudio) customAudio.currentTime = activeMedia.currentTime;
         });
 
+        // DOWNLOAD BIASA
         directDownloadLink.addEventListener('click', () => {
             if (!resolvedMediaUrl) return;
             showIphoneNotif('Menyiapkan Berkas...', 'Mengamankan jalur unduhan ke perangkat Anda.', 'fa-cloud-arrow-down');
             setTimeout(() => {
-                const a = document.createElement('a');
-                a.href = resolvedMediaUrl; a.target = '_blank'; a.rel = 'noopener noreferrer'; a.download = resolvedFileName;
+                const a = document.createElement('a'); a.href = resolvedMediaUrl; a.target = '_blank'; a.rel = 'noopener noreferrer'; a.download = resolvedFileName;
                 document.body.appendChild(a); a.click(); document.body.removeChild(a);
             }, 800);
+        });
+        
+        // REVISI 11: DOWNLOAD SERVER KREAVERSE REAL (FETCH DATA PROGRESS ASLI)
+        realDownloadBtn.addEventListener('click', async () => {
+            if (!resolvedMediaUrl) return;
+            const container = document.getElementById('real-download-progress-container');
+            const fill = document.getElementById('real-download-fill');
+            const text = document.getElementById('real-download-text');
+            const speedEl = document.getElementById('real-download-speed');
+            
+            container.classList.remove('hidden');
+            fill.style.width = '0%'; text.innerText = '0%'; speedEl.innerText = 'Menghubungkan...';
+            
+            try {
+                const response = await fetch(resolvedMediaUrl);
+                if (!response.ok) throw new Error('Gagal mengakses file');
+                
+                const contentLength = response.headers.get('content-length');
+                const total = parseInt(contentLength, 10);
+                let loaded = 0;
+                
+                const reader = response.body.getReader();
+                const chunks = [];
+                let lastTime = Date.now();
+                let lastLoaded = 0;
+
+                while(true) {
+                    const {done, value} = await reader.read();
+                    if (done) break;
+                    chunks.push(value);
+                    loaded += value.length;
+                    
+                    const now = Date.now();
+                    if (now - lastTime > 500) { // Update speed per setengah detik
+                        const diffTime = (now - lastTime) / 1000;
+                        const diffLoaded = loaded - lastLoaded;
+                        const speed = diffLoaded / diffTime; 
+                        const speedMB = (speed / (1024*1024)).toFixed(1);
+                        
+                        let percent = total ? Math.round((loaded / total) * 100) : '...';
+                        fill.style.width = percent + '%';
+                        text.innerText = percent + '%';
+                        speedEl.innerText = speedMB + ' MB/s';
+                        
+                        lastTime = now;
+                        lastLoaded = loaded;
+                    }
+                }
+                
+                text.innerText = '100%'; speedEl.innerText = 'Selesai! Menyimpan...';
+                
+                const blob = new Blob(chunks);
+                const objUrl = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = objUrl; a.download = resolvedFileName;
+                document.body.appendChild(a); a.click(); document.body.removeChild(a);
+                URL.revokeObjectURL(objUrl);
+                
+                setTimeout(() => { container.classList.add('hidden'); }, 3000);
+                showIphoneNotif('Unduhan Selesai', 'File telah sukses tersimpan di HP Anda.', 'fa-server');
+                
+            } catch(e) {
+                console.error(e);
+                text.innerText = 'Gagal memuat langsung';
+                speedEl.innerText = 'Jaringan tidak stabil';
+                // Fallback otomatis ke cara biasa jika fetch diblokir
+                setTimeout(() => {
+                    container.classList.add('hidden');
+                    document.getElementById('direct-download-link').click();
+                }, 2000);
+            }
         });
 
         document.getElementById('reset-btn').addEventListener('click', () => { urlInput.value = ""; urlInput.dispatchEvent(new Event('input')); resetUI(); urlInput.focus(); });
