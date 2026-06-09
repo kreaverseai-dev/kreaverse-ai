@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Media Downloader - Kreaverse AI</title>
+    <!-- MENGGUNAKAN DUA FONT PREMIUM UNTUK TYPOGRAPHY EXPERT -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@500;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
@@ -30,16 +31,16 @@
         a { text-decoration: none; color: inherit; }
         .hidden { display: none !important; }
 
-        /* NAVBAR (REVISI 7: Logo Mutlak Presisi di Tengah) */
+        /* NAVBAR (REVISI 7: Logo Mutlak di Tengah) */
         .navbar { display: flex; justify-content: space-between; align-items: center; padding: 16px 5%; background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(10px); position: fixed; top: 0; width: 100%; z-index: 1000; border-bottom: 1px solid rgba(229, 231, 235, 0.5); }
         .back-btn { font-size: 1.2rem; color: var(--text-secondary); transition: var(--transition); padding: 8px; border-radius: 50%; display: flex; align-items: center; justify-content: center; position: relative; z-index: 10; cursor: pointer; }
         .back-btn:hover { color: var(--text-primary); background-color: #F3F4F6; }
         
-        .logo-container { position: absolute; left: 50%; transform: translateX(-50%); width: max-content; height: 38px; display: flex; align-items: center; justify-content: center; z-index: 5; pointer-events: none; }
-        .krea-logo-svg { height: 100%; display: block; }
+        .logo-container { display: flex; align-items: center; justify-content: center; width: 160px; height: 38px; position: absolute; left: 50%; transform: translateX(-50%); z-index: 5; pointer-events: none; }
+        .krea-logo-svg { width: 100%; height: 100%; display: block; }
         .nav-right { width: 36px; } 
 
-        /* HERO SECTION (REVISI 6: Font Judul Extra Bold Clean) */
+        /* HERO SECTION (REVISI 6: Typografi Inter ExtraBold Mewah) */
         .hero-section {
             position: relative;
             padding: 110px 20px 40px;
@@ -51,8 +52,8 @@
             flex-direction: column;
             align-items: center;
         }
-        .hero-title { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 2.8rem; font-weight: 900; color: #111827; margin-bottom: 15px; line-height: 1.1; letter-spacing: -1.5px; }
-        .hero-subtitle { font-family: 'Inter', sans-serif; font-size: 0.95rem; font-weight: 500; color: var(--text-secondary); max-width: 600px; margin: 0 auto 25px; line-height: 1.6; }
+        .hero-title { font-family: 'Inter', sans-serif; font-size: 2.8rem; font-weight: 900; color: #111827; margin-bottom: 15px; line-height: 1.1; letter-spacing: -1.5px; }
+        .hero-subtitle { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 0.95rem; font-weight: 500; color: var(--text-secondary); max-width: 600px; margin: 0 auto 25px; line-height: 1.6; }
 
         /* FORMAT TOGGLE */
         .format-toggle { display: inline-flex; flex-wrap: wrap; justify-content: center; background: transparent; padding: 0; box-shadow: none; border: none; margin-bottom: 30px; gap: 20px; border-bottom: 2px solid var(--border-color); border-radius: 0; }
@@ -87,7 +88,7 @@
         @keyframes shimmerProgress { 0% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
         .progress-footer { display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--text-light); margin-top: 8px; font-family: monospace; font-weight: 600; }
 
-        /* SETTINGS PILLS (REVISI 6: Wrap Rapi) */
+        /* SETTINGS PILLS (REVISI 6: Wrap Menyamping Rapi) */
         .settings-pills { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 10px; max-width: 800px; margin: 0 auto 20px; }
         .pill { background: #FFFFFF; border: 1px solid var(--border-color); padding: 8px 16px; border-radius: 30px; font-size: 0.85rem; font-weight: 700; color: var(--text-secondary); cursor: pointer; transition: var(--transition); display: inline-flex; align-items: center; gap: 8px; box-shadow: var(--shadow-sm); }
         .pill:hover { border-color: var(--accent-color); color: var(--text-primary); transform: translateY(-2px); box-shadow: var(--shadow-md); }
@@ -131,37 +132,33 @@
         .thumb-image { width: 100%; height: 100%; object-fit: contain; }
         .thumb-watermark-overlay { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; pointer-events: none; background: rgba(0,0,0,0.15); z-index: 5;}
         
-        /* WATERMARK (REVISI 3 & 4: Ukuran Pas, Presisi Kanan Atas) */
+        /* WATERMARK KIRI KE KANAN MEWAH (REVISI 3 & 4: Ukuran Pas & Presisi Frame) */
         .player-watermark { position: absolute; top: 10px; right: 10px; width: 90px; height: 24px; z-index: 10; pointer-events: none; filter: drop-shadow(0 1px 2px rgba(0,0,0,0.4)); overflow: hidden; transition: all 0.2s; }
-        .media-player-wrapper.audio-mode .player-watermark { top: 15px; right: 20px; display: block; width: 110px; height: 28px;}
+        .media-player-wrapper.audio-mode .player-watermark { top: 15px; right: 20px; display: block; width: 125px; height: 32px;}
         .media-player-wrapper:fullscreen .player-watermark { width: 130px; height: 34px; }
 
-        /* CONTROLS (REVISI 1: Auto-Hide) */
+        /* CONTROLS (REVISI 1: Auto Hide/Show) */
         .player-controls { position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(to top, rgba(0,0,0,0.9), transparent); padding: 30px 20px 15px; display: flex; align-items: center; gap: 15px; z-index: 10; transition: opacity 0.4s ease; opacity: 1; }
         .media-player-wrapper.audio-mode .player-controls { position: relative; background: transparent; padding: 15px 0 0; width: 100%; max-width: 400px; }
-        
-        /* Class untuk menyembunyikan kontrol saat idle */
-        .hide-controls { opacity: 0 !important; pointer-events: none; }
+        .player-controls.hide-controls { opacity: 0; pointer-events: none; }
         
         .play-pause-btn { width: 38px; height: 38px; border-radius: 50%; background: var(--accent-color); color: #FFF; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 1rem; flex-shrink: 0; transition: 0.2s; box-shadow: 0 4px 10px rgba(99, 102, 241, 0.4); }
         .play-pause-btn:hover { transform: scale(1.08); background: var(--accent-hover); }
         
-        /* REVISI 2: Progress Area Dipertebal & Tambah Buffer Bar + Tooltip */
+        /* REVISI 2: HITBOX TEBAL, TOOLTIP, DAN BUFFER */
         .progress-area { flex: 1; display: flex; flex-direction: column; gap: 8px; padding: 10px 0; margin: -10px 0; cursor: pointer; position: relative; }
         .progress-bar-bg { width: 100%; height: 6px; background: rgba(255,255,255,0.3); border-radius: 4px; position: relative; overflow: hidden; pointer-events: none; }
-        .progress-bar-buffered { position: absolute; top: 0; left: 0; height: 100%; background: rgba(255,255,255,0.5); width: 0%; border-radius: 4px; pointer-events: none; transition: width 0.2s; }
-        .progress-bar-fill { height: 100%; background: var(--accent-color); width: 0%; border-radius: 4px; pointer-events: none; position: relative; z-index: 2; }
-        
-        .progress-tooltip { position: absolute; top: -25px; left: 0; transform: translateX(-50%); background: rgba(0,0,0,0.8); color: #fff; padding: 2px 6px; border-radius: 4px; font-size: 0.7rem; font-family: monospace; font-weight: 700; opacity: 0; transition: opacity 0.2s; pointer-events: none; z-index: 5; white-space: nowrap; }
-        .progress-tooltip.show { opacity: 1; }
-
+        .progress-bar-buffer { position: absolute; top: 0; left: 0; height: 100%; background: rgba(255,255,255,0.5); border-radius: 4px; pointer-events: none; z-index: 1; width: 0%; transition: width 0.2s; }
+        .progress-bar-fill { height: 100%; background: var(--accent-color); width: 0%; border-radius: 4px; pointer-events: none; z-index: 2; position: relative; }
         .time-display { font-size: 0.75rem; color: rgba(255,255,255,0.9); font-weight: 700; display: flex; justify-content: space-between; font-family: monospace; pointer-events: none; }
+        
+        .time-tooltip { position: absolute; top: -25px; left: 0; transform: translateX(-50%); background: rgba(0,0,0,0.85); color: #fff; padding: 4px 8px; border-radius: 6px; font-size: 0.75rem; font-family: monospace; font-weight: 700; pointer-events: none; z-index: 15; white-space: nowrap; transition: opacity 0.2s; }
         
         .control-icon-btn { background: none; border: none; color: #FFF; font-size: 1.3rem; cursor: pointer; padding: 5px; transition: 0.2s; opacity: 0.9; }
         .control-icon-btn:hover { opacity: 1; transform: scale(1.1); }
         .media-player-wrapper.audio-mode .fullscreen-btn { display: none; }
 
-        /* LOADING & ERROR */
+        /* LOADING DI TENGAH TANPA BLOKIR KLIK */
         .centered-overlay-box { position: absolute; inset: 0; margin: auto; z-index: 20; width: max-content; height: max-content; max-width: 85%; display: flex; align-items: center; justify-content: center; pointer-events: none; }
         .centered-box-content { background: rgba(0,0,0,0.85); padding: 18px 24px; border-radius: 16px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.5); pointer-events: none; }
 
@@ -184,15 +181,10 @@
         .real-dl-fill { width: 0%; height: 12px; background: linear-gradient(90deg, #10B981, #34D399); border-radius: 8px; transition: width 0.3s linear; }
         .real-dl-info { display: flex; justify-content: space-between; font-size: 0.8rem; color: var(--text-secondary); margin-top: 6px; padding: 0 6px; font-weight: 700; font-family: monospace; }
 
-        /* HOW IT WORKS & FEATURES SECTION (REVISI 8: Animasi Swipe Hint) */
-        .section-container { padding: 40px 20px; max-width: 1000px; margin: 0 auto; text-align: center; }
+        /* HOW IT WORKS & FEATURES SECTION (REVISI 8: Carousel Padding Aman) */
+        .section-container { padding: 40px 20px; max-width: 1000px; margin: 0 auto; text-align: center; position: relative; }
         .section-title { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 1.8rem; font-weight: 900; margin-bottom: 30px; color: var(--text-primary); letter-spacing: -0.5px; }
         
-        .swipe-hint-container { position: relative; width: 100%; display: flex; justify-content: center; margin-top: -10px; margin-bottom: 10px; height: 20px; }
-        .swipe-hint { position: absolute; background: rgba(99, 102, 241, 0.9); color: white; padding: 4px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; display: flex; align-items: center; gap: 6px; opacity: 0; transform: translateX(20px); transition: all 0.5s; pointer-events: none; }
-        .swipe-hint.active { opacity: 1; transform: translateX(0); animation: swipeAnim 2s infinite; }
-        @keyframes swipeAnim { 0%, 100% { transform: translateX(0); } 50% { transform: translateX(-15px); } }
-
         .steps-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 30px; }
         .step-card { display: flex; flex-direction: column; align-items: center; }
         .step-icon-wrapper { width: 80px; height: 80px; background: #EEF2FF; border-radius: 24px; display: flex; align-items: center; justify-content: center; font-size: 2rem; color: var(--accent-color); margin-bottom: 20px; transform: rotate(-5deg); transition: var(--transition); }
@@ -234,14 +226,9 @@
         .sheet-opt-btn.selected i.fa-check { color: var(--accent-color); }
         
         /* REVISI 5: BADGE RESOLUSI & SERVER */
-        .q-badge { font-size: 0.7rem; padding: 4px 10px; border-radius: 20px; font-weight: 800; margin-left: 10px; display: inline-flex; align-items: center; gap: 4px; }
+        .q-badge { background: #E0E7FF; color: var(--accent-color); font-size: 0.7rem; padding: 4px 10px; border-radius: 20px; font-weight: 800; margin-left: 10px; }
         .q-badge.audio { background: #F3E8FF; color: #9333EA; }
         .q-badge.format { background: #E5E7EB; color: #374151;} 
-        .q-badge.res-4k { background: #FEF08A; color: #92400E; }
-        .q-badge.res-fhd { background: #DBEAFE; color: #1E40AF; }
-        .q-badge.res-hd { background: #D1FAE5; color: #065F46; }
-        .q-badge.res-sd { background: #F3F4F6; color: #4B5563; }
-        .q-badge.server-kreaverse { background: #10B981; color: #FFF; margin-top: 6px; font-size: 0.65rem; padding: 3px 8px; border-radius: 6px; width: max-content; }
         
         .audio-indicator-badge { font-size: 0.7rem; padding: 4px 8px; border-radius: 6px; margin-left: 8px; font-weight: 800; display: inline-flex; align-items: center; gap: 6px; }
         .audio-indicator-badge.has-audio { background: #D1FAE5; color: #059669; }
@@ -262,9 +249,12 @@
         .iphone-toast-title { font-size: 0.9rem; font-weight: 700; line-height: 1.2; margin-bottom: 2px; }
         .iphone-toast-desc { font-size: 0.8rem; color: #E5E5EA; line-height: 1.3; font-weight: 500; }
 
-        /* RESPONSIVE MOBILE */
+        /* RESPONSIVE MOBILE (Revisi 6 & 8) */
+        .swipe-indicator { display: none; position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: rgba(0,0,0,0.6); color: white; padding: 10px; border-radius: 50%; z-index: 10; pointer-events: none; animation: swipeAnim 60s infinite; }
+        @keyframes swipeAnim { 0%, 13.33% { opacity: 1; transform: translate(0, -50%); } 14%, 100% { opacity: 0; transform: translate(-20px, -50%); } }
+
         @media (max-width: 640px) {
-            .logo-container { width: 190px; height: 44px; } 
+            .logo-container { width: 200px; height: 48px; } 
             .hero-title { font-size: 2.2rem; letter-spacing: -1px; }
             .hero-subtitle { font-size: 0.85rem; padding: 0 10px; margin-bottom: 15px; }
             
@@ -281,12 +271,12 @@
             .format-btn { padding: 8px 10px; font-size: 0.8rem;}
             .format-toggle { gap: 10px; }
             
-            /* Carousel Scroll untuk Fitur & Cara Kerja dengan Padding Kanan */
+            /* Carousel Scroll untuk Fitur & Cara Kerja dengan Padding Aman */
             .section-title { font-size: 1.4rem; margin-bottom: 20px; }
-            .steps-grid, .features-grid { display: flex; flex-wrap: nowrap; overflow-x: auto; scroll-snap-type: x mandatory; padding-bottom: 15px; gap: 15px; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+            .swipe-indicator { display: flex; }
+            .steps-grid, .features-grid { display: flex; flex-wrap: nowrap; overflow-x: auto; scroll-snap-type: x mandatory; padding: 10px 20px 20px 20px; margin: 0 -20px; gap: 15px; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
             .steps-grid::-webkit-scrollbar, .features-grid::-webkit-scrollbar { display: none; }
             .step-card, .feature-card { flex: 0 0 85%; scroll-snap-align: center; }
-            .steps-grid::after, .features-grid::after { content: ''; flex: 0 0 20px; } /* Mencegah kepotong di ujung */
             
             .step-icon-wrapper { width: 60px; height: 60px; font-size: 1.5rem; border-radius: 18px; margin-bottom: 15px; }
             .step-title { font-size: 1rem; }
@@ -315,7 +305,7 @@
 
     <nav class="navbar">
         <a href="/" class="back-btn" title="Kembali"><i class="fa-solid fa-arrow-left"></i></a>
-        <!-- REVISI 7: Logo Mutlak Presisi di Tengah -->
+        <!-- REVISI 7: Logo Mutlak di Tengah -->
         <div class="logo-container">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 60" class="krea-logo-svg">
                 <defs><linearGradient id="kreaGrad" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#D97757" /><stop offset="50%" stop-color="#AF52DE" /><stop offset="100%" stop-color="#007AFF" /></linearGradient></defs>
@@ -326,7 +316,6 @@
         <div class="nav-right"></div>
     </nav>
 
-    <!-- REVISI 6: Font Judul Super Tebal Ala Atlantic Server -->
     <section class="hero-section">
         <h1 class="hero-title">Downloader<br>Kreaverse AI</h1>
         <div class="hero-subtitle">
@@ -369,6 +358,7 @@
             </div>
         </div>
 
+        <!-- REVISI 6: Settings Pills Menyamping Rapi -->
         <div class="settings-pills">
             <button class="pill" onclick="openSheet('sheet-platform')"><i class="fa-solid fa-globe"></i> <span id="label-platform">Otomatis Deteksi Link</span></button>
             <button class="pill" onclick="openSheet('sheet-server')"><i class="fa-solid fa-server"></i> <span id="label-server">Otomatis (Paling Cepat)</span></button>
@@ -379,14 +369,15 @@
         
         <div class="yt-warning" id="yt-warning-text" style="display:block;">*Pilih resolusi dengan ikon 'Bersuara' agar video memiliki audio.</div>
     </section>
-<!-- RESULT SECTION -->
+
+    <!-- RESULT SECTION -->
     <section id="result-container" class="result-section">
         <div class="result-card">
             <h3 style="font-size: 1.2rem; font-weight: 900; margin-bottom: 20px; text-align: center;">File Siap Diunduh!</h3>
             
             <div class="media-player-wrapper" id="media-wrapper">
                 
-                <!-- WATERMARK (Presisi & Animasi Menyapu Kiri ke Kanan) -->
+                <!-- WATERMARK (Revisi 3 & 4: Ukuran pas & Menyapu Kiri ke Kanan) -->
                 <div class="player-watermark" id="player-watermark">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 60" style="width:100%; height:100%;">
                         <defs>
@@ -395,7 +386,6 @@
                                 <stop offset="50%" stop-color="#AF52DE" />
                                 <stop offset="100%" stop-color="#007AFF" />
                             </linearGradient>
-                            <!-- Menyapu halus dari KIRI ke KANAN -->
                             <linearGradient id="shimmerGlow" x1="-100%" y1="0%" x2="0%" y2="0%">
                                 <stop offset="0%" stop-color="rgba(255,255,255,0)" />
                                 <stop offset="45%" stop-color="rgba(255,255,255,0)" />
@@ -411,7 +401,6 @@
                             <path d="M 30,17 Q 30,30 43,30 Q 30,30 30,43 Q 30,30 17,30 Q 30,30 30,17 Z" fill="url(#kreaGradWM)" transform="rotate(45, 30, 30)" opacity="0.85" />
                             <text x="65" y="38" font-family="'Plus Jakarta Sans', sans-serif" font-weight="800" font-size="21" fill="url(#kreaGradWM)" letter-spacing="-0.5px">Kreaverse<tspan font-weight="500"> AI</tspan></text>
                         </g>
-                        <!-- Efek cahaya putih menumpang khusus di logonya saja -->
                         <g style="mix-blend-mode: overlay;">
                             <path d="M 30,10 Q 30,30 50,30 Q 30,30 30,50 Q 30,30 10,30 Q 30,30 30,10 Z" fill="url(#shimmerGlow)" />
                             <path d="M 30,17 Q 30,30 43,30 Q 30,30 30,43 Q 30,30 17,30 Q 30,30 30,17 Z" fill="url(#shimmerGlow)" transform="rotate(45, 30, 30)" />
@@ -428,7 +417,6 @@
                     </div>
                 </div>
 
-                <!-- PREVIEW THUMBNAIL DENGAN WATERMARK TRANSPARAN 30% -->
                 <div class="thumb-preview-container" id="thumb-preview">
                     <img src="" id="thumb-image" class="thumb-image" alt="Thumbnail Preview">
                     <div class="thumb-watermark-overlay">
@@ -439,25 +427,22 @@
                     </div>
                 </div>
 
-                <!-- LOADING & ERROR BOX (Tengah, tidak memblokir tombol Z-index atas) -->
                 <div class="centered-overlay-box hidden" id="buffering-spinner">
-                    <div class="centered-box-content" id="buffering-content">
-                        <!-- Konten diisi dari Javascript -->
-                    </div>
+                    <div class="centered-box-content" id="buffering-content"></div>
                 </div>
                 
                 <video id="custom-video" class="video-element" playsinline preload="metadata" referrerpolicy="no-referrer"></video>
                 <audio id="custom-audio" class="hidden" preload="metadata" referrerpolicy="no-referrer"></audio>
                 
-                <!-- REVISI 1 & 2: PLAYER CONTROLS DENGAN AUTO-HIDE & BUFFER BAR -->
+                <!-- REVISI 1 & 2: KONTROL HILANG/MUNCUL & TOOLTIP BUFFER -->
                 <div class="player-controls" id="player-controls">
                     <button class="play-pause-btn" id="play-pause-btn"><i class="fa-solid fa-play" style="margin-left:2px;"></i></button>
                     <div class="progress-area" id="progress-area-click">
                         <div class="progress-bar-bg" id="progress-bg">
-                            <div class="progress-bar-buffered" id="progress-buffered"></div>
+                            <div class="progress-bar-buffer" id="progress-buffer"></div>
                             <div class="progress-bar-fill" id="progress-fill"></div>
                         </div>
-                        <div class="progress-tooltip" id="progress-tooltip">0:00</div>
+                        <div class="time-tooltip hidden" id="time-tooltip">0:00</div>
                         <div class="time-display">
                             <span id="current-time">0:00</span>
                             <span id="total-time">0:00</span>
@@ -480,7 +465,6 @@
 
             <div class="result-info" id="download-stats"></div>
 
-            <!-- BUTTONS DIJAMIN Z-INDEX TINGGI AGAR TERBEBAS DARI ERROR OVERLAY & BISA DIKLIK -->
             <div class="action-buttons">
                 <button id="direct-download-link" class="btn-save-gallery"><i class="fa-solid fa-cloud-arrow-down"></i> Simpan ke Galeri</button>
                 <button id="real-download-btn" class="btn-save-gallery btn-server-kreaverse"><i class="fa-solid fa-server"></i> Unduh via Server Kreaverse AI</button>
@@ -498,27 +482,27 @@
         </div>
     </section>
 
-    <!-- CARA KERJA & FITUR (REVISI 8: Animasi Swipe Hint) -->
+    <!-- CARA KERJA & FITUR (REVISI 8: Animasi Tangan Geser) -->
     <section class="section-container">
         <h2 class="section-title">Cara Kerja</h2>
-        <div class="swipe-hint-container hidden-desktop" id="swipe-hint-1">
-            <div class="swipe-hint active"><i class="fa-solid fa-hand-pointer"></i> Geser</div>
-        </div>
-        <div class="steps-grid">
-            <div class="step-card">
-                <div class="step-icon-wrapper"><i class="fa-regular fa-copy"></i></div>
-                <h3 class="step-title">1. Salin Tautan</h3>
-                <p class="step-desc">Buka aplikasi sosial media favorit Anda, cari video, musik, atau postingan, lalu salin tautannya.</p>
-            </div>
-            <div class="step-card">
-                <div class="step-icon-wrapper"><i class="fa-solid fa-paste"></i></div>
-                <h3 class="step-title">2. Tempel & Pilih</h3>
-                <p class="step-desc">Tempel tautan di atas, pilih format <strong style="color:var(--text-primary);">Video, Audio, atau KREAVERSE AI THUMBNAIL</strong>, lalu klik Unduh.</p>
-            </div>
-            <div class="step-card">
-                <div class="step-icon-wrapper"><i class="fa-solid fa-download"></i></div>
-                <h3 class="step-title">3. Simpan ke Galeri</h3>
-                <p class="step-desc">Tinjau hasilnya di pemutar media kami, lalu simpan file langsung ke galeri perangkat Anda tanpa rekayasa.</p>
+        <div style="position: relative;" class="carousel-wrapper">
+            <div class="swipe-indicator"><i class="fa-solid fa-hand-pointer fa-beat-fade"></i></div>
+            <div class="steps-grid">
+                <div class="step-card">
+                    <div class="step-icon-wrapper"><i class="fa-regular fa-copy"></i></div>
+                    <h3 class="step-title">1. Salin Tautan</h3>
+                    <p class="step-desc">Buka aplikasi sosial media favorit Anda, cari video, musik, atau postingan, lalu salin tautannya.</p>
+                </div>
+                <div class="step-card">
+                    <div class="step-icon-wrapper"><i class="fa-solid fa-paste"></i></div>
+                    <h3 class="step-title">2. Tempel & Pilih</h3>
+                    <p class="step-desc">Tempel tautan di atas, pilih format <strong style="color:var(--text-primary);">Video, Audio, atau Thumbnail</strong>, lalu klik Unduh.</p>
+                </div>
+                <div class="step-card">
+                    <div class="step-icon-wrapper"><i class="fa-solid fa-download"></i></div>
+                    <h3 class="step-title">3. Simpan ke Galeri</h3>
+                    <p class="step-desc">Tinjau hasilnya di pemutar media kami, lalu simpan file langsung ke galeri perangkat Anda tanpa rekayasa.</p>
+                </div>
             </div>
         </div>
     </section>
@@ -526,35 +510,34 @@
     <section class="features-bg">
         <div class="section-container">
             <h2 class="section-title">Fitur Unggulan</h2>
-            <div class="swipe-hint-container hidden-desktop" id="swipe-hint-2">
-                <div class="swipe-hint active"><i class="fa-solid fa-hand-pointer"></i> Geser</div>
-            </div>
-            <div class="features-grid">
-                <div class="feature-card">
-                    <div class="feature-icon fi-1"><i class="fa-solid fa-bolt"></i></div>
-                    <h3 class="feature-title">Sangat Cepat</h3>
-                    <p class="feature-desc">Sistem Kreaverse otomatis mencari rute server tercepat untuk memproses unduhan Anda.</p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon fi-2"><i class="fa-solid fa-droplet-slash"></i></div>
-                    <h3 class="feature-title">Tanpa Watermark</h3>
-                    <p class="feature-desc">Unduh konten dari berbagai platform dalam kualitas asli tanpa logo yang mengganggu.</p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon fi-3"><i class="fa-solid fa-music"></i></div>
-                    <h3 class="feature-title">Ekstraksi Audio</h3>
-                    <p class="feature-desc">Ubah video musik favorit Anda menjadi format MP3 berkualitas tinggi dengan satu klik.</p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon fi-4"><i class="fa-solid fa-image"></i></div>
-                    <h3 class="feature-title">Kreaverse Thumbnail</h3>
-                    <p class="feature-desc">Tarik secara otomatis gambar sampul (thumbnail) eksklusif resolusi tinggi dari tautan yang Anda berikan.</p>
+            <div style="position: relative;" class="carousel-wrapper">
+                <div class="swipe-indicator"><i class="fa-solid fa-hand-pointer fa-beat-fade"></i></div>
+                <div class="features-grid">
+                    <div class="feature-card">
+                        <div class="feature-icon fi-1"><i class="fa-solid fa-bolt"></i></div>
+                        <h3 class="feature-title">Sangat Cepat</h3>
+                        <p class="feature-desc">Sistem Kreaverse otomatis mencari rute server tercepat untuk memproses unduhan Anda.</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon fi-2"><i class="fa-solid fa-droplet-slash"></i></div>
+                        <h3 class="feature-title">Tanpa Watermark</h3>
+                        <p class="feature-desc">Unduh konten dari berbagai platform dalam kualitas asli tanpa logo yang mengganggu.</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon fi-3"><i class="fa-solid fa-music"></i></div>
+                        <h3 class="feature-title">Ekstraksi Audio</h3>
+                        <p class="feature-desc">Ubah video musik favorit Anda menjadi format MP3 berkualitas tinggi dengan satu klik.</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon fi-4"><i class="fa-solid fa-image"></i></div>
+                        <h3 class="feature-title">Kreaverse Thumbnail</h3>
+                        <p class="feature-desc">Tarik secara otomatis gambar sampul (thumbnail) eksklusif resolusi tinggi dari tautan yang Anda berikan.</p>
+                    </div>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- FOOTER -->
     <footer class="footer">
         <div class="footer-logo">Kreaverse AI</div>
         <div class="footer-links">
@@ -598,11 +581,11 @@
             <div class="sheet-options" id="scanned-media-list"></div>
         </div>
     </div>
-
-    <script type="module">
+<script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
         import { getFirestore, doc, onSnapshot, collection, addDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
+        // FIREBASE SETUP
         const firebaseConfig = {
             apiKey: "AIzaSyAO8JV4jkJmbHChYvjUCS7wqfVbKr94tHM",
             authDomain: "kreaverse-ai0107.firebaseapp.com",
@@ -636,12 +619,25 @@
         let dbConfig = DEFAULT_CONFIG;
         let isConfigLoaded = false;
 
+        // REVISI 9: AUTO-CONNECT API DI AWAL (PRIORITAS UTAMA)
+        async function initFirebaseConfig() {
+            try {
+                const docSnap = await getDoc(doc(db, "settings", "downloader_api"));
+                if (docSnap.exists()) {
+                    dbConfig = docSnap.data();
+                    isConfigLoaded = true;
+                    renderDynamicOptions();
+                    window.pingSemuaServer();
+                }
+            } catch(e) { console.log("Gagal memuat config awal", e); }
+        }
+        initFirebaseConfig(); // Panggil langsung saat web dibuka
+
         onSnapshot(doc(db, "settings", "downloader_api"), (docSnap) => {
             if (docSnap.exists()) {
                 dbConfig = docSnap.data();
                 isConfigLoaded = true;
                 renderDynamicOptions();
-                window.pingSemuaServer();
             }
         });
 
@@ -655,8 +651,7 @@
         let globalScannedOptions = []; 
         let isDualAudio = false; 
         
-        // REVISI 1: Timer untuk Auto-Hide Controls
-        let controlsTimeout; 
+        let controlsTimeout; // Untuk sistem Hilang/Muncul kontrol Pemutar (Revisi 1)
 
         const btnText = document.getElementById('btn-text');
         const resultContainer = document.getElementById('result-container');
@@ -677,8 +672,8 @@
         const playPauseBtn = document.getElementById('play-pause-btn');
         const fullscreenBtn = document.getElementById('fullscreen-btn');
         const progressFill = document.getElementById('progress-fill');
-        const progressBuffered = document.getElementById('progress-buffered'); // REVISI 2
-        const progressTooltip = document.getElementById('progress-tooltip'); // REVISI 2
+        const progressBuffer = document.getElementById('progress-buffer'); // Revisi 2: Buffer
+        const timeTooltip = document.getElementById('time-tooltip'); // Revisi 2: Tooltip
         const currentTimeEl = document.getElementById('current-time');
         const totalTimeEl = document.getElementById('total-time');
         const playerMenuBtn = document.getElementById('player-menu-btn'); 
@@ -686,7 +681,6 @@
         const ytWarningDesc = document.getElementById('yt-warning-text');
         let activeMedia = null;
 
-        // IKON TOMBOL TEMPEL & HAPUS
         document.getElementById('clear-btn').addEventListener('click', () => {
             urlInput.value = ''; urlInput.focus();
         });
@@ -706,7 +700,6 @@
             overlay.addEventListener('click', (e) => { if (e.target === overlay) overlay.classList.remove('active'); });
         });
 
-        // AUTO-RESET SAAT PINDAH TAB
         window.changeFormat = (format) => {
             if (currentFormat !== format) resetUI(); 
             
@@ -846,7 +839,7 @@
             customAudio.src = ""; customVideo.src = ""; activeMedia = null; isDualAudio = false;
             updatePlayPauseUI(false); 
             progressFill.style.width = '0%';
-            progressBuffered.style.width = '0%'; // REVISI 2
+            progressBuffer.style.width = '0%';
             currentTimeEl.innerText = '0:00'; totalTimeEl.innerText = '0:00';
             clearInterval(processTimer); document.getElementById('progress-container').classList.remove('active');
             document.getElementById('real-download-progress-container').classList.add('hidden');
@@ -859,11 +852,9 @@
             document.getElementById('audio-ui').style.display = "none";
             customVideo.style.display = "block"; 
             playerControlsArea.style.display = "flex";
-            playerControlsArea.parentNode.classList.remove('hide-controls'); // REVISI 1
-            clearTimeout(controlsTimeout);
-            
             document.getElementById('player-watermark').style.display = "block";
             mediaWrapper.classList.remove('audio-mode');
+            mediaWrapper.classList.remove('hide-controls'); // Pastikan kontrol muncul saat reset
             globalScannedOptions = [];
         }
 
@@ -1014,10 +1005,9 @@
             setTimeout(() => { document.getElementById('progress-container').classList.remove('active'); }, 1000);
         }
 
-        // REVISI 9: FORCE AWAIT FIREBASE CONFIG (TIDAK PERLU REFRESH LAGI)
         async function processDownload(mediaUrl) {
             if (!isConfigLoaded || !dbConfig.baseUrls || Object.keys(dbConfig.baseUrls).length === 0) {
-                document.getElementById('progress-status-desc').innerText = "Menghubungkan ke Database...";
+                document.getElementById('progress-status-desc').innerText = "Membuka koneksi aman...";
                 try {
                     const docSnap = await getDoc(doc(db, "settings", "downloader_api"));
                     if (docSnap.exists()) { dbConfig = docSnap.data(); isConfigLoaded = true; renderDynamicOptions(); }
@@ -1104,7 +1094,7 @@
 
                 const sheetList = document.getElementById('scanned-media-list');
                 sheetList.innerHTML = resultData.options.map((opt, i) => {
-                    let icon, badgeClass, audioBadge = '', displayTitle;
+                    let icon, badgeClass, audioBadge = '', displayTitle, resBadge = '';
                     
                     if (opt.type === 'thumb') {
                         icon = 'fa-image'; badgeClass = 'q-badge'; displayTitle = `${resultData.title}`;
@@ -1112,8 +1102,18 @@
                         icon = 'fa-music'; badgeClass = 'q-badge audio'; displayTitle = `AUDIO | ${resultData.title}`;
                     } else {
                         icon = 'fa-video'; badgeClass = 'q-badge video'; displayTitle = `VIDEO | ${resultData.title}`;
+                        
+                        // REVISI 5: BADGE KUALITAS PINTAR (SD, HD, FULL HD, 4K)
                         const safeQuality = String(opt.quality).toUpperCase();
-                        if (safeQuality.includes('1080') || safeQuality.includes('1440') || safeQuality.includes('2160') || safeQuality.includes('4K') || safeQuality.includes('MUTE') || safeQuality.includes('NO AUDIO')) {
+                        const qNum = parseInt(safeQuality);
+                        if (!isNaN(qNum)) {
+                            if (qNum >= 2160) resBadge = `<span class="q-badge" style="background:#111827; color:#FBBF24;"><i class="fa-solid fa-crown"></i> 4K</span>`;
+                            else if (qNum >= 1080) resBadge = `<span class="q-badge" style="background:#1E3A8A; color:#FFF;">Full HD</span>`;
+                            else if (qNum >= 720) resBadge = `<span class="q-badge" style="background:#2563EB; color:#FFF;">HD</span>`;
+                            else resBadge = `<span class="q-badge" style="background:#6B7280; color:#FFF;">SD</span>`;
+                        }
+
+                        if (safeQuality.includes('MUTE') || safeQuality.includes('NO AUDIO')) {
                             audioBadge = `<span class="audio-indicator-badge no-audio"><i class="fa-solid fa-volume-xmark"></i> Bisu</span>`;
                         } else {
                             audioBadge = `<span class="audio-indicator-badge has-audio"><i class="fa-solid fa-volume-high"></i> Bersuara</span>`;
@@ -1123,15 +1123,11 @@
                     const sizeStr = opt.size ? `<span style="font-size:0.75rem; color:var(--text-light); margin-top:4px;">Ukuran: ${opt.size}</span>` : '';
                     const extStr = opt.ext ? `<span class="q-badge format">${opt.ext}</span>` : '';
                     
-                    // REVISI 5: PENANDA RESOLUSI TINGGI (HD/FHD/4K) & BADGE SERVER
-                    let resBadge = '';
-                    const safeQuality = String(opt.quality).toUpperCase();
-                    if (safeQuality.includes('2160') || safeQuality.includes('4K')) resBadge = `<span class="q-badge res-4k">4K</span>`;
-                    else if (safeQuality.includes('1080') || safeQuality.includes('FHD')) resBadge = `<span class="q-badge res-fhd">FHD</span>`;
-                    else if (safeQuality.includes('720') || safeQuality.includes('HD')) resBadge = `<span class="q-badge res-hd">HD</span>`;
-                    else if (opt.type === 'video') resBadge = `<span class="q-badge res-sd">SD</span>`;
-                    
-                    let serverBadge = `<div class="q-badge server-kreaverse"><i class="fa-solid fa-shield-halved"></i> Support Server Kreaverse</div>`;
+                    // REVISI 5: PENANDA SERVER KREAVERSE (Untuk MP4/MP3 Direct)
+                    let kreaverseBadge = '';
+                    if(opt.type !== 'thumb' && opt.url.startsWith('http') && !opt.url.includes('youtube')) {
+                        kreaverseBadge = `<span class="audio-indicator-badge" style="background:#ECFDF5; color:#059669;"><i class="fa-solid fa-bolt"></i> Server Kreaverse</span>`;
+                    }
 
                     const safeTitle = resultData.title.replace(/'/g, "\\'").replace(/"/g, '&quot;');
                     const safeThumb = resultData.thumbnail ? btoa(resultData.thumbnail) : '';
@@ -1142,11 +1138,10 @@
                                 <i class="fa-solid ${icon}" style="margin-right:12px; color:var(--accent-color); margin-top:4px; font-size:1.2rem;"></i>
                                 <div style="display:flex; flex-direction:column;">
                                     <div style="font-weight:800; color:var(--text-primary); margin-bottom:2px; display:flex; align-items:center; flex-wrap:wrap; gap:4px;">
-                                        ${opt.quality} ${resBadge} ${extStr} ${audioBadge}
+                                        ${opt.quality} <span class="${badgeClass}">${opt.type.toUpperCase()}</span> ${resBadge} ${extStr} ${audioBadge} ${kreaverseBadge}
                                     </div>
                                     <div style="font-size:0.8rem; color:var(--text-secondary); line-height:1.4; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;">${displayTitle}</div>
                                     ${sizeStr}
-                                    ${serverBadge}
                                 </div>
                             </div>
                             <i class="fa-solid fa-chevron-right" style="font-size:0.9rem; color:var(--text-light);"></i>
@@ -1204,17 +1199,17 @@
                 mediaWrapper.classList.remove('audio-mode'); customVideo.style.display = "block";
                 document.getElementById('audio-ui').style.display = "none";
                 document.getElementById('thumb-preview').style.display = "none";
+                
                 playerControlsArea.style.display = "flex";
                 document.getElementById('player-watermark').style.display = "block";
                 document.getElementById('real-download-btn').classList.remove('hidden');
-                
-                resetControlsTimer(); // REVISI 1: Panggil timer awal
 
             } else {
                 activeMedia = customAudio; customAudio.src = url; customAudio.muted = false;
                 mediaWrapper.classList.add('audio-mode'); customVideo.style.display = "none";
                 document.getElementById('audio-ui').style.display = "flex";
                 document.getElementById('thumb-preview').style.display = "none";
+                
                 playerControlsArea.style.display = "flex";
                 document.getElementById('player-watermark').style.display = "block";
                 document.getElementById('real-download-btn').classList.remove('hidden');
@@ -1224,11 +1219,13 @@
             resultContainer.classList.add('active');
             setTimeout(() => { resultContainer.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 100);
 
+            // REVISI 8: SIMPAN RECORD THUMBNAIL KE FIREBASE
             if(isLoggedIn && userId) {
                 addDoc(collection(db, "users", userId, "downloads"), { url: urlInput.value.trim(), fileName: title, provider: provider, type: type, ext: finalExt.toUpperCase(), directUrl: url, size: size||"", thumbnail: finalThumb, timestamp: Date.now() })
                 .catch(e=>console.log(e));
             }
             showIphoneNotif('Berhasil diproses', `Media siap dinikmati`, 'fa-circle-check');
+            resetControlsTimer(); // Panggil timer auto-hide awal
         };
 
         playerMenuBtn.addEventListener('click', (e) => {
@@ -1247,23 +1244,29 @@
 
             html += globalScannedOptions.filter(o => o.type === currentFormat).map(opt => {
                 const isActive = opt.url === resolvedMediaUrl ? 'selected' : '';
-                let audioBadge = '', extBadge = '';
+                let audioBadge = '', extBadge = '', resBadge = '';
                 if (currentFormat === 'video') {
                      const safeQuality = String(opt.quality).toUpperCase();
+                     const qNum = parseInt(safeQuality);
+                     if (!isNaN(qNum)) {
+                         if (qNum >= 2160) resBadge = `<span class="q-badge" style="background:#111827; color:#FBBF24;"><i class="fa-solid fa-crown"></i> 4K</span>`;
+                         else if (qNum >= 1080) resBadge = `<span class="q-badge" style="background:#1E3A8A; color:#FFF;">Full HD</span>`;
+                         else if (qNum >= 720) resBadge = `<span class="q-badge" style="background:#2563EB; color:#FFF;">HD</span>`;
+                         else resBadge = `<span class="q-badge" style="background:#6B7280; color:#FFF;">SD</span>`;
+                     }
+
                      if (safeQuality.includes('1080') || safeQuality.includes('1440') || safeQuality.includes('2160') || safeQuality.includes('4K') || safeQuality.includes('MUTE') || safeQuality.includes('NO AUDIO')) {
                          audioBadge = `<span class="audio-indicator-badge no-audio"><i class="fa-solid fa-volume-xmark"></i> Bisu</span>`;
                      } else {
                          audioBadge = `<span class="audio-indicator-badge has-audio"><i class="fa-solid fa-volume-high"></i> Bersuara</span>`;
                      }
                 }
-                if (opt.ext) {
-                    extBadge = `<span class="q-badge format">${opt.ext}</span>`;
-                }
+                if (opt.ext) { extBadge = `<span class="q-badge format">${opt.ext}</span>`; }
 
                 return `
                     <button class="sheet-opt-btn ${isActive}" onclick="changeVideoQuality('${opt.url}', '${opt.quality}', '${opt.ext}')">
                         <div style="display:flex; flex-direction:column; gap:4px;">
-                            <span style="font-weight:800; display:flex; align-items:center; flex-wrap:wrap; gap:6px;">${opt.quality} ${extBadge} ${audioBadge}</span>
+                            <span style="font-weight:800; display:flex; align-items:center; flex-wrap:wrap; gap:6px;">${opt.quality} ${resBadge} ${extBadge} ${audioBadge}</span>
                             ${opt.size ? `<span style="font-size:0.75rem; color:var(--text-light); font-weight:600;">Ukuran: ${opt.size}</span>` : ''}
                         </div>
                         <i class="fa-solid fa-check ${isActive ? '' : 'hidden'}"></i>
@@ -1310,7 +1313,7 @@
             showIphoneNotif('Resolusi Diubah', `Kualitas disesuaikan ke ${qualityName}`, 'fa-wand-magic-sparkles');
         };
 
-        // REVISI 3 & 4: PELACAKAN BINGKAI WATERMARK SANGAT PRESISI
+        // REVISI 3 & 4: PELACAKAN BINGKAI WATERMARK VIDEO (Lebih Presisi Kanan Atas)
         function adjustVideoWatermark() {
             if (currentFormat !== 'video' || activeMedia !== customVideo || !customVideo.videoWidth) return;
             const wrapper = document.getElementById('media-wrapper');
@@ -1331,7 +1334,7 @@
             const offX = (wRect.width - actW) / 2;
             const offY = (wRect.height - actH) / 2;
             
-            // Jarak aman logo agar pasti di dalam video
+            // Jarak menempel rapi ke sudut kanan atas video asli
             wm.style.right = (offX + 10) + 'px';
             wm.style.top = (offY + 15) + 'px';
         }
@@ -1344,33 +1347,32 @@
             return `${m}:${s < 10 ? '0' : ''}${s}`;
         }
 
-        // REVISI 1: SISTEM TAP HILANGKAN KONTROL
-        function togglePlayerControls() {
-            if(currentFormat !== 'video') return; 
-            playerControlsArea.parentNode.classList.toggle('hide-controls');
-            if(!playerControlsArea.parentNode.classList.contains('hide-controls')) {
-                resetControlsTimer(); // Mulai timer lagi jika baru dimunculkan
-            }
-        }
-        
+        // REVISI 1: SISTEM TAP HILANG/MUNCUL KONTROL OTOMATIS (5 DETIK)
         function resetControlsTimer() {
-            if(currentFormat !== 'video') return;
+            if(currentFormat !== 'video' && currentFormat !== 'audio') return;
             playerControlsArea.parentNode.classList.remove('hide-controls');
             clearTimeout(controlsTimeout);
             controlsTimeout = setTimeout(() => {
                 if(activeMedia && !activeMedia.paused) {
                     playerControlsArea.parentNode.classList.add('hide-controls');
                 }
-            }, 5000); // Hilang otomatis dalam 5 detik
+            }, 5000); // Hilang dalam 5 detik
         }
 
         // Tap di area mana pun pada video memanggil interaksi/hilang
         mediaWrapper.addEventListener('click', (e) => {
-            if(e.target.closest('#player-controls')) return; 
-            togglePlayerControls();
+            if(e.target.closest('#player-controls') || e.target.closest('.player-watermark')) return; 
+            
+            if(playerControlsArea.parentNode.classList.contains('hide-controls')) {
+                resetControlsTimer(); // Munculkan lagi
+            } else {
+                clearTimeout(controlsTimeout);
+                playerControlsArea.parentNode.classList.add('hide-controls'); // Hilangkan langsung
+            }
         });
 
         mediaWrapper.addEventListener('mousemove', resetControlsTimer);
+        mediaWrapper.addEventListener('touchstart', resetControlsTimer);
 
         playPauseBtn.addEventListener('click', () => {
             if(!activeMedia) return;
@@ -1412,20 +1414,15 @@
                 const percent = (media.duration) ? (media.currentTime / media.duration) * 100 : 0;
                 progressFill.style.width = `${percent}%`;
                 currentTimeEl.innerText = formatTime(media.currentTime);
-            });
-            
-            // REVISI 2: BUFFER BAR REALTIME
-            media.addEventListener('progress', () => {
-                if(media !== activeMedia) return;
-                if(media.buffered.length > 0) {
+                
+                // REVISI 2: INDIKATOR BUFFER (Garis Putih Transparan)
+                if (media.buffered.length > 0) {
                     const bufferedEnd = media.buffered.end(media.buffered.length - 1);
-                    const duration = media.duration;
-                    if (duration > 0) {
-                        progressBuffered.style.width = (bufferedEnd / duration) * 100 + "%";
+                    if (media.duration > 0) {
+                        progressBuffer.style.width = (bufferedEnd / media.duration) * 100 + '%';
                     }
                 }
             });
-
             media.addEventListener('loadedmetadata', () => {
                 if(media !== activeMedia) return;
                 totalTimeEl.innerText = formatTime(media.duration);
@@ -1465,8 +1462,9 @@
             });
             media.addEventListener('error', () => {
                 if(media === activeMedia) {
+                    // REVISI 5: PENANDA ERROR DILINDUNGI
                     bufferingContent.innerHTML = `
-                        <i class="fa-solid fa-triangle-exclamation" style="font-size:2.2rem; color:var(--danger-color);"></i>
+                        <i class="fa-solid fa-lock" style="font-size:2.2rem; color:var(--danger-color);"></i>
                         <span style="font-size:0.9rem; text-align:center; padding-top:10px; color:#FFF; font-weight:700; line-height:1.4;">
                             Media Dilindungi Penyedia.<br>
                             <span style="color:var(--text-light); font-weight:500;">Silakan langsung tekan tombol<br>Simpan ke Galeri.</span>
@@ -1474,31 +1472,48 @@
                     `;
                     bufferingSpinner.classList.remove('hidden');
                     updatePlayPauseUI(false);
+                    playerControlsArea.parentNode.classList.remove('hide-controls');
                 }
             });
         });
 
-        // REVISI 2: HITBOX TEBAL PADA GARIS WAKTU & TOOLTIP WAKTU
+        // REVISI 2: HITBOX TEBAL PADA GARIS WAKTU & TOOLTIP MENIT
         const progressAreaClick = document.getElementById('progress-area-click');
-        const progressTooltip = document.getElementById('progress-tooltip');
+        const timeTooltip = document.getElementById('time-tooltip');
 
-        function handleProgressMove(e) {
+        progressAreaClick.addEventListener('mousemove', (e) => {
             if(!activeMedia || !activeMedia.duration) return;
             const rect = progressAreaClick.getBoundingClientRect();
-            let clientX = e.clientX || (e.touches && e.touches[0].clientX);
-            let relativeX = clientX - rect.left;
-            let percentage = Math.max(0, Math.min(1, relativeX / rect.width));
+            const relativeX = (e.clientX - rect.left);
+            const percentage = Math.max(0, Math.min(1, relativeX / rect.width));
+            const hoverTime = percentage * activeMedia.duration;
             
-            progressTooltip.innerText = formatTime(percentage * activeMedia.duration);
-            progressTooltip.style.left = (percentage * 100) + '%';
-            progressTooltip.classList.add('show');
+            timeTooltip.innerText = formatTime(hoverTime);
+            timeTooltip.style.left = (percentage * 100) + '%';
+            timeTooltip.classList.remove('hidden');
             resetControlsTimer();
-        }
+        });
+        
+        progressAreaClick.addEventListener('mouseleave', () => {
+            timeTooltip.classList.add('hidden');
+        });
+        
+        progressAreaClick.addEventListener('touchmove', (e) => {
+            if(!activeMedia || !activeMedia.duration) return;
+            const rect = progressAreaClick.getBoundingClientRect();
+            const relativeX = (e.touches[0].clientX - rect.left);
+            const percentage = Math.max(0, Math.min(1, relativeX / rect.width));
+            const hoverTime = percentage * activeMedia.duration;
+            
+            timeTooltip.innerText = formatTime(hoverTime);
+            timeTooltip.style.left = (percentage * 100) + '%';
+            timeTooltip.classList.remove('hidden');
+            resetControlsTimer();
+        });
 
-        progressAreaClick.addEventListener('mousemove', handleProgressMove);
-        progressAreaClick.addEventListener('touchmove', handleProgressMove);
-        progressAreaClick.addEventListener('mouseleave', () => progressTooltip.classList.remove('show'));
-        progressAreaClick.addEventListener('touchend', () => progressTooltip.classList.remove('show'));
+        progressAreaClick.addEventListener('touchend', () => {
+            timeTooltip.classList.add('hidden');
+        });
 
         progressAreaClick.addEventListener('click', (e) => {
             if(!activeMedia || !activeMedia.duration) return;
@@ -1510,6 +1525,7 @@
             resetControlsTimer();
         });
 
+        // DOWNLOAD DIRECT
         directDownloadLink.addEventListener('click', async () => {
             if (!resolvedMediaUrl) return;
             showIphoneNotif('Menyiapkan Berkas...', 'Mengamankan jalur unduhan ke perangkat Anda.', 'fa-cloud-arrow-down');
@@ -1541,6 +1557,7 @@
             }, 800);
         });
 
+        // REAL SERVER KREAVERSE BLOB DL
         realDownloadBtn.addEventListener('click', async () => {
             if (!resolvedMediaUrl) return;
             const container = document.getElementById('real-download-progress-container');
