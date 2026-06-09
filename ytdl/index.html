@@ -38,7 +38,7 @@
         .krea-logo-svg { width: 100%; height: 100%; display: block; }
         .nav-right { width: 36px; } 
 
-        /* HERO SECTION */
+        /* HERO SECTION - REVISI 8 (Text lebih proporsional) */
         .hero-section {
             position: relative;
             padding: 120px 20px 80px;
@@ -50,8 +50,8 @@
             flex-direction: column;
             align-items: center;
         }
-        .hero-title { font-size: 2.2rem; font-weight: 800; color: var(--text-primary); margin-bottom: 16px; line-height: 1.2; letter-spacing: -0.5px; }
-        .hero-subtitle { font-size: 0.95rem; color: var(--text-secondary); max-width: 650px; margin: 0 auto 30px; line-height: 1.6; }
+        .hero-title { font-size: 1.7rem; font-weight: 800; color: var(--text-primary); margin-bottom: 12px; line-height: 1.3; letter-spacing: -0.3px; }
+        .hero-subtitle { font-size: 0.9rem; color: var(--text-secondary); max-width: 650px; margin: 0 auto 25px; line-height: 1.5; }
 
         /* FORMAT TOGGLE */
         .format-toggle { display: inline-flex; background: #FFFFFF; border-radius: 30px; padding: 4px; box-shadow: var(--shadow-sm); border: 1px solid var(--border-color); margin-bottom: 30px; }
@@ -93,39 +93,50 @@
         
         /* MEDIA PLAYER */
         .media-player-wrapper { position: relative; width: 100%; border-radius: 16px; overflow: hidden; background: #000; margin-bottom: 20px; display: flex; align-items: center; justify-content: center; aspect-ratio: 16/9; }
-        .media-player-wrapper.audio-mode { background: linear-gradient(135deg, #1E1B4B, #4338CA); aspect-ratio: auto; padding: 40px 20px; flex-direction: column; }
+        .media-player-wrapper.audio-mode { background: linear-gradient(135deg, #1E1B4B, #4338CA); aspect-ratio: auto; padding: 40px 20px 20px; flex-direction: column; }
         .media-player-wrapper:fullscreen { width: 100vw; height: 100vh; border-radius: 0; }
         .media-player-wrapper:-webkit-full-screen { width: 100vw; height: 100vh; border-radius: 0; }
         
         .video-element { width: 100%; height: 100%; object-fit: contain; display: block; }
         .media-player-wrapper:fullscreen .video-element { max-height: 100vh; }
         
-        /* AUDIO UI (VINYL) */
-        .audio-ui-container { display: none; flex-direction: column; align-items: center; gap: 20px; width: 100%; }
+        /* AUDIO UI (SPOTIFY STYLE - REVISI 4) */
+        .audio-ui-container { display: none; flex-direction: column; align-items: center; gap: 15px; width: 100%; }
         .media-player-wrapper.audio-mode .audio-ui-container { display: flex; }
-        .vinyl-record { width: 120px; height: 120px; border-radius: 50%; background: #111; border: 4px solid #333; display: flex; align-items: center; justify-content: center; position: relative; box-shadow: 0 10px 25px rgba(0,0,0,0.5); transition: transform 0.3s; }
-        .vinyl-record::before { content: ''; position: absolute; width: 40px; height: 40px; border-radius: 50%; background: var(--accent-color); border: 2px solid #111; }
-        .vinyl-record::after { content: ''; position: absolute; width: 10px; height: 10px; border-radius: 50%; background: #FFF; }
-        .vinyl-record.playing { animation: spinVinyl 4s linear infinite; }
-        @keyframes spinVinyl { 100% { transform: rotate(360deg); } }
-        .audio-title-display { color: #FFF; font-weight: 600; font-size: 1rem; text-align: center; max-width: 90%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        
+        .spotify-thumbnail { width: 180px; height: 180px; border-radius: 16px; object-fit: cover; box-shadow: 0 15px 35px rgba(0,0,0,0.5); background: #222; transition: transform 0.3s ease; }
+        .spotify-thumbnail.playing { transform: scale(1.05); }
+        .audio-title-display { color: #FFF; font-weight: 700; font-size: 1.15rem; text-align: center; max-width: 90%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 10px; }
+        .audio-artist-display { color: rgba(255,255,255,0.7); font-size: 0.9rem; text-align: center; }
 
-        /* WATERMARK (STATIC & SHIMMER) */
-        .player-watermark { position: absolute; top: 15px; right: 15px; width: 110px; height: 30px; z-index: 2147483645; pointer-events: none; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5)); }
+        /* EQUALIZER (REVISI 4) */
+        .equalizer-container { display: flex; align-items: flex-end; justify-content: center; gap: 4px; height: 30px; margin-bottom: 10px; }
+        .eq-bar { width: 4px; background: var(--accent-color); border-radius: 2px; animation: eqBounce 0.8s infinite alternate ease-in-out; }
+        .eq-bar:nth-child(1) { animation-delay: 0.1s; height: 60%; }
+        .eq-bar:nth-child(2) { animation-delay: 0.3s; height: 100%; }
+        .eq-bar:nth-child(3) { animation-delay: 0.0s; height: 40%; }
+        .eq-bar:nth-child(4) { animation-delay: 0.4s; height: 80%; }
+        .eq-bar:nth-child(5) { animation-delay: 0.2s; height: 50%; }
+        @keyframes eqBounce { 0% { transform: scaleY(0.3); } 100% { transform: scaleY(1); } }
+
+        /* WATERMARK (REVISI 2 & 6 - GRADASI WARNA + SHIMMER) */
+        .player-watermark { position: absolute; top: 15px; right: 15px; width: 110px; height: 30px; z-index: 2147483645; pointer-events: none; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.6)); }
         .media-player-wrapper:fullscreen .player-watermark { width: 150px; height: 40px; top: 25px; right: 25px; }
-        .media-player-wrapper.audio-mode .player-watermark { display: none; } 
 
         /* CONTROLS */
         .player-controls { position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(to top, rgba(0,0,0,0.8), transparent); padding: 30px 20px 15px; display: flex; align-items: center; gap: 15px; z-index: 2147483646; transition: opacity 0.3s; }
-        .media-player-wrapper.audio-mode .player-controls { position: relative; background: transparent; padding: 0; width: 100%; max-width: 400px; }
-        .play-pause-btn { width: 40px; height: 40px; border-radius: 50%; background: var(--accent-color); color: #FFF; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 1rem; flex-shrink: 0; transition: 0.2s; }
-        .play-pause-btn:hover { transform: scale(1.05); background: var(--accent-hover); }
+        .media-player-wrapper.audio-mode .player-controls { position: relative; background: transparent; padding: 15px 0 0; width: 100%; max-width: 400px; }
+        
+        .play-pause-btn { width: 45px; height: 45px; border-radius: 50%; background: var(--accent-color); color: #FFF; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; flex-shrink: 0; transition: 0.2s; box-shadow: 0 4px 10px rgba(99, 102, 241, 0.4); }
+        .play-pause-btn:hover { transform: scale(1.08); background: var(--accent-hover); }
+        
         .progress-area { flex: 1; display: flex; flex-direction: column; gap: 8px; }
         .progress-bar-bg { width: 100%; height: 6px; background: rgba(255,255,255,0.3); border-radius: 4px; cursor: pointer; position: relative; overflow: hidden; }
         .progress-bar-fill { height: 100%; background: var(--accent-color); width: 0%; border-radius: 4px; transition: width 0.1s linear; }
-        .time-display { font-size: 0.75rem; color: #FFF; font-weight: 600; display: flex; justify-content: space-between; font-family: monospace; }
-        .control-icon-btn { background: none; border: none; color: #FFF; font-size: 1.2rem; cursor: pointer; padding: 5px; transition: 0.2s; opacity: 0.8; }
-        .control-icon-btn:hover { opacity: 1; }
+        .time-display { font-size: 0.75rem; color: rgba(255,255,255,0.8); font-weight: 600; display: flex; justify-content: space-between; font-family: monospace; }
+        
+        .control-icon-btn { background: none; border: none; color: #FFF; font-size: 1.3rem; cursor: pointer; padding: 5px; transition: 0.2s; opacity: 0.8; }
+        .control-icon-btn:hover { opacity: 1; transform: scale(1.1); }
         .media-player-wrapper.audio-mode .fullscreen-btn { display: none; }
 
         /* RESULT INFO & BUTTONS */
@@ -168,7 +179,7 @@
         .faq-answer { max-height: 0; overflow: hidden; transition: max-height 0.3s ease-out; }
         .faq-answer-inner { padding-bottom: 20px; font-size: 0.9rem; color: var(--text-secondary); line-height: 1.6; }
 
-        /* FOOTER */
+        /* FOOTER - REVISI 9 (Studio Media) */
         .footer { background: #111827; color: #9CA3AF; padding: 60px 20px 30px; text-align: center; }
         .footer-logo { color: #FFFFFF; font-size: 1.5rem; font-weight: 800; margin-bottom: 20px; letter-spacing: -0.5px; }
         .footer-links { display: flex; justify-content: center; gap: 24px; margin-bottom: 30px; flex-wrap: wrap; }
@@ -185,10 +196,12 @@
         .sheet-title { font-size: 1.2rem; font-weight: 700; }
         .sheet-close { background: none; border: none; font-size: 1.2rem; color: var(--text-light); cursor: pointer; padding: 5px; }
         .sheet-options { display: flex; flex-direction: column; gap: 10px; overflow-y: auto; padding-bottom: 20px; }
+        
         .sheet-opt-btn { display: flex; justify-content: space-between; align-items: center; width: 100%; padding: 16px; background: #FAFAFA; border: 1px solid var(--border-color); border-radius: 16px; font-size: 0.95rem; font-weight: 500; color: var(--text-primary); cursor: pointer; transition: var(--transition); text-align: left;}
         .sheet-opt-btn:active { background: #F3F4F6; }
         .sheet-opt-btn.selected { border-color: var(--accent-color); background: #EEF2FF; font-weight: 700; }
         .sheet-opt-btn.selected i.fa-check { color: var(--accent-color); }
+        
         .q-badge { background: #E0E7FF; color: var(--accent-color); font-size: 0.7rem; padding: 4px 10px; border-radius: 20px; font-weight: 700; margin-left: 10px; }
         .q-badge.audio { background: #F3E8FF; color: #9333EA; }
         
@@ -210,7 +223,7 @@
         
         /* RESPONSIVE */
         @media (max-width: 640px) {
-            .hero-title { font-size: 1.8rem; }
+            .hero-title { font-size: 1.45rem; }
             .input-wrapper { flex-direction: column; border-radius: 24px; padding: 16px; gap: 16px; }
             .url-input { width: 100%; text-align: center; padding: 0; }
             .url-icon { display: none; }
@@ -238,7 +251,7 @@
     <section class="hero-section">
         <h1 class="hero-title">Pusat Unduhan Kreaverse AI</h1>
         <div class="hero-subtitle">
-            Platform konverter media premium Anda. Unduh video dan audio secara aman dari berbagai jaringan sosial dengan kecepatan pemrosesan tinggi di Kreaverse AI.
+            Platform konverter media premium Anda. Unduh video dan audio secara aman dari berbagai jaringan sosial dengan kecepatan pemrosesan tinggi.
         </div>
 
         <div class="format-toggle">
@@ -278,7 +291,7 @@
             <button class="pill" onclick="pingSemuaServer()"><i class="fa-solid fa-bolt"></i> <span id="ping-status-text">Ping</span></button>
             <button class="pill" onclick="window.location.href='/berkas/'"><i class="fa-solid fa-folder-open"></i> File Kreaverse AI</button>
         </div>
-        <div class="yt-warning">*Pilih resolusi 720p atau Normal agar video YouTube memiliki suara.</div>
+        <div class="yt-warning">*Pilih resolusi dengan ikon 'Bersuara' agar video YouTube memiliki audio.</div>
     </section>
 
     <!-- RESULT SECTION -->
@@ -289,34 +302,49 @@
             <!-- MEDIA PLAYER -->
             <div class="media-player-wrapper" id="media-wrapper">
                 
-                <!-- WATERMARK SHIMMER PUTIH STATIS -->
+                <!-- WATERMARK (REVISI 2 & 6 - Gradient Color + Shimmer Overlay) -->
                 <div class="player-watermark">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 60">
                         <defs>
-                            <linearGradient id="shimmerWhite" x1="0%" y1="0" x2="100%" y2="0">
-                                <stop offset="0%" stop-color="rgba(255,255,255,0.3)">
-                                    <animate attributeName="stop-color" values="rgba(255,255,255,0.3); rgba(255,255,255,1); rgba(255,255,255,0.3)" dur="3s" repeatCount="indefinite" />
+                            <linearGradient id="kreaGradPlayer" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" stop-color="#D97757" />
+                                <stop offset="50%" stop-color="#AF52DE" />
+                                <stop offset="100%" stop-color="#007AFF" />
+                            </linearGradient>
+                            <linearGradient id="shimmerOverlay" x1="0%" y1="0" x2="100%" y2="0">
+                                <stop offset="0%" stop-color="rgba(255,255,255,0)">
+                                    <animate attributeName="stop-color" values="rgba(255,255,255,0); rgba(255,255,255,0.9); rgba(255,255,255,0)" dur="2.5s" repeatCount="indefinite" />
                                 </stop>
-                                <stop offset="50%" stop-color="rgba(255,255,255,0.9)">
-                                    <animate attributeName="stop-color" values="rgba(255,255,255,0.9); rgba(255,255,255,0.3); rgba(255,255,255,0.9)" dur="3s" repeatCount="indefinite" />
+                                <stop offset="50%" stop-color="rgba(255,255,255,0)">
+                                    <animate attributeName="stop-color" values="rgba(255,255,255,0.9); rgba(255,255,255,0); rgba(255,255,255,0.9)" dur="2.5s" repeatCount="indefinite" />
                                 </stop>
-                                <stop offset="100%" stop-color="rgba(255,255,255,0.3)">
-                                    <animate attributeName="stop-color" values="rgba(255,255,255,0.3); rgba(255,255,255,1); rgba(255,255,255,0.3)" dur="3s" repeatCount="indefinite" />
+                                <stop offset="100%" stop-color="rgba(255,255,255,0)">
+                                    <animate attributeName="stop-color" values="rgba(255,255,255,0); rgba(255,255,255,0.9); rgba(255,255,255,0)" dur="2.5s" repeatCount="indefinite" />
                                 </stop>
                             </linearGradient>
                         </defs>
+                        <!-- Base Colored Layer -->
                         <g>
-                            <path d="M 30,10 Q 30,30 50,30 Q 30,30 30,50 Q 30,30 10,30 Q 30,30 30,10 Z" fill="url(#shimmerWhite)" />
-                            <path d="M 30,17 Q 30,30 43,30 Q 30,30 30,43 Q 30,30 17,30 Q 30,30 30,17 Z" fill="url(#shimmerWhite)" transform="rotate(45, 30, 30)" opacity="0.85" />
+                            <path d="M 30,10 Q 30,30 50,30 Q 30,30 30,50 Q 30,30 10,30 Q 30,30 30,10 Z" fill="url(#kreaGradPlayer)" />
+                            <path d="M 30,17 Q 30,30 43,30 Q 30,30 30,43 Q 30,30 17,30 Q 30,30 30,17 Z" fill="url(#kreaGradPlayer)" transform="rotate(45, 30, 30)" opacity="0.85" />
+                            <text x="65" y="38" font-family="'Plus Jakarta Sans', sans-serif" font-weight="800" font-size="21" fill="url(#kreaGradPlayer)" letter-spacing="-0.5px">Kreaverse<tspan font-weight="500"> AI</tspan></text>
                         </g>
-                        <text x="65" y="38" font-family="'Plus Jakarta Sans', sans-serif" font-weight="800" font-size="21" fill="url(#shimmerWhite)" letter-spacing="-0.5px">Kreaverse<tspan font-weight="500"> AI</tspan></text>
+                        <!-- Shimmer Layer -->
+                        <g>
+                            <path d="M 30,10 Q 30,30 50,30 Q 30,30 30,50 Q 30,30 10,30 Q 30,30 30,10 Z" fill="url(#shimmerOverlay)" />
+                            <path d="M 30,17 Q 30,30 43,30 Q 30,30 30,43 Q 30,30 17,30 Q 30,30 30,17 Z" fill="url(#shimmerOverlay)" transform="rotate(45, 30, 30)" opacity="0.85" />
+                            <text x="65" y="38" font-family="'Plus Jakarta Sans', sans-serif" font-weight="800" font-size="21" fill="url(#shimmerOverlay)" letter-spacing="-0.5px">Kreaverse<tspan font-weight="500"> AI</tspan></text>
+                        </g>
                     </svg>
                 </div>
 
-                <!-- AUDIO UI -->
+                <!-- AUDIO UI (REVISI 4 - Spotify Style Thumbnail) -->
                 <div class="audio-ui-container" id="audio-ui">
-                    <div class="vinyl-record" id="vinyl-record"><i class="fa-solid fa-music" style="color:#FFF; font-size:1.5rem; z-index:10;"></i></div>
-                    <div class="audio-title-display" id="audio-title-display">Judul Lagu</div>
+                    <img src="" id="audio-thumbnail" class="spotify-thumbnail" alt="Cover Music" onerror="this.src='https://i.postimg.cc/mZdwnfsm/Claude-ai-icon-svg.png'">
+                    <div style="width:100%;">
+                        <div class="audio-title-display" id="audio-title-display">Judul Lagu</div>
+                        <div class="audio-artist-display">Kreaverse AI Player</div>
+                    </div>
                 </div>
 
                 <div class="buffering-spinner hidden" id="buffering-spinner"><i class="fa-solid fa-circle-notch fa-spin" style="font-size: 2rem;"></i><span id="buffering-text" style="font-size:0.85rem; margin-top:5px;">Memuat media...</span></div>
@@ -324,8 +352,6 @@
                 <video id="custom-video" class="video-element" playsinline preload="metadata" referrerpolicy="no-referrer"></video>
                 <audio id="custom-audio" class="hidden" preload="metadata" referrerpolicy="no-referrer"></audio>
                 
-                <div class="in-player-settings" id="in-player-settings"></div>
-
                 <div class="player-controls">
                     <button class="play-pause-btn" id="play-pause-btn"><i class="fa-solid fa-play" style="margin-left:2px;"></i></button>
                     <div class="progress-area">
@@ -337,7 +363,8 @@
                             <span id="total-time">0:00</span>
                         </div>
                     </div>
-                    <button class="control-icon-btn" id="settings-gear-btn" title="Kualitas"><i class="fa-solid fa-gear"></i></button>
+                    <!-- REVISI 3 & 4: Menu Tiga Titik -->
+                    <button class="control-icon-btn" id="player-menu-btn" title="Pengaturan"><i class="fa-solid fa-ellipsis-vertical"></i></button>
                     <button class="control-icon-btn fullscreen-btn" id="fullscreen-btn" title="Layar Penuh"><i class="fa-solid fa-expand"></i></button>
                 </div>
             </div>
@@ -431,7 +458,7 @@
         <div class="faq-item">
             <button class="faq-question">Kenapa video YouTube saya tidak ada suaranya? <i class="fa-solid fa-plus faq-icon"></i></button>
             <div class="faq-answer">
-                <div class="faq-answer-inner">YouTube memisahkan file visual dan audio untuk resolusi 1080p ke atas. Jika Anda ingin video yang langsung memiliki suara, silakan pilih resolusi <strong>720p atau Normal</strong> pada menu pilihan kualitas.</div>
+                <div class="faq-answer-inner">YouTube memisahkan file visual dan audio untuk resolusi 1080p ke atas. Jika Anda ingin video yang langsung memiliki suara, silakan pilih resolusi <strong>720p atau Normal</strong>. Di menu pilihan, kami sudah melabeli dengan indikator <strong>"Bersuara"</strong> atau <strong>"Bisu"</strong> untuk memudahkan Anda.</div>
             </div>
         </div>
         <div class="faq-item">
@@ -447,7 +474,7 @@
         <div class="footer-logo">Kreaverse AI</div>
         <div class="footer-links">
             <a href="/">Beranda</a>
-            <a href="/chat">Chat AI</a>
+            <a href="/chat">Studio Media</a> <!-- REVISI 9 -->
             <a href="/ketentuan">Syarat & Ketentuan</a>
             <a href="/privasi">Kebijakan Privasi</a>
         </div>
@@ -494,10 +521,23 @@
         </div>
     </div>
 
+    <!-- REVISI 1, 3 & 4: SHEET MENU DALAM PEMUTAR MEDIA (Pengganti Teks Angka yang Bertumpuk) -->
+    <div class="bottom-sheet-overlay" id="player-settings-sheet">
+        <div class="bottom-sheet-content">
+            <div class="sheet-header">
+                <div class="sheet-title" id="player-menu-title">Pengaturan Media</div>
+                <button class="sheet-close" onclick="closeSheet('player-settings-sheet')"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="sheet-options" id="player-menu-options">
+                <!-- Diisi otomatis oleh JavaScript saat Titik Tiga diklik -->
+            </div>
+        </div>
+    </div>
+
     <!-- FIREBASE & LOGIC SCRIPT -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-        import { getFirestore, doc, onSnapshot, collection, addDoc, getDocs, query, orderBy, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+        import { getFirestore, doc, onSnapshot, collection, addDoc, getDocs, query, orderBy, deleteDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
         // FIREBASE CONFIG KREAVERSE
         const firebaseConfig = {
@@ -592,7 +632,7 @@
         const customVideo = document.getElementById('custom-video');
         const mediaWrapper = document.getElementById('media-wrapper');
         const audioUi = document.getElementById('audio-ui');
-        const vinylRecord = document.getElementById('vinyl-record');
+        const audioThumbnail = document.getElementById('audio-thumbnail');
         const audioTitleDisplay = document.getElementById('audio-title-display');
         
         const bufferingSpinner = document.getElementById('buffering-spinner');
@@ -604,12 +644,11 @@
         const currentTimeEl = document.getElementById('current-time');
         const totalTimeEl = document.getElementById('total-time');
         
-        const settingsGearBtn = document.getElementById('settings-gear-btn');
-        const inPlayerSettings = document.getElementById('in-player-settings');
+        const playerMenuBtn = document.getElementById('player-menu-btn'); // Ganti Gear jadi 3-dots
         
         let activeMedia = null;
 
-        // REVISI 5: Auto-Save URL Input
+        // Auto-Save URL Input
         const savedUrl = localStorage.getItem('kreaverse_ytdl_saved_url');
         if (savedUrl) urlInput.value = savedUrl;
         urlInput.addEventListener('input', () => { 
@@ -630,7 +669,7 @@
         };
         changeFormat(currentFormat);
 
-        // REVISI 6: Jam Format 12-Hour
+        // Jam Format 12-Hour
         function updateLiveClock() {
             const d = new Date();
             let hours = d.getHours();
@@ -647,13 +686,14 @@
         setInterval(updateLiveClock, 1000);
         updateLiveClock();
 
-        function setupMediaSession(title, isAudio) {
+        function setupMediaSession(title, isAudio, thumbSrc) {
             if ('mediaSession' in navigator) {
+                const artworkSrc = thumbSrc && thumbSrc !== '' && !thumbSrc.includes('Claude-ai') ? thumbSrc : 'https://i.postimg.cc/mZdwnfsm/Claude-ai-icon-svg.png';
                 navigator.mediaSession.metadata = new MediaMetadata({
                     title: title,
-                    artist: 'Kreaverse AI',
+                    artist: 'Kreaverse AI Player',
                     album: isAudio ? 'Audio Premium' : 'Video Player',
-                    artwork: [{ src: 'https://i.postimg.cc/mZdwnfsm/Claude-ai-icon-svg.png', sizes: '512x512', type: 'image/png' }]
+                    artwork: [{ src: artworkSrc, sizes: '512x512', type: 'image/png' }, { src: artworkSrc, sizes: '192x192', type: 'image/png' }]
                 });
                 navigator.mediaSession.setActionHandler('play', () => { if(activeMedia) { activeMedia.play(); updatePlayPauseUI(true); } });
                 navigator.mediaSession.setActionHandler('pause', () => { if(activeMedia) { activeMedia.pause(); updatePlayPauseUI(false); } });
@@ -663,10 +703,10 @@
         function updatePlayPauseUI(isPlaying) {
             if (isPlaying) {
                 playPauseBtn.innerHTML = '<i class="fa-solid fa-pause"></i>';
-                if (currentFormat === 'audio') vinylRecord.classList.add('playing');
+                if (currentFormat === 'audio') audioThumbnail.classList.add('playing');
             } else {
                 playPauseBtn.innerHTML = '<i class="fa-solid fa-play" style="margin-left:2px;"></i>';
-                if (currentFormat === 'audio') vinylRecord.classList.remove('playing');
+                if (currentFormat === 'audio') audioThumbnail.classList.remove('playing');
             }
         }
 
@@ -705,7 +745,6 @@
         window.selectPlatform = (val, text, iconClass) => {
             currentPlatform = val;
             document.getElementById('label-platform').innerText = text;
-            // FIXED: Pilihan icon-btn diperbaiki agar tidak error
             const platformPill = document.querySelector('.settings-pills .pill:first-child');
             if(platformPill) platformPill.querySelector('i').className = iconClass;
             renderDynamicOptions(); closeSheet('sheet-platform');
@@ -733,7 +772,6 @@
                 
                 try {
                     const start = performance.now();
-                    // REVISI UX Health Check: Gunakan fetch mode 'no-cors' agar tidak terblokir CORS saat ping
                     await fetch(srv.url + "?t=" + Date.now(), { method: "GET", mode: "no-cors", cache: "no-store" });
                     const dur = Math.round(performance.now() - start);
                     
@@ -771,13 +809,10 @@
             updatePlayPauseUI(false);
             progressFill.style.width = '0%';
             currentTimeEl.innerText = '0:00'; totalTimeEl.innerText = '0:00';
-            inPlayerSettings.innerHTML = "";
-            inPlayerSettings.classList.remove('active');
             clearInterval(processTimer);
             document.getElementById('progress-container').classList.remove('active');
         }
 
-        // REVISI 3: Format Audio Quality
         function formatAudioQuality(q) {
             const num = parseInt(q);
             if (isNaN(num)) return q;
@@ -789,12 +824,13 @@
         }
 
         // ==========================================
-        // UNIVERSAL JSON SCANNER
+        // UNIVERSAL JSON SCANNER (REVISI 4: THUMBNAIL)
         // ==========================================
         function extractMediaLinks(dataObj) {
             let extracted = [];
             let globalTitle = "Media Kreaverse";
             let globalDuration = "";
+            let globalThumbnail = "";
             const MAX_DEPTH = 10; 
 
             function findMeta(obj, depth = 0) {
@@ -804,6 +840,10 @@
                     if(typeof obj[k] === 'string' || typeof obj[k] === 'number') {
                         if((kl === 'title' || kl === 'name' || kl === 'desc' || kl === 'caption') && globalTitle === "Media Kreaverse") globalTitle = obj[k];
                         if((kl === 'duration' || kl === 'time') && !globalDuration) globalDuration = obj[k];
+                        // Extract Thumbnail image
+                        if((kl.includes('thumb') || kl.includes('cover') || kl.includes('image') || kl.includes('picture')) && typeof obj[k] === 'string' && obj[k].startsWith('http')) {
+                            if(!globalThumbnail) globalThumbnail = obj[k];
+                        }
                     } else if (typeof obj[k] === 'object') {
                         findMeta(obj[k], depth + 1);
                     }
@@ -895,7 +935,7 @@
                 return getScore(b.quality) - getScore(a.quality); 
             });
 
-            return { links: extracted, title: globalTitle, duration: globalDuration };
+            return { links: extracted, title: globalTitle, duration: globalDuration, thumbnail: globalThumbnail };
         }
 
         // ==========================================
@@ -994,6 +1034,18 @@
         }
 
         async function processDownload(mediaUrl) {
+            // REVISI 10: Force Firebase Re-fetch jika kosong
+            if (!dbConfig || !dbConfig.baseUrls || Object.keys(dbConfig.baseUrls).length === 0) {
+                try {
+                    const docRef = doc(db, "settings", "downloader_api");
+                    const docSnap = await getDoc(docRef);
+                    if (docSnap.exists()) {
+                        dbConfig = docSnap.data();
+                        renderDynamicOptions();
+                    }
+                } catch(e) { console.error("Refresh config gagal", e); }
+            }
+
             let targetServerKey = currentServer;
             if (currentServer === 'auto') {
                 targetServerKey = await pingSemuaServer(); 
@@ -1076,11 +1128,10 @@
                 throw new Error(`Format ${currentFormat.toUpperCase()} tidak tersedia untuk tautan ini. Silakan coba format lain atau gunakan server berbeda.`);
             }
 
-            return { title: finalTitle, duration: duration, provider: srvObj.name, options: filteredList };
+            return { title: finalTitle, duration: duration, provider: srvObj.name, options: filteredList, thumbnail: extractedData.thumbnail };
         }
 
         downloadBtn.addEventListener('click', async () => {
-            // REVISI 4: Cek Login saat klik Unduh
             if (!isLoggedIn) {
                 showIphoneNotif('Akses Terkunci', 'Silakan masuk ke akun Kreaverse AI Anda untuk mengunduh.', 'fa-lock');
                 setTimeout(() => { window.location.href = '/login/index.html'; }, 1500);
@@ -1103,7 +1154,6 @@
                 completeProgress();
                 clearInterval(processTimer);
                 
-                // REVISI 2: Tombol langsung aktif kembali
                 downloadBtn.disabled = false;
                 btnText.innerText = 'Unduh Sekarang';
                 
@@ -1115,22 +1165,25 @@
                     const badgeClass = opt.type === 'audio' ? 'q-badge audio' : 'q-badge';
                     const sizeStr = opt.size ? `<span style="font-size:0.75rem; color:var(--text-light); display:block; margin-top:4px;">Ukuran: ${opt.size}</span>` : '';
                     
-                    // REVISI 1: Format Ditemukan Text
-                    const displayTitle = `${opt.type.toUpperCase()} | Kreaverse AI - ${resultData.title}`;
+                    const displayTitle = `${opt.type.toUpperCase()} | ${resultData.title}`;
                     
-                    // REVISI 5: Audio Indicator untuk Video
+                    // REVISI 3 & 7: Pastikan Indikator Suara Akurat
                     let audioBadge = '';
                     if (opt.type === 'video') {
                         const safeQuality = String(opt.quality).toUpperCase();
-                        if (safeQuality.includes('720') || safeQuality.includes('SD') || safeQuality.includes('NORMAL')) {
-                            audioBadge = `<span class="audio-indicator-badge has-audio"><i class="fa-solid fa-volume-high"></i> Bersuara</span>`;
-                        } else if (safeQuality.includes('1080') || safeQuality.includes('1440') || safeQuality.includes('2160') || safeQuality.includes('HD')) {
+                        // Asumsi umum API: 1080 ke atas atau mute string pasti dipisah/bisu.
+                        if (safeQuality.includes('1080') || safeQuality.includes('1440') || safeQuality.includes('2160') || safeQuality.includes('4K') || safeQuality.includes('HD') || safeQuality.includes('MUTE') || safeQuality.includes('NO AUDIO')) {
                             audioBadge = `<span class="audio-indicator-badge no-audio"><i class="fa-solid fa-volume-xmark"></i> Bisu</span>`;
+                        } else {
+                            audioBadge = `<span class="audio-indicator-badge has-audio"><i class="fa-solid fa-volume-high"></i> Bersuara</span>`;
                         }
                     }
 
+                    const safeTitle = resultData.title.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+                    const safeThumb = resultData.thumbnail ? btoa(resultData.thumbnail) : '';
+
                     return `
-                        <button class="sheet-opt-btn" onclick="tampilkanHasilFinal('${opt.url}', '${resultData.title.replace(/'/g, "\\'")}', '${resultData.duration}', '${resultData.provider}', '${opt.type}', '${opt.quality}', '${opt.size}')">
+                        <button class="sheet-opt-btn" onclick="tampilkanHasilFinal('${opt.url}', '${safeTitle}', '${resultData.duration}', '${resultData.provider}', '${opt.type}', '${opt.quality}', '${opt.size}', '${safeThumb}')">
                             <div style="display:flex; align-items:flex-start;">
                                 <i class="fa-solid ${icon}" style="margin-right:12px; color:var(--accent-color); margin-top:4px; font-size:1.2rem;"></i>
                                 <div style="display:flex; flex-direction:column;">
@@ -1156,13 +1209,19 @@
             }
         });
 
-        window.tampilkanHasilFinal = (url, title, duration, provider, type, quality, size) => {
+        // REVISI 4: Menangkap & Menampilkan Thumbnail
+        window.tampilkanHasilFinal = (url, title, duration, provider, type, quality, size, base64Thumb) => {
             closeSheet('sheet-select-media');
             
             resolvedMediaUrl = url;
             const safeTitle = (title || "Media").replace(/[\\/:*?"<>|]/g, '');
-            // REVISI 7: Nama File
-            resolvedFileName = `Kreaverse AI - ${safeTitle}.${type === 'audio' ? 'mp3' : 'mp4'}`;
+            resolvedFileName = `${safeTitle}.${type === 'audio' ? 'mp3' : 'mp4'}`;
+
+            // Handle Cover Image
+            let decodedThumb = '';
+            try { if(base64Thumb) decodedThumb = atob(base64Thumb); } catch(e){}
+            const finalThumb = decodedThumb || 'https://i.postimg.cc/mZdwnfsm/Claude-ai-icon-svg.png';
+            audioThumbnail.src = finalThumb;
 
             const sizeDisplay = size ? ` | ${size}` : '';
             const durDisplay = duration ? `<p><strong>Durasi:</strong> ${duration}</p>` : '';
@@ -1174,49 +1233,84 @@
                 <p><strong>Durasi Proses:</strong> Selesai dalam ${processSeconds} detik</p>
             `;
 
-            // BUG FIXED: Menghapus referensi playerTitleText yang tidak ada di HTML dan menggantinya ke audioTitleDisplay
             audioTitleDisplay.innerText = title;
-            buildInPlayerSettings(url);
             
             if (type === 'audio') {
                 activeMedia = customAudio;
                 customAudio.src = url;
                 mediaWrapper.classList.add('audio-mode');
                 customVideo.style.display = "none";
-                settingsGearBtn.style.display = "none"; 
             } else {
                 activeMedia = customVideo;
                 customVideo.src = url;
                 mediaWrapper.classList.remove('audio-mode');
                 customVideo.style.display = "block";
-                settingsGearBtn.style.display = "block";
             }
 
-            setupMediaSession(title, type === 'audio');
-            
-            // Menampilkan hasil akhir
+            setupMediaSession(title, type === 'audio', finalThumb);
             resultContainer.classList.add('active');
             
             setTimeout(() => {
                 resultContainer.scrollIntoView({ behavior: 'smooth', block: 'center' });
             }, 100);
 
-            // Menyimpan riwayat ke database setelah UI muncul
-            simpanKeRiwayat(urlInput.value.trim(), title, provider, type, url, size);
+            simpanKeRiwayat(urlInput.value.trim(), title, provider, type, url, size, finalThumb);
             showIphoneNotif('Berhasil diproses', `Media siap dinikmati`, 'fa-circle-check');
         };
 
-        function buildInPlayerSettings(currentUrl) {
-            inPlayerSettings.innerHTML = globalScannedOptions.map(opt => {
-                const isActive = opt.url === currentUrl ? 'active' : '';
-                return `<button class="in-player-opt ${isActive}" onclick="changeVideoQuality('${opt.url}')">${opt.quality}</button>`;
+        // REVISI 1, 3, & 4: MEMBUAT MENU TIGA TITIK (BOTTOM SHEET)
+        playerMenuBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const sheetList = document.getElementById('player-menu-options');
+            let html = '';
+            
+            // Equalizer khusus Audio
+            if (currentFormat === 'audio') {
+                html += `
+                    <div class="equalizer-container">
+                        <div class="eq-bar"></div><div class="eq-bar"></div><div class="eq-bar"></div><div class="eq-bar"></div><div class="eq-bar"></div>
+                    </div>
+                    <div style="text-align:center; font-size:0.85rem; color:var(--text-secondary); margin-bottom:20px; font-weight:600;">Equalizer Kreaverse AI Aktif</div>
+                `;
+            }
+
+            // List Resolusi (Video/Audio)
+            html += globalScannedOptions.filter(o => o.type === currentFormat).map(opt => {
+                const isActive = opt.url === resolvedMediaUrl ? 'selected' : '';
+                let audioBadge = '';
+                if (currentFormat === 'video') {
+                     const safeQuality = String(opt.quality).toUpperCase();
+                     if (safeQuality.includes('1080') || safeQuality.includes('1440') || safeQuality.includes('2160') || safeQuality.includes('4K') || safeQuality.includes('HD') || safeQuality.includes('MUTE') || safeQuality.includes('NO AUDIO')) {
+                         audioBadge = `<span class="audio-indicator-badge no-audio"><i class="fa-solid fa-volume-xmark"></i> Bisu</span>`;
+                     } else {
+                         audioBadge = `<span class="audio-indicator-badge has-audio"><i class="fa-solid fa-volume-high"></i> Bersuara</span>`;
+                     }
+                }
+                return `
+                    <button class="sheet-opt-btn ${isActive}" onclick="changeVideoQuality('${opt.url}', '${opt.quality}')">
+                        <div style="display:flex; flex-direction:column;">
+                            <span style="font-weight:600; display:flex; align-items:center;">${opt.quality} ${audioBadge}</span>
+                            ${opt.size ? `<span style="font-size:0.75rem; color:var(--text-light); margin-top:4px;">${opt.size}</span>` : ''}
+                        </div>
+                        <i class="fa-solid fa-check ${isActive ? '' : 'hidden'}"></i>
+                    </button>
+                `;
             }).join('');
-        }
 
-        settingsGearBtn.addEventListener('click', (e) => { e.stopPropagation(); inPlayerSettings.classList.toggle('active'); });
-        document.addEventListener('click', (e) => { if(!settingsGearBtn.contains(e.target) && !inPlayerSettings.contains(e.target)) inPlayerSettings.classList.remove('active'); });
+            // Tombol "Kembali" untuk reset
+            html += `
+                <div style="margin-top:20px; border-top:1px solid var(--border-color); padding-top:15px;">
+                    <button class="sheet-opt-btn" onclick="closeSheet('player-settings-sheet'); document.getElementById('reset-btn').click();" style="color:var(--danger-color); justify-content:center; gap:8px;">
+                        <i class="fa-solid fa-arrow-rotate-left"></i> Tutup & Unduh Link Lain
+                    </button>
+                </div>
+            `;
 
-        window.changeVideoQuality = (newUrl) => {
+            sheetList.innerHTML = html;
+            openSheet('player-settings-sheet');
+        });
+
+        window.changeVideoQuality = (newUrl, qualityName) => {
             if(!activeMedia) return;
             const currentTime = activeMedia.currentTime; 
             const wasPlaying = !activeMedia.paused;
@@ -1230,9 +1324,8 @@
                 activeMedia.onloadedmetadata = null; 
             };
             
-            buildInPlayerSettings(newUrl); 
-            inPlayerSettings.classList.remove('active');
-            showIphoneNotif('Resolusi Diubah', 'Menyesuaikan kualitas video...', 'fa-wand-magic-sparkles');
+            closeSheet('player-settings-sheet');
+            showIphoneNotif('Resolusi Diubah', `Kualitas disesuaikan ke ${qualityName}`, 'fa-wand-magic-sparkles');
         };
 
         function formatTime(sec) {
@@ -1244,10 +1337,9 @@
         playPauseBtn.addEventListener('click', () => {
             if(!activeMedia) return;
             if (activeMedia.paused) { activeMedia.play(); updatePlayPauseUI(true); } 
-            else { activePaus = activeMedia.pause(); updatePlayPauseUI(false); }
+            else { activeMedia.pause(); updatePlayPauseUI(false); }
         });
 
-        // REVISI 2: Auto-Rotate Landscape on Fullscreen
         fullscreenBtn.addEventListener('click', () => {
             if(!activeMedia || currentFormat === 'audio') return;
             if (!document.fullscreenElement && !document.webkitFullscreenElement) {
@@ -1297,7 +1389,6 @@
             
             media.addEventListener('error', () => {
                 if(media === activeMedia) {
-                    // REVISI 3: Teks Error
                     bufferingSpinner.innerHTML = `<i class="fa-solid fa-triangle-exclamation" style="font-size:2rem; color:var(--danger-color);"></i><span style="font-size:0.8rem; text-align:center; padding-top:10px;">Video Dilindungi Penyedia Kreaverse AI.<br>Silakan langsung <strong>Simpan ke Galeri</strong>.</span>`;
                     bufferingSpinner.classList.remove('hidden');
                     updatePlayPauseUI(false);
@@ -1317,7 +1408,6 @@
             showIphoneNotif('Menyiapkan Berkas...', 'Mengamankan jalur unduhan ke perangkat Anda.', 'fa-download');
             
             setTimeout(() => {
-                // REVISI UX Force Download: Menggunakan window.open sebagai fallback jika atribut download terblokir CORS
                 const a = document.createElement('a');
                 a.href = resolvedMediaUrl;
                 a.target = '_blank';
@@ -1331,10 +1421,7 @@
 
         document.getElementById('reset-btn').addEventListener('click', () => { urlInput.value = ""; urlInput.dispatchEvent(new Event('input')); resetUI(); urlInput.focus(); });
 
-        // ==========================================
-        // REVISI 7: SIMPAN RIWAYAT KE FIREBASE (PERMANEN)
-        // ==========================================
-        async function simpanKeRiwayat(originUrl, mediaTitle, providerName, type, directUrl, fileSize) {
+        async function simpanKeRiwayat(originUrl, mediaTitle, providerName, type, directUrl, fileSize, thumbUrl) {
             if (!isLoggedIn || !userId) return;
             try {
                 await addDoc(collection(db, "users", userId, "downloads"), {
@@ -1344,6 +1431,7 @@
                     type: type,
                     directUrl: directUrl,
                     size: fileSize,
+                    thumbnail: thumbUrl || "",
                     timestamp: Date.now()
                 });
             } catch (e) { console.error("Gagal simpan riwayat ke Firebase:", e); }
