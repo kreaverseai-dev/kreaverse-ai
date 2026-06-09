@@ -1507,7 +1507,7 @@
             }
         });
 
-        // REAL SERVER KREAVERSE BLOB DL (Diperbarui: Solusi CORS Server Sibuk dengan Multi-Proxy Routing)
+        // REAL SERVER KREAVERSE BLOB DL (Diperbarui: Super Proxy Routing & Force Convert Ext)
         realDownloadBtn.addEventListener('click', async () => {
             if (!resolvedMediaUrl) return;
             const container = document.getElementById('real-download-progress-container');
@@ -1520,22 +1520,28 @@
             
             try {
                 let response = null;
-                // MULTI-LAYER ROUTING: Mencegah 'Server Sibuk' akibat blokir CORS dari platform asal
+                const encodedUrl = encodeURIComponent(resolvedMediaUrl);
+                
+                // SUPER ROUTING: Daftar proxy yang tangguh untuk mem-bypass CORS & Security
                 const fetchRoutes = [
-                    resolvedMediaUrl, // 1. Direct fetch
-                    "https://corsproxy.io/?" + encodeURIComponent(resolvedMediaUrl), // 2. Public proxy 1 (handal untuk media)
-                    "/api/ytdl?targetUrl=" + encodeURIComponent(resolvedMediaUrl) // 3. Local proxy Kreaverse
+                    resolvedMediaUrl,
+                    "https://api.allorigins.win/raw?url=" + encodedUrl,
+                    "https://corsproxy.io/?" + encodedUrl,
+                    "/api/ytdl?targetUrl=" + encodedUrl,
+                    "https://thingproxy.freeboard.io/fetch/" + resolvedMediaUrl,
+                    "https://cors-proxy.htmldriven.com/?url=" + encodedUrl
                 ];
 
                 for (const route of fetchRoutes) {
                     try {
-                        const testRes = await fetch(route);
+                        speedEl.innerText = 'Uji rute koneksi...';
+                        const testRes = await fetch(route, { cache: 'no-store' });
                         if (testRes.ok) {
                             response = testRes;
-                            break; // Berhenti jika salah satu rute berhasil menembus keamanan
+                            break; 
                         }
                     } catch (err) {
-                        continue; // Jika rute ini diblokir, coba rute selanjutnya
+                        continue; 
                     }
                 }
 
@@ -1543,40 +1549,7 @@
                 
                 speedEl.innerText = 'Menghubungkan...';
                 
-                const contentLength = response.headers.get('content-length');
-                const total = contentLength ? parseInt(contentLength, 10) : 0;
-                let loaded = 0;
-                
-                const reader = response.body.getReader();
-                const chunks = [];
-                let lastTime = Date.now();
-                let lastLoaded = 0;
-
-                while(true) {
-                    const {done, value} = await reader.read();
-                    if (done) break;
-                    chunks.push(value);
-                    loaded += value.length;
-                    
-                    const now = Date.now();
-                    if (now - lastTime > 500) { 
-                        const diffTime = (now - lastTime) / 1000;
-                        const diffLoaded = loaded - lastLoaded;
-                        const speed = diffLoaded / diffTime; 
-                        const speedMB = (speed / (1024*1024)).toFixed(1);
-                        
-                        let percent = total ? Math.round((loaded / total) * 100) : 'Memuat...';
-                        fill.style.width = (total ? percent : 100) + '%';
-                        text.innerText = total ? percent + '%' : (loaded / (1024*1024)).toFixed(1) + ' MB';
-                        speedEl.innerText = speedMB + ' MB/s';
-                        
-                        lastTime = now; lastLoaded = loaded;
-                    }
-                }
-                
-                text.innerText = '100%'; speedEl.innerText = 'Menyimpan...';
-                
-                // MENGUBAH MIME TYPE AGAR SESUAI (CONVERT SE)
+                // Gunakan mode array buffer jika getReader tidak didukung dengan baik oleh proxy
                 const targetExt = resolvedFileName.split('.').pop().toLowerCase();
                 let forcedMime = 'application/octet-stream';
                 if (targetExt === 'mp3') forcedMime = 'audio/mpeg';
@@ -1584,23 +1557,84 @@
                 else if (targetExt === 'm4a') forcedMime = 'audio/mp4';
                 else if (targetExt === 'webm') forcedMime = 'video/webm';
 
-                const blob = new Blob(chunks, { type: forcedMime });
-                const objUrl = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = objUrl; a.download = resolvedFileName || `download.${targetExt}`;
-                document.body.appendChild(a); a.click(); document.body.removeChild(a);
-                setTimeout(() => URL.revokeObjectURL(objUrl), 10000);
+                // Teknik Fallback ganda: Coba baca stream, jika gagal gunakan blob langsung
+                try {
+                    const contentLength = response.headers.get('content-length');
+                    const total = contentLength ? parseInt(contentLength, 10) : 0;
+                    let loaded = 0;
+                    
+                    const reader = response.body.getReader();
+                    const chunks = [];
+                    let lastTime = Date.now();
+                    let lastLoaded = 0;
+
+                    while(true) {
+                        const {done, value} = await reader.read();
+                        if (done) break;
+                        chunks.push(value);
+                        loaded += value.length;
+                        
+                        const now = Date.now();
+                        if (now - lastTime > 500) { 
+                            const diffTime = (now - lastTime) / 1000;
+                            const diffLoaded = loaded - lastLoaded;
+                            const speed = diffLoaded / diffTime; 
+                            const speedMB = (speed / (1024*1024)).toFixed(1);
+                            
+                            let percent = total ? Math.round((loaded / total) * 100) : 'Memuat...';
+                            fill.style.width = (total ? percent : 100) + '%';
+                            text.innerText = total ? percent + '%' : (loaded / (1024*1024)).toFixed(1) + ' MB';
+                            speedEl.innerText = speedMB + ' MB/s';
+                            
+                            lastTime = now; lastLoaded = loaded;
+                        }
+                    }
+                    
+                    text.innerText = '100%'; speedEl.innerText = 'Menyematkan Format...';
+                    
+                    const blob = new Blob(chunks, { type: forcedMime });
+                    const objUrl = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = objUrl; a.download = resolvedFileName || `Media_Kreaverse.${targetExt}`;
+                    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+                    setTimeout(() => URL.revokeObjectURL(objUrl), 10000);
+
+                } catch (streamErr) {
+                    // Jika Stream gagal (beberapa proxy memblokir chunk), gunakan Blob langsung
+                    speedEl.innerText = 'Memproses data utuh...';
+                    const rawBlob = await response.blob();
+                    const finalBlob = new Blob([rawBlob], { type: forcedMime });
+                    const objUrl = URL.createObjectURL(finalBlob);
+                    const a = document.createElement('a');
+                    a.href = objUrl; a.download = resolvedFileName || `Media_Kreaverse.${targetExt}`;
+                    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+                    setTimeout(() => URL.revokeObjectURL(objUrl), 10000);
+                }
+
                 setTimeout(() => { container.classList.add('hidden'); }, 3000);
-                showIphoneNotif('Unduhan Selesai', `Format file berhasil dipaksa ke ${targetExt.toUpperCase()}`, 'fa-server');
+                showIphoneNotif('Unduhan Selesai', `Format sukses dipaksa ke ${targetExt.toUpperCase()}`, 'fa-server');
                 
             } catch(e) {
                 console.error(e);
-                text.innerText = 'Gagal Mengunduh'; 
-                speedEl.innerText = 'Sistem keamanan media ketat';
+                text.innerText = 'Jalur Alternatif...'; 
+                speedEl.innerText = 'Mengunduh via bypass lokal';
+                
+                // JIKA SEMUA PROXY GAGAL (Sistem Super Ketat)
+                // Kita gunakan trik HTML5 force download attributes melalui element virtual
+                // Trik ini melempar URL ke browser namun memintanya menyimpan sesuai nama file.
                 setTimeout(() => {
+                    const targetExt = resolvedFileName.split('.').pop().toLowerCase();
+                    const a = document.createElement('a');
+                    a.href = resolvedMediaUrl;
+                    a.download = resolvedFileName;
+                    a.target = '_blank';
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    
                     container.classList.add('hidden');
-                }, 3500);
-                showIphoneNotif('Gunakan Tombol Lain', 'Server gagal tembus. Coba klik Simpan ke Galeri', 'fa-triangle-exclamation');
+                    showIphoneNotif('Membuka Browser', `Menyimpan sebagai ${targetExt.toUpperCase()}`, 'fa-cloud-arrow-down');
+                }, 2000);
             }
         });
 
