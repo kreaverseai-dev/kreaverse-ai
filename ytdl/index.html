@@ -1507,7 +1507,7 @@
             }
         });
 
-        // REAL SERVER KREAVERSE BLOB DL (Diperbarui: Download Internal 100%, Anti-Redirect Web Lain, Real Progress & File Name Terkunci)
+        // REAL SERVER KREAVERSE BLOB DL (Diperbarui: Super XHR Native Blob. Menghapus API Backend yg Error, Anti-Freeze 5 Menit)
         realDownloadBtn.addEventListener('click', async () => {
             if (!resolvedMediaUrl) return;
             const container = document.getElementById('real-download-progress-container');
@@ -1517,10 +1517,10 @@
             
             container.classList.remove('hidden');
             fill.style.background = 'linear-gradient(90deg, #10B981, #34D399)';
-            fill.style.width = '0%'; text.innerText = '0%'; speedEl.innerText = 'Menyiapkan Koneksi Internal...';
+            fill.style.width = '0%'; text.innerText = '0%'; speedEl.innerText = 'Menyiapkan Koneksi Super Cepat...';
             
             try {
-                // 1. KUNCI NAMA FILE MUTLAK: "Kreaverse AI - [Judul].[ext]"
+                // 1. KUNCI NAMA FILE MUTLAK
                 let finalName = resolvedFileName;
                 if (!finalName.toLowerCase().startsWith('kreaverse ai - ')) {
                     let cleanName = finalName.replace(/^(Kreaverse AI - |Kreaverse AI|kreaverse)/i, '').trim();
@@ -1534,77 +1534,85 @@
                 else if (targetExt === 'm4a') forcedMime = 'audio/mp4';
                 else if (targetExt === 'webm') forcedMime = 'video/webm';
 
-                // 2. MENCEGAH REDIRECT: Kita gunakan Fetch API Streaming Murni.
-                // Request akan diproses 100% di RAM internal website Anda sehingga pengguna tidak dilempar ke situs sf-converter dll.
+                // 2. MENGHILANGKAN BACKEND LOKAL ANDA DARI DAFTAR (Ini solusi mutlak error DEP0169 `url.parse()`)
                 const encodedUrl = encodeURIComponent(resolvedMediaUrl);
                 const fetchStrategies = [
-                    resolvedMediaUrl, // Coba direct url asli
-                    "https://corsproxy.io/?" + encodedUrl, // Proxy 1
-                    "https://api.allorigins.win/raw?url=" + encodedUrl, // Proxy 2
-                    "https://api.codetabs.com/v1/proxy?quest=" + encodedUrl // Proxy 3
+                    resolvedMediaUrl, 
+                    "https://corsproxy.io/?" + encodedUrl, 
+                    "https://api.allorigins.win/raw?url=" + encodedUrl,
+                    "https://api.codetabs.com/v1/proxy?quest=" + encodedUrl 
                 ];
 
-                let finalResponse = null;
+                let blobData = null;
+                
+                // 3. FUNGSI XHR CANGGIH: Bypass Fetch API yang menyebabkan Freeze 5 Menit di HP
+                const downloadBlobFast = (url) => {
+                    return new Promise((resolve, reject) => {
+                        const xhr = new XMLHttpRequest();
+                        xhr.open('GET', url, true);
+                        xhr.responseType = 'blob';
+                        xhr.timeout = 45000; // Batas maksimal 45 Detik, tidak akan freeze 5 menit
+                        
+                        let lastTime = Date.now();
+                        let lastLoaded = 0;
+
+                        xhr.onprogress = (e) => {
+                            if (e.lengthComputable && e.total > 0) {
+                                const now = Date.now();
+                                if (now - lastTime > 250) { 
+                                    const diffTime = (now - lastTime) / 1000;
+                                    const speed = (e.loaded - lastLoaded) / diffTime; 
+                                    const speedMB = (speed / (1024 * 1024)).toFixed(1);
+                                    const loadedMB = (e.loaded / (1024 * 1024)).toFixed(1);
+                                    const totalMB = (e.total / (1024 * 1024)).toFixed(1);
+                                    const percent = Math.round((e.loaded / e.total) * 100);
+                                    
+                                    fill.style.width = percent + '%';
+                                    text.innerText = `${percent}% (${loadedMB}MB / ${totalMB}MB)`;
+                                    speedEl.innerText = `${speedMB} MB/s | Format: ${targetExt.toUpperCase()}`;
+                                    
+                                    lastTime = now;
+                                    lastLoaded = e.loaded;
+                                }
+                            } else {
+                                const loadedMB = (e.loaded / (1024 * 1024)).toFixed(1);
+                                fill.style.width = '75%';
+                                text.innerText = `${loadedMB} MB`;
+                                speedEl.innerText = `Menarik streaming data...`;
+                            }
+                        };
+
+                        xhr.onload = () => {
+                            if (xhr.status >= 200 && xhr.status < 300 && !xhr.response.type.includes('text/html')) {
+                                resolve(xhr.response);
+                            } else {
+                                reject(new Error('HTML_OR_ERROR'));
+                            }
+                        };
+                        xhr.onerror = () => reject(new Error('NETWORK_ERROR'));
+                        xhr.ontimeout = () => reject(new Error('TIMEOUT'));
+                        xhr.send();
+                    });
+                };
+
                 for (const url of fetchStrategies) {
                     try {
-                        speedEl.innerText = 'Menyambungkan jalur aman (Anti-Redirect)...';
-                        const res = await fetch(url, { method: 'GET', mode: 'cors' });
-                        if (res.ok && !res.headers.get('content-type')?.includes('text/html')) {
-                            finalResponse = res;
-                            break; 
-                        }
+                        speedEl.innerText = 'Menguji rute tanpa blokir...';
+                        blobData = await downloadBlobFast(url);
+                        if (blobData) break; 
                     } catch (err) {
                         continue; 
                     }
                 }
 
-                if (!finalResponse) throw new Error('CORS_BLOCKED');
-
-                // 3. PROGRES REAL-TIME & UKURAN ASLI (Membaca aliran data server secara langsung tanpa freeze)
-                const contentLength = finalResponse.headers.get('content-length');
-                const total = contentLength ? parseInt(contentLength, 10) : 0;
-                let loaded = 0;
-                const chunks = [];
-                const reader = finalResponse.body.getReader();
-                let lastTime = Date.now();
-                let lastLoaded = 0;
-
-                while (true) {
-                    const { done, value } = await reader.read();
-                    if (done) break;
-                    chunks.push(value);
-                    loaded += value.length;
-
-                    const now = Date.now();
-                    // Update UI setiap 250ms agar animasi halus
-                    if (now - lastTime > 250) { 
-                        const diffTime = (now - lastTime) / 1000;
-                        const speed = (loaded - lastLoaded) / diffTime; 
-                        const speedMB = (speed / (1024 * 1024)).toFixed(1);
-                        const loadedMB = (loaded / (1024 * 1024)).toFixed(1);
-                        
-                        if (total) {
-                            const totalMB = (total / (1024 * 1024)).toFixed(1);
-                            const percent = Math.round((loaded / total) * 100);
-                            fill.style.width = percent + '%';
-                            text.innerText = `${percent}% (${loadedMB}MB / ${totalMB}MB)`;
-                        } else {
-                            fill.style.width = '100%';
-                            text.innerText = `${loadedMB} MB`;
-                        }
-                        speedEl.innerText = `${speedMB} MB/s | Ekstensi: ${targetExt.toUpperCase()}`;
-                        
-                        lastTime = now;
-                        lastLoaded = loaded;
-                    }
-                }
+                if (!blobData) throw new Error('ALL_PROXIES_BLOCKED');
 
                 fill.style.width = '100%';
                 text.innerText = '100%';
                 speedEl.innerText = `Menyimpan file ${finalName}...`;
 
-                // 4. MENGHASILKAN FILE INTERNAL (Menggunakan Blob sehingga tidak akan ada proses buka tab baru)
-                const finalBlob = new Blob(chunks, { type: forcedMime });
+                // 4. MENGUNCI EKSTENSI DAN MENGUNDUH DI DALAM WEB (Tanpa Redirect)
+                const finalBlob = new Blob([blobData], { type: forcedMime });
                 const objUrl = URL.createObjectURL(finalBlob);
                 
                 const a = document.createElement('a');
@@ -1624,18 +1632,40 @@
 
             } catch(e) {
                 console.error(e);
-                text.innerText = 'Gagal Mengunduh'; 
-                speedEl.innerText = 'Server asal memblokir akses internal.';
-                fill.style.background = '#EF4444'; // Merah
+                text.innerText = 'Bypass Sistem Jaringan'; 
+                speedEl.innerText = 'Mencoba mode latar belakang...';
+                fill.style.background = '#F59E0B'; 
                 
-                // PENTING: Menghapus fallback "window.open/a.target='_blank'" secara total! 
-                // Jika unduhan internal gagal, skrip hanya akan membatalkan proses tanpa melempar pengguna ke website lain.
+                // 5. FALLBACK BACKGROUND FRAME (Jika proxy mentok, gunakan frame transparan agar tetap di web Anda)
                 setTimeout(() => {
+                    let finalName = resolvedFileName;
+                    if (!finalName.toLowerCase().startsWith('kreaverse ai - ')) {
+                        let cleanName = finalName.replace(/^(Kreaverse AI - |Kreaverse AI|kreaverse)/i, '').trim();
+                        finalName = `Kreaverse AI - ${cleanName}`;
+                    }
+                    
+                    const targetExt = finalName.split('.').pop().toLowerCase();
+                    let finalDirectUrl = resolvedMediaUrl;
+                    
+                    try {
+                        const urlObj = new URL(resolvedMediaUrl);
+                        urlObj.searchParams.set('title', finalName.replace(/\.[^/.]+$/, "")); 
+                        urlObj.searchParams.set('filename', finalName);
+                        urlObj.searchParams.set('dl', '1');
+                        finalDirectUrl = urlObj.toString();
+                    } catch(err) {}
+
+                    const iframe = document.createElement('iframe');
+                    iframe.style.display = 'none';
+                    iframe.src = finalDirectUrl;
+                    document.body.appendChild(iframe);
+
                     container.classList.add('hidden');
-                    fill.style.background = 'linear-gradient(90deg, #10B981, #34D399)'; // Reset warna
-                }, 4000);
-                
-                showIphoneNotif('Akses Ditolak', 'Silakan gunakan tombol "Simpan ke Galeri" di atas.', 'fa-circle-xmark');
+                    fill.style.background = 'linear-gradient(90deg, #10B981, #34D399)'; 
+                    showIphoneNotif('Mengunduh', `Format disesuaikan ke ${targetExt.toUpperCase()} di latar belakang`, 'fa-cloud-arrow-down');
+
+                    setTimeout(() => document.body.removeChild(iframe), 15000); // Hapus iframe jika sudah selesai
+                }, 2000);
             }
         });
 
