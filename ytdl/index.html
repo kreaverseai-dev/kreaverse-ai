@@ -1507,15 +1507,7 @@
             }
         });
 
-        // PEMBERITAHUAN UNTUK ANDA (PENTING!):
-        // Error log [DEP0169] DeprecationWarning: `url.parse()` BUKAN berasal dari kode frontend ini.
-        // Error tersebut berasal dari script API Server/Backend Node.js Anda (kemungkinan di file api/ytdl.js atau file backend lainnya).
-        // CARA MEMPERBAIKI DI BACKEND ANDA: Cari tulisan `const url = require('url'); url.parse(...)` lalu ganti dengan sintaks modern `new URL(...)`.
-        //
-        // Sambil menunggu Anda memperbaiki backend, saya merevisi kode di bawah ini 
-        // agar menghindari API Anda yang sedang error dan menggunakan proxy publik sehingga fungsi MP3 tetap berjalan.
-
-        // REAL SERVER KREAVERSE BLOB DL (Diperbarui: Anti-Crash Backend & Fallback Lapis Baja)
+        // REAL SERVER KREAVERSE BLOB DL (Diperbarui: Super Cepat XHR Native, Hapus API Error Backend, Tanpa Freeze 5 Menit)
         realDownloadBtn.addEventListener('click', async () => {
             if (!resolvedMediaUrl) return;
             const container = document.getElementById('real-download-progress-container');
@@ -1525,10 +1517,10 @@
             
             container.classList.remove('hidden');
             fill.style.background = 'linear-gradient(90deg, #10B981, #34D399)';
-            fill.style.width = '0%'; text.innerText = '0%'; speedEl.innerText = 'Menyiapkan Koneksi...';
+            fill.style.width = '0%'; text.innerText = '0%'; speedEl.innerText = 'Menyiapkan Koneksi Kilat...';
             
             try {
-                // 1. KUNCI NAMA FILE PATEN: "Kreaverse AI - [Judul].[ext]"
+                // 1. KUNCI NAMA FILE PATEN
                 let finalName = resolvedFileName;
                 if (!finalName.toLowerCase().startsWith('kreaverse ai - ')) {
                     finalName = `Kreaverse AI - ${finalName.replace(/^(Kreaverse AI - |Kreaverse AI|kreaverse)/i, '').trim()}`;
@@ -1541,75 +1533,83 @@
                 else if (targetExt === 'm4a') forcedMime = 'audio/mp4';
                 else if (targetExt === 'webm') forcedMime = 'video/webm';
 
-                // 2. STRATEGI MULTI-PROXY TAHAN BANTING
+                // 2. MENGHAPUS TOTAL "/api/ytdl" AGAR TIDAK KENA ERROR [DEP0169] DAN TIDAK DELAY 5 MENIT
                 const encodedUrl = encodeURIComponent(resolvedMediaUrl);
                 const fetchStrategies = [
-                    "https://corsproxy.io/?" + encodedUrl,
-                    "https://api.allorigins.win/raw?url=" + encodedUrl,
-                    "https://api.codetabs.com/v1/proxy?quest=" + encodedUrl,
-                    "/api/ytdl?targetUrl=" + encodedUrl, // Dipindah ke bawah karena ada issue url.parse() di API backend Anda
-                    resolvedMediaUrl
+                    resolvedMediaUrl, // Prioritas: Tarik file asli langsung jika CORS terbuka (Sangat Cepat)
+                    "https://corsproxy.io/?" + encodedUrl, // Backup proxy stabil
+                    "https://api.codetabs.com/v1/proxy?quest=" + encodedUrl // Backup proxy 2
                 ];
 
-                let finalResponse = null;
-                for (const url of fetchStrategies) {
-                    try {
-                        speedEl.innerText = 'Menghubungkan Server...';
-                        const res = await fetch(url, { method: 'GET', mode: 'cors', referrerPolicy: 'no-referrer' });
-                        if (res.ok && !(res.headers.get('content-type') || '').includes('text/html')) {
-                            finalResponse = res;
-                            break; 
-                        }
-                    } catch (err) { continue; }
-                }
-
-                if (!finalResponse) throw new Error('CORS_BLOCKED');
-
-                // 3. SISTEM STREAMING CHUNK: Mengambil Kecepatan Asli & Ukuran Asli
-                const contentLength = finalResponse.headers.get('content-length');
-                const total = contentLength ? parseInt(contentLength, 10) : 0;
-                let loaded = 0;
-                
-                const reader = finalResponse.body.getReader();
-                const chunks = [];
+                let blobData = null;
                 let lastTime = Date.now();
                 let lastLoaded = 0;
 
-                while(true) {
-                    const {done, value} = await reader.read();
-                    if (done) break;
-                    chunks.push(value);
-                    loaded += value.length;
-                    
-                    const now = Date.now();
-                    if (now - lastTime > 400) { 
-                        const diffTime = (now - lastTime) / 1000;
-                        const speed = (loaded - lastLoaded) / diffTime; 
-                        const speedMB = (speed / (1024*1024)).toFixed(1);
-                        const loadedMB = (loaded / (1024*1024)).toFixed(1);
+                // Fungsi canggih XMLHttpRequest untuk menarik blob dengan progress super cepat
+                // Menghindari JS reader.read() yang membuat HP freeze/loading lama 5 menit
+                const fetchBlobFast = (url) => {
+                    return new Promise((resolve, reject) => {
+                        const xhr = new XMLHttpRequest();
+                        xhr.open('GET', url, true);
+                        xhr.responseType = 'blob';
                         
-                        if (total) {
-                            const totalMB = (total / (1024*1024)).toFixed(1);
-                            let percent = Math.round((loaded / total) * 100);
-                            fill.style.width = percent + '%';
-                            text.innerText = `${percent}% (${loadedMB}MB / ${totalMB}MB)`;
-                        } else {
-                            fill.style.width = '100%';
-                            text.innerText = `${loadedMB} MB`;
-                        }
-                        speedEl.innerText = `${speedMB} MB/s | Format: ${targetExt.toUpperCase()}`;
+                        xhr.onprogress = (e) => {
+                            if (e.lengthComputable) {
+                                const now = Date.now();
+                                if (now - lastTime > 400) {
+                                    const diffTime = (now - lastTime) / 1000;
+                                    const speedMB = ((e.loaded - lastLoaded) / diffTime / (1024 * 1024)).toFixed(1);
+                                    const loadedMB = (e.loaded / (1024 * 1024)).toFixed(1);
+                                    const totalMB = (e.total / (1024 * 1024)).toFixed(1);
+                                    const percent = Math.round((e.loaded / e.total) * 100);
+                                    
+                                    fill.style.width = percent + '%';
+                                    text.innerText = `${percent}% (${loadedMB}MB / ${totalMB}MB)`;
+                                    speedEl.innerText = `${speedMB} MB/s | Ekstensi: ${targetExt.toUpperCase()}`;
+                                    
+                                    lastTime = now; lastLoaded = e.loaded;
+                                }
+                            } else {
+                                const loadedMB = (e.loaded / (1024 * 1024)).toFixed(1);
+                                fill.style.width = '80%';
+                                text.innerText = `${loadedMB} MB`;
+                                speedEl.innerText = `Menarik file utuh...`;
+                            }
+                        };
                         
-                        lastTime = now; lastLoaded = loaded;
+                        xhr.onload = () => {
+                            if (xhr.status >= 200 && xhr.status < 300) {
+                                if (xhr.response.type.includes('text/html')) reject(new Error('HTML_BLOCKED'));
+                                else resolve(xhr.response);
+                            } else {
+                                reject(new Error('Status: ' + xhr.status));
+                            }
+                        };
+                        xhr.onerror = () => reject(new Error('Network Error'));
+                        xhr.send();
+                    });
+                };
+
+                for (const url of fetchStrategies) {
+                    try {
+                        speedEl.innerText = 'Uji rute tercepat...';
+                        lastTime = Date.now(); lastLoaded = 0;
+                        blobData = await fetchBlobFast(url);
+                        if (blobData) break; 
+                    } catch (err) {
+                        continue; 
                     }
                 }
-                
+
+                if (!blobData) throw new Error('ALL_PROXIES_BLOCKED');
+
                 fill.style.width = '100%';
                 text.innerText = '100%';
-                speedEl.innerText = 'Menyimpan File...';
+                speedEl.innerText = `Menyimpan sebagai ${finalName}...`;
 
-                // 4. DOWNLOAD INTERNAL WEBSITE DENGAN NAMA PATEN (Tanpa Pindah Tab/Redirect)
-                const blob = new Blob(chunks, { type: forcedMime });
-                const objUrl = URL.createObjectURL(blob);
+                // 3. PAKSA EKSTENSI DAN NAMA FILE DIDALAM WEBSITE
+                const finalBlob = new Blob([blobData], { type: forcedMime });
+                const objUrl = URL.createObjectURL(finalBlob);
                 
                 const a = document.createElement('a');
                 a.style.display = 'none';
@@ -1628,58 +1628,41 @@
 
             } catch(e) {
                 console.error(e);
-                text.innerText = 'Proxy Utama Gagal'; 
-                speedEl.innerText = 'Mencari jalur alternatif...';
+                text.innerText = 'Alihkan Otomatis'; 
+                speedEl.innerText = 'Menggunakan pengunduh internal HP...';
                 fill.style.background = '#F59E0B'; 
                 
-                // 5. FALLBACK KE-2 (Fetch Blob Utuh Langsung - bypass error streaming/API internal)
-                setTimeout(async () => {
+                // 4. FALLBACK INSTAN: Jika proxy diblokir, langsung tembak ke browser 
+                // Tanpa menunggu 5 menit lagi, proses selesai dalam 1 detik.
+                setTimeout(() => {
                     let finalName = resolvedFileName;
                     if (!finalName.toLowerCase().startsWith('kreaverse ai - ')) {
                         finalName = `Kreaverse AI - ${finalName.replace(/^(Kreaverse AI - |Kreaverse AI|kreaverse)/i, '').trim()}`;
                     }
-                    const targetExt = finalName.split('.').pop().toLowerCase();
                     
+                    let finalDirectUrl = resolvedMediaUrl;
                     try {
-                        const directRes = await fetch(resolvedMediaUrl);
-                        const blobData = await directRes.blob();
-                        const forcedBlob = new Blob([blobData], { type: targetExt === 'mp3' ? 'audio/mpeg' : 'video/mp4' });
-                        const objUrl = URL.createObjectURL(forcedBlob);
-                        
-                        const a = document.createElement('a');
-                        a.style.display = 'none';
-                        a.href = objUrl;
-                        a.download = finalName;
-                        document.body.appendChild(a);
-                        a.click();
-                        document.body.removeChild(a);
-                        
-                        container.classList.add('hidden');
-                        fill.style.background = 'linear-gradient(90deg, #10B981, #34D399)'; 
-                        showIphoneNotif('Berhasil!', `Tersimpan sebagai: ${finalName}`, 'fa-circle-check');
-                    } catch (err) {
-                        // 6. FALLBACK TERAKHIR BACKGROUND FRAME (Menghindari visual redirect ke web lain jika diblokir mutlak)
-                        let finalDirectUrl = resolvedMediaUrl;
-                        try {
-                            const urlObj = new URL(resolvedMediaUrl);
-                            urlObj.searchParams.set('title', finalName.replace(/\.[^/.]+$/, "")); 
-                            urlObj.searchParams.set('filename', finalName);
-                            urlObj.searchParams.set('dl', '1');
-                            finalDirectUrl = urlObj.toString();
-                        } catch(error) {}
+                        const urlObj = new URL(resolvedMediaUrl);
+                        urlObj.searchParams.set('title', finalName.replace(/\.[^/.]+$/, "")); 
+                        urlObj.searchParams.set('filename', finalName);
+                        urlObj.searchParams.set('dl', '1');
+                        finalDirectUrl = urlObj.toString();
+                    } catch(err) {}
 
-                        const iframe = document.createElement('iframe');
-                        iframe.style.display = 'none';
-                        iframe.src = finalDirectUrl;
-                        document.body.appendChild(iframe);
+                    const a = document.createElement('a');
+                    a.style.display = 'none';
+                    a.href = finalDirectUrl;
+                    a.download = finalName;
+                    a.target = '_blank';
+                    a.rel = 'noopener noreferrer';
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
 
-                        container.classList.add('hidden');
-                        fill.style.background = 'linear-gradient(90deg, #10B981, #34D399)'; 
-                        showIphoneNotif('Mengunduh', `Proses berjalan di latar belakang`, 'fa-cloud-arrow-down');
-
-                        setTimeout(() => document.body.removeChild(iframe), 15000); // Cleanup iframe
-                    }
-                }, 2000);
+                    container.classList.add('hidden');
+                    fill.style.background = 'linear-gradient(90deg, #10B981, #34D399)'; 
+                    showIphoneNotif('Notifikasi Muncul', `Cek bar notifikasi HP Anda`, 'fa-cloud-arrow-down');
+                }, 1500);
             }
         });
 
