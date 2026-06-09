@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Chat - Kreaverse AI</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Georgia&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+    
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body.claude-chat-body { background-color: #fdfcf8; color: #1a1a1a; font-family: 'Inter', sans-serif; display: flex; flex-direction: column; height: 100vh; height: 100dvh; overflow: hidden; }
+
+        /* HEADER */
+        .chat-navbar { padding: 16px 20px; display: flex; justify-content: space-between; align-items: center; background: transparent; z-index: 10; flex-shrink: 0; border-bottom: 1px solid rgba(0,0,0,0.05); }
+        .nav-left { display: flex; align-items: center; gap: 15px; }
+        .sidebar-toggle-btn { color: #666; font-size: 1.2rem; background: none; border: none; cursor: pointer; padding: 6px 10px; border-radius: 8px; transition: 0.2s; display: flex; align-items: center; justify-content: center; }
+        .sidebar-toggle-btn:hover { background-color: #f0efe9; color: #1a1a1a; }
+        
+        /* LOGO KREAVERSE DENGAN EFEK SHINE 20D/1M */
+        .nav-logo-kreaverse { 
+            font-family: 'Georgia', serif; font-size: 1.2rem; font-weight: 600; cursor: pointer;
+            background: linear-gradient(120deg, #1a1a1a 40%, #d97757 50%, #1a1a1a 60%);
+            background-size: 300% 100%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: shine 60s infinite;
+        }
+        @keyframes shine {
+            0% { background-position: 100% 50%; }
+            33% { background-position: 0% 50%; } 
+            100% { background-position: 0% 50%; } 
+        }
+        
+        .api-status { display: flex; align-items: center; gap: 6px; font-size: 0.75rem; font-weight: 500; padding: 5px 12px; border-radius: 20px; background: #fff; border: 1px solid #e5e5e5; cursor: pointer; transition: 0.2s; }
+        .led-indicator { width: 8px; height: 8px; border-radius: 50%; }
+        .led-green { background-color: #10a37f; box-shadow: 0 0 5px #10a37f; }
+        .led-red { background-color: #e74c3c; box-shadow: 0 0 5px #e74c3c; }
+        .led-yellow { background-color: #f39c12; box-shadow: 0 0 5px #f39c12; animation: blink 1s infinite alternate; }
+        @keyframes blink { from { opacity: 1; } to { opacity: 0.4; } }
+
+        /* AREA OBROLAN */
+        .chat-container { flex: 1; overflow-y: auto; padding: 20px 20px 180px 20px; display: flex; flex-direction: column; align-items: center; -webkit-overflow-scrolling: touch; scroll-behavior: smooth; will-change: transform; position: relative; }
+        .chat-box { width: 100%; max-width: 750px; display: flex; flex-direction: column; gap: 24px; padding-bottom: 20px; }
+
+        .message { display: flex; gap: 16px; width: 100%; line-height: 1.6; content-visibility: auto; contain-intrinsic-size: 100px; transform: translateZ(0); }
+        .user-message { justify-content: flex-end; }
+        .msg-content { font-size: 1.05rem; color: #1a1a1a; white-space: pre-wrap; word-break: break-word; font-family: 'Georgia', serif; width: fit-content; max-width: 90%; }
+        .user-message .msg-content { background-color: #f2f1eb; padding: 12px 18px; border-radius: 16px; font-family: 'Inter', sans-serif; font-size: 1rem; }
+
+        .message-actions { display: flex; gap: 12px; margin-top: 8px; }
+        .message-actions button { background: none; border: none; color: #999; cursor: pointer; font-size: 0.95rem; transition: 0.2s; padding: 4px; }
+        .message-actions button:hover { color: #1a1a1a; }
+
+        .typing-indicator { color: #d97757; font-size: 1.5rem; animation: spin 2s linear infinite; margin-top: 10px; }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+
+        /* AREA INPUT */
+        .chat-input-area { position: absolute; bottom: 0; left: 0; width: 100%; background: linear-gradient(to top, #fdfcf8 90%, rgba(253, 252, 248, 0)); padding: 15px 20px; display: flex; flex-direction: column; align-items: center; z-index: 20; }
+        .input-wrapper-claude { width: 100%; max-width: 750px; background-color: #fff; border: 1px solid #e5e5e5; border-radius: 20px; padding: 12px 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.06); display: flex; flex-direction: column; gap: 10px; transition: border-color 0.2s; }
+        .input-wrapper-claude:focus-within { border-color: #d97757; }
+
+        .file-preview-container { display: none; gap: 10px; padding-bottom: 8px; border-bottom: 1px solid #f0f0f0; flex-wrap: wrap; }
+        .preview-item { position: relative; display: inline-block; }
+        .preview-item img { width: 60px; height: 60px; object-fit: cover; border-radius: 8px; border: 1px solid #e5e5e5; }
+        .remove-file-btn { position: absolute; top: -6px; right: -6px; background: #e74c3c; color: white; border: none; border-radius: 50%; width: 20px; height: 20px; font-size: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+
+        .input-top { width: 100%; }
+        #chat-input { width: 100%; border: none; background: transparent; font-family: 'Inter', sans-serif; font-size: 1.05rem; color: #1a1a1a; resize: none; outline: none; max-height: 120px; overflow-y: auto; }
+        .input-bottom { display: flex; justify-content: space-between; align-items: center; }
+        .action-left, .action-right { display: flex; align-items: center; gap: 8px; }
+        .claude-btn { background: none; border: none; color: #666; font-size: 1.2rem; cursor: pointer; padding: 6px 10px; border-radius: 8px; }
+        .claude-btn:hover { background-color: #f5f5f5; color: #1a1a1a; }
+
+        /* DROPDOWN & LOGO */
+        .custom-dropdown-container { position: relative; }
+        .custom-dropdown-btn { display: flex; align-items: center; gap: 8px; color: #444; font-weight: 500; font-size: 0.9rem; cursor: pointer; padding: 6px 12px; border-radius: 8px; border: 1px solid transparent; }
+        .custom-dropdown-btn:hover { background: #f5f5f5; border-color: #e5e5e5; }
+        .custom-dropdown-menu { position: absolute; bottom: calc(100% + 10px); left: 50%; transform: translateX(-50%); background: #fff; border: 1px solid #e5e5e5; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); padding: 8px; width: 280px; max-height: 350px; overflow-y: auto; z-index: 100; }
+        .custom-dropdown-menu.hidden { display: none; }
+        .dropdown-item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 8px; font-size: 0.85rem; cursor: pointer; color: #1a1a1a; transition: 0.2s; font-weight: 500; }
+        .dropdown-item:hover { background: #f0efe9; }
+        .model-logo { width: 16px; height: 16px; fill: currentColor; }
+        .menu-divider { height: 1px; background: #e5e5e5; margin: 5px 0; }
+
+        .send-btn { background-color: #d97757; color: #FFF; border: none; width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 1.1rem; transition: 0.2s; }
+        .send-btn:hover { background-color: #c56648; transform: scale(1.05); }
+        .send-btn.hidden { display: none; }
+        .warning-text { font-size: 0.75rem; color: #888; margin-top: 10px; text-align: center; }
+
+        /* SIDEBAR */
+        .sidebar-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.3); z-index: 999; display: none; opacity: 0; transition: opacity 0.3s; }
+        .sidebar { position: fixed; top: 0; left: -300px; width: 280px; height: 100%; background: #fdfcf8; z-index: 1000; box-shadow: 2px 0 15px rgba(0,0,0,0.1); transition: left 0.3s ease; display: flex; flex-direction: column; }
+        .sidebar.active { left: 0; }
+        .sidebar-overlay.active { display: block; opacity: 1; }
+        
+        .sidebar-header { padding: 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e5e5e5; }
+        .sidebar-header h3 { font-family: 'Georgia', serif; font-size: 1.1rem; color: #1a1a1a; }
+        .close-sidebar-btn { background: none; border: none; font-size: 1.2rem; color: #666; cursor: pointer; }
+        
+        .sidebar-content { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 20px; }
+        .btn-new-chat { background: #1a1a1a; color: #fff; border: none; padding: 12px; border-radius: 10px; font-weight: 500; font-size: 1rem; cursor: pointer; display: flex; justify-content: center; gap: 8px; transition: 0.2s; }
+        .btn-new-chat:hover { background: #333; }
+        
+        .history-section { display: flex; flex-direction: column; gap: 10px; }
+        .history-header { display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem; color: #666; font-weight: 600; text-transform: uppercase; }
+        .btn-clear-all { background: none; border: none; color: #e74c3c; font-size: 0.75rem; cursor: pointer; }
+        
+        .history-list { display: flex; flex-direction: column; gap: 8px; }
+        .history-item { background: #fff; border: 1px solid #e5e5e5; padding: 10px 12px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; transition: 0.2s; }
+        .history-item:hover { border-color: #d97757; }
+        .history-title { font-size: 0.9rem; color: #1a1a1a; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 150px; }
+        .history-actions { display: flex; gap: 8px; }
+        .history-actions button { background: none; border: none; color: #999; cursor: pointer; }
+        .history-actions button:hover { color: #1a1a1a; }
+        .btn-pin.pinned { color: #f39c12; }
+
+        .sidebar-footer { padding: 20px; border-top: 1px solid #e5e5e5; display: flex; flex-direction: column; gap: 10px; }
+        .sidebar-link { display: flex; align-items: center; gap: 10px; text-decoration: none; color: #1a1a1a; font-weight: 500; padding: 8px; border-radius: 8px; transition: 0.2s; }
+        .sidebar-link:hover { background: #f0efe9; }
+
+        /* FLOATING SCROLL BUTTONS */
+        .floating-scroll-btns { position: fixed; right: 15px; bottom: 170px; display: flex; flex-direction: column; gap: 8px; z-index: 15; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; }
+        .floating-scroll-btns.visible { opacity: 1; pointer-events: auto; }
+        .float-btn { width: 32px; height: 32px; border-radius: 50%; background: #fff; border: 1px solid #e5e5e5; box-shadow: 0 4px 10px rgba(0,0,0,0.1); color: #666; font-size: 0.8rem; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.2s; }
+        .float-btn:hover { background: #f5f5f5; color: #1a1a1a; }
+
+    </style>
+</head>
+<body class="claude-chat-body">
+
+    <!-- OVERLAY & SIDEBAR MENU KIRI -->
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <h3>Menu Kreaverse</h3>
+            <button class="close-sidebar-btn" id="close-sidebar"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div class="sidebar-content">
+            <button class="btn-new-chat" onclick="mulaiChatBaru()"><i class="fa-solid fa-plus"></i> Chat Baru</button>
+            
+            <div class="history-section">
+                <div class="history-header">
+                    <span>Histori Chat</span>
+                    <button class="btn-clear-all" onclick="hapusSemuaHistori()">Hapus Semua</button>
+                </div>
+                <div class="history-list" id="history-list"></div>
+            </div>
+        </div>
+        <div class="sidebar-footer">
+            <a href="/" class="sidebar-link"><i class="fa-solid fa-house"></i> Beranda</a>
+            <a href="/harga" class="sidebar-link"><i class="fa-solid fa-tag"></i> Harga & Paket</a>
+        </div>
+    </aside>
+
+    <!-- HEADER OBROLAN -->
+    <nav class="chat-navbar">
+        <div class="nav-left">
+            <button class="sidebar-toggle-btn" id="open-sidebar" title="Buka Menu"><i class="fa-regular fa-window-maximize"></i></button>
+            <div class="nav-logo-kreaverse" onclick="window.location.href='/'">Kreaverse AI</div>
+        </div>
+        <div class="api-status" onclick="tampilkanInfoAPI()">
+            <div class="led-indicator led-yellow" id="led-indicator"></div> <span id="api-text">Mengecek...</span>
+        </div>
+    </nav>
+
+    <!-- FLOATING SCROLL BUTTONS -->
+    <div class="floating-scroll-btns" id="floating-scroll-btns">
+        <button class="float-btn" id="btn-scroll-top" title="Ke Atas"><i class="fa-solid fa-arrow-up"></i></button>
+        <button class="float-btn" id="btn-scroll-bottom" title="Ke Bawah"><i class="fa-solid fa-arrow-down"></i></button>
+    </div>
+
+    <!-- AREA CHAT -->
+    <main class="chat-container" id="chat-container">
+        <div id="chat-box" class="chat-box">
+            <div class="message ai-message">
+                <div class="msg-content">
+                    <span class="text-content">Halo! Ada yang bisa saya bantu hari ini? ð</span>
+                    <div class="message-actions">
+                        <button class="action-copy" title="Salin"><i class="fa-regular fa-copy"></i></button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- AREA INPUT -->
+    <div class="chat-input-area">
+        <div class="input-wrapper-claude">
+            <div class="file-preview-container" id="file-preview-container"></div>
+
+            <div class="input-top">
+                <textarea id="chat-input" placeholder="Tulis pesan..." rows="1"></textarea>
+            </div>
+            <div class="input-bottom">
+                <div class="action-left">
+                    <button class="icon-btn claude-btn" onclick="document.getElementById('hidden-file-upload').click();"><i class="fa-solid fa-plus"></i></button>
+                    <input type="file" id="hidden-file-upload" style="display: none;" accept="image/*,.pdf,.doc">
+                </div>
+                <div class="action-right">
+                    
+                    <div class="custom-dropdown-container">
+                        <div class="custom-dropdown-btn" id="model-select-btn">
+                            <span id="model-selected-text">Kreaverse AI (Rekomendasi)</span> <i class="fa-solid fa-chevron-down" style="font-size: 0.7rem;"></i>
+                        </div>
+                        
+                        <!-- DAFTAR MODEL LENGKAP OPENROUTER -->
+                        <div class="custom-dropdown-menu hidden" id="model-dropdown-menu">
+                            <div class="dropdown-item" data-value="openrouter/free">
+                                <i class="fa-solid fa-bolt" style="font-size:14px; color:#d97757;"></i> Kreaverse AI (Rekomendasi)
+                            </div>
+                            <div class="menu-divider"></div>
+                            <div class="dropdown-item" data-value="meta-llama/llama-3.3-70b-instruct:free">
+                                <i class="fa-solid fa-brain" style="font-size:14px;"></i> Llama 3.3 70B
+                            </div>
+                            <div class="dropdown-item" data-value="qwen/qwen3-coder:free">
+                                <i class="fa-solid fa-code" style="font-size:14px;"></i> Qwen 3 Coder
+                            </div>
+                            <div class="dropdown-item" data-value="google/gemma-4-31b-it:free">
+                                <i class="fa-brands fa-google" style="font-size:14px;"></i> Gemma 4 31B
+                            </div>
+                            <div class="menu-divider"></div>
+                            <div class="dropdown-item" data-value="nvidia/nemotron-3-super-120b-a12b:free">
+                                <i class="fa-solid fa-microchip" style="font-size:14px;"></i> NVIDIA Nemotron 3
+                            </div>
+                            <div class="dropdown-item" data-value="openai/gpt-oss-120b:free">
+                                <i class="fa-solid fa-robot" style="font-size:14px;"></i> OpenAI GPT OSS
+                            </div>
+                            <div class="dropdown-item" data-value="minimax/minimax-m2.5:free">
+                                <i class="fa-solid fa-layer-group" style="font-size:14px;"></i> Minimax M2.5
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="extra-icons" style="display:flex; align-items:center; gap:5px;">
+                        <button class="icon-btn claude-btn" onclick="showToastError('Sistem Suara (Mic) belum dikonfigurasi.')"><i class="fa-solid fa-microphone"></i></button>
+                        <button class="icon-btn claude-btn"><i class="fa-solid fa-chart-simple"></i></button>
+                    </div>
+                    
+                    <button id="send-btn" class="send-btn hidden"><i class="fa-solid fa-arrow-up"></i></button>
+                </div>
+            </div>
+        </div>
+        <div class="warning-text">Kreaverse adalah AI dan bisa keliru. Harap periksa kembali respons.</div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const chatInput = document.getElementById('chat-input');
+            const sendBtn = document.getElementById('send-btn');
+            const extraIcons = document.getElementById('extra-icons');
+            const chatBox = document.getElementById('chat-box');
+            const chatContainer = document.getElementById('chat-container');
+            const fileInput = document.getElementById('hidden-file-upload');
+            const previewContainer = document.getElementById('file-preview-container');
+            
+            // TOMBOL SCROLL MELAYANG
+            const floatBtns = document.getElementById('floating-scroll-btns');
+            let scrollTimeout;
+
+            chatContainer.addEventListener('scroll', () => {
+                if (chatContainer.scrollTop > 100) {
+                    floatBtns.classList.add('visible');
+                    clearTimeout(scrollTimeout);
+                    scrollTimeout = setTimeout(() => { floatBtns.classList.remove('visible'); }, 2000);
+                } else {
+                    floatBtns.classList.remove('visible');
+                }
+            });
+
+            document.getElementById('btn-scroll-top').addEventListener('click', () => chatContainer.scrollTo({ top: 0, behavior: 'smooth' }));
+            document.getElementById('btn-scroll-bottom').addEventListener('click', () => scrollKeBawah(true));
+
+            function scrollKeBawah(smooth = true) {
+                setTimeout(() => chatContainer.scrollTo({ top: chatContainer.scrollHeight, behavior: smooth ? 'smooth' : 'auto' }), 50);
+            }
+
+            // LOGIKA PENGECEKAN KONEKSI ASLI KE API KETIKA WEB DIBUKA
+            async function cekKoneksiAsli() {
+                try {
+                    const res = await fetch('/api/chat', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ prompt: "ping", model: "openrouter/free" })
+                    });
+                    if(res.ok) {
+                        document.getElementById('led-indicator').className = 'led-indicator led-green';
+                        document.getElementById('api-text').innerText = 'Tersambung';
+                    } else {
+                        document.getElementById('led-indicator').className = 'led-indicator led-red';
+                        document.getElementById('api-text').innerText = 'Error API';
+                    }
+                } catch(e) {
+                    document.getElementById('led-indicator').className = 'led-indicator led-red';
+                    document.getElementById('api-text').innerText = 'Offline';
+                }
+            }
+            cekKoneksiAsli();
+
+            // LOGIKA PENYIMPANAN HISTORI (PERBAIKAN MEMORY LEAK)
+            let chatHistori = JSON.parse(localStorage.getItem('kreaverse_chats')) || [];
+            let currentChatId = null; 
+
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebar-overlay');
+            document.getElementById('open-sidebar').addEventListener('click', () => { sidebar.classList.add('active'); overlay.classList.add('active'); renderHistori(); });
+            document.getElementById('close-sidebar').addEventListener('click', closeSidebar);
+            overlay.addEventListener('click', closeSidebar);
+            function closeSidebar() { sidebar.classList.remove('active'); overlay.classList.remove('active'); }
+
+            function renderHistori() {
+                const list = document.getElementById('history-list');
+                list.innerHTML = '';
+                if(chatHistori.length === 0) { list.innerHTML = '<span style="color:#aaa; font-size:0.85rem;">Belum ada histori.</span>'; return; }
+                
+                let sortedHistori = [...chatHistori].sort((a, b) => {
+                    if (b.isPinned !== a.isPinned) return b.isPinned - a.isPinned;
+                    return b.id - a.id;
+                });
+
+                sortedHistori.forEach((chat) => {
+                    const item = document.createElement('div');
+                    item.className = 'history-item';
+                    item.innerHTML = `
+                        <div class="history-title" onclick="muatChat(${chat.id})">${chat.title}</div>
+                        <div class="history-actions">
+                            <button class="btn-pin ${chat.isPinned ? 'pinned' : ''}" onclick="pinChat(${chat.id})" title="Pin"><i class="fa-solid fa-thumbtack"></i></button>
+                            <button onclick="hapusSatuHistori(${chat.id})" title="Hapus"><i class="fa-solid fa-trash-can"></i></button>
+                        </div>
+                    `;
+                    list.appendChild(item);
+                });
+            }
+
+            window.pinChat = function(id) { 
+                const chat = chatHistori.find(c => c.id === id);
+                if(chat) { chat.isPinned = !chat.isPinned; simpanHistori(); renderHistori(); }
+            }
+            window.hapusSatuHistori = function(id) { 
+                chatHistori = chatHistori.filter(c => c.id !== id);
+                simpanHistori(); renderHistori(); 
+                if(currentChatId === id) mulaiChatBaru(); 
+            }
+            window.hapusSemuaHistori = function() {
+                Swal.fire({ title: 'Hapus Semua?', text: "Semua histori akan hilang permanen", icon: 'warning', showCancelButton: true, confirmButtonColor: '#e74c3c', confirmButtonText: 'Ya, Hapus' }).then((result) => {
+                    if (result.isConfirmed) { chatHistori = []; simpanHistori(); renderHistori(); mulaiChatBaru(); }
+                });
+            }
+            window.simpanHistori = function() { 
+                try {
+                    localStorage.setItem('kreaverse_chats', JSON.stringify(chatHistori)); 
+                } catch (e) {
+                    if (e.name === 'QuotaExceededError') {
+                        showToastError("Penyimpanan browser penuh. Histori lama akan dihapus otomatis.");
+                        // Hapus 5 chat terlama yang tidak di-pin
+                        const unpinned = chatHistori.filter(c => !c.isPinned).sort((a,b) => a.id - b.id);
+                        if(unpinned.length > 5) {
+                            const idsToRemove = unpinned.slice(0, 5).map(c => c.id);
+                            chatHistori = chatHistori.filter(c => !idsToRemove.includes(c.id));
+                            localStorage.setItem('kreaverse_chats', JSON.stringify(chatHistori));
+                        }
+                    }
+                }
+            }
+            
+            window.muatChat = function(id) { 
+                const chat = chatHistori.find(c => c.id === id);
+                if(chat) {
+                    currentChatId = chat.id;
+                    chatBox.innerHTML = `<div class="message ai-message"><div class="msg-content"><span class="text-content">Halo! Ada yang bisa saya bantu hari ini? ð</span></div></div>`;
+                    chat.messages.forEach(msg => { 
+                        // Jika ada flag hasImage, tampilkan placeholder
+                        const imgDisplay = msg.hasImage ? "https://placehold.co/200x150/f2f1eb/666?text=Gambar+Terlampir" : null;
+                        appendMessageToDOM(msg.text, msg.sender, imgDisplay, false); 
+                    });
+                }
+                closeSidebar();
+                scrollKeBawah(false);
+            }
+
+            window.mulaiChatBaru = function() {
+                currentChatId = null;
+                chatBox.innerHTML = `<div class="message ai-message"><div class="msg-content"><span class="text-content">Halo! Ada yang bisa saya bantu hari ini? ð</span></div></div>`;
+                closeSidebar();
+            }
+
+            // PERBAIKAN: Jangan simpan base64 ke localStorage
+            function saveMessageToMemory(text, sender, imageUrl) {
+                if (!currentChatId) {
+                    currentChatId = Date.now();
+                    const title = text ? text.substring(0, 20) + '...' : 'Gambar Terkirim';
+                    chatHistori.unshift({ id: currentChatId, title: title, isPinned: false, messages: [] });
+                }
+                const chatObj = chatHistori.find(c => c.id === currentChatId);
+                if (chatObj) { 
+                    // Hanya simpan boolean flag untuk gambar agar tidak QuotaExceeded
+                    chatObj.messages.push({ text: text, sender: sender, hasImage: !!imageUrl }); 
+                    simpanHistori(); 
+                }
+            }
+
+            let selectedFileBase64 = null; 
+            fileInput.addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if (!file) return;
+                
+                // Validasi ukuran file (Maks 2MB untuk base64 agar tidak berat)
+                if (file.size > 2 * 1024 * 1024) {
+                    showToastError("Ukuran file terlalu besar. Maksimal 2MB.");
+                    this.value = '';
+                    return;
+                }
+
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    selectedFileBase64 = event.target.result;
+                    previewContainer.style.display = 'flex';
+                    previewContainer.innerHTML = `<div class="preview-item"><img src="${selectedFileBase64}" alt="preview"><button class="remove-file-btn" onclick="hapusFile()"><i class="fa-solid fa-xmark"></i></button></div>`;
+                    sendBtn.classList.remove('hidden'); extraIcons.style.display = 'none';
+                };
+                reader.readAsDataURL(file);
+            });
+
+            window.hapusFile = function() {
+                selectedFileBase64 = null; fileInput.value = ''; previewContainer.style.display = 'none'; previewContainer.innerHTML = '';
+                if(chatInput.value.trim() === '') { sendBtn.classList.add('hidden'); extraIcons.style.display = 'flex'; }
+            };
+
+            const dropdownBtn = document.getElementById('model-select-btn');
+            const dropdownMenu = document.getElementById('model-dropdown-menu');
+            let currentModel = 'openrouter/free';
+
+            dropdownBtn.addEventListener('click', (e) => { e.stopPropagation(); dropdownMenu.classList.toggle('hidden'); });
+            document.querySelectorAll('.dropdown-item').forEach(item => {
+                item.addEventListener('click', () => {
+                    currentModel = item.getAttribute('data-value');
+                    document.getElementById('model-selected-text').innerText = item.innerText.trim();
+                    dropdownMenu.classList.add('hidden');
+                });
+            });
+            document.addEventListener('click', (e) => { if (!dropdownBtn.contains(e.target)) dropdownMenu.classList.add('hidden'); });
+
+            chatInput.addEventListener('input', function() {
+                this.style.height = 'auto'; this.style.height = (this.scrollHeight) + 'px';
+                if(this.value.trim().length > 0 || selectedFileBase64) { sendBtn.classList.remove('hidden'); extraIcons.style.display = 'none'; } 
+                else { sendBtn.classList.add('hidden'); extraIcons.style.display = 'flex'; }
+            });
+            chatInput.addEventListener('keydown', (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); } });
+            sendBtn.addEventListener('click', sendMessage);
+
+            async function sendMessage() {
+                const prompt = chatInput.value.trim();
+                if (!prompt && !selectedFileBase64) return;
+
+                appendMessageToDOM(prompt, 'user', selectedFileBase64, true);
+                
+                chatInput.value = ''; chatInput.style.height = 'auto';
+                const imageToSend = selectedFileBase64; // Simpan referensi sebelum dihapus
+                hapusFile(); sendBtn.classList.add('hidden'); extraIcons.style.display = 'flex';
+                
+                const typingId = showTypingIndicator();
+
+                let currentHistory = [];
+                if (currentChatId) {
+                    const chatObj = chatHistori.find(c => c.id === currentChatId);
+                    if (chatObj) {
+                        // Jangan kirim base64 ke history API, cukup teksnya saja
+                        currentHistory = chatObj.messages.slice(-7, -1).map(m => ({ text: m.text, sender: m.sender }));
+                    }
+                }
+
+                try {
+                    const response = await fetch('/api/chat', {
+                        method: 'POST', headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ 
+                            prompt: prompt, 
+                            model: currentModel, 
+                            image: imageToSend,
+                            history: currentHistory
+                        })
+                    });
+                    const data = await response.json();
+                    removeElement(typingId);
+                    if (!response.ok) throw new Error(data.error || 'Server gagal memproses.');
+                    
+                    appendMessageToDOM(data.reply, 'ai', null, true);
+                } catch (error) {
+                    removeElement(typingId); showToastError(error.message);
+                }
+            }
+
+            function appendMessageToDOM(text, sender, imageUrl = null, saveToMemory = false) {
+                const div = document.createElement('div');
+                div.classList.add('message', sender === 'user' ? 'user-message' : 'ai-message');
+                
+                let contentString = '';
+                if(imageUrl) contentString += `<img src="${imageUrl}" style="max-width: 200px; border-radius: 8px; margin-bottom: 8px; display: block;">`;
+                if(text) contentString += `<span class="text-content">${text.replace(/\n/g, '<br>')}</span>`;
+
+                let actionsHTML = sender === 'ai' 
+                    ? `<div class="message-actions"><button class="action-copy" title="Salin"><i class="fa-regular fa-copy"></i></button></div>`
+                    : `<div class="message-actions" style="justify-content:flex-end;"><button class="action-edit" title="Edit Pesan"><i class="fa-solid fa-pen"></i></button><button class="action-copy" title="Salin"><i class="fa-regular fa-copy"></i></button></div>`;
+
+                div.innerHTML = `<div class="msg-content">${contentString}${actionsHTML}</div>`;
+                chatBox.appendChild(div);
+                
+                if(saveToMemory) saveMessageToMemory(text, sender, imageUrl);
+                scrollKeBawah();
+            }
+
+            function showTypingIndicator() {
+                const id = 'typing-' + Date.now();
+                const div = document.createElement('div'); div.classList.add('message', 'ai-message'); div.id = id;
+                div.innerHTML = `<div class="typing-indicator"><i class="fa-solid fa-certificate"></i></div>`;
+                chatBox.appendChild(div);
+                scrollKeBawah();
+                return id;
+            }
+
+            function removeElement(id) { const el = document.getElementById(id); if (el) el.remove(); }
+
+            chatBox.addEventListener('click', (e) => {
+                const btn = e.target.closest('button'); if (!btn) return;
+                const textSpan = btn.closest('.msg-content').querySelector('.text-content'); if(!textSpan) return;
+
+                if (btn.classList.contains('action-copy')) {
+                    const textToCopy = textSpan.innerText;
+                    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(textToCopy);
+                    else { const t = document.createElement("textarea"); t.value = textToCopy; document.body.appendChild(t); t.select(); document.execCommand("copy"); t.remove(); }
+                    btn.innerHTML = '<i class="fa-solid fa-check" style="color:#10a37f;"></i>'; setTimeout(() => btn.innerHTML = '<i class="fa-regular fa-copy"></i>', 2000);
+                }
+
+                if (btn.classList.contains('action-edit')) {
+                    chatInput.value = textSpan.innerText; chatInput.focus(); chatInput.style.height = 'auto'; chatInput.style.height = (chatInput.scrollHeight) + 'px';
+                    sendBtn.classList.remove('hidden'); extraIcons.style.display = 'none';
+                }
+            });
+        });
+
+        function showToastError(pesan) { Swal.fire({ toast: true, position: 'top', icon: 'error', title: pesan, showConfirmButton: false, timer: 3000, background: '#fff', color: '#e74c3c' }); }
+        
+        function tampilkanInfoAPI() { 
+            const status = document.getElementById('api-text').innerText;
+            if(status === 'Tersambung') {
+                Swal.fire({ toast: true, position: 'top', icon: 'success', title: 'Sistem Terhubung', text: 'Koneksi ke OpenRouter Berhasil!', showConfirmButton: false, timer: 3000 });
+            } else {
+                Swal.fire({ toast: true, position: 'top', icon: 'error', title: 'Sistem Terputus', text: 'Gagal terhubung. Cek API Key Anda.', showConfirmButton: false, timer: 3000 });
+            }
+        }
+    </script>
+</body>
+</html>
