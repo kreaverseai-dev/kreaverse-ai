@@ -1507,11 +1507,11 @@
             }
         });
 
-        // REAL SERVER KREAVERSE BLOB DL (Diperbarui: Hapus API Vercel Trigger penyebab error DEP0169, Timeout Anti-Macet, Streaming File Penuh)
+        // REAL SERVER KREAVERSE BLOB DL (Diperbarui: Anti-Redirect Mutlak, Hanya Mengunduh 100% di Dalam Web Kreaverse)
         realDownloadBtn.addEventListener('click', async () => {
             if (!resolvedMediaUrl) return;
             
-            // PENCATAT LOG FIREBASE SAJA (Menghapus fetch ke /api/ytdl secara total yang membuat backend Vercel Anda error / DEP0169)
+            // PENCATAT LOG FIREBASE SAJA
             const catatLogAdmin = (tipe, pesanUtama, detailError = "") => {
                 const now = new Date();
                 const pad = (n, w = 2) => String(n).padStart(w, '0');
@@ -1559,10 +1559,10 @@
                 else if (targetExt === 'm4a') forcedMime = 'audio/mp4';
                 else if (targetExt === 'webm') forcedMime = 'video/webm';
 
-                // 2. STRATEGI FETCH API STREAM (Telah terbukti ampuh menarik file secara bertahap agar tidak freeze)
+                // 2. STRATEGI FETCH API STREAM (Hanya mengambil data di balik layar tanpa buka tab baru)
                 const encodedUrl = encodeURIComponent(resolvedMediaUrl);
                 const fetchStrategies = [
-                    resolvedMediaUrl, // Prioritas ke URL direct dari backend agar lebih cepat
+                    resolvedMediaUrl,
                     "https://corsproxy.io/?" + encodedUrl,
                     "https://api.allorigins.win/raw?url=" + encodedUrl
                 ];
@@ -1573,9 +1573,8 @@
                 for (const url of fetchStrategies) {
                     try {
                         speedEl.innerText = 'Uji rute server...';
-                        // Menggunakan AbortController agar jika suatu rute mati, tidak stuck selamanya di "Menguji Rute"
                         const controller = new AbortController();
-                        const timeoutId = setTimeout(() => controller.abort(), 8000); // Batas koneksi 8 detik per rute
+                        const timeoutId = setTimeout(() => controller.abort(), 8000); 
                         
                         const res = await fetch(url, { method: 'GET', mode: 'cors', signal: controller.signal });
                         clearTimeout(timeoutId);
@@ -1593,7 +1592,7 @@
 
                 if (!finalResponse) throw new Error('ALL_PROXIES_BLOCKED');
 
-                // 3. SISTEM STREAMING FETCH (Progress Bar yang sebenarnya tanpa membebani browser)
+                // 3. SISTEM STREAMING FETCH (Progress Bar Asli, Data Jalan Di Web Anda)
                 const contentLength = finalResponse.headers.get('content-length');
                 const total = contentLength ? parseInt(contentLength, 10) : 0;
                 let loaded = 0;
@@ -1609,7 +1608,7 @@
                     loaded += value.length;
 
                     const now = Date.now();
-                    if (now - lastTime > 350) { // Update interval
+                    if (now - lastTime > 350) { 
                         const diffTime = (now - lastTime) / 1000;
                         const speed = (loaded - lastLoaded) / diffTime; 
                         const speedMB = (speed / (1024 * 1024)).toFixed(1);
@@ -1621,7 +1620,6 @@
                             fill.style.width = percent + '%';
                             text.innerText = `${percent}% (${loadedMB}MB / ${totalMB}MB)`;
                         } else {
-                            // Jika server asal tidak mengirim total size, gunakan visual progress fallback
                             fill.style.width = '80%';
                             text.innerText = `${loadedMB} MB`;
                         }
@@ -1659,41 +1657,20 @@
             } catch(e) {
                 console.error(e);
                 text.innerText = 'Gagal Ekstraksi'; 
-                speedEl.innerText = 'Dialihkan ke Mode Unduhan HP...';
-                fill.style.background = '#F59E0B'; // Oranye Warning
+                speedEl.innerText = 'Server asal menolak akses internal.';
+                fill.style.background = '#EF4444'; // Merah (Tanda Error)
                 
-                catatLogAdmin('error', 'Semua metode Blob/Stream Gagal. Dialihkan ke mode Browser Native HP.', e.message);
+                catatLogAdmin('error', 'Semua metode Stream diblokir CORS. Proses dibatalkan untuk MENCEGAH REDIRECT.', e.message);
                 
-                // 5. FALLBACK INSTAN: Langsung oper tugas ke browser agar pengguna dapat filenya sekarang juga
+                // 5. MENGHAPUS TOTAL FALLBACK YANG MENYEBABKAN REDIRECT!
+                // Jika server asal benar-benar memblokir CORS proxy kita, 
+                // skrip TIDAK AKAN melempar (redirect) pengguna ke tab baru / sf-converter.
+                // Proses hanya akan berhenti dengan memunculkan notifikasi merah di UI Kreaverse.
                 setTimeout(() => {
-                    let finalName = resolvedFileName;
-                    if (!finalName.toLowerCase().startsWith('kreaverse ai - ')) {
-                        finalName = `Kreaverse AI - ${finalName.replace(/^(Kreaverse AI - |Kreaverse AI|kreaverse)/i, '').trim()}`;
-                    }
-                    
-                    let finalDirectUrl = resolvedMediaUrl;
-                    try {
-                        const urlObj = new URL(resolvedMediaUrl);
-                        urlObj.searchParams.set('title', finalName.replace(/\.[^/.]+$/, "")); 
-                        urlObj.searchParams.set('filename', finalName);
-                        urlObj.searchParams.set('dl', '1');
-                        finalDirectUrl = urlObj.toString();
-                    } catch(err) {}
-
-                    const a = document.createElement('a');
-                    a.style.display = 'none';
-                    a.href = finalDirectUrl;
-                    a.download = finalName;
-                    a.target = '_blank';
-                    a.rel = 'noopener noreferrer';
-                    document.body.appendChild(a);
-                    a.click();
-                    document.body.removeChild(a);
-
                     container.classList.add('hidden');
-                    fill.style.background = 'linear-gradient(90deg, #10B981, #34D399)'; 
-                    showIphoneNotif('Download Terbuka', `Silakan periksa bar notifikasi Anda`, 'fa-cloud-arrow-down');
-                }, 1500);
+                    fill.style.background = 'linear-gradient(90deg, #10B981, #34D399)'; // Reset warna untuk percobaan selanjutnya
+                    showIphoneNotif('Akses Ditolak', 'Gunakan tombol biru "Simpan ke Galeri" di atas', 'fa-circle-xmark');
+                }, 4500);
             }
         });
 
