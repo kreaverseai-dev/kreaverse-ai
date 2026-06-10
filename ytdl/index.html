@@ -629,7 +629,8 @@
             setTimeout(() => { toast.classList.remove('show'); setTimeout(() => toast.remove(), 400); }, 4000);
         };
 
-        window.getPlatformIconAndColor = function(url) {
+        // Dideklarasikan di scope modul agar dapat dipanggil dengan aman tanpa ReferenceError
+        function getPlatformIconAndColor(url) {
             const low = url.toLowerCase();
             if (low.includes('youtube.com') || low.includes('youtu.be') || low.includes('googlevideo.com')) {
                 return { icon: 'fa-brands fa-youtube', color: '#FF0000' };
@@ -645,7 +646,8 @@
                 return { icon: 'fa-brands fa-spotify', color: '#1DB954' };
             }
             return { icon: 'fa-solid fa-globe', color: 'var(--accent-color)' };
-        };
+        }
+        window.getPlatformIconAndColor = getPlatformIconAndColor;
 
         const DEFAULT_CONFIG = {
             baseUrls: {
@@ -1539,9 +1541,15 @@
             const CLOUDFLARE_WORKER_PROXY = "https://kreaverse-proxy.kreaverse-ai.workers.dev";
             
             if (isYouTube) {
-                // Untuk YouTube, kita lewatkan ke Cloudflare Proxy dengan menyertakan filename agar langsung terunduh secara offline & nama filenya premium
+                // Untuk YouTube, bypass proxy agar terhindar dari IP-lock dan ERR_INVALID_RESPONSE. 
+                // Kita tambahkan parameter &title secara native ke googlevideo agar YouTube mengirim Content-Disposition attachment otomatis ke browser Anda.
                 setTimeout(() => {
-                    window.location.href = `${CLOUDFLARE_WORKER_PROXY}?targetUrl=${encodeURIComponent(resolvedMediaUrl)}&filename=${encodeURIComponent(resolvedFileName)}`;
+                    const cleanTitleForYt = resolvedFileName.replace(/[^a-zA-Z0-9_\-\.]/g, '_');
+                    let ytDlUrl = resolvedMediaUrl;
+                    if (!ytDlUrl.includes('&title=')) {
+                        ytDlUrl += `&title=${encodeURIComponent(cleanTitleForYt)}`;
+                    }
+                    window.location.href = ytDlUrl;
                 }, 800);
                 return;
             }
@@ -1588,11 +1596,12 @@
             const statusIcon = document.getElementById('real-download-status-icon');
             const iconWrapper = document.getElementById('real-download-platform-icon');
             
-            // Deteksi platform dinamis untuk logo asli berwarna
+            // Deteksi platform dinamis untuk logo asli berwarna secara aman dari ReferenceError
             const platInfo = getPlatformIconAndColor(urlInput.value || resolvedMediaUrl);
             iconWrapper.innerHTML = `<i class="${platInfo.icon}" style="color: ${platInfo.color}; transition: all 0.3s;"></i>`;
             
             container.style.display = 'block';
+            container.classList.add('active');
             fill.style.width = '0%'; 
             speedEl.innerHTML = '<i class="fa-solid fa-bolt" style="color:#F59E0B; margin-right:4px;"></i> Menghubungkan...';
             textEl.innerText = '0% (0.0 MB / -- MB)';
@@ -1603,7 +1612,7 @@
                 let response;
                 let success = false;
                 
-                // Coba ambil dari cloudflare proxy terlebih dahulu karena tercepat dan mendukung payload besar
+                // Menggunakan banderol unmetered Cloudflare Worker Proxy untuk memproses biner data chunks
                 const CLOUDFLARE_WORKER_PROXY = "https://kreaverse-proxy.kreaverse-ai.workers.dev";
                 const proxyUrl = `${CLOUDFLARE_WORKER_PROXY}?targetUrl=${encodeURIComponent(resolvedMediaUrl)}&filename=${encodeURIComponent(resolvedFileName)}`;
                 
@@ -1725,7 +1734,7 @@
                 document.body.removeChild(a);
                 
                 statusIcon.innerHTML = '<i class="fa-solid fa-circle-check" style="color:var(--success-color);"></i>';
-                setTimeout(() => { container.style.display = 'none'; }, 3000);
+                setTimeout(() => { container.style.display = 'none'; container.classList.remove('active'); }, 3000);
                 showIphoneNotif('Unduhan Selesai', 'File telah sukses tersimpan di HP Anda.', 'fa-server');
                 
             } catch(e) {
@@ -1733,6 +1742,7 @@
                 speedEl.innerText = 'Rute alternatif...';
                 setTimeout(() => {
                     container.style.display = 'none';
+                    container.classList.remove('active');
                     window.location.href = resolvedMediaUrl; 
                 }, 2000);
             }
