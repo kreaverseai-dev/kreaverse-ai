@@ -620,6 +620,8 @@
         let currentPlatform = 'auto'; 
         let resolvedMediaUrl = ""; 
         let resolvedFileName = "";
+        let resolvedFileExt = ""; 
+        let resolvedFileSizeString = ""; 
         let processTimer = null;
         let processSeconds = 0;
         let globalScannedOptions = []; 
@@ -1114,8 +1116,10 @@
         window.tampilkanHasilFinal = (url, title, duration, provider, type, quality, size, base64Thumb, ext) => {
             closeSheet('sheet-select-media');
             resolvedMediaUrl = url;
+            resolvedFileSizeString = size || "";
             const safeTitle = (title || "Media").replace(/[\\/:*?"<>|]/g, '');
             const finalExt = ext ? ext.toLowerCase() : (type === 'audio' ? 'mp3' : (type === 'thumb' ? 'jpg' : 'mp4'));
+            resolvedFileExt = finalExt;
             resolvedFileName = `${safeTitle}.${finalExt}`;
 
             let decodedThumb = '';
@@ -1476,16 +1480,63 @@
             
             try {
                 let response;
+                let success = false;
+                
                 try {
                     response = await fetch(resolvedMediaUrl);
-                    if (!response.ok) throw new Error('Gagal');
+                    if (response.ok) success = true;
                 } catch (corsErr) {
-                    response = await fetch("/api/ytdl?targetUrl=" + encodeURIComponent(resolvedMediaUrl));
-                    if (!response.ok) throw new Error('Gagal proxy');
+                    console.log("Direct fetch blocked by CORS, initiating proxy chain...");
+                }
+                
+                if (!success) {
+                    const proxyChain = [
+                        url => "/api/ytdl?targetUrl=" + encodeURIComponent(url),
+                        url => "https://api.allorigins.win/raw?url=" + encodeURIComponent(url),
+                        url => "https://corsproxy.io/?" + encodeURIComponent(url)
+                    ];
+                    
+                    for (let i = 0; i < proxyChain.length; i++) {
+                        try {
+                            const proxyUrl = proxyChain[i](resolvedMediaUrl);
+                            response = await fetch(proxyUrl);
+                            if (response.ok) {
+                                success = true;
+                                break;
+                            }
+                        } catch (err) {
+                            console.warn(`Proxy ${i} failed, trying next...`);
+                        }
+                    }
+                }
+                
+                if (!success || !response) {
+                    throw new Error("Gagal mengunduh melalui semua proxy server.");
+                }
+
+                if (!response.body) {
+                    throw new Error("ReadableStream tidak didukung oleh browser Anda.");
+                }
+                
+                let parsedTotalSize = 0;
+                if (resolvedFileSizeString) {
+                    const sizeStr = resolvedFileSizeString.toLowerCase().trim();
+                    const num = parseFloat(sizeStr);
+                    if (!isNaN(num)) {
+                        if (sizeStr.includes('gb') || sizeStr.includes('g')) {
+                            parsedTotalSize = num * 1024 * 1024 * 1024;
+                        } else if (sizeStr.includes('mb') || sizeStr.includes('m')) {
+                            parsedTotalSize = num * 1024 * 1024;
+                        } else if (sizeStr.includes('kb') || sizeStr.includes('k')) {
+                            parsedTotalSize = num * 1024;
+                        } else {
+                            parsedTotalSize = num;
+                        }
+                    }
                 }
                 
                 const contentLength = response.headers.get('content-length');
-                const total = contentLength ? parseInt(contentLength, 10) : 0;
+                const total = (contentLength && parseInt(contentLength, 10) > 0) ? parseInt(contentLength, 10) : parsedTotalSize;
                 let loaded = 0;
                 
                 const reader = response.body.getReader();
@@ -1503,20 +1554,30 @@
                     if (now - lastTime > 500) { 
                         const diffTime = (now - lastTime) / 1000;
                         const diffLoaded = loaded - lastLoaded;
-                        const speed = diffLoaded / diffTime; 
+                        const speed = diffTime > 0 ? diffLoaded / diffTime : 0; 
                         const speedMB = (speed / (1024*1024)).toFixed(1);
                         
-                        let percent = total ? Math.round((loaded / total) * 100) : 'Memuat...';
-                        fill.style.width = (total ? percent : 100) + '%';
-                        text.innerText = total ? percent + '%' : (loaded / (1024*1024)).toFixed(1) + ' MB';
+                        let percent = total > 0 ? Math.round((loaded / total) * 100) : 0;
+                        if (percent > 100) percent = 100;
+                        fill.style.width = (percent || 100) + '%';
+                        text.innerText = total > 0 ? percent + '%' : (loaded / (1024*1024)).toFixed(1) + ' MB';
                         speedEl.innerText = speedMB + ' MB/s';
                         
                         lastTime = now; lastLoaded = loaded;
                     }
                 }
                 
+                let mimeType = 'application/octet-stream';
+                const extLower = (resolvedFileExt || '').toLowerCase();
+                if (extLower === 'mp3') mimeType = 'audio/mpeg';
+                else if (extLower === 'mp4') mimeType = 'video/mp4';
+                else if (extLower === 'm4a') mimeType = 'audio/mp4';
+                else if (extLower === 'webm') mimeType = 'video/webm';
+                else if (extLower === 'jpg' || extLower === 'jpeg') mimeType = 'image/jpeg';
+                else if (extLower === 'png') mimeType = 'image/png';
+
                 text.innerText = '100%'; speedEl.innerText = 'Menyimpan...';
-                const blob = new Blob(chunks, { type: 'application/octet-stream' });
+                const blob = new Blob(chunks, { type: mimeType });
                 const objUrl = URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 a.href = objUrl; a.download = resolvedFileName || 'download.mp4';
@@ -1530,7 +1591,7 @@
                 text.innerText = 'Rute alternatif...'; speedEl.innerText = 'Mengalihkan ke Browser...';
                 setTimeout(() => {
                     container.classList.add('hidden');
-                    window.location.href = resolvedMediaUrl; // Paksa download di HP
+                    window.location.href = resolvedMediaUrl; 
                 }, 2000);
             }
         });
