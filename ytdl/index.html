@@ -1478,16 +1478,6 @@
         directDownloadLink.addEventListener('click', async () => {
             if (!resolvedMediaUrl) return;
             
-            const isYouTube = resolvedMediaUrl.includes('googlevideo.com') || resolvedMediaUrl.includes('youtube.com') || resolvedMediaUrl.includes('youtu.be');
-            
-            if (isYouTube) {
-                showIphoneNotif('Unduhan YouTube Aktif', 'Mengunduh langsung dengan kecepatan maksimum jaringan Anda...', 'fa-bolt');
-                setTimeout(() => {
-                    window.location.href = resolvedMediaUrl;
-                }, 800);
-                return;
-            }
-
             showIphoneNotif('Menyiapkan Berkas...', 'Mengamankan jalur unduhan ke perangkat Anda.', 'fa-cloud-arrow-down');
             
             if (currentFormat === 'thumb') {
