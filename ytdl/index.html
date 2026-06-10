@@ -1208,10 +1208,10 @@
             resolvedMediaUrl = url;
             resolvedFileSizeString = size || "";
             
-            // Saring teks "Kreaverse AI" agar tidak ganda di nama file
+            // Saring teks "Kreaverse AI" & "Kreavese AI" agar tidak ganda di nama file
             let cleanTitle = title || "Media";
-            cleanTitle = cleanTitle.replace(/^(Kreaverse AI\s*-\s*)+/gi, '');
-            cleanTitle = cleanTitle.replace(/\s*-\s*Kreaverse AI$/gi, '');
+            cleanTitle = cleanTitle.replace(/^((Kreaverse|Kreavese)\s*AI\s*-\s*)+/gi, '');
+            cleanTitle = cleanTitle.replace(/\s*-\s*(Kreaverse|Kreavese)\s*AI$/gi, '');
             cleanTitle = cleanTitle.trim();
 
             const safeTitle = cleanTitle.replace(/[\\/:*?"<>|]/g, '');
@@ -1535,17 +1535,9 @@
         directDownloadLink.addEventListener('click', () => {
             if (!resolvedMediaUrl) return;
             
-            const isYouTube = resolvedMediaUrl.includes('googlevideo.com') || resolvedMediaUrl.includes('youtube.com') || resolvedMediaUrl.includes('youtu.be');
-            
-            if (isYouTube) {
-                showIphoneNotif('Unduhan YouTube Aktif', 'Memproses unduhan langsung ke perangkat Anda...', 'fa-bolt');
-                // Alihkan ke realDownloadBtn agar mengunduh langsung lewat client-side XHR dengan bar kemajuan dinamis (Anti-Banned IP & Anti-Layar Hitam)
-                realDownloadBtn.click();
-                return;
-            }
-            
             showIphoneNotif('Menyiapkan Berkas...', 'Mengamankan jalur unduhan ke perangkat Anda.', 'fa-cloud-arrow-down');
-            // Untuk non-YouTube, gunakan Vercel Proxy yang menyertakan Content-Disposition attachment untuk memaksa download file asli
+            
+            // Gunakan Vercel Edge Proxy unbuffered untuk memaksa download file asli dan nama kustom (Anti-Redirect Layar Hitam & Tanpa Batas Ukuran)
             const proxyUrl = `/api/ytdl?targetUrl=${encodeURIComponent(resolvedMediaUrl)}&filename=${encodeURIComponent(resolvedFileName)}`;
             
             setTimeout(() => {
@@ -1568,7 +1560,7 @@
             const statusIcon = document.getElementById('real-download-status-icon');
             const iconWrapper = document.getElementById('real-download-platform-icon');
             
-            // Deteksi platform dinamis untuk logo asli berwarna secara aman dari ReferenceError
+            // Deteksi platform dinamis untuk logo asli berwarna secara aman
             const platInfo = getPlatformIconAndColor(urlInput.value || resolvedMediaUrl);
             iconWrapper.innerHTML = `<i class="${platInfo.icon}" style="color: ${platInfo.color}; transition: all 0.3s;"></i>`;
             
@@ -1580,22 +1572,46 @@
             titleEl.innerText = resolvedFileName;
             statusIcon.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin" style="color:var(--accent-color);"></i>';
             
-            const isYouTube = resolvedMediaUrl.includes('googlevideo.com') || resolvedMediaUrl.includes('youtube.com') || resolvedMediaUrl.includes('youtu.be');
-            
-            // RUTE HYBRID: Hubungkan langsung (direct client-fetch) untuk YouTube guna melewati blokir IP serverless,
-            // dan gunakan Vercel Proxy untuk non-YouTube guna melewati pembatasan CORS pada platform asal.
-            const fetchUrl = isYouTube ? resolvedMediaUrl : "/api/ytdl?targetUrl=" + encodeURIComponent(resolvedMediaUrl) + "&filename=" + encodeURIComponent(resolvedFileName);
+            // Menggunakan Vercel Edge Proxy untuk mengalirkan berkas unbuffered ke client secara stabil dengan bypass CORS
+            const proxyUrl = `/api/ytdl?targetUrl=${encodeURIComponent(resolvedMediaUrl)}&filename=${encodeURIComponent(resolvedFileName)}`;
 
             const xhr = new XMLHttpRequest();
-            xhr.open('GET', fetchUrl, true);
+            xhr.open('GET', proxyUrl, true);
             xhr.responseType = 'blob';
 
             let startTime = Date.now();
 
+            // Parser ukuran total berkas secara real-time dari hasil pemindaian
+            let totalBytesFallback = 0;
+            if (resolvedFileSizeString) {
+                const sizeStr = resolvedFileSizeString.toLowerCase().trim();
+                const num = parseFloat(sizeStr);
+                if (!isNaN(num)) {
+                    if (sizeStr.includes('gb') || sizeStr.includes('g')) {
+                        totalBytesFallback = num * 1024 * 1024 * 1024;
+                    } else if (sizeStr.includes('mb') || sizeStr.includes('m')) {
+                        totalBytesFallback = num * 1024 * 1024;
+                    } else if (sizeStr.includes('kb') || sizeStr.includes('k')) {
+                        totalBytesFallback = num * 1024;
+                    } else {
+                        totalBytesFallback = num;
+                    }
+                }
+            }
+
             xhr.onprogress = (event) => {
-                if (event.lengthComputable && event.total > 0) {
+                let total = event.total;
+                let lengthComputable = event.lengthComputable;
+                
+                if (!lengthComputable || total === 0) {
+                    if (totalBytesFallback > 0) {
+                        total = totalBytesFallback;
+                        lengthComputable = true;
+                    }
+                }
+
+                if (lengthComputable && total > 0) {
                     const loaded = event.loaded;
-                    const total = event.total;
                     const percent = Math.round((loaded / total) * 100);
                     
                     fill.style.width = percent + '%';
@@ -1645,7 +1661,7 @@
                     
                     const a = document.createElement('a');
                     a.href = objUrl; 
-                    a.download = resolvedFileName || 'download.mp4';
+                    a.download = resolvedFileName;
                     a.target = '_blank';
                     document.body.appendChild(a); 
                     a.click(); 
@@ -1676,13 +1692,7 @@
                 setTimeout(() => {
                     container.style.display = 'none';
                     container.classList.remove('active');
-                    // Penyelamat terakhir: arahkan langsung menggunakan query parameter title yang bersih dari karakter khusus
-                    const cleanTitleForYt = resolvedFileName.replace(/[^a-zA-Z0-9_\-\.]/g, '_');
-                    let ytDlUrl = resolvedMediaUrl;
-                    if (!ytDlUrl.includes('&title=')) {
-                        ytDlUrl += `&title=${encodeURIComponent(cleanTitleForYt)}`;
-                    }
-                    window.location.href = ytDlUrl;
+                    window.location.href = proxyUrl; 
                 }, 1500);
             }
 
