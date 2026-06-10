@@ -1478,6 +1478,18 @@
         directDownloadLink.addEventListener('click', async () => {
             if (!resolvedMediaUrl) return;
             
+            const isYouTube = resolvedMediaUrl.includes('googlevideo.com') || resolvedMediaUrl.includes('youtube.com') || resolvedMediaUrl.includes('youtu.be');
+            
+            if (isYouTube) {
+                showIphoneNotif('Unduhan YouTube Aktif', 'Mengunduh langsung dengan kecepatan maksimum di bar notifikasi HP Anda...', 'fa-bolt');
+                setTimeout(() => {
+                    // Gunakan parameter &title kustom untuk memaksa googlevideo mengirim Content-Disposition (mencegah redirect layar hitam)
+                    const cleanTitle = resolvedFileName.replace(/[^a-zA-Z0-9_\-\. ]/g, '').replace(/\s+/g, '_');
+                    window.location.href = `${resolvedMediaUrl}&title=${encodeURIComponent(cleanTitle)}`;
+                }, 800);
+                return;
+            }
+
             showIphoneNotif('Menyiapkan Berkas...', 'Mengamankan jalur unduhan ke perangkat Anda.', 'fa-cloud-arrow-down');
             
             if (currentFormat === 'thumb') {
