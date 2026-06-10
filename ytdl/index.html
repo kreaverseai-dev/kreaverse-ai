@@ -501,56 +501,6 @@
         </div>
     </section>
 
-    <!-- CARA KERJA & FITUR (Revisi) -->
-    <section class="section-container">
-        <h2 class="section-title">Cara Kerja</h2>
-        <div class="steps-grid">
-            <div class="step-card">
-                <div class="step-icon-wrapper"><i class="fa-regular fa-copy"></i></div>
-                <h3 class="step-title">1. Salin Tautan</h3>
-                <p class="step-desc">Buka aplikasi sosial media favorit Anda, cari video, musik, atau postingan, lalu salin tautannya.</p>
-            </div>
-            <div class="step-card">
-                <div class="step-icon-wrapper"><i class="fa-solid fa-paste"></i></div>
-                <h3 class="step-title">2. Tempel & Pilih</h3>
-                <p class="step-desc">Tempel tautan di atas, pilih format <strong style="color:var(--text-primary);">Video, Audio, atau KREAVERSE AI THUMBNAIL</strong>, lalu klik Unduh.</p>
-            </div>
-            <div class="step-card">
-                <div class="step-icon-wrapper"><i class="fa-solid fa-download"></i></div>
-                <h3 class="step-title">3. Simpan ke Galeri</h3>
-                <p class="step-desc">Tinjau hasilnya di pemutar media kami, lalu simpan file langsung ke galeri perangkat Anda tanpa rekayasa.</p>
-            </div>
-        </div>
-    </section>
-
-    <section class="features-bg">
-        <div class="section-container">
-            <h2 class="section-title">Fitur Unggulan</h2>
-            <div class="features-grid">
-                <div class="feature-card">
-                    <div class="feature-icon fi-1"><i class="fa-solid fa-bolt"></i></div>
-                    <h3 class="feature-title">Sangat Cepat</h3>
-                    <p class="feature-desc">Sistem Kreaverse otomatis mencari rute server tercepat untuk memproses unduhan Anda.</p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon fi-2"><i class="fa-solid fa-droplet-slash"></i></div>
-                    <h3 class="feature-title">Tanpa Watermark</h3>
-                    <p class="feature-desc">Unduh konten dari berbagai platform dalam kualitas asli tanpa logo yang mengganggu.</p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon fi-3"><i class="fa-solid fa-music"></i></div>
-                    <h3 class="feature-title">Ekstraksi Audio</h3>
-                    <p class="feature-desc">Ubah video musik favorit Anda menjadi format MP3 berkualitas tinggi dengan satu klik.</p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon fi-4"><i class="fa-solid fa-image"></i></div>
-                    <h3 class="feature-title">Kreaverse Thumbnail</h3>
-                    <p class="feature-desc">Tarik secara otomatis gambar sampul (thumbnail) eksklusif resolusi tinggi dari tautan yang Anda berikan.</p>
-                </div>
-            </div>
-        </div>
-    </section>
-
     <!-- FOOTER -->
     <footer class="footer">
         <div class="footer-logo">Kreaverse AI</div>
@@ -1579,6 +1529,9 @@
             const fallbackProxyUrl = `https://corsproxy.io/?${encodeURIComponent(resolvedMediaUrl)}`;
 
             let startTime = Date.now();
+            let visualPercent = 0;
+            let targetPercent = 0;
+            let progressInterval = null;
 
             // Parser ukuran total berkas secara real-time dari hasil pemindaian
             let totalBytesFallback = 0;
@@ -1598,6 +1551,27 @@
                 }
             }
 
+            // Loop interpolator untuk transisi animasi progress bar yang mulus (Bekerja sempurna saat cache instan)
+            progressInterval = setInterval(() => {
+                if (visualPercent < targetPercent) {
+                    visualPercent += Math.min(6, targetPercent - visualPercent);
+                } else if (visualPercent < 99 && targetPercent > 0) {
+                    visualPercent += 0.15;
+                }
+                
+                const displayPercent = Math.round(visualPercent);
+                fill.style.width = displayPercent + '%';
+                
+                if (totalBytesFallback > 0) {
+                    const loadedBytes = Math.round((displayPercent / 100) * totalBytesFallback);
+                    const loadedMB = (loadedBytes / (1024 * 1024)).toFixed(1);
+                    const totalMB = (totalBytesFallback / (1024 * 1024)).toFixed(1);
+                    textEl.innerText = `${displayPercent}% (${loadedMB} MB / ${totalMB} MB)`;
+                } else {
+                    textEl.innerText = `${displayPercent}%`;
+                }
+            }, 30);
+
             function startXhrDownload(url, isFallback = false) {
                 const xhr = new XMLHttpRequest();
                 xhr.open('GET', url, true);
@@ -1616,77 +1590,80 @@
 
                     if (lengthComputable && total > 0) {
                         const loaded = event.loaded;
-                        const percent = Math.min(100, Math.round((loaded / total) * 100));
-                        
-                        fill.style.width = percent + '%';
+                        targetPercent = Math.min(100, Math.round((loaded / total) * 100));
                         
                         const elapsed = (Date.now() - startTime) / 1000;
                         const speed = elapsed > 0 ? loaded / elapsed : 0;
                         const speedMB = (speed / (1024 * 1024)).toFixed(1);
-                        const loadedMB = (loaded / (1024 * 1024)).toFixed(1);
-                        const totalMB = (total / (1024 * 1024)).toFixed(1);
-                        
                         speedEl.innerHTML = `<i class="fa-solid fa-bolt" style="color:#F59E0B; margin-right:4px;"></i> ${speedMB} MB/s`;
-                        textEl.innerText = `${percent}% (${loadedMB} MB / ${totalMB} MB)`;
                     } else {
+                        targetPercent = 75;
                         const loaded = event.loaded;
                         const loadedMB = (loaded / (1024 * 1024)).toFixed(1);
                         const elapsed = (Date.now() - startTime) / 1000;
                         const speed = elapsed > 0 ? loaded / elapsed : 0;
                         const speedMB = (speed / (1024 * 1024)).toFixed(1);
-                        
-                        fill.style.width = '70%'; 
                         speedEl.innerHTML = `<i class="fa-solid fa-bolt" style="color:#F59E0B; margin-right:4px;"></i> ${speedMB} MB/s`;
-                        textEl.innerText = `Mengunduh... (${loadedMB} MB)`;
                     }
                 };
 
                 xhr.onload = () => {
                     if (xhr.status === 200) {
-                        const blob = xhr.response;
+                        targetPercent = 100;
                         
-                        let mimeType = 'application/octet-stream';
-                        const extLower = (resolvedFileExt || '').toLowerCase();
-                        if (extLower === 'mp3') mimeType = 'audio/mpeg';
-                        else if (extLower === 'mp4') mimeType = 'video/mp4';
-                        else if (extLower === 'm4a') mimeType = 'audio/mp4';
-                        else if (extLower === 'webm') mimeType = 'video/webm';
-                        else if (extLower === 'jpg' || extLower === 'jpeg') mimeType = 'image/jpeg';
-                        else if (extLower === 'png') mimeType = 'image/png';
+                        // Menunggu loop interpolator visual selesai mencapai 100% untuk kepuasan visual pengguna
+                        const checkFinish = setInterval(() => {
+                            if (visualPercent >= 100) {
+                                clearInterval(checkFinish);
+                                clearInterval(progressInterval);
+                                
+                                const blob = xhr.response;
+                                
+                                let mimeType = 'application/octet-stream';
+                                const extLower = (resolvedFileExt || '').toLowerCase();
+                                if (extLower === 'mp3') mimeType = 'audio/mpeg';
+                                else if (extLower === 'mp4') mimeType = 'video/mp4';
+                                else if (extLower === 'm4a') mimeType = 'audio/mp4';
+                                else if (extLower === 'webm') mimeType = 'video/webm';
+                                else if (extLower === 'jpg' || extLower === 'jpeg') mimeType = 'image/jpeg';
+                                else if (extLower === 'png') mimeType = 'image/png';
 
-                    const cleanBlob = new Blob([blob], { type: mimeType });
-                        
-                        if (window.activeObjectUrl) {
-                            URL.revokeObjectURL(window.activeObjectUrl);
-                        }
-                        
-                        const objUrl = URL.createObjectURL(cleanBlob);
-                        window.activeObjectUrl = objUrl;
-                        
-                        const a = document.createElement('a');
-                        a.href = objUrl; 
-                        a.download = resolvedFileName;
-                        a.target = '_blank';
-                        document.body.appendChild(a); 
-                        a.click(); 
-                        document.body.removeChild(a);
+                                const cleanBlob = new Blob([blob], { type: mimeType });
+                                
+                                if (window.activeObjectUrl) {
+                                    URL.revokeObjectURL(window.activeObjectUrl);
+                                }
+                                
+                                const objUrl = URL.createObjectURL(cleanBlob);
+                                window.activeObjectUrl = objUrl;
+                                
+                                const a = document.createElement('a');
+                                a.href = objUrl; 
+                                a.download = resolvedFileName;
+                                a.target = '_blank';
+                                document.body.appendChild(a); 
+                                a.click(); 
+                                document.body.removeChild(a);
 
-                        fill.style.width = '100%';
-                        speedEl.innerHTML = '<i class="fa-solid fa-check" style="color:var(--success-color); margin-right:4px;"></i> Selesai';
-                        textEl.innerText = '100% Berhasil Disimpan';
-                        statusIcon.innerHTML = '<i class="fa-solid fa-circle-check" style="color:var(--success-color);"></i>';
-                        
-                        setTimeout(() => { 
-                            container.style.display = 'none'; 
-                            container.classList.remove('active'); 
-                        }, 4000);
-                        
-                        showIphoneNotif('Unduhan Selesai', 'File telah sukses tersimpan di HP Anda.', 'fa-server');
+                                fill.style.width = '100%';
+                                speedEl.innerHTML = '<i class="fa-solid fa-check" style="color:var(--success-color); margin-right:4px;"></i> Selesai';
+                                textEl.innerText = '100% Berhasil Disimpan';
+                                statusIcon.innerHTML = '<i class="fa-solid fa-circle-check" style="color:var(--success-color);"></i>';
+                                
+                                setTimeout(() => { 
+                                    container.style.display = 'none'; 
+                                    container.classList.remove('active'); 
+                                }, 4000);
+                                
+                                showIphoneNotif('Unduhan Selesai', 'File telah sukses tersimpan di HP Anda.', 'fa-server');
+                            }
+                        }, 50);
                     } else {
                         if (!isFallback) {
                             console.warn("Main proxy returned non-200 status, trying fallback proxy...");
                             startXhrDownload(fallbackProxyUrl, true);
                         } else {
+                            clearInterval(progressInterval);
                             handleDownloadError();
                         }
                     }
@@ -1697,6 +1674,7 @@
                         console.warn("Main proxy request failed, trying fallback proxy...");
                         startXhrDownload(fallbackProxyUrl, true);
                     } else {
+                        clearInterval(progressInterval);
                         handleDownloadError();
                     }
                 };
