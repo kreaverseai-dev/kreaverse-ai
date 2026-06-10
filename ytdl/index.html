@@ -825,7 +825,8 @@
             customAudio.src = ""; customVideo.src = ""; activeMedia = null; isDualAudio = false;
             updatePlayPauseUI(false); progressFill.style.width = '0%';
             currentTimeEl.innerText = '0:00'; totalTimeEl.innerText = '0:00';
-            clearInterval(processTimer); document.getElementById('progress-container').classList.remove('active');
+            clearInterval(processTimer); 
+            document.getElementById('progress-container').style.display = 'none';
             document.getElementById('real-download-progress-container').classList.add('hidden');
             
             if (window.activeObjectUrl) {
@@ -976,22 +977,46 @@
 
         let simProgress = 0; let simInterval;
         function startSimulatedProgress() {
-            simProgress = 0; document.getElementById('progress-container').classList.add('active');
+            simProgress = 0; 
+            const container = document.getElementById('progress-container');
+            container.style.display = 'block';
+            
+            const titleEl = document.getElementById('progress-title');
+            const speedEl = document.getElementById('progress-speed');
+            const sizeEl = document.getElementById('progress-size');
+            const statusIcon = document.getElementById('progress-status-icon');
+            
+            if (titleEl) titleEl.innerText = "Memproses berkas... 0%";
+            if (speedEl) speedEl.innerHTML = '<i class="fa-solid fa-bolt" style="color: #F59E0B; margin-right: 4px;"></i> Menghubungkan...';
+            if (sizeEl) sizeEl.innerText = "Simulasi...";
+            if (statusIcon) statusIcon.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin" style="color: var(--accent-color);"></i>';
+            
             simInterval = setInterval(() => {
                 if (simProgress < 90) {
                     simProgress += Math.random() * 15; if (simProgress > 90) simProgress = 90;
-                    document.getElementById('progress-bar-fill').style.width = `${simProgress}%`;
-                    document.getElementById('progress-text').innerText = `Memproses... ${Math.floor(simProgress)}%`;
-                    document.getElementById('progress-speed').innerText = `${(Math.random() * 5 + 2).toFixed(1)} MB/s`;
-                    document.getElementById('progress-status-desc').innerText = "Mengunduh dari server Kreaverse...";
+                    const fillEl = document.getElementById('progress-bar-fill');
+                    if (fillEl) fillEl.style.width = `${simProgress}%`;
+                    if (titleEl) titleEl.innerText = `Memproses berkas... ${Math.floor(simProgress)}%`;
+                    if (speedEl) speedEl.innerHTML = `<i class="fa-solid fa-bolt" style="color: #F59E0B; margin-right: 4px;"></i> ${(Math.random() * 5 + 2).toFixed(1)} MB/s`;
                 }
             }, 500);
         }
 
         function completeProgress() {
-            clearInterval(simInterval); document.getElementById('progress-bar-fill').style.width = `100%`;
-            document.getElementById('progress-text').innerText = `Selesai 100%`;
-            setTimeout(() => { document.getElementById('progress-container').classList.remove('active'); }, 1000);
+            clearInterval(simInterval); 
+            const fillEl = document.getElementById('progress-bar-fill');
+            if (fillEl) fillEl.style.width = `100%`;
+            
+            const titleEl = document.getElementById('progress-title');
+            if (titleEl) titleEl.innerText = `Selesai 100%`;
+            
+            const speedEl = document.getElementById('progress-speed');
+            if (speedEl) speedEl.innerHTML = '<i class="fa-solid fa-check" style="color: var(--success-color); margin-right: 4px;"></i> Selesai';
+            
+            const statusIcon = document.getElementById('progress-status-icon');
+            if (statusIcon) statusIcon.innerHTML = '<i class="fa-solid fa-circle-check" style="color: var(--success-color);"></i>';
+            
+            setTimeout(() => { document.getElementById('progress-container').style.display = 'none'; }, 1000);
         }
 
         async function processDownload(mediaUrl) {
