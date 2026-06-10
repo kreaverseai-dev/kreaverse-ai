@@ -818,6 +818,11 @@
             clearInterval(processTimer); document.getElementById('progress-container').classList.remove('active');
             document.getElementById('real-download-progress-container').classList.add('hidden');
             
+            if (window.activeObjectUrl) {
+                URL.revokeObjectURL(window.activeObjectUrl);
+                window.activeObjectUrl = null;
+            }
+
             // PENGHAPUSAN ERROR LAMA SECARA BERSIH
             bufferingSpinner.classList.add('hidden'); 
             bufferingContent.innerHTML = '';
@@ -1578,11 +1583,21 @@
 
                 text.innerText = '100%'; speedEl.innerText = 'Menyimpan...';
                 const blob = new Blob(chunks, { type: mimeType });
+                
+                if (window.activeObjectUrl) {
+                    URL.revokeObjectURL(window.activeObjectUrl);
+                }
+                
                 const objUrl = URL.createObjectURL(blob);
+                window.activeObjectUrl = objUrl;
+                
                 const a = document.createElement('a');
-                a.href = objUrl; a.download = resolvedFileName || 'download.mp4';
-                document.body.appendChild(a); a.click(); document.body.removeChild(a);
-                setTimeout(() => URL.revokeObjectURL(objUrl), 10000);
+                a.href = objUrl; 
+                a.download = resolvedFileName || 'download.mp4';
+                document.body.appendChild(a); 
+                a.click(); 
+                document.body.removeChild(a);
+                
                 setTimeout(() => { container.classList.add('hidden'); }, 3000);
                 showIphoneNotif('Unduhan Selesai', 'File telah sukses tersimpan di HP Anda.', 'fa-server');
                 
