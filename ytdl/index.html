@@ -941,13 +941,8 @@
                 const fullUrl = `${baseUrl}${path}${separator}${encodeURIComponent(mediaUrl)}`;
                 try {
                     let response;
-                    try { 
-                        response = await fetch(fullUrl); 
-                    } catch (directErr) {
-                        // MENGHAPUS TOTAL /api/ytdl DARI SISTEM UNTUK MENGHINDARI ERROR VERCEL [DEP0169] url.parse()
-                        // Menggunakan proxy publik yang stabil untuk mengambil data JSON/Metadata media
-                        const encodedFullUrl = encodeURIComponent(fullUrl);
-                        const proxyUrl = "https://corsproxy.io/?" + encodedFullUrl;
+                    try { response = await fetch(fullUrl); } catch (directErr) {
+                        const proxyUrl = "/api/ytdl?targetUrl=" + encodeURIComponent(fullUrl);
                         response = await fetch(proxyUrl);
                     }
                     if (response.headers.get("content-type")?.includes("application/json")) {
@@ -1433,15 +1428,11 @@
             resetControlsTimer();
         });
 
-        // REVISI 2: DOWNLOAD DIRECT (CONVERT SECARA EKSTENSI / FORCE MIME TYPE & FILENAME)
+        // REVISI 2: DOWNLOAD DIRECT (WINDOW.LOCATION UNTUK PAKSA HP MENGUNDUH)
         directDownloadLink.addEventListener('click', async () => {
             if (!resolvedMediaUrl) return;
-            showIphoneNotif('Menyiapkan Berkas...', 'Memproses format & mengamankan jalur unduhan.', 'fa-cloud-arrow-down');
+            showIphoneNotif('Menyiapkan Berkas...', 'Mengamankan jalur unduhan ke perangkat Anda.', 'fa-cloud-arrow-down');
             
-            const originalText = directDownloadLink.innerHTML;
-            directDownloadLink.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Memproses...';
-            directDownloadLink.disabled = true;
-
             // JIKA THUMBNAIL, GUNAKAN FETCH LANGSUNG LALU JADIKAN BLOB LOCAL
             if (currentFormat === 'thumb') {
                 try {
@@ -1458,197 +1449,89 @@
                     document.body.removeChild(a);
                     
                     setTimeout(() => URL.revokeObjectURL(objUrl), 5000);
+                    return;
                 } catch(e) {
+                    // Fallback (Lewat tab baru HP)
                     window.open(resolvedMediaUrl, '_blank');
-                } finally {
-                    directDownloadLink.innerHTML = originalText;
-                    directDownloadLink.disabled = false;
+                    return;
                 }
-                return;
             }
 
-            // STANDAR MEDIA: Gunakan Fetch -> Blob untuk FORCE EKSTENSI (Convert SE) agar MP3/MP4 sesuai
-            try {
-                let response;
-                try {
-                    response = await fetch(resolvedMediaUrl);
-                    if (!response.ok) throw new Error('CORS');
-                } catch (err) {
-                    response = await fetch("/api/ytdl?targetUrl=" + encodeURIComponent(resolvedMediaUrl));
-                    if (!response.ok) throw new Error('Proxy Fail');
-                }
-
-                const blob = await response.blob();
-                
-                // MENGUBAH MIME TYPE AGAR SESUAI DENGAN EKSTENSI PILIHAN USER (CONVERT SE)
-                const targetExt = resolvedFileName.split('.').pop().toLowerCase();
-                let forcedMime = blob.type;
-                if (targetExt === 'mp3') forcedMime = 'audio/mpeg';
-                else if (targetExt === 'mp4') forcedMime = 'video/mp4';
-                else if (targetExt === 'm4a') forcedMime = 'audio/mp4';
-                else if (targetExt === 'webm') forcedMime = 'video/webm';
-                
-                const finalBlob = new Blob([blob], { type: forcedMime });
-                const objUrl = URL.createObjectURL(finalBlob);
-
-                const a = document.createElement('a');
-                a.href = objUrl;
-                a.download = resolvedFileName; // Memaksa nama file & ekstensi
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-
-                setTimeout(() => URL.revokeObjectURL(objUrl), 10000);
-                showIphoneNotif('Berhasil Disimpan!', `File diunduh sebagai ${targetExt.toUpperCase()}`, 'fa-circle-check');
-            } catch (error) {
-                // Fallback jika file terlalu besar dan memori penuh
-                showIphoneNotif('Mengalihkan...', 'File besar, mengunduh via browser sistem.', 'fa-server');
-                setTimeout(() => {
-                    window.location.href = resolvedMediaUrl;
-                }, 1000);
-            } finally {
-                directDownloadLink.innerHTML = originalText;
-                directDownloadLink.disabled = false;
-            }
+            // STANDAR MEDIA: Buka langsung di window HP (Otomatis ditangkap Pengunduh Sistem)
+            setTimeout(() => {
+                window.location.href = resolvedMediaUrl;
+            }, 800);
         });
 
-        // REAL SERVER KREAVERSE BLOB DL (Diperbarui: Full Frontend Tanpa Vercel Backend, Anti-Redirect & Anti-Freeze)
+        // REAL SERVER KREAVERSE BLOB DL
         realDownloadBtn.addEventListener('click', async () => {
             if (!resolvedMediaUrl) return;
-            
             const container = document.getElementById('real-download-progress-container');
             const fill = document.getElementById('real-download-fill');
             const text = document.getElementById('real-download-text');
             const speedEl = document.getElementById('real-download-speed');
             
             container.classList.remove('hidden');
-            fill.style.background = 'linear-gradient(90deg, #10B981, #34D399)';
-            fill.style.width = '0%'; text.innerText = '0%'; speedEl.innerText = 'Menyiapkan Koneksi Publik...';
+            fill.style.width = '0%'; text.innerText = '0%'; speedEl.innerText = 'Menghubungkan...';
             
             try {
-                // 1. KUNCI NAMA FILE MUTLAK
-                let finalName = resolvedFileName;
-                if (!finalName.toLowerCase().startsWith('kreaverse ai - ')) {
-                    let cleanName = finalName.replace(/^(Kreaverse AI - |Kreaverse AI|kreaverse)/i, '').trim();
-                    finalName = `Kreaverse AI - ${cleanName}`;
+                let response;
+                try {
+                    response = await fetch(resolvedMediaUrl);
+                    if (!response.ok) throw new Error('Gagal');
+                } catch (corsErr) {
+                    response = await fetch("/api/ytdl?targetUrl=" + encodeURIComponent(resolvedMediaUrl));
+                    if (!response.ok) throw new Error('Gagal proxy');
                 }
                 
-                const targetExt = finalName.split('.').pop().toLowerCase();
-                let forcedMime = 'application/octet-stream';
-                if (targetExt === 'mp3') forcedMime = 'audio/mpeg';
-                else if (targetExt === 'mp4') forcedMime = 'video/mp4';
-                else if (targetExt === 'm4a') forcedMime = 'audio/mp4';
-                else if (targetExt === 'webm') forcedMime = 'video/webm';
-
-                // 2. MENGHAPUS API VERCEL ANDA SECARA TOTAL UNTUK MENGHINDARI ERROR DEP0169 & DEPLOY GAGAL
-                // Hanya menggunakan proxy publik gratis yang kuat untuk menangani load 500+ pengguna.
-                const encodedUrl = encodeURIComponent(resolvedMediaUrl);
-                const fetchStrategies = [
-                    resolvedMediaUrl, // Prioritas: Coba bypass langsung
-                    "https://corsproxy.io/?" + encodedUrl, 
-                    "https://api.allorigins.win/raw?url=" + encodedUrl,
-                    "https://api.codetabs.com/v1/proxy?quest=" + encodedUrl
-                ];
-
-                let finalResponse = null;
-
-                for (const url of fetchStrategies) {
-                    try {
-                        speedEl.innerText = 'Menguji jaringan...';
-                        const controller = new AbortController();
-                        const timeoutId = setTimeout(() => controller.abort(), 10000); // Max 10 detik per proxy
-                        
-                        const res = await fetch(url, { method: 'GET', mode: 'cors', signal: controller.signal });
-                        clearTimeout(timeoutId);
-                        
-                        // Validasi ketat: Harus respons 200 OK dan BUKAN halaman HTML dari proxy yang limit
-                        if (res.ok && !res.headers.get('content-type')?.includes('text/html')) {
-                            finalResponse = res;
-                            break; 
-                        }
-                    } catch (err) {
-                        continue; 
-                    }
-                }
-
-                if (!finalResponse) throw new Error('Proxy Publik Limit / Diblokir CORS');
-
-                // 3. PROGRES REAL-TIME & UKURAN ASLI (Membaca aliran data langsung di browser)
-                const contentLength = finalResponse.headers.get('content-length');
+                const contentLength = response.headers.get('content-length');
                 const total = contentLength ? parseInt(contentLength, 10) : 0;
                 let loaded = 0;
+                
+                const reader = response.body.getReader();
                 const chunks = [];
-                const reader = finalResponse.body.getReader();
                 let lastTime = Date.now();
                 let lastLoaded = 0;
 
-                while (true) {
-                    const { done, value } = await reader.read();
+                while(true) {
+                    const {done, value} = await reader.read();
                     if (done) break;
                     chunks.push(value);
                     loaded += value.length;
-
+                    
                     const now = Date.now();
-                    // Update UI halus setiap 250ms
-                    if (now - lastTime > 250) { 
+                    if (now - lastTime > 500) { 
                         const diffTime = (now - lastTime) / 1000;
-                        const speed = (loaded - lastLoaded) / diffTime; 
-                        const speedMB = (speed / (1024 * 1024)).toFixed(1);
-                        const loadedMB = (loaded / (1024 * 1024)).toFixed(1);
+                        const diffLoaded = loaded - lastLoaded;
+                        const speed = diffLoaded / diffTime; 
+                        const speedMB = (speed / (1024*1024)).toFixed(1);
                         
-                        if (total) {
-                            const totalMB = (total / (1024 * 1024)).toFixed(1);
-                            const percent = Math.round((loaded / total) * 100);
-                            fill.style.width = percent + '%';
-                            text.innerText = `${percent}% (${loadedMB}MB / ${totalMB}MB)`;
-                        } else {
-                            fill.style.width = '80%';
-                            text.innerText = `${loadedMB} MB`;
-                        }
-                        speedEl.innerText = `${speedMB} MB/s | Ekstensi: ${targetExt.toUpperCase()}`;
+                        let percent = total ? Math.round((loaded / total) * 100) : 'Memuat...';
+                        fill.style.width = (total ? percent : 100) + '%';
+                        text.innerText = total ? percent + '%' : (loaded / (1024*1024)).toFixed(1) + ' MB';
+                        speedEl.innerText = speedMB + ' MB/s';
                         
-                        lastTime = now;
-                        lastLoaded = loaded;
+                        lastTime = now; lastLoaded = loaded;
                     }
                 }
-
-                fill.style.width = '100%';
-                text.innerText = '100%';
-                speedEl.innerText = `Memproses file ${finalName}...`;
-
-                // 4. MENGHASILKAN FILE INTERNAL (Menggunakan Blob sehingga NAMA & EKSTENSI terkunci 100%)
-                const finalBlob = new Blob(chunks, { type: forcedMime });
-                const objUrl = URL.createObjectURL(finalBlob);
                 
+                text.innerText = '100%'; speedEl.innerText = 'Menyimpan...';
+                const blob = new Blob(chunks, { type: 'application/octet-stream' });
+                const objUrl = URL.createObjectURL(blob);
                 const a = document.createElement('a');
-                a.style.display = 'none';
-                a.href = objUrl;
-                a.download = finalName; 
-                document.body.appendChild(a);
-                a.click();
+                a.href = objUrl; a.download = resolvedFileName || 'download.mp4';
+                document.body.appendChild(a); a.click(); document.body.removeChild(a);
+                setTimeout(() => URL.revokeObjectURL(objUrl), 10000);
+                setTimeout(() => { container.classList.add('hidden'); }, 3000);
+                showIphoneNotif('Unduhan Selesai', 'File telah sukses tersimpan di HP Anda.', 'fa-server');
                 
-                setTimeout(() => {
-                    document.body.removeChild(a);
-                    URL.revokeObjectURL(objUrl);
-                    container.classList.add('hidden');
-                }, 3000);
-
-                showIphoneNotif('Berhasil!', `File sukses disimpan sebagai: ${finalName}`, 'fa-circle-check');
-
             } catch(e) {
                 console.error(e);
-                text.innerText = 'Limit Kuota Proxy'; 
-                speedEl.innerText = 'Coba gunakan tombol Simpan ke Galeri.';
-                fill.style.background = '#EF4444'; // Merah
-                
-                // MENGHAPUS TOTAL FALLBACK YANG MENYEBABKAN REDIRECT KE SF-CONVERTER
-                // Skrip tidak akan pernah melempar URL mentah ke browser. Gagal = Berhenti.
+                text.innerText = 'Rute alternatif...'; speedEl.innerText = 'Mengalihkan ke Browser...';
                 setTimeout(() => {
                     container.classList.add('hidden');
-                    fill.style.background = 'linear-gradient(90deg, #10B981, #34D399)'; // Reset warna
-                }, 4000);
-                
-                showIphoneNotif('Gagal Unduh', 'Server publik terlalu sibuk. Gunakan tombol biru di atas.', 'fa-circle-xmark');
+                    window.location.href = resolvedMediaUrl; // Paksa download di HP
+                }, 2000);
             }
         });
 
