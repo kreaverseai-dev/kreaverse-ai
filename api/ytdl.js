@@ -1,28 +1,25 @@
-import { Readable } from 'stream';
+export const config = {
+    runtime: 'edge',
+};
 
-export default async function handler(req, res) {
-    // Mengizinkan CORS agar bisa diakses dari frontend
-    res.setHeader('Access-Control-Allow-Credentials', true);
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
-    res.setHeader('Access-Control-Allow-Headers', 'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version');
-
-    if (req.method === 'OPTIONS') {
-        res.status(200).end();
-        return;
-    }
-
-    const { targetUrl } = req.query;
+export default async function handler(req) {
+    const { searchParams } = new URL(req.url);
+    const targetUrl = searchParams.get('targetUrl');
+    const filename = searchParams.get('filename');
 
     if (!targetUrl) {
-        return res.status(400).json({ error: "Parameter targetUrl wajib diisi." });
+        return new Response(JSON.stringify({ error: "Parameter targetUrl wajib diisi." }), {
+            status: 400,
+            headers: { 
+                'Content-Type': 'application/json',
+                'Access-Control-Allow-Origin': '*'
+            }
+        });
     }
 
     try {
-        // SOLUSI DEP0169: Memastikan URL valid menggunakan API 'new URL()' modern 
         const safeUrl = new URL(targetUrl).href;
 
-        // Mengambil data dari API tujuan (Bisa berupa JSON, MP3, atau MP4)
         const response = await fetch(safeUrl, {
             method: 'GET',
             headers: {
@@ -33,33 +30,47 @@ export default async function handler(req, res) {
         const contentType = response.headers.get('content-type') || '';
         const contentLength = response.headers.get('content-length');
 
-        // SOLUSI ERROR 500 VERCEL: Jika data adalah JSON (Fetch API Awal), kembalikan sebagai JSON
         if (contentType.includes('application/json')) {
             const data = await response.json();
-            return res.status(200).json(data);
-        }
-        
-        // SOLUSI OPTIMAL STREAMING: Alirkan data secara langsung (chunk-by-chunk) ke client.
-        // Metode ini mencegah RAM server penuh dan mengatasi kegagalan unduh karena batasan muatan biner Vercel.
-        res.setHeader('Content-Type', contentType);
-        if (contentLength) {
-            res.setHeader('Content-Length', contentLength);
+            return new Response(JSON.stringify(data), {
+                status: 200,
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Access-Control-Allow-Origin': '*'
+                }
+            });
         }
 
-        const body = response.body;
-        if (body) {
-            if (typeof body.pipe === 'function') {
-                body.pipe(res);
-            } else {
-                Readable.fromWeb(body).pipe(res);
-            }
-        } else {
-            res.end();
+        const headers = new Headers();
+        headers.set('Content-Type', contentType);
+        headers.set('Access-Control-Allow-Origin', '*');
+        headers.set('Access-Control-Allow-Methods', 'GET, OPTIONS');
+        headers.set('Access-Control-Allow-Headers', '*');
+        headers.set('Access-Control-Expose-Headers', 'Content-Length, Content-Disposition');
+        
+        if (contentLength) {
+            headers.set('Content-Length', contentLength);
         }
+
+        if (filename) {
+            const cleanFilename = filename.replace(/"/g, '');
+            headers.set('Content-Disposition', `attachment; filename="${cleanFilename}"`);
+        } else {
+            headers.set('Content-Disposition', 'attachment');
+        }
+
+        return new Response(response.body, {
+            status: response.status,
+            headers: headers
+        });
 
     } catch (error) {
-        if (!res.headersSent) {
-            res.status(500).json({ error: "Gagal memproses target: " + error.message });
-        }
+        return new Response(JSON.stringify({ error: "Gagal memproses target: " + error.message }), {
+            status: 500,
+            headers: { 
+                'Content-Type': 'application/json',
+                'Access-Control-Allow-Origin': '*'
+            }
+        });
     }
 }
