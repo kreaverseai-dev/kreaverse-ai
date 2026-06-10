@@ -10,73 +10,243 @@
     
     <style>
         :root {
-            --text-primary: #111827;
-            --text-secondary: #4B5563;
-            --text-light: #9CA3AF;
-            --accent-color: #6366F1; 
-            --accent-hover: #4F46E5;
+            --text-primary: #1f2937;
+            --text-secondary: #4b5563;
+            --text-light: #9ca3af;
+            --accent-color: #6366f1; 
+            --accent-hover: #4f46e5;
             --success-color: #10B981;
-            --danger-color: #EF4444;
-            --surface-color: #FFFFFF;
-            --border-color: #E5E7EB;
-            --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.04);
-            --shadow-md: 0 6px 12px rgba(0, 0, 0, 0.08);
-            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-            --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+            --danger-color: #ef4444;
+            --surface-color: #ffffff;
+            --border-color: #e5e7eb;
+            --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.02);
+            --shadow-md: 0 8px 16px rgba(0, 0, 0, 0.04);
+            --shadow-lg: 0 12px 24px -4px rgba(0, 0, 0, 0.05);
+            --shadow-xl: 0 20px 30px -6px rgba(0, 0, 0, 0.08);
             --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        body { font-family: 'Plus Jakarta Sans', sans-serif; color: var(--text-primary); background-color: #FAFAFA; overflow-x: hidden; }
+        body { 
+            font-family: 'Plus Jakarta Sans', sans-serif; 
+            color: var(--text-primary); 
+            background: radial-gradient(circle at top left, #fff0f5 0%, #f0f8ff 45%, #fafafc 100%); 
+            overflow-x: hidden; 
+            min-height: 100vh;
+        }
         a { text-decoration: none; color: inherit; }
         .hidden { display: none !important; }
 
         /* NAVBAR */
-        .navbar { display: flex; justify-content: space-between; align-items: center; padding: 16px 5%; background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(10px); position: fixed; top: 0; width: 100%; z-index: 1000; border-bottom: 1px solid rgba(229, 231, 235, 0.5); }
-        .back-btn { font-size: 1.2rem; color: var(--text-secondary); transition: var(--transition); padding: 8px; border-radius: 50%; display: flex; align-items: center; justify-content: center; position: relative; z-index: 10; cursor: pointer; }
-        .back-btn:hover { color: var(--text-primary); background-color: #F3F4F6; }
-        .logo-container { display: flex; align-items: center; justify-content: center; width: 160px; height: 38px; position: absolute; left: 50%; transform: translateX(-50%); z-index: 5; pointer-events: none; }
+        .navbar { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            padding: 16px 5%; 
+            background: rgba(255, 255, 255, 0.6); 
+            backdrop-filter: blur(12px); 
+            -webkit-backdrop-filter: blur(12px);
+            position: fixed; 
+            top: 0; 
+            width: 100%; 
+            z-index: 1000; 
+            border-bottom: 1px solid rgba(229, 231, 235, 0.4); 
+        }
+        .back-btn { 
+            font-size: 0.95rem; 
+            color: var(--text-secondary); 
+            background: #ffffff;
+            border: 1px solid #e5e7eb;
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: var(--transition);
+            box-shadow: var(--shadow-sm);
+        }
+        .back-btn:hover { 
+            color: var(--text-primary); 
+            background-color: #f3f4f6; 
+            border-color: #d1d5db;
+            transform: scale(1.05);
+        }
+        .logo-container { 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            width: 150px; 
+            height: 38px; 
+            position: absolute; 
+            left: 50%; 
+            transform: translateX(-50%); 
+            z-index: 5; 
+            pointer-events: none; 
+        }
         .krea-logo-svg { width: 100%; height: 100%; display: block; }
-        .nav-right { width: 36px; } 
+        .nav-right { width: 38px; } 
 
         /* HERO SECTION */
         .hero-section {
             position: relative;
-            padding: 110px 20px 40px;
+            padding: 120px 20px 40px;
             text-align: center;
-            background: radial-gradient(circle at top left, #FFE5F1 0%, transparent 40%),
-                        radial-gradient(circle at top right, #E0E7FF 0%, transparent 40%),
-                        radial-gradient(circle at bottom center, #F3E8FF 0%, #FAFAFA 100%);
             display: flex;
             flex-direction: column;
             align-items: center;
+            background: transparent;
         }
-        .hero-title { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 2.6rem; font-weight: 900; color: #111827; margin-bottom: 15px; line-height: 1.1; letter-spacing: -1.5px; }
-        .hero-subtitle { font-family: 'Inter', sans-serif; font-size: 0.95rem; font-weight: 500; color: var(--text-secondary); max-width: 600px; margin: 0 auto 25px; line-height: 1.6; }
+        .hero-title { 
+            font-family: 'Plus Jakarta Sans', sans-serif; 
+            font-size: 2.3rem; 
+            font-weight: 800; 
+            color: #1a1a2e; 
+            margin-bottom: 8px; 
+            line-height: 1.2; 
+            letter-spacing: -1.2px; 
+        }
+        .hero-subtitle { 
+            font-family: 'Plus Jakarta Sans', sans-serif; 
+            font-size: 0.9rem; 
+            font-weight: 500; 
+            color: var(--text-secondary); 
+            max-width: 580px; 
+            margin: 0 auto 24px; 
+            line-height: 1.5; 
+        }
 
         /* FORMAT TOGGLE */
-        .format-toggle { display: inline-flex; flex-wrap: wrap; justify-content: center; background: transparent; padding: 0; box-shadow: none; border: none; margin-bottom: 30px; gap: 20px; border-bottom: 2px solid var(--border-color); border-radius: 0; }
-        .format-btn { padding: 8px 6px; border-radius: 0; background: transparent; font-size: 0.9rem; font-weight: 800; color: var(--text-secondary); cursor: pointer; transition: 0.2s; display: flex; align-items: center; gap: 6px; text-transform: uppercase; border-bottom: 3px solid transparent; letter-spacing: 0.5px; margin-bottom: -2px; }
-        .format-btn.active { color: var(--accent-color); border-bottom-color: var(--accent-color); }
+        .format-toggle { 
+            display: inline-flex; 
+            background: #f3f4f6; 
+            padding: 4px; 
+            border-radius: 99px; 
+            border: 1px solid #e5e7eb; 
+            margin-bottom: 24px; 
+            gap: 4px; 
+            box-shadow: inset 0 1px 2px rgba(0,0,0,0.02);
+        }
+        .format-btn { 
+            padding: 8px 20px; 
+            border-radius: 99px; 
+            background: transparent; 
+            font-size: 0.85rem; 
+            font-weight: 600; 
+            color: #4b5563; 
+            cursor: pointer; 
+            transition: var(--transition); 
+            display: flex; 
+            align-items: center; 
+            gap: 6px; 
+            border: none;
+            text-transform: none;
+        }
+        .format-btn.active { 
+            background: #6366f1; 
+            color: #ffffff; 
+            box-shadow: 0 4px 10px rgba(99, 102, 241, 0.2);
+        }
 
         /* INPUT AREA */
-        .input-container { width: 100%; max-width: 700px; position: relative; margin-bottom: 20px; z-index: 10; }
-        .input-wrapper { display: flex; align-items: center; background: var(--surface-color); border-radius: 50px; padding: 6px 8px 6px 20px; box-shadow: var(--shadow-lg); border: 1px solid var(--border-color); transition: var(--transition); }
-        .input-wrapper:focus-within { border-color: var(--accent-color); box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1), var(--shadow-lg); }
+        .input-container { width: 100%; max-width: 650px; position: relative; margin-bottom: 20px; z-index: 10; }
+        .input-wrapper { 
+            display: flex; 
+            align-items: center; 
+            background: var(--surface-color); 
+            border-radius: 99px; 
+            padding: 6px 6px 6px 18px; 
+            box-shadow: var(--shadow-lg); 
+            border: 1px solid var(--border-color); 
+            transition: var(--transition); 
+        }
+        .input-wrapper:focus-within { 
+            border-color: var(--accent-color); 
+            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.08), var(--shadow-lg); 
+        }
         .url-input-area { display: flex; flex: 1; align-items: center; min-width: 0; }
-        .url-icon { color: var(--text-light); font-size: 1.2rem; margin-right: 12px; }
-        .url-input { flex: 1; border: none; outline: none; font-family: 'Plus Jakarta Sans', sans-serif; font-size: 1rem; color: var(--text-primary); background: transparent; padding: 12px 0; min-width: 50px; }
+        .url-icon { color: var(--text-light); font-size: 1rem; margin-right: 12px; }
+        .url-input { 
+            flex: 1; 
+            border: none; 
+            outline: none; 
+            font-family: 'Plus Jakarta Sans', sans-serif; 
+            font-size: 0.95rem; 
+            color: var(--text-primary); 
+            background: transparent; 
+            padding: 10px 0; 
+            min-width: 50px; 
+        }
         .url-input::placeholder { color: var(--text-light); }
-        .input-actions { display: flex; align-items: center; gap: 4px; margin-right: 10px; }
-        .input-action-btn { background: #F3F4F6; border: none; color: var(--text-secondary); width: 32px; height: 32px; border-radius: 50%; cursor: pointer; transition: 0.2s; font-size: 0.9rem; display: flex; align-items: center; justify-content: center; }
-        .input-action-btn:hover { background: #E5E7EB; color: var(--text-primary); transform: scale(1.05); }
+        .input-actions { display: flex; align-items: center; gap: 6px; margin-right: 4px; }
+        
+        #paste-btn {
+            background: #f3f4f6;
+            border: 1px solid #e5e7eb;
+            color: #374151;
+            border-radius: 99px;
+            padding: 8px 16px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            height: auto;
+            width: auto;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        #paste-btn:hover {
+            background: #e5e7eb;
+            color: #111827;
+        }
+        #clear-btn {
+            background: transparent;
+            border: none;
+            color: #9ca3af;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+        }
+        #clear-btn:hover {
+            background: #f3f4f6;
+            color: #111827;
+        }
 
-        .download-btn { background: var(--accent-color); color: #FFFFFF; border: none; border-radius: 40px; padding: 14px 28px; font-size: 1rem; font-weight: 800; cursor: pointer; transition: var(--transition); display: flex; align-items: center; gap: 8px; white-space: nowrap; position: relative; z-index: 20; }
-        .download-btn:hover:not(:disabled) { background: var(--accent-hover); transform: translateY(-2px); box-shadow: 0 6px 15px rgba(99, 102, 241, 0.4); }
-        .download-btn:disabled { background: #D1D5DB; cursor: not-allowed; transform: none; box-shadow: none; }
+        .download-btn { 
+            background: var(--accent-color); 
+            color: #ffffff; 
+            border: none; 
+            border-radius: 99px; 
+            padding: 14px 40px; 
+            font-size: 1rem; 
+            font-weight: 700; 
+            cursor: pointer; 
+            transition: var(--transition); 
+            display: flex; 
+            align-items: center; 
+            gap: 8px; 
+            white-space: nowrap; 
+            position: relative; 
+            z-index: 20; 
+            box-shadow: 0 4px 14px rgba(99, 102, 241, 0.3);
+        }
+        .download-btn:hover:not(:disabled) { 
+            background: var(--accent-hover); 
+            transform: translateY(-1px); 
+            box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4); 
+        }
+        .download-btn:disabled { background: #d1d5db; cursor: not-allowed; transform: none; box-shadow: none; }
 
         /* PROGRESS BAR */
-        .progress-container { width: 100%; max-width: 700px; margin: 0 auto 15px; background: var(--surface-color); padding: 16px 20px; border-radius: 16px; border: 1px solid var(--border-color); box-shadow: var(--shadow-md); display: none; animation: slideUp 0.3s ease; }
+        .progress-container { width: 100%; max-width: 650px; margin: 0 auto 15px; background: var(--surface-color); padding: 16px 20px; border-radius: 16px; border: 1px solid var(--border-color); box-shadow: var(--shadow-md); display: none; animation: slideUp 0.3s ease; }
         .progress-container.active { display: block; }
         .progress-header { display: flex; justify-content: space-between; font-size: 0.85rem; font-weight: 700; color: var(--text-secondary); margin-bottom: 10px; }
         .progress-track { width: 100%; height: 8px; background: #E5E7EB; border-radius: 4px; overflow: hidden; position: relative; }
@@ -87,13 +257,31 @@
 
         /* SETTINGS PILLS */
         .settings-pills { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 10px; max-width: 800px; margin: 0 auto 20px; }
-        .pill { background: #FFFFFF; border: 1px solid var(--border-color); padding: 8px 16px; border-radius: 30px; font-size: 0.85rem; font-weight: 700; color: var(--text-secondary); cursor: pointer; transition: var(--transition); display: inline-flex; align-items: center; gap: 8px; box-shadow: var(--shadow-sm); }
-        .pill:hover { border-color: var(--accent-color); color: var(--text-primary); transform: translateY(-2px); box-shadow: var(--shadow-md); }
-        .pill i { color: var(--accent-color); font-size: 1rem; }
-        .yt-warning { width: 100%; text-align: center; font-size: 0.8rem; color: #F59E0B; font-weight: 800; margin-bottom: 10px; }
+        .pill { 
+            background: #ffffff; 
+            border: 1px solid var(--border-color); 
+            padding: 8px 16px; 
+            border-radius: 99px; 
+            font-size: 0.8rem; 
+            font-weight: 600; 
+            color: var(--text-secondary); 
+            cursor: pointer; 
+            transition: var(--transition); 
+            display: inline-flex; 
+            align-items: center; 
+            gap: 6px; 
+            box-shadow: var(--shadow-sm); 
+        }
+        .pill:hover { 
+            border-color: #d1d5db; 
+            color: var(--text-primary); 
+            background: #f9fafb;
+        }
+        .pill i { color: #10b981; font-size: 0.9rem; }
+        .yt-warning { width: 100%; text-align: center; font-size: 0.8rem; color: #F59E0B; font-weight: 700; margin-bottom: 10px; }
 
         /* RESULT AREA & DYNAMIC VIDEO CONTAINER */
-        .result-section { width: 100%; max-width: 700px; margin: 0 auto 30px; display: none; animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1); }
+        .result-section { width: 100%; max-width: 650px; margin: 0 auto 30px; display: none; animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1); }
         .result-section.active { display: block; }
         .result-card { background: var(--surface-color); border-radius: 24px; padding: 20px; box-shadow: var(--shadow-xl); border: 1px solid var(--border-color); }
         
@@ -102,7 +290,6 @@
         .media-player-wrapper:fullscreen { width: 100vw; height: 100vh; border-radius: 0; }
         .media-player-wrapper:-webkit-full-screen { width: 100vw; height: 100vh; border-radius: 0; }
         
-        /* WADAH DALAM (Ini adalah kunci agar watermark tidak melayang ke area hitam) */
         .video-container { position: relative; display: flex; align-items: center; justify-content: center; max-width: 100%; max-height: 100%; width: 100%; height: 100%; }
         .video-element { width: 100%; height: 100%; object-fit: cover; display: block; }
         
@@ -129,12 +316,12 @@
         .thumb-image { width: 100%; height: 100%; object-fit: contain; }
         .thumb-watermark-overlay { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; pointer-events: none; background: rgba(0,0,0,0.15); z-index: 5;}
         
-        /* WATERMARK (Berada 100% di dalam Container) */
+        /* WATERMARK */
         .player-watermark { position: absolute; top: 12px; right: 12px; width: 125px; height: 32px; z-index: 10; pointer-events: none; filter: drop-shadow(0 1px 2px rgba(0,0,0,0.4)); overflow: hidden; transition: opacity 0.3s; }
         .media-player-wrapper.audio-mode .player-watermark { top: 15px; right: 20px; display: block; width: 125px; height: 32px;}
         .media-player-wrapper:fullscreen .player-watermark { width: 155px; height: 40px; top: 20px; right: 20px; }
 
-        /* CONTROLS (Ikon Play Lebih Kecil Premium & Menghilang) */
+        /* CONTROLS */
         .player-controls { position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(to top, rgba(0,0,0,0.9), transparent); padding: 30px 20px 15px; display: flex; align-items: center; gap: 15px; z-index: 10; transition: opacity 0.4s; opacity: 1; }
         .media-player-wrapper.audio-mode .player-controls { position: relative; background: transparent; padding: 15px 0 0; width: 100%; max-width: 400px; }
         .hide-controls .player-controls { opacity: 0; pointer-events: none; }
@@ -142,7 +329,6 @@
         .play-pause-btn { width: 38px; height: 38px; border-radius: 50%; background: var(--accent-color); color: #FFF; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 1rem; flex-shrink: 0; transition: 0.2s; box-shadow: 0 4px 10px rgba(99, 102, 241, 0.4); }
         .play-pause-btn:hover { transform: scale(1.08); background: var(--accent-hover); }
         
-        /* Pertebal sentuhan hitbox Progress Area untuk Slider Menit Jari */
         .progress-area { flex: 1; display: flex; flex-direction: column; gap: 8px; padding: 10px 0; margin: -10px 0; cursor: pointer; }
         .progress-bar-bg { width: 100%; height: 6px; background: rgba(255,255,255,0.3); border-radius: 4px; position: relative; overflow: hidden; pointer-events: none; }
         .progress-bar-fill { height: 100%; background: var(--accent-color); width: 0%; border-radius: 4px; pointer-events: none; }
@@ -156,20 +342,79 @@
         .centered-overlay-box { position: absolute; inset: 0; margin: auto; z-index: 20; width: max-content; height: max-content; max-width: 85%; display: flex; align-items: center; justify-content: center; pointer-events: none; }
         .centered-box-content { background: rgba(0,0,0,0.85); padding: 18px 24px; border-radius: 16px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
 
-        /* RESULT INFO & BUTTONS (Z-Index Tinggi agar Anti-Kunci) */
-        .result-info { text-align: left; margin-bottom: 20px; padding: 15px; background: #F9FAFB; border-radius: 12px; border: 1px solid var(--border-color); }
+        /* RESULT INFO & BUTTONS */
+        .result-info { text-align: left; margin-bottom: 24px; padding: 16px; background: #F9FAFB; border-radius: 16px; border: 1px solid var(--border-color); }
         .result-info p { font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 6px; line-height: 1.5; font-weight: 500; }
         .result-info strong { color: var(--text-primary); font-weight: 700; }
         
-        .action-buttons { display: flex; flex-direction: column; gap: 10px; position: relative; z-index: 50; }
-        .btn-save-gallery { width: 100%; padding: 16px; background: linear-gradient(135deg, var(--accent-color), #8B5CF6); color: #FFF; border: none; border-radius: 16px; font-size: 1.05rem; font-weight: 800; cursor: pointer; transition: var(--transition); display: flex; align-items: center; justify-content: center; gap: 10px; box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3); position: relative; z-index: 50; }
-        .btn-save-gallery:hover { background: linear-gradient(135deg, #4F46E5, #7C3AED); transform: translateY(-2px); box-shadow: 0 8px 20px rgba(99, 102, 241, 0.4); }
+        .action-buttons { display: flex; flex-direction: column; gap: 12px; position: relative; z-index: 50; }
         
-        .btn-server-kreaverse { background: linear-gradient(135deg, #10B981, #059669); font-size: 0.95rem; padding: 14px; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3); }
-        .btn-server-kreaverse:hover { background: linear-gradient(135deg, #059669, #047857); box-shadow: 0 8px 20px rgba(16, 185, 129, 0.4); }
+        /* Direct download (Simpan ke Galeri) - Solid purple capsule */
+        .btn-save-gallery { 
+            width: 100%; 
+            padding: 16px; 
+            background: #6366F1; 
+            color: #ffffff; 
+            border: none; 
+            border-radius: 99px; 
+            font-size: 1rem; 
+            font-weight: 700; 
+            cursor: pointer; 
+            transition: var(--transition); 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            gap: 10px; 
+            box-shadow: 0 4px 14px rgba(99, 102, 241, 0.2); 
+            position: relative; 
+            z-index: 50; 
+        }
+        .btn-save-gallery:hover { 
+            background: #4f46e5; 
+            transform: translateY(-1px); 
+            box-shadow: 0 6px 18px rgba(99, 102, 241, 0.3); 
+        }
+        
+        /* Unduh via Server - Ghost green capsule */
+        .btn-server-kreaverse { 
+            background: #ffffff !important; 
+            color: #10B981 !important; 
+            border: 2px solid #10B981 !important; 
+            border-radius: 99px !important; 
+            font-size: 1rem; 
+            padding: 14px; 
+            font-weight: 700;
+            box-shadow: none !important; 
+        }
+        .btn-server-kreaverse:hover { 
+            background: #f0fdf4 !important; 
+            border-color: #059669 !important; 
+            color: #059669 !important; 
+            transform: translateY(-1px); 
+        }
 
-        .btn-secondary-action { width: 100%; padding: 14px; background: #F3F4F6; color: var(--text-primary); border: none; border-radius: 16px; font-size: 0.95rem; font-weight: 700; cursor: pointer; transition: var(--transition); position: relative; z-index: 50; }
-        .btn-secondary-action:hover { background: #E5E7EB; }
+        /* Unduh Link Lainnya - Clean centered rounded pill */
+        .btn-secondary-action { 
+            width: max-content; 
+            padding: 10px 24px; 
+            background: #F3F4F6 !important; 
+            color: #4B5563 !important; 
+            border: none !important; 
+            border-radius: 99px !important; 
+            font-size: 0.85rem; 
+            font-weight: 700; 
+            cursor: pointer; 
+            transition: var(--transition); 
+            position: relative; 
+            z-index: 50; 
+            margin: 12px auto 0 !important;
+            display: block;
+        }
+        .btn-secondary-action:hover { background: #e5e7eb !important; color: #1F2937 !important; }
+
+        .real-dl-progress-box { width: 100%; background: #F3F4F6; border-radius: 12px; padding: 5px; margin-top: 5px; position: relative; border: 1px solid var(--border-color); }
+        .real-dl-fill { width: 0%; height: 12px; background: linear-gradient(90deg, #10B981, #34D399); border-radius: 8px; transition: width 0.3s linear; }
+        .real-dl-info { display: flex; justify-content: space-between; font-size: 0.8rem; color: var(--text-secondary); margin-top: 6px; padding: 0 6px; font-weight: 700; font-family: monospace; }
 
         .real-dl-progress-box { width: 100%; background: #F3F4F6; border-radius: 12px; padding: 5px; margin-top: 5px; position: relative; border: 1px solid var(--border-color); }
         .real-dl-fill { width: 0%; height: 12px; background: linear-gradient(90deg, #10B981, #34D399); border-radius: 8px; transition: width 0.3s linear; }
@@ -292,7 +537,7 @@
 <body>
 
     <nav class="navbar">
-        <a href="/" class="back-btn" title="Kembali"><i class="fa-solid fa-arrow-left"></i></a>
+        <a href="/" class="back-btn" title="Kembali"><i class="fa-solid fa-chevron-left"></i></a>
         <div class="logo-container">
             <!-- Logo Utama Kreaverse AI -->
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 60" class="krea-logo-svg">
@@ -304,32 +549,32 @@
         <div class="nav-right"></div>
     </nav>
 
-    <!-- HERO SECTION (Teks Bold Ala Konsep Atlantic Server) -->
+    <!-- HERO SECTION -->
     <section class="hero-section">
-        <h1 class="hero-title">Downloader<br>Kreaverse AI</h1>
+        <h1 class="hero-title">Kreaverse AI - Premium Downloader</h1>
         <div class="hero-subtitle">
             Platform pengunduh media premium. Unduh video dan audio resolusi tinggi dari berbagai platform sosial media secara instan, aman, dan tanpa watermark.
         </div>
 
         <div class="format-toggle">
-            <button class="format-btn active" id="seg-video" onclick="changeFormat('video')"><i class="fa-solid fa-video"></i> VIDEO</button>
-            <button class="format-btn" id="seg-audio" onclick="changeFormat('audio')"><i class="fa-solid fa-music"></i> AUDIO</button>
-            <button class="format-btn" id="seg-thumb" onclick="changeFormat('thumb')"><i class="fa-solid fa-image"></i> KREAVERSE AI THUMBNAIL</button>
+            <button class="format-btn active" id="seg-video" onclick="changeFormat('video')">Video</button>
+            <button class="format-btn" id="seg-audio" onclick="changeFormat('audio')">Audio</button>
+            <button class="format-btn" id="seg-thumb" onclick="changeFormat('thumb')">Thumbnail</button>
         </div>
 
         <div class="input-container">
             <div class="input-wrapper">
                 <div class="url-input-area">
                     <i class="fa-solid fa-link url-icon"></i>
-                    <input type="text" id="media-url" class="url-input" placeholder="Tempel tautan media di sini..." autocomplete="off">
+                    <input type="text" id="media-url" class="url-input" placeholder="https://youtu.be/..." autocomplete="off">
                 </div>
                 <div class="input-actions">
-                    <button class="input-action-btn" id="paste-btn" title="Tempel Tautan"><i class="fa-solid fa-paste"></i></button>
-                    <button class="input-action-btn" id="clear-btn" title="Hapus Tautan"><i class="fa-solid fa-xmark"></i></button>
+                    <button id="paste-btn" title="Tempel Tautan"><i class="fa-solid fa-paste"></i> Paste</button>
+                    <button id="clear-btn" title="Hapus Tautan"><i class="fa-solid fa-xmark"></i></button>
                 </div>
             </div>
             <button id="download-btn" class="download-btn" style="margin: 20px auto 0; display: flex; width: max-content;">
-                <span id="btn-text">Unduh Sekarang</span>
+                <span id="btn-text">Download Now</span>
             </button>
         </div>
 
@@ -471,7 +716,7 @@
                 <button id="direct-download-link" class="btn-save-gallery"><i class="fa-solid fa-cloud-arrow-down"></i> Simpan ke Galeri</button>
                 <button id="real-download-btn" class="btn-save-gallery btn-server-kreaverse"><i class="fa-solid fa-server"></i> Unduh via Server Kreaverse AI</button>
                 
-                <button id="reset-btn" class="btn-secondary-action" style="margin-top: 5px;">Unduh Link Lainnya</button>
+                <button id="reset-btn" class="btn-secondary-action" style="margin-top: 5px;">Tempel Tautan Baru</button>
 
                 <!-- PROGRESS BAR BAWAH DENGAN IKON PLATFORM DINAMIS & DESAIN ELEGAN -->
                 <div id="real-download-progress-container" class="progress-container" style="display: none; padding: 14px; margin-top: 15px; background: #F3F4F6; border: 1px solid var(--border-color); border-radius: 16px;">
@@ -975,9 +1220,19 @@
             throw lastError || new Error(`Tautan tidak dapat diakses atau fitur terproteksi penyedia.`);
         }
 
-        let simProgress = 0; let simInterval;
-        function startSimulatedProgress() {
-            simProgress = 0; 
+        function formatBytes(bytes) {
+            if (!bytes) return '';
+            if (/[a-zA-Z]/.test(String(bytes))) return bytes;
+            const num = parseFloat(bytes);
+            if (isNaN(num) || num <= 0) return '';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(num) / Math.log(k));
+            return parseFloat((num / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+        }
+        window.formatBytes = formatBytes;
+
+        function updateLoaderStatus(stepTitle, stepDetail, isComplete = false) {
             const container = document.getElementById('progress-container');
             container.style.display = 'block';
             
@@ -985,43 +1240,26 @@
             const speedEl = document.getElementById('progress-speed');
             const sizeEl = document.getElementById('progress-size');
             const statusIcon = document.getElementById('progress-status-icon');
-            
-            if (titleEl) titleEl.innerText = "Menghubungkan ke server... 0%";
-            if (speedEl) speedEl.innerHTML = '<i class="fa-solid fa-bolt" style="color: #F59E0B; margin-right: 4px;"></i> Menghubungkan...';
-            if (sizeEl) sizeEl.innerText = "Menyiapkan berkas...";
-            if (statusIcon) statusIcon.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin" style="color: var(--accent-color);"></i>';
-            
-            simInterval = setInterval(() => {
-                if (simProgress < 90) {
-                    simProgress += Math.random() * 15; if (simProgress > 90) simProgress = 90;
-                    const fillEl = document.getElementById('progress-bar-fill');
-                    if (fillEl) fillEl.style.width = `${simProgress}%`;
-                    if (titleEl) titleEl.innerText = `Menghubungkan ke server... ${Math.floor(simProgress)}%`;
-                    if (speedEl) speedEl.innerHTML = `<i class="fa-solid fa-bolt" style="color: #F59E0B; margin-right: 4px;"></i> ${(Math.random() * 5 + 2).toFixed(1)} MB/s`;
-                }
-            }, 500);
-        }
-
-        function completeProgress() {
-            clearInterval(simInterval); 
             const fillEl = document.getElementById('progress-bar-fill');
-            if (fillEl) fillEl.style.width = `100%`;
-            
-            const titleEl = document.getElementById('progress-title');
-            if (titleEl) titleEl.innerText = `Selesai 100%`;
-            
-            const speedEl = document.getElementById('progress-speed');
-            if (speedEl) speedEl.innerHTML = '<i class="fa-solid fa-check" style="color: var(--success-color); margin-right: 4px;"></i> Selesai';
-            
-            const statusIcon = document.getElementById('progress-status-icon');
-            if (statusIcon) statusIcon.innerHTML = '<i class="fa-solid fa-circle-check" style="color: var(--success-color);"></i>';
-            
-            setTimeout(() => { document.getElementById('progress-container').style.display = 'none'; }, 1000);
+
+            if (titleEl) titleEl.innerText = stepTitle;
+            if (sizeEl) sizeEl.innerText = stepDetail;
+
+            if (isComplete) {
+                if (fillEl) fillEl.style.width = '100%';
+                if (speedEl) speedEl.innerHTML = '<i class="fa-solid fa-check" style="color: var(--success-color); margin-right: 4px;"></i> Berhasil';
+                if (statusIcon) statusIcon.innerHTML = '<i class="fa-solid fa-circle-check" style="color: var(--success-color);"></i>';
+                setTimeout(() => { container.style.display = 'none'; }, 1000);
+            } else {
+                if (fillEl) fillEl.style.width = '50%';
+                if (speedEl) speedEl.innerHTML = '<i class="fa-solid fa-bolt" style="color: #F59E0B; margin-right: 4px;"></i> Mengirim Permintaan...';
+                if (statusIcon) statusIcon.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin" style="color: var(--accent-color);"></i>';
+            }
         }
 
         async function processDownload(mediaUrl) {
+            updateLoaderStatus("Mempersiapkan Rute API...", "Menghubungkan ke database Kreaverse AI...");
             if (!isConfigLoaded || !dbConfig.baseUrls || Object.keys(dbConfig.baseUrls).length === 0) {
-                document.getElementById('progress-status-desc').innerText = "Membuka koneksi aman...";
                 try {
                     const docSnap = await getDoc(doc(db, "settings", "downloader_api"));
                     if (docSnap.exists()) { dbConfig = docSnap.data(); isConfigLoaded = true; renderDynamicOptions(); }
@@ -1031,6 +1269,7 @@
             
             let targetServerKey = currentServer;
             if (currentServer === 'auto') {
+                updateLoaderStatus("Mencari Server Tercepat...", "Melakukan ping uji latensi jaringan...");
                 targetServerKey = await pingSemuaServer(); 
                 if (!targetServerKey || !dbConfig.baseUrls[targetServerKey]) targetServerKey = Object.keys(dbConfig.baseUrls)[0]; 
             }
@@ -1050,6 +1289,7 @@
                 }
             }
             pathsToTry = [...new Set(pathsToTry)];
+            updateLoaderStatus("Menganalisis Tautan...", `Mengirim permintaan ke ${srvObj.name}...`);
             const fetchResult = await smartFetch(srvObj.url, pathsToTry, mediaUrl, srvObj.name);
             const data = fetchResult.data;
 
@@ -1098,12 +1338,13 @@
             
             resetUI();
             downloadBtn.disabled = true; processSeconds = 0; btnText.innerText = `Memproses...`;
-            startSimulatedProgress();
+            updateLoaderStatus("Memulai Pemrosesan...", "Menghubungkan ke gerbang jaringan...");
             processTimer = setInterval(() => { processSeconds++; }, 1000);
 
             try {
                 const resultData = await processDownload(mediaUrl);
-                completeProgress(); clearInterval(processTimer);
+                updateLoaderStatus("Menyusun Berkas...", "Menyusun opsi kualitas media yang tersedia...", true);
+                clearInterval(processTimer);
                 downloadBtn.disabled = false; btnText.innerText = 'Unduh Sekarang';
 
                 const sheetList = document.getElementById('scanned-media-list');
@@ -1124,7 +1365,8 @@
                         }
                     }
 
-                    const sizeStr = opt.size ? `<span style="font-size:0.75rem; color:var(--text-light); margin-top:4px;">Ukuran: ${opt.size}</span>` : '';
+                    const sizeFormatted = formatBytes(opt.size);
+                    const sizeStr = sizeFormatted ? `<span style="font-size:0.75rem; color:var(--text-light); margin-top:4px;">Ukuran: ${sizeFormatted}</span>` : '';
                     const extStr = opt.ext ? `<span class="q-badge format">${opt.ext}</span>` : '';
                     const safeTitle = resultData.title.replace(/'/g, "\\'").replace(/"/g, '&quot;');
                     const safeThumb = resultData.thumbnail ? btoa(resultData.thumbnail) : '';
@@ -1147,7 +1389,7 @@
                 }).join('');
                 openSheet('sheet-select-media');
             } catch (error) {
-                clearInterval(simInterval); document.getElementById('progress-container').classList.remove('active'); clearInterval(processTimer);
+                document.getElementById('progress-container').style.display = 'none'; clearInterval(processTimer);
                 showIphoneNotif('Pemrosesan gagal', error.message, 'fa-triangle-exclamation');
                 downloadBtn.disabled = false; btnText.innerText = 'Unduh Sekarang';
             }
@@ -1176,9 +1418,10 @@
             const finalThumb = decodedThumb || 'https://i.postimg.cc/mZdwnfsm/Claude-ai-icon-svg.png';
             audioThumbnail.src = finalThumb;
 
+            const sizeFormatted = formatBytes(size);
             document.getElementById('download-stats').innerHTML = `
                 <p><strong>Judul:</strong> ${cleanTitle}</p>
-                <p><strong>Pilihan Anda:</strong> ${quality} (${type.toUpperCase()}) | ${finalExt.toUpperCase()} ${size ? `- ${size}` : ''} </p>
+                <p><strong>Pilihan Anda:</strong> ${quality} (${type.toUpperCase()}) | ${finalExt.toUpperCase()} ${sizeFormatted ? `- ${sizeFormatted}` : ''} </p>
                 ${duration ? `<p><strong>Durasi:</strong> ${duration}</p>` : ''}
                 <p><strong>Waktu Muat:</strong> Selesai dalam ${processSeconds} dtk - ${provider}</p>
             `;
@@ -1199,12 +1442,19 @@
             } else if (type === 'video') {
                 isDualAudio = false;
                 const bestAudio = globalScannedOptions.filter(o => o.type === 'audio').sort((a, b) => parseInt(b.quality) - parseInt(a.quality))[0];
+                const isYouTube = url.includes('googlevideo.com') || url.includes('youtube.com') || url.includes('youtu.be');
+                const CLOUDFLARE_WORKER_PROXY = "https://kreaverse-proxy.kreaverse-ai.workers.dev";
+
                 if (bestAudio && bestAudio.url) { 
-                    customAudio.src = bestAudio.url; isDualAudio = true; customVideo.muted = true; 
+                    const isAudioYT = bestAudio.url.includes('googlevideo.com') || bestAudio.url.includes('youtube.com') || bestAudio.url.includes('youtu.be');
+                    customAudio.src = isAudioYT ? bestAudio.url : `${CLOUDFLARE_WORKER_PROXY}/?targetUrl=${encodeURIComponent(bestAudio.url)}`;
+                    isDualAudio = true; 
+                    customVideo.muted = true; 
                 } 
                 else { customVideo.muted = false; }
                 
-                activeMedia = customVideo; customVideo.src = url;
+                const finalStreamUrl = isYouTube ? url : `${CLOUDFLARE_WORKER_PROXY}/?targetUrl=${encodeURIComponent(url)}`;
+                activeMedia = customVideo; customVideo.src = finalStreamUrl;
                 mediaWrapper.classList.remove('audio-mode'); customVideo.style.display = "block";
                 document.getElementById('audio-ui').style.display = "none";
                 document.getElementById('thumb-preview').style.display = "none";
@@ -1214,7 +1464,11 @@
                 document.getElementById('real-download-btn').classList.remove('hidden');
 
             } else {
-                activeMedia = customAudio; customAudio.src = url; customAudio.muted = false;
+                const isYouTube = url.includes('googlevideo.com') || url.includes('youtube.com') || url.includes('youtu.be');
+                const CLOUDFLARE_WORKER_PROXY = "https://kreaverse-proxy.kreaverse-ai.workers.dev";
+                const finalStreamUrl = isYouTube ? url : `${CLOUDFLARE_WORKER_PROXY}/?targetUrl=${encodeURIComponent(url)}`;
+
+                activeMedia = customAudio; customAudio.src = finalStreamUrl; customAudio.muted = false;
                 mediaWrapper.classList.add('audio-mode'); customVideo.style.display = "none";
                 document.getElementById('audio-ui').style.display = "flex";
                 document.getElementById('thumb-preview').style.display = "none";
@@ -1265,11 +1519,12 @@
                     extBadge = `<span class="q-badge format">${opt.ext}</span>`;
                 }
 
+                const sizeFormatted = formatBytes(opt.size);
                 return `
                     <button class="sheet-opt-btn ${isActive}" onclick="changeVideoQuality('${opt.url}', '${opt.quality}', '${opt.ext}')">
                         <div style="display:flex; flex-direction:column; gap:4px;">
                             <span style="font-weight:800; display:flex; align-items:center; flex-wrap:wrap; gap:6px;">${opt.quality} ${extBadge} ${audioBadge}</span>
-                            ${opt.size ? `<span style="font-size:0.75rem; color:var(--text-light); font-weight:600;">Ukuran: ${opt.size}</span>` : ''}
+                            ${sizeFormatted ? `<span style="font-size:0.75rem; color:var(--text-light); font-weight:600;">Ukuran: ${sizeFormatted}</span>` : ''}
                         </div>
                         <i class="fa-solid fa-check ${isActive ? '' : 'hidden'}"></i>
                     </button>
@@ -1299,7 +1554,11 @@
                 resolvedFileName = arr.join('.') + '.' + extName.toLowerCase();
             }
 
-            activeMedia.src = newUrl;
+            const isYouTube = newUrl.includes('googlevideo.com') || newUrl.includes('youtube.com') || newUrl.includes('youtu.be');
+            const CLOUDFLARE_WORKER_PROXY = "https://kreaverse-proxy.kreaverse-ai.workers.dev";
+            const finalStreamUrl = isYouTube ? newUrl : `${CLOUDFLARE_WORKER_PROXY}/?targetUrl=${encodeURIComponent(newUrl)}`;
+
+            activeMedia.src = finalStreamUrl;
             activeMedia.load(); 
             
             activeMedia.oncanplay = () => {
