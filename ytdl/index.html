@@ -986,9 +986,9 @@
             const sizeEl = document.getElementById('progress-size');
             const statusIcon = document.getElementById('progress-status-icon');
             
-            if (titleEl) titleEl.innerText = "Memproses berkas... 0%";
+            if (titleEl) titleEl.innerText = "Menghubungkan ke server... 0%";
             if (speedEl) speedEl.innerHTML = '<i class="fa-solid fa-bolt" style="color: #F59E0B; margin-right: 4px;"></i> Menghubungkan...';
-            if (sizeEl) sizeEl.innerText = "Simulasi...";
+            if (sizeEl) sizeEl.innerText = "Menyiapkan berkas...";
             if (statusIcon) statusIcon.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin" style="color: var(--accent-color);"></i>';
             
             simInterval = setInterval(() => {
@@ -996,7 +996,7 @@
                     simProgress += Math.random() * 15; if (simProgress > 90) simProgress = 90;
                     const fillEl = document.getElementById('progress-bar-fill');
                     if (fillEl) fillEl.style.width = `${simProgress}%`;
-                    if (titleEl) titleEl.innerText = `Memproses berkas... ${Math.floor(simProgress)}%`;
+                    if (titleEl) titleEl.innerText = `Menghubungkan ke server... ${Math.floor(simProgress)}%`;
                     if (speedEl) speedEl.innerHTML = `<i class="fa-solid fa-bolt" style="color: #F59E0B; margin-right: 4px;"></i> ${(Math.random() * 5 + 2).toFixed(1)} MB/s`;
                 }
             }, 500);
