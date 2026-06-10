@@ -1496,7 +1496,30 @@
             }, 800);
         });
 
-        // REAL SERVER KREAVERSE BLOB DL (Sistem Progress 100% Nyata Lewat Jaringan)
+        // REVISI 2: DOWNLOAD DIRECT (WINDOW.LOCATION UNTUK PAKSA HP MENGUNDUH)
+        directDownloadLink.addEventListener('click', () => {
+            if (!resolvedMediaUrl) return;
+            
+            showIphoneNotif('Menyiapkan Berkas...', 'Mengamankan jalur unduhan ke perangkat Anda.', 'fa-cloud-arrow-down');
+            
+            const isYouTube = resolvedMediaUrl.includes('googlevideo.com') || resolvedMediaUrl.includes('youtube.com') || resolvedMediaUrl.includes('youtu.be');
+            
+            if (isYouTube) {
+                // Untuk YouTube, alihkan langsung ke realDownloadBtn agar mengunduh lewat XHR client-side direct (Anti-Banned IP & Anti-Layar Hitam & Full Speed)
+                realDownloadBtn.click();
+                return;
+            }
+
+            // Gunakan Cloudflare Worker Proxy secara langsung untuk non-YouTube agar Content-Disposition valid
+            const CLOUDFLARE_WORKER_PROXY = "https://kreaverse-proxy.kreaverse-ai.workers.dev";
+            const proxyUrl = `${CLOUDFLARE_WORKER_PROXY}/?targetUrl=${encodeURIComponent(resolvedMediaUrl)}&filename=${encodeURIComponent(resolvedFileName)}`;
+            
+            setTimeout(() => {
+                window.location.href = proxyUrl;
+            }, 800);
+        });
+
+        // REAL SERVER KREAVERSE BLOB DL (Sistem Progress 100% Nyata Lewat Jaringan - Tanpa Simulasi)
         realDownloadBtn.addEventListener('click', () => {
             if (!resolvedMediaUrl) return;
             
@@ -1519,17 +1542,23 @@
             container.style.setProperty('display', 'block', 'important');
             container.classList.add('active');
             fill.style.width = '0%'; 
+            fill.style.transition = 'width 0.1s linear'; // Menghilangkan delay transisi agar progress tidak bergetar/jitter
             speedEl.innerHTML = '<i class="fa-solid fa-bolt" style="color:#F59E0B; margin-right:4px;"></i> Menghubungkan...';
             textEl.innerText = '0% (0.0 MB / -- MB)';
             titleEl.innerText = resolvedFileName;
             statusIcon.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin" style="color:var(--accent-color);"></i>';
             
-            // Cloudflare Worker Proxy utama
-            const CLOUDFLARE_WORKER_PROXY = "https://kreaverse-proxy.kreaverse-ai.workers.dev";
-            const proxyUrl = `${CLOUDFLARE_WORKER_PROXY}/?targetUrl=${encodeURIComponent(resolvedMediaUrl)}&filename=${encodeURIComponent(resolvedFileName)}`;
+            const isYouTube = resolvedMediaUrl.includes('googlevideo.com') || resolvedMediaUrl.includes('youtube.com') || resolvedMediaUrl.includes('youtu.be');
             
+            // RUTE HYBRID NYATA: 
+            // 1. YouTube langsung diunduh lewat koneksi perumahan user (CORS diperbolehkan, full-speed 30 Mbps, bebas blokir IP Cloudflare)
+            // 2. Non-YouTube dilewatkan ke Cloudflare Worker Proxy untuk mem-bypass CORS platform asal.
+            const CLOUDFLARE_WORKER_PROXY = "https://kreaverse-proxy.kreaverse-ai.workers.dev";
+            const mainProxyUrl = `${CLOUDFLARE_WORKER_PROXY}/?targetUrl=${encodeURIComponent(resolvedMediaUrl)}&filename=${encodeURIComponent(resolvedFileName)}`;
+            
+            const fetchUrl = isYouTube ? resolvedMediaUrl : mainProxyUrl;
             // Sertakan Cache-Buster dinamis untuk mengabaikan cache lokal/CDN dan memaksa download jaringan asli
-            const finalUrl = `${proxyUrl}&_cb=${Date.now()}`;
+            const finalUrl = `${fetchUrl}${fetchUrl.includes('?') ? '&' : '?'}_cb=${Date.now()}`;
             const fallbackProxyUrl = `https://corsproxy.io/?${encodeURIComponent(resolvedMediaUrl)}&_cb=${Date.now()}`;
 
             let startTime = Date.now();
@@ -1630,11 +1659,7 @@
                         textEl.innerText = '100% Berhasil Disimpan';
                         statusIcon.innerHTML = '<i class="fa-solid fa-circle-check" style="color:var(--success-color);"></i>';
                         
-                        setTimeout(() => { 
-                            container.style.display = 'none'; 
-                            container.classList.remove('active'); 
-                        }, 4000);
-                        
+                        // Selesai progress bar tetap berada di layar (tidak hilang otomatis sampai cari link baru)
                         showIphoneNotif('Unduhan Selesai', 'File telah sukses tersimpan di HP Anda.', 'fa-server');
                     } else {
                         if (!isFallback) {
@@ -1663,11 +1688,11 @@
                 setTimeout(() => {
                     container.style.display = 'none';
                     container.classList.remove('active');
-                    window.location.href = proxyUrl; 
+                    window.location.href = mainProxyUrl; 
                 }, 1500);
             }
 
-            // Memulai download lewat Cloudflare Worker Proxy utama secara nyata
+            // Memulai download lewat jalur tercepat secara nyata
             startXhrDownload(finalUrl, false);
         });
 
