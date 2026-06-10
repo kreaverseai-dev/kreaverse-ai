@@ -1535,9 +1535,17 @@
         directDownloadLink.addEventListener('click', () => {
             if (!resolvedMediaUrl) return;
             
-            showIphoneNotif('Menyiapkan Berkas...', 'Mengamankan jalur unduhan ke perangkat Anda.', 'fa-cloud-arrow-down');
+            const isYouTube = resolvedMediaUrl.includes('googlevideo.com') || resolvedMediaUrl.includes('youtube.com') || resolvedMediaUrl.includes('youtu.be');
             
-            // Gunakan Vercel Proxy yang menyertakan Content-Disposition attachment untuk memaksa download file asli dan nama kustom (Anti-Redirect Layar Hitam)
+            if (isYouTube) {
+                showIphoneNotif('Unduhan YouTube Aktif', 'Memproses unduhan langsung ke perangkat Anda...', 'fa-bolt');
+                // Alihkan ke realDownloadBtn agar mengunduh langsung lewat client-side XHR dengan bar kemajuan dinamis (Anti-Banned IP & Anti-Layar Hitam)
+                realDownloadBtn.click();
+                return;
+            }
+            
+            showIphoneNotif('Menyiapkan Berkas...', 'Mengamankan jalur unduhan ke perangkat Anda.', 'fa-cloud-arrow-down');
+            // Untuk non-YouTube, gunakan Vercel Proxy yang menyertakan Content-Disposition attachment untuk memaksa download file asli
             const proxyUrl = `/api/ytdl?targetUrl=${encodeURIComponent(resolvedMediaUrl)}&filename=${encodeURIComponent(resolvedFileName)}`;
             
             setTimeout(() => {
@@ -1572,11 +1580,14 @@
             titleEl.innerText = resolvedFileName;
             statusIcon.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin" style="color:var(--accent-color);"></i>';
             
-            // Menggunakan Vercel Proxy yang menyertakan Content-Disposition attachment untuk memaksa biner download secara stabil
-            const proxyUrl = `/api/ytdl?targetUrl=${encodeURIComponent(resolvedMediaUrl)}&filename=${encodeURIComponent(resolvedFileName)}`;
+            const isYouTube = resolvedMediaUrl.includes('googlevideo.com') || resolvedMediaUrl.includes('youtube.com') || resolvedMediaUrl.includes('youtu.be');
+            
+            // RUTE HYBRID: Hubungkan langsung (direct client-fetch) untuk YouTube guna melewati blokir IP serverless,
+            // dan gunakan Vercel Proxy untuk non-YouTube guna melewati pembatasan CORS pada platform asal.
+            const fetchUrl = isYouTube ? resolvedMediaUrl : "/api/ytdl?targetUrl=" + encodeURIComponent(resolvedMediaUrl) + "&filename=" + encodeURIComponent(resolvedFileName);
 
             const xhr = new XMLHttpRequest();
-            xhr.open('GET', proxyUrl, true);
+            xhr.open('GET', fetchUrl, true);
             xhr.responseType = 'blob';
 
             let startTime = Date.now();
@@ -1665,7 +1676,13 @@
                 setTimeout(() => {
                     container.style.display = 'none';
                     container.classList.remove('active');
-                    window.location.href = proxyUrl;
+                    // Penyelamat terakhir: arahkan langsung menggunakan query parameter title yang bersih dari karakter khusus
+                    const cleanTitleForYt = resolvedFileName.replace(/[^a-zA-Z0-9_\-\.]/g, '_');
+                    let ytDlUrl = resolvedMediaUrl;
+                    if (!ytDlUrl.includes('&title=')) {
+                        ytDlUrl += `&title=${encodeURIComponent(cleanTitleForYt)}`;
+                    }
+                    window.location.href = ytDlUrl;
                 }, 1500);
             }
 
