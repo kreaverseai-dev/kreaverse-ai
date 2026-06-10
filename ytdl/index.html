@@ -1125,7 +1125,10 @@
             const safeTitle = (title || "Media").replace(/[\\/:*?"<>|]/g, '');
             const finalExt = ext ? ext.toLowerCase() : (type === 'audio' ? 'mp3' : (type === 'thumb' ? 'jpg' : 'mp4'));
             resolvedFileExt = finalExt;
-            resolvedFileName = `${safeTitle}.${finalExt}`;
+            
+            // Sanitasi nama file agar kompatibel dengan Android Chrome Download Manager (bebas spasi & karakter khusus)
+            const cleanTitle = safeTitle.replace(/[^a-zA-Z0-9]/g, '_').replace(/_+/g, '_');
+            resolvedFileName = `${cleanTitle}.${finalExt}`;
 
             let decodedThumb = '';
             try { if(base64Thumb) decodedThumb = atob(base64Thumb); } catch(e){}
