@@ -615,15 +615,1026 @@
             }
         });
 
+        <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+        import { getFirestore, doc, onSnapshot, collection, addDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+
+        // FIREBASE SETUP
+        const firebaseConfig = {
+            apiKey: "AIzaSyAO8JV4jkJmbHChYvjUCS7wqfVbKr94tHM",
+            authDomain: "kreaverse-ai0107.firebaseapp.com",
+            databaseURL: "https://kreaverse-ai0107-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "kreaverse-ai0107",
+            storageBucket: "kreaverse-ai0107.firebasestorage.app",
+            messagingSenderId: "1048550433011",
+            appId: "1:1048550433011:web:0cf2e4074b20fe09909786",
+            measurementId: "G-CJHMKKYQ4C"
+        };
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        const isLoggedIn = localStorage.getItem('kreaverse_logged_in') === 'true';
+        const userId = localStorage.getItem('kreaverse_user_id');
+
+        window.showIphoneNotif = function(title, desc, iconClass = 'fa-circle-info') {
+            const existing = document.getElementById('iphone-island-toast');
+            if (existing) existing.remove();
+            const toast = document.createElement('div'); toast.id = 'iphone-island-toast'; toast.className = 'iphone-toast-container';
+            let iconColor = '#6366F1'; 
+            if (iconClass.includes('fa-circle-xmark') || iconClass.includes('fa-triangle-exclamation') || iconClass.includes('fa-lock')) iconColor = '#EF4444';
+            else if (iconClass.includes('fa-circle-info') || iconClass.includes('fa-circle-check') || iconClass.includes('fa-cloud-arrow-down') || iconClass.includes('fa-server')) iconColor = '#10B981';
+            toast.innerHTML = `<div class="iphone-toast-icon" style="color: ${iconColor};"><i class="fa-solid ${iconClass}"></i></div><div class="iphone-toast-content"><span class="iphone-toast-title">${title}</span><span class="iphone-toast-desc">${desc}</span></div>`;
+            document.body.appendChild(toast);
+            setTimeout(() => { toast.classList.add('show'); }, 50);
+            setTimeout(() => { toast.classList.remove('show'); setTimeout(() => toast.remove(), 400); }, 4000);
+        };
+
+        const DEFAULT_CONFIG = { baseUrls: {}, endpoints: {} };
+        let dbConfig = DEFAULT_CONFIG;
+        let isConfigLoaded = false;
+
+        onSnapshot(doc(db, "settings", "downloader_api"), (docSnap) => {
+            if (docSnap.exists()) {
+                dbConfig = docSnap.data();
+                isConfigLoaded = true;
+                renderDynamicOptions();
+                window.pingSemuaServer();
+            }
+        });
+
         let currentFormat = localStorage.getItem('kreaverse_ytdl_format') || 'video';
         let currentServer = 'auto';
         let currentPlatform = 'auto'; 
         let resolvedMediaUrl = ""; 
         let resolvedFileName = "";
+        let resolvedExt = ""; // REVISI: Menyimpan ekstensi secara global
+        let resolvedSizeStr = ""; // REVISI: Menyimpan ukuran asli file secara global
         let processTimer = null;
         let processSeconds = 0;
         let globalScannedOptions = []; 
         let isDualAudio = false; 
+        
+        let controlsTimeout; 
+
+        const btnText = document.getElementById('btn-text');
+        const resultContainer = document.getElementById('result-container');
+        const urlInput = document.getElementById('media-url');
+        const downloadBtn = document.getElementById('download-btn');
+        const directDownloadLink = document.getElementById('direct-download-link');
+        const realDownloadBtn = document.getElementById('real-download-btn');
+
+        const customAudio = document.getElementById('custom-audio');
+        const customVideo = document.getElementById('custom-video');
+        const mediaWrapper = document.getElementById('media-wrapper');
+        const audioThumbnail = document.getElementById('audio-thumbnail');
+        const audioTitleDisplay = document.getElementById('audio-title-display');
+        
+        const bufferingSpinner = document.getElementById('buffering-spinner');
+        const bufferingContent = document.getElementById('buffering-content'); 
+        
+        const playPauseBtn = document.getElementById('play-pause-btn');
+        const fullscreenBtn = document.getElementById('fullscreen-btn');
+        const progressFill = document.getElementById('progress-fill');
+        const currentTimeEl = document.getElementById('current-time');
+        const totalTimeEl = document.getElementById('total-time');
+        const playerMenuBtn = document.getElementById('player-menu-btn'); 
+        const playerControlsArea = document.getElementById('player-controls');
+        const ytWarningDesc = document.getElementById('yt-warning-text');
+        let activeMedia = null;
+
+        document.getElementById('clear-btn').addEventListener('click', () => {
+            urlInput.value = ''; urlInput.focus();
+        });
+        document.getElementById('paste-btn').addEventListener('click', async () => {
+            try { urlInput.value = await navigator.clipboard.readText(); } 
+            catch(e) { showIphoneNotif('Akses Gagal', 'Gagal membaca clipboard/salinan.', 'fa-triangle-exclamation'); }
+        });
+
+        const savedUrl = localStorage.getItem('kreaverse_ytdl_saved_url');
+        if (savedUrl) urlInput.value = savedUrl;
+        urlInput.addEventListener('input', () => { localStorage.setItem('kreaverse_ytdl_saved_url', urlInput.value); });
+
+        window.openSheet = (id) => document.getElementById(id).classList.add('active');
+        window.closeSheet = (id) => document.getElementById(id).classList.remove('active');
+        
+        document.querySelectorAll('.bottom-sheet-overlay, .in-player-sheet-overlay').forEach(overlay => {
+            overlay.addEventListener('click', (e) => { if (e.target === overlay) overlay.classList.remove('active'); });
+        });
+
+        window.changeFormat = (format) => {
+            if (currentFormat !== format) resetUI(); 
+            
+            currentFormat = format;
+            localStorage.setItem('kreaverse_ytdl_format', format); 
+            document.querySelectorAll('.format-btn').forEach(btn => btn.classList.remove('active'));
+            
+            if (format === 'video') {
+                document.getElementById('seg-video').classList.add('active');
+                ytWarningDesc.style.display = 'block';
+            } else if (format === 'audio') {
+                document.getElementById('seg-audio').classList.add('active');
+                ytWarningDesc.style.display = 'none';
+            } else {
+                document.getElementById('seg-thumb').classList.add('active');
+                ytWarningDesc.style.display = 'none';
+            }
+        };
+        changeFormat(currentFormat);
+
+        function updateLiveClock() {
+            const d = new Date();
+            let hours = d.getHours(); let minutes = d.getMinutes(); let seconds = d.getSeconds(); let ampm = hours >= 12 ? 'PM' : 'AM';
+            hours = hours % 12 || 12; 
+            minutes = minutes < 10 ? '0' + minutes : minutes;
+            seconds = seconds < 10 ? '0' + seconds : seconds;
+            const footerEl = document.getElementById('live-clock-footer');
+            if(footerEl) footerEl.innerText = `Waktu Server: ${hours}:${minutes}:${seconds} ${ampm} WIB`;
+        }
+        setInterval(updateLiveClock, 1000); updateLiveClock();
+
+        function setupMediaSession(title, isAudio, thumbSrc) {
+            if ('mediaSession' in navigator) {
+                const artworkSrc = thumbSrc && !thumbSrc.includes('Claude') ? thumbSrc : 'https://i.postimg.cc/mZdwnfsm/Claude-ai-icon-svg.png';
+                navigator.mediaSession.metadata = new MediaMetadata({
+                    title: title, artist: 'Kreaverse AI Player', album: isAudio ? 'Audio Premium' : 'Video Player',
+                    artwork: [{ src: artworkSrc, sizes: '512x512', type: 'image/png' }]
+                });
+                navigator.mediaSession.setActionHandler('play', () => { if(activeMedia) { activeMedia.play(); updatePlayPauseUI(true); } });
+                navigator.mediaSession.setActionHandler('pause', () => { if(activeMedia) { activeMedia.pause(); updatePlayPauseUI(false); } });
+            }
+        }
+
+        function updatePlayPauseUI(isPlaying) {
+            if (isPlaying) {
+                playPauseBtn.innerHTML = '<i class="fa-solid fa-pause"></i>';
+                if (currentFormat === 'audio') audioThumbnail.classList.add('playing');
+            } else {
+                playPauseBtn.innerHTML = '<i class="fa-solid fa-play" style="margin-left:2px;"></i>';
+                if (currentFormat === 'audio') audioThumbnail.classList.remove('playing');
+            }
+        }
+
+        function renderDynamicOptions() {
+            const serverCont = document.getElementById('server-options-container');
+            let srvHtml = `<button class="sheet-opt-btn ${currentServer === 'auto' ? 'selected' : ''}" onclick="window.selectServer('auto', 'Otomatis (Paling Cepat)')"><span>Otomatis (Paling Cepat)</span><i class="fa-solid fa-check ${currentServer === 'auto' ? '' : 'hidden'}"></i></button>`;
+            for (const [key, srv] of Object.entries(dbConfig.baseUrls || {})) {
+                if(!srv) continue;
+                const isSelected = currentServer === key;
+                srvHtml += `<button class="sheet-opt-btn ${isSelected ? 'selected' : ''}" onclick="window.selectServer('${key}', '${srv.name}')"><div style="display:flex; flex-direction:column; align-items:flex-start;"><span>${srv.name}</span><small id="ping-${key}" style="font-weight:600; margin-top:4px; color:var(--text-light);">Uji ping...</small></div><i class="fa-solid fa-check ${isSelected ? '' : 'hidden'}"></i></button>`;
+            }
+            serverCont.innerHTML = srvHtml;
+
+            const platCont = document.getElementById('platform-options-container');
+            let platHtml = `<button class="sheet-opt-btn ${currentPlatform === 'auto' ? 'selected' : ''}" onclick="window.selectPlatform('auto', 'Otomatis Deteksi Link', 'fa-globe')"><div style="display:flex; gap:10px; align-items:center;"><i class="fa-solid fa-globe"></i> Otomatis Deteksi Link</div><i class="fa-solid fa-check ${currentPlatform === 'auto' ? '' : 'hidden'}"></i></button>`;
+            for (const [key, plat] of Object.entries(dbConfig.endpoints || {})) {
+                if(!plat || key === 'allin' || key === 'auto') continue;
+                const isSelected = currentPlatform === key;
+                let icon = 'fa-solid fa-link';
+                const low = plat.name.toLowerCase();
+                if(low.includes('youtube')||low.includes('yt')) icon = 'fa-brands fa-youtube';
+                else if(low.includes('tiktok')||low.includes('douyin')) icon = 'fa-brands fa-tiktok';
+                else if(low.includes('instagram')||low.includes('ig')) icon = 'fa-brands fa-instagram';
+                else if(low.includes('facebook')||low.includes('fb')) icon = 'fa-brands fa-facebook';
+                else if(low.includes('twitter')||low.includes('x')) icon = 'fa-brands fa-twitter';
+                else if(low.includes('spotify')) icon = 'fa-brands fa-spotify';
+
+                platHtml += `<button class="sheet-opt-btn ${isSelected ? 'selected' : ''}" onclick="window.selectPlatform('${key}', '${plat.name}', '${icon}')"><div style="display:flex; gap:10px; align-items:center;"><i class="${icon}"></i> ${plat.name}</div><i class="fa-solid fa-check ${isSelected ? '' : 'hidden'}"></i></button>`;
+            }
+            platCont.innerHTML = platHtml;
+        }
+
+        window.selectPlatform = (val, text, iconClass) => {
+            currentPlatform = val; document.getElementById('label-platform').innerText = text;
+            const platformPill = document.querySelector('.settings-pills .pill:first-child');
+            if(platformPill) platformPill.querySelector('i').className = iconClass;
+            renderDynamicOptions(); closeSheet('sheet-platform');
+        };
+
+        window.selectServer = (val, text) => { 
+            currentServer = val; document.getElementById('label-server').innerText = text; 
+            renderDynamicOptions(); closeSheet('sheet-server'); window.pingSemuaServer(); 
+        };
+
+        window.pingSemuaServer = async () => {
+            const pingPillText = document.getElementById('ping-status-text');
+            pingPillText.innerText = "Menguji..."; pingPillText.style.color = "var(--text-secondary)";
+            let fastestPing = 9999; let fastestServerKey = null;
+
+            const pingPromises = Object.entries(dbConfig.baseUrls || {}).map(async ([key, srv]) => {
+                if(!srv || !srv.url) return;
+                const pingEl = document.getElementById(`ping-${key}`);
+                if(pingEl) { pingEl.innerText = "Menguji..."; pingEl.style.color = "var(--text-light)"; }
+                try {
+                    const start = performance.now();
+                    await fetch(srv.url + "?t=" + Date.now(), { method: "GET", mode: "no-cors", cache: "no-store" });
+                    const dur = Math.round(performance.now() - start);
+                    if(dur < fastestPing) { fastestPing = dur; fastestServerKey = key; }
+                    if(pingEl) {
+                        pingEl.innerText = `${dur} ms`;
+                        if(dur < 300) pingEl.style.color = 'var(--success-color)';
+                        else if(dur < 800) pingEl.style.color = '#F59E0B';
+                        else pingEl.style.color = 'var(--danger-color)';
+                    }
+                } catch (e) {
+                    if(pingEl) { pingEl.innerText = "Offline"; pingEl.style.color = 'var(--danger-color)'; }
+                }
+            });
+
+            await Promise.allSettled(pingPromises);
+
+            if(fastestServerKey) {
+                pingPillText.innerText = `${fastestPing} ms`;
+                if(fastestPing < 300) pingPillText.style.color = 'var(--success-color)';
+                else if(fastestPing < 800) pingPillText.style.color = '#F59E0B';
+                else pingPillText.style.color = 'var(--danger-color)';
+                return fastestServerKey;
+            } else {
+                pingPillText.innerText = "Offline";
+                pingPillText.style.color = 'var(--danger-color)';
+                return null;
+            }
+        };
+
+        function resetUI() {
+            resultContainer.classList.remove('active');
+            customAudio.src = ""; customVideo.src = ""; activeMedia = null; isDualAudio = false;
+            updatePlayPauseUI(false); progressFill.style.width = '0%';
+            currentTimeEl.innerText = '0:00'; totalTimeEl.innerText = '0:00';
+            clearInterval(processTimer); document.getElementById('progress-container').classList.remove('active');
+            document.getElementById('real-download-progress-container').classList.add('hidden');
+            
+            bufferingSpinner.classList.add('hidden'); 
+            bufferingContent.innerHTML = '';
+            
+            document.getElementById('thumb-preview').style.display = "none";
+            document.getElementById('thumb-image').src = "";
+            document.getElementById('audio-ui').style.display = "none";
+            customVideo.style.display = "block"; 
+            document.getElementById('player-controls').style.display = "flex";
+            document.getElementById('player-watermark').style.display = "block";
+            mediaWrapper.classList.remove('audio-mode');
+            globalScannedOptions = [];
+        }
+
+        function getYouTubeId(url) {
+            const regExp = /^.*(youtu\.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+            const match = url.match(regExp);
+            if (match && match[2].length == 11) return match[2];
+            return false;
+        }
+
+        function extractMediaLinks(dataObj) {
+            let extracted = []; let globalTitle = "Media Kreaverse"; let globalDuration = ""; let globalThumbnail = "";
+            const MAX_DEPTH = 10; 
+            function findMeta(obj, depth = 0) {
+                if(!obj || typeof obj !== 'object' || depth > MAX_DEPTH) return;
+                Object.keys(obj).forEach(k => {
+                    let kl = k.toLowerCase();
+                    if(typeof obj[k] === 'string' || typeof obj[k] === 'number') {
+                        if((kl === 'title' || kl === 'name' || kl === 'desc' || kl === 'caption') && globalTitle === "Media Kreaverse") globalTitle = obj[k];
+                        if((kl === 'duration' || kl === 'time') && !globalDuration) globalDuration = obj[k];
+                        if((kl.includes('thumb') || kl.includes('cover') || kl.includes('image') || kl.includes('picture')) && typeof obj[k] === 'string' && obj[k].startsWith('http')) {
+                            if(!globalThumbnail) globalThumbnail = obj[k];
+                        }
+                    } else if (typeof obj[k] === 'object') findMeta(obj[k], depth + 1);
+                });
+            }
+            findMeta(dataObj);
+
+            function scanForMedia(obj, depth = 0) {
+                if(!obj || typeof obj !== 'object' || depth > MAX_DEPTH) return;
+                if(Array.isArray(obj)) { obj.forEach(item => scanForMedia(item, depth + 1)); return; }
+                let url = null; let quality = "Normal"; let type = "unknown"; let size = "";
+
+                for(let k in obj) {
+                    let val = obj[k];
+                    if(typeof val === 'string' && val.startsWith('http') && !val.includes('thumb') && !val.includes('profile') && !val.includes('avatar')) {
+                        let kl = k.toLowerCase();
+                        if(kl.includes('url') || kl.includes('link') || kl.includes('dl') || kl.includes('play') || kl.includes('video') || kl.includes('audio')) {
+                            url = val; break;
+                        }
+                    }
+                }
+
+                if(url) {
+                    let extAsli = type === 'audio' ? 'MP3' : 'MP4';
+                    for(let k in obj) {
+                        let val = obj[k]; let kl = k.toLowerCase();
+                        if(typeof val === 'string' || typeof val === 'number') {
+                            if(kl.includes('quality') || kl.includes('render') || kl.includes('resolu') || kl.includes('format')) quality = val;
+                            if(kl.includes('size') || kl.includes('filesize')) size = val;
+                            if(kl.includes('type') || kl.includes('ext')) {
+                                let vl = String(val).toLowerCase();
+                                if(vl.includes('mp4') || vl.includes('video')) { type = 'video'; extAsli = 'MP4'; }
+                                else if(vl.includes('webm')) { type = 'video'; extAsli = 'WEBM'; }
+                                else if(vl.includes('mov')) { type = 'video'; extAsli = 'MOV'; }
+                                else if(vl.includes('mp3') || vl.includes('audio')) { type = 'audio'; extAsli = 'MP3'; }
+                                else if(vl.includes('m4a')) { type = 'audio'; extAsli = 'M4A'; }
+                                else if(vl.includes('ogg')) { type = 'audio'; extAsli = 'OGG'; }
+                            }
+                        }
+                    }
+                    
+                    if(type === 'unknown') {
+                        let ul = url.toLowerCase();
+                        if(ul.includes('.webm')) { type = 'video'; extAsli = 'WEBM'; }
+                        else if(ul.includes('.m4a')) { type = 'audio'; extAsli = 'M4A'; }
+                        else if(ul.includes('.mp3') || ul.includes('audio')) { type = 'audio'; extAsli = 'MP3'; }
+                        else type = 'video'; 
+                    }
+
+                    if(currentFormat === 'audio' && type === 'audio') {
+                        let num = parseInt(quality);
+                        if (!isNaN(num)) quality = num < 64 ? "64 kbps" : num < 128 ? "128 kbps" : num < 192 ? "192 kbps" : num < 256 ? "256 kbps" : "320 kbps";
+                        if(!extracted.some(r => r.url === url)) extracted.push({url, quality, type, size, ext: extAsli});
+                    }
+                    if(currentFormat === 'video' && type === 'video') {
+                        if(String(quality).toLowerCase() === 'hd') quality = 'High Definition (HD)';
+                        if(String(quality).toLowerCase() === 'sd') quality = 'Standar (SD)';
+                        if(!extracted.some(r => r.url === url)) extracted.push({url, quality, type, size, ext: extAsli});
+                    }
+                    if(currentFormat === 'video' && type === 'audio') {
+                        if(!extracted.some(r => r.url === url)) extracted.push({url, quality, type: 'audio', size, ext: extAsli});
+                    }
+                }
+                for(let k in obj) { if(typeof obj[k] === 'object') scanForMedia(obj[k], depth + 1); }
+            }
+            scanForMedia(dataObj);
+
+            extracted.sort((a, b) => {
+                const getScore = (qStr) => {
+                    let s = String(qStr).toLowerCase();
+                    if(s.includes('2160') || s.includes('4k')) return 2160;
+                    if(s.includes('1440')) return 1440;
+                    if(s.includes('1080')) return 1080;
+                    if(s.includes('720')) return 720;
+                    if(s.includes('480')) return 480;
+                    if(s.includes('360')) return 360;
+                    if(s.includes('320k') || s.includes('320')) return 320;
+                    if(s.includes('256k') || s.includes('256')) return 256;
+                    if(s.includes('192k') || s.includes('192')) return 192;
+                    return 0; 
+                };
+                return getScore(b.quality) - getScore(a.quality); 
+            });
+            return { links: extracted, title: globalTitle, duration: globalDuration, thumbnail: globalThumbnail };
+        }
+
+        async function smartFetch(baseUrl, pathsArray, mediaUrl, serverName) {
+            let lastError = null;
+            for (let path of pathsArray) {
+                const separator = path.includes('?') ? '&url=' : '?url=';
+                const fullUrl = `${baseUrl}${path}${separator}${encodeURIComponent(mediaUrl)}`;
+                try {
+                    let response;
+                    try { response = await fetch(fullUrl); } catch (directErr) {
+                        const proxyUrl = "/api/ytdl?targetUrl=" + encodeURIComponent(fullUrl);
+                        response = await fetch(proxyUrl);
+                    }
+                    if (response.headers.get("content-type")?.includes("application/json")) {
+                        const data = await response.json();
+                        if (data.status === false || data.error || data.message || data.msg) { lastError = new Error(data.message || data.msg || data.error); continue; }
+                        return { data, usedPath: path };
+                    }
+                    if (!response.ok) { lastError = new Error(`HTTP Error ${response.status}`); continue; }
+                    return { data: await response.json(), usedPath: path };
+                } catch (err) { lastError = err; continue; }
+            }
+            throw lastError || new Error(`Tautan tidak dapat diakses atau fitur terproteksi penyedia.`);
+        }
+
+        let simProgress = 0; let simInterval;
+        function startSimulatedProgress() {
+            simProgress = 0; document.getElementById('progress-container').classList.add('active');
+            simInterval = setInterval(() => {
+                if (simProgress < 90) {
+                    simProgress += Math.random() * 15; if (simProgress > 90) simProgress = 90;
+                    document.getElementById('progress-bar-fill').style.width = `${simProgress}%`;
+                    document.getElementById('progress-text').innerText = `Memproses... ${Math.floor(simProgress)}%`;
+                    document.getElementById('progress-speed').innerText = `${(Math.random() * 5 + 2).toFixed(1)} MB/s`;
+                    document.getElementById('progress-status-desc').innerText = "Mengunduh dari server Kreaverse...";
+                }
+            }, 500);
+        }
+
+        function completeProgress() {
+            clearInterval(simInterval); document.getElementById('progress-bar-fill').style.width = `100%`;
+            document.getElementById('progress-text').innerText = `Selesai 100%`;
+            setTimeout(() => { document.getElementById('progress-container').classList.remove('active'); }, 1000);
+        }
+
+        async function processDownload(mediaUrl) {
+            if (!isConfigLoaded || !dbConfig.baseUrls || Object.keys(dbConfig.baseUrls).length === 0) {
+                document.getElementById('progress-status-desc').innerText = "Membuka koneksi aman...";
+                try {
+                    const docSnap = await getDoc(doc(db, "settings", "downloader_api"));
+                    if (docSnap.exists()) { dbConfig = docSnap.data(); isConfigLoaded = true; renderDynamicOptions(); }
+                    else { throw new Error("Sistem belum siap."); }
+                } catch(e) { throw new Error("Gagal mengambil rute server. Periksa koneksi."); }
+            }
+            
+            let targetServerKey = currentServer;
+            if (currentServer === 'auto') {
+                targetServerKey = await pingSemuaServer(); 
+                if (!targetServerKey || !dbConfig.baseUrls[targetServerKey]) targetServerKey = Object.keys(dbConfig.baseUrls)[0]; 
+            }
+            const srvObj = dbConfig.baseUrls[targetServerKey];
+            let pathsToTry = [];
+            if (currentPlatform === 'auto') {
+                for (const key in dbConfig.endpoints) {
+                    const ep = dbConfig.endpoints[key];
+                    let pText = (ep.paths && ep.paths[targetServerKey]) ? ep.paths[targetServerKey] : ep.path;
+                    if (pText) pathsToTry = pathsToTry.concat(pText.split('\n').map(p => p.trim()).filter(p => p !== ""));
+                }
+            } else {
+                const ep = dbConfig.endpoints[currentPlatform];
+                if (ep) {
+                    let pText = (ep.paths && ep.paths[targetServerKey]) ? ep.paths[targetServerKey] : ep.path;
+                    if (pText) pathsToTry = pText.split('\n').map(p => p.trim()).filter(p => p !== "");
+                }
+            }
+            pathsToTry = [...new Set(pathsToTry)];
+            const fetchResult = await smartFetch(srvObj.url, pathsToTry, mediaUrl, srvObj.name);
+            const data = fetchResult.data;
+
+            let title = data.title || (data.data && data.data.title) || (data.result && data.result.title) || "Video";
+            let duration = data.duration || (data.data && data.data.duration) || (data.result && data.result.duration) || "";
+            if(data.data && Array.isArray(data.data) && data.data[0].meta) { title = data.data[0].meta.title || title; duration = data.data[0].meta.duration || duration; }
+
+            const extractedData = extractMediaLinks(data);
+            if (extractedData.title !== "Media Kreaverse") title = extractedData.title;
+            if (!duration) duration = extractedData.duration;
+
+            if (currentFormat === 'thumb') {
+                let thumbOpts = [];
+                const ytid = getYouTubeId(mediaUrl);
+                if (ytid) {
+                    thumbOpts = [
+                        { url: `https://i.ytimg.com/vi/${ytid}/maxresdefault.jpg`, quality: 'HD MaxRes (Resolusi Tertinggi)', type: 'thumb', ext: 'JPG' },
+                        { url: `https://i.ytimg.com/vi/${ytid}/hqdefault.jpg`, quality: 'HQ (Kualitas Standar)', type: 'thumb', ext: 'JPG' },
+                        { url: `https://i.ytimg.com/vi/${ytid}/mqdefault.jpg`, quality: 'MQ (Kualitas Ringan)', type: 'thumb', ext: 'JPG' }
+                    ];
+                } else if (extractedData.thumbnail) {
+                    thumbOpts.push({ url: extractedData.thumbnail, quality: 'Original (Kualitas Asli)', type: 'thumb', ext: 'JPG' });
+                } else {
+                    throw new Error("Gambar thumbnail/cover tidak ditemukan untuk platform ini.");
+                }
+                return { title: `Thumbnail - ${title}`, duration: "", provider: srvObj.name, options: thumbOpts, thumbnail: thumbOpts[0].url };
+            }
+
+            let mediaList = extractedData.links || [];
+            if (mediaList.length === 0) throw new Error(`Media gagal diambil. Tautan mungkin diprivasi.`);
+            
+            globalScannedOptions = mediaList;
+            let filteredList = mediaList.filter(m => m.type === currentFormat);
+            if (filteredList.length === 0) throw new Error(`Format ${currentFormat.toUpperCase()} tidak tersedia untuk tautan ini.`);
+
+            return { title: `Kreaverse AI - ${title}`, duration: duration, provider: srvObj.name, options: filteredList, thumbnail: extractedData.thumbnail };
+        }
+
+        downloadBtn.addEventListener('click', async () => {
+            if (!isLoggedIn) {
+                showIphoneNotif('Akses Terkunci', 'Silakan masuk ke akun Anda.', 'fa-lock');
+                setTimeout(() => { window.location.href = '/login/index.html'; }, 1500); return;
+            }
+            const mediaUrl = urlInput.value.trim();
+            if (!mediaUrl) return showIphoneNotif('Tautan kosong', 'Masukkan tautan terlebih dahulu', 'fa-triangle-exclamation');
+            
+            resetUI();
+            downloadBtn.disabled = true; processSeconds = 0; btnText.innerText = `Memproses...`;
+            startSimulatedProgress();
+            processTimer = setInterval(() => { processSeconds++; }, 1000);
+
+            try {
+                const resultData = await processDownload(mediaUrl);
+                completeProgress(); clearInterval(processTimer);
+                downloadBtn.disabled = false; btnText.innerText = 'Unduh Sekarang';
+
+                const sheetList = document.getElementById('scanned-media-list');
+                sheetList.innerHTML = resultData.options.map((opt, i) => {
+                    let icon, badgeClass, audioBadge = '', displayTitle;
+                    
+                    if (opt.type === 'thumb') {
+                        icon = 'fa-image'; badgeClass = 'q-badge'; displayTitle = `${resultData.title}`;
+                    } else if (opt.type === 'audio') {
+                        icon = 'fa-music'; badgeClass = 'q-badge audio'; displayTitle = `AUDIO | ${resultData.title}`;
+                    } else {
+                        icon = 'fa-video'; badgeClass = 'q-badge video'; displayTitle = `VIDEO | ${resultData.title}`;
+                        const safeQuality = String(opt.quality).toUpperCase();
+                        if (safeQuality.includes('1080') || safeQuality.includes('1440') || safeQuality.includes('2160') || safeQuality.includes('4K') || safeQuality.includes('MUTE') || safeQuality.includes('NO AUDIO')) {
+                            audioBadge = `<span class="audio-indicator-badge no-audio"><i class="fa-solid fa-volume-xmark"></i> Bisu</span>`;
+                        } else {
+                            audioBadge = `<span class="audio-indicator-badge has-audio"><i class="fa-solid fa-volume-high"></i> Bersuara</span>`;
+                        }
+                    }
+
+                    const sizeStr = opt.size ? `<span style="font-size:0.75rem; color:var(--text-light); margin-top:4px;">Ukuran: ${opt.size}</span>` : '';
+                    const extStr = opt.ext ? `<span class="q-badge format">${opt.ext}</span>` : '';
+                    const safeTitle = resultData.title.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+                    const safeThumb = resultData.thumbnail ? btoa(resultData.thumbnail) : '';
+
+                    return `
+                        <button class="sheet-opt-btn" onclick="tampilkanHasilFinal('${opt.url}', '${safeTitle}', '${resultData.duration}', '${resultData.provider}', '${opt.type}', '${opt.quality}', '${opt.size}', '${safeThumb}', '${opt.ext}')">
+                            <div style="display:flex; align-items:flex-start;">
+                                <i class="fa-solid ${icon}" style="margin-right:12px; color:var(--accent-color); margin-top:4px; font-size:1.2rem;"></i>
+                                <div style="display:flex; flex-direction:column;">
+                                    <div style="font-weight:800; color:var(--text-primary); margin-bottom:2px; display:flex; align-items:center; flex-wrap:wrap; gap:4px;">
+                                        ${opt.quality} <span class="${badgeClass}">${opt.type.toUpperCase()}</span> ${extStr} ${audioBadge}
+                                    </div>
+                                    <div style="font-size:0.8rem; color:var(--text-secondary); line-height:1.4; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;">${displayTitle}</div>
+                                    ${sizeStr}
+                                </div>
+                            </div>
+                            <i class="fa-solid fa-chevron-right" style="font-size:0.9rem; color:var(--text-light);"></i>
+                        </button>
+                    `;
+                }).join('');
+                openSheet('sheet-select-media');
+            } catch (error) {
+                clearInterval(simInterval); document.getElementById('progress-container').classList.remove('active'); clearInterval(processTimer);
+                showIphoneNotif('Pemrosesan gagal', error.message, 'fa-triangle-exclamation');
+                downloadBtn.disabled = false; btnText.innerText = 'Unduh Sekarang';
+            }
+        });
+
+        // REVISI: Fungsi Tampilkan Hasil Final (Menyimpan Ext dan Size Asli untuk Download Kreaverse)
+        window.tampilkanHasilFinal = (url, title, duration, provider, type, quality, size, base64Thumb, ext) => {
+            closeSheet('sheet-select-media');
+            resolvedMediaUrl = url;
+            const safeTitle = (title || "Media").replace(/[\\/:*?"<>|]/g, '');
+            const finalExt = ext ? ext.toLowerCase() : (type === 'audio' ? 'mp3' : (type === 'thumb' ? 'jpg' : 'mp4'));
+            
+            resolvedFileName = `${safeTitle}.${finalExt}`;
+            resolvedExt = finalExt; // Simpan ekstensi untuk memanipulasi MIME type nanti
+            resolvedSizeStr = size; // Simpan info size asli
+
+            let decodedThumb = '';
+            try { if(base64Thumb) decodedThumb = atob(base64Thumb); } catch(e){}
+            const finalThumb = decodedThumb || 'https://i.postimg.cc/mZdwnfsm/Claude-ai-icon-svg.png';
+            audioThumbnail.src = finalThumb;
+
+            document.getElementById('download-stats').innerHTML = `
+                <p><strong>Judul:</strong> ${title}</p>
+                <p><strong>Pilihan Anda:</strong> ${quality} (${type.toUpperCase()}) | ${finalExt.toUpperCase()} ${size ? `- ${size}` : ''} </p>
+                ${duration ? `<p><strong>Durasi:</strong> ${duration}</p>` : ''}
+                <p><strong>Waktu Muat:</strong> Selesai dalam ${processSeconds} dtk - ${provider}</p>
+            `;
+            audioTitleDisplay.innerText = title;
+            
+            if (type === 'thumb') {
+                mediaWrapper.classList.remove('audio-mode'); customVideo.style.display = "none";
+                document.getElementById('audio-ui').style.display = "none";
+                
+                document.getElementById('player-controls').style.display = "none";
+                document.getElementById('player-watermark').style.display = "none";
+                document.getElementById('real-download-btn').classList.add('hidden'); 
+                
+                document.getElementById('thumb-preview').style.display = "flex";
+                document.getElementById('thumb-image').src = url;
+                activeMedia = null;
+                
+            } else if (type === 'video') {
+                isDualAudio = false;
+                const bestAudio = globalScannedOptions.filter(o => o.type === 'audio').sort((a, b) => parseInt(b.quality) - parseInt(a.quality))[0];
+                if (bestAudio && bestAudio.url) { 
+                    customAudio.src = bestAudio.url; isDualAudio = true; customVideo.muted = true; 
+                } 
+                else { customVideo.muted = false; }
+                
+                activeMedia = customVideo; customVideo.src = url;
+                mediaWrapper.classList.remove('audio-mode'); customVideo.style.display = "block";
+                document.getElementById('audio-ui').style.display = "none";
+                document.getElementById('thumb-preview').style.display = "none";
+                
+                document.getElementById('player-controls').style.display = "flex";
+                document.getElementById('player-watermark').style.display = "block";
+                document.getElementById('real-download-btn').classList.remove('hidden');
+
+            } else {
+                activeMedia = customAudio; customAudio.src = url; customAudio.muted = false;
+                mediaWrapper.classList.add('audio-mode'); customVideo.style.display = "none";
+                document.getElementById('audio-ui').style.display = "flex";
+                document.getElementById('thumb-preview').style.display = "none";
+                
+                document.getElementById('player-controls').style.display = "flex";
+                document.getElementById('player-watermark').style.display = "block";
+                document.getElementById('real-download-btn').classList.remove('hidden');
+            }
+
+            if(type !== 'thumb') setupMediaSession(title, type === 'audio', finalThumb);
+            resultContainer.classList.add('active');
+            setTimeout(() => { resultContainer.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 100);
+
+            if(isLoggedIn && userId) {
+                addDoc(collection(db, "users", userId, "downloads"), { url: urlInput.value.trim(), fileName: title, provider: provider, type: type, ext: finalExt.toUpperCase(), directUrl: url, size: size||"", thumbnail: finalThumb, timestamp: Date.now() })
+                .then(()=>console.log("Riwayat Disimpan"))
+                .catch(e=>console.log(e));
+            }
+            showIphoneNotif('Berhasil diproses', `Media siap dinikmati`, 'fa-circle-check');
+        };
+
+        playerMenuBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const sheetList = document.getElementById('player-menu-options');
+            let html = '';
+            
+            if (currentFormat === 'audio') {
+                html += `
+                    <div class="equalizer-container">
+                        <div class="eq-bar"></div><div class="eq-bar"></div><div class="eq-bar"></div><div class="eq-bar"></div><div class="eq-bar"></div>
+                    </div>
+                    <div style="text-align:center; font-size:0.85rem; color:var(--text-secondary); margin-bottom:20px; font-weight:700;">Equalizer Kreaverse AI Aktif</div>
+                `;
+            }
+
+            html += globalScannedOptions.filter(o => o.type === currentFormat).map(opt => {
+                const isActive = opt.url === resolvedMediaUrl ? 'selected' : '';
+                let audioBadge = '', extBadge = '';
+                if (currentFormat === 'video') {
+                     const safeQuality = String(opt.quality).toUpperCase();
+                     if (safeQuality.includes('1080') || safeQuality.includes('1440') || safeQuality.includes('2160') || safeQuality.includes('4K') || safeQuality.includes('MUTE') || safeQuality.includes('NO AUDIO')) {
+                         audioBadge = `<span class="audio-indicator-badge no-audio"><i class="fa-solid fa-volume-xmark"></i> Bisu</span>`;
+                     } else {
+                         audioBadge = `<span class="audio-indicator-badge has-audio"><i class="fa-solid fa-volume-high"></i> Bersuara</span>`;
+                     }
+                }
+                if (opt.ext) {
+                    extBadge = `<span class="q-badge format">${opt.ext}</span>`;
+                }
+
+                return `
+                    <button class="sheet-opt-btn ${isActive}" onclick="changeVideoQuality('${opt.url}', '${opt.quality}', '${opt.ext}')">
+                        <div style="display:flex; flex-direction:column; gap:4px;">
+                            <span style="font-weight:800; display:flex; align-items:center; flex-wrap:wrap; gap:6px;">${opt.quality} ${extBadge} ${audioBadge}</span>
+                            ${opt.size ? `<span style="font-size:0.75rem; color:var(--text-light); font-weight:600;">Ukuran: ${opt.size}</span>` : ''}
+                        </div>
+                        <i class="fa-solid fa-check ${isActive ? '' : 'hidden'}"></i>
+                    </button>
+                `;
+            }).join('');
+
+            sheetList.innerHTML = html;
+            openSheet('player-settings-sheet'); 
+        });
+
+        window.changeVideoQuality = (newUrl, qualityName, extName) => {
+            if(!activeMedia) return;
+            const currentTime = activeMedia.currentTime; 
+            const wasPlaying = !activeMedia.paused;
+            
+            closeSheet('player-settings-sheet');
+            bufferingSpinner.classList.remove('hidden'); 
+            bufferingContent.innerHTML = `
+                <i class="fa-solid fa-circle-notch fa-spin" style="font-size: 2rem; color: var(--accent-color);"></i>
+                <span style="font-size:0.85rem; font-weight:600; margin-top:10px; color:#FFF;">Menyesuaikan kualitas...</span>
+            `;
+            
+            resolvedMediaUrl = newUrl;
+            if(extName) {
+                const arr = resolvedFileName.split('.');
+                arr.pop(); 
+                resolvedFileName = arr.join('.') + '.' + extName.toLowerCase();
+                resolvedExt = extName.toLowerCase(); // REVISI: Update ekstensi untuk proses download
+            }
+
+            activeMedia.src = newUrl;
+            activeMedia.load(); 
+            
+            activeMedia.oncanplay = () => {
+                activeMedia.currentTime = currentTime; 
+                if (!isDualAudio) activeMedia.muted = false; 
+                if(wasPlaying) {
+                    activeMedia.play().catch(e=>{});
+                    if(isDualAudio) customAudio.play().catch(e=>{});
+                }
+                bufferingSpinner.classList.add('hidden');
+                activeMedia.oncanplay = null; 
+            };
+            showIphoneNotif('Resolusi Diubah', `Kualitas disesuaikan ke ${qualityName}`, 'fa-wand-magic-sparkles');
+        };
+
+        function adjustVideoWatermark() {
+            if (currentFormat !== 'video' || activeMedia !== customVideo || !customVideo.videoWidth) return;
+            const wrapper = document.getElementById('media-wrapper');
+            const wm = document.getElementById('player-watermark');
+            if(!wm || document.getElementById('thumb-preview').style.display === "flex") return;
+            
+            const wRect = wrapper.getBoundingClientRect();
+            const wRatio = wRect.width / wRect.height;
+            const vRatio = customVideo.videoWidth / customVideo.videoHeight;
+            
+            let actW, actH;
+            if (wRatio > vRatio) {
+                actH = wRect.height; actW = actH * vRatio;
+            } else {
+                actW = wRect.width; actH = actW / vRatio;
+            }
+            
+            const offX = (wRect.width - actW) / 2;
+            const offY = (wRect.height - actH) / 2;
+            
+            wm.style.right = (offX + 10) + 'px';
+            wm.style.top = (offY + 15) + 'px';
+        }
+
+        window.addEventListener('resize', adjustVideoWatermark);
+
+        function formatTime(sec) {
+            if(isNaN(sec)) return "0:00";
+            const m = Math.floor(sec / 60); const s = Math.floor(sec % 60);
+            return `${m}:${s < 10 ? '0' : ''}${s}`;
+        }
+
+        function togglePlayerControls() {
+            if(currentFormat !== 'video') return; 
+            playerControlsArea.parentNode.classList.toggle('hide-controls');
+        }
+        
+        function resetControlsTimer() {
+            if(currentFormat !== 'video') return;
+            playerControlsArea.parentNode.classList.remove('hide-controls');
+            clearTimeout(controlsTimeout);
+            controlsTimeout = setTimeout(() => {
+                if(activeMedia && !activeMedia.paused) {
+                    playerControlsArea.parentNode.classList.add('hide-controls');
+                }
+            }, 3000);
+        }
+
+        mediaWrapper.addEventListener('click', (e) => {
+            if(e.target.closest('#player-controls')) return; 
+            togglePlayerControls();
+        });
+
+        mediaWrapper.addEventListener('mousemove', resetControlsTimer);
+
+        playPauseBtn.addEventListener('click', () => {
+            if(!activeMedia) return;
+            if (activeMedia.paused) { 
+                activeMedia.play(); updatePlayPauseUI(true); 
+                if(isDualAudio) customAudio.play().catch(e=>{});
+            } else { 
+                activeMedia.pause(); updatePlayPauseUI(false); 
+                if(isDualAudio) customAudio.pause();
+            }
+            resetControlsTimer();
+        });
+
+        fullscreenBtn.addEventListener('click', () => {
+            if(!activeMedia || currentFormat === 'audio') return;
+            if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+                if (mediaWrapper.requestFullscreen) mediaWrapper.requestFullscreen();
+                else if (mediaWrapper.webkitRequestFullscreen) mediaWrapper.webkitRequestFullscreen(); 
+            } else {
+                if (document.exitFullscreen) document.exitFullscreen();
+                else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
+            }
+            resetControlsTimer();
+        });
+
+        document.addEventListener('fullscreenchange', () => {
+            if (document.fullscreenElement) {
+                if (activeMedia && activeMedia.videoWidth > activeMedia.videoHeight) { try { screen.orientation.lock('landscape').catch(e=>{}); } catch(e){} }
+            } else { 
+                try { screen.orientation.unlock().catch(e=>{}); } catch(e){} 
+            }
+            setTimeout(adjustVideoWatermark, 100); 
+        });
+
+        let bufferSimInterval;
+        [customAudio, customVideo].forEach(media => {
+            media.addEventListener('timeupdate', () => {
+                if(media !== activeMedia) return;
+                const percent = (media.duration) ? (media.currentTime / media.duration) * 100 : 0;
+                progressFill.style.width = `${percent}%`;
+                currentTimeEl.innerText = formatTime(media.currentTime);
+            });
+            media.addEventListener('loadedmetadata', () => {
+                if(media !== activeMedia) return;
+                totalTimeEl.innerText = formatTime(media.duration);
+                setTimeout(adjustVideoWatermark, 100);
+            });
+            media.addEventListener('ended', () => {
+                if(media !== activeMedia) return;
+                updatePlayPauseUI(false); progressFill.style.width = '0%';
+                playerControlsArea.parentNode.classList.remove('hide-controls');
+            });
+            media.addEventListener('seeked', () => {
+                if(media === activeMedia && isDualAudio) customAudio.currentTime = activeMedia.currentTime;
+            });
+            media.addEventListener('waiting', () => { 
+                if(media === activeMedia) {
+                    bufferingSpinner.classList.remove('hidden'); 
+                    if(isDualAudio) customAudio.pause();
+                    
+                    let simMb = 0; clearInterval(bufferSimInterval);
+                    bufferSimInterval = setInterval(() => {
+                        simMb += (Math.random() * 2 + 0.5);
+                        bufferingContent.innerHTML = `
+                            <i class="fa-solid fa-circle-notch fa-spin" style="font-size: 2rem; color: var(--accent-color);"></i>
+                            <span style="font-size:0.85rem; font-weight:600; margin-top:10px; color:#FFF;">Memuat data... (${simMb.toFixed(1)} MB)</span>
+                        `;
+                    }, 500);
+                }
+            });
+            media.addEventListener('playing', () => { 
+                if(media === activeMedia) {
+                    bufferingSpinner.classList.add('hidden'); 
+                    clearInterval(bufferSimInterval);
+                    if(isDualAudio && !activeMedia.paused) customAudio.play().catch(e=>{});
+                    adjustVideoWatermark();
+                    resetControlsTimer();
+                } 
+            });
+            media.addEventListener('error', () => {
+                if(media === activeMedia) {
+                    bufferingContent.innerHTML = `
+                        <i class="fa-solid fa-triangle-exclamation" style="font-size:2.2rem; color:var(--danger-color);"></i>
+                        <span style="font-size:0.9rem; text-align:center; padding-top:10px; color:#FFF; font-weight:700; line-height:1.4;">
+                            Media Dilindungi Penyedia.<br>
+                            <span style="color:var(--text-light); font-weight:500;">Silakan langsung tekan tombol<br>Simpan ke Galeri.</span>
+                        </span>
+                    `;
+                    bufferingSpinner.classList.remove('hidden');
+                    updatePlayPauseUI(false);
+                }
+            });
+        });
+
+        const progressAreaClick = document.getElementById('progress-area-click');
+        progressAreaClick.addEventListener('click', (e) => {
+            if(!activeMedia || !activeMedia.duration) return;
+            const rect = progressAreaClick.getBoundingClientRect();
+            const relativeX = (e.clientX - rect.left);
+            const percentage = Math.max(0, Math.min(1, relativeX / rect.width));
+            activeMedia.currentTime = percentage * activeMedia.duration;
+            if(isDualAudio) customAudio.currentTime = activeMedia.currentTime;
+            resetControlsTimer();
+        });
+
+        directDownloadLink.addEventListener('click', async () => {
+            if (!resolvedMediaUrl) return;
+            showIphoneNotif('Menyiapkan Berkas...', 'Mengamankan jalur unduhan ke perangkat Anda.', 'fa-cloud-arrow-down');
+            
+            if (currentFormat === 'thumb') {
+                try {
+                    const response = await fetch(resolvedMediaUrl);
+                    if (!response.ok) throw new Error('CORS');
+                    const blob = await response.blob();
+                    const objUrl = URL.createObjectURL(blob);
+                    
+                    const a = document.createElement('a'); 
+                    a.href = objUrl; 
+                    a.download = resolvedFileName;
+                    document.body.appendChild(a); 
+                    a.click(); 
+                    document.body.removeChild(a);
+                    
+                    setTimeout(() => URL.revokeObjectURL(objUrl), 5000);
+                    return;
+                } catch(e) {
+                    window.open(resolvedMediaUrl, '_blank');
+                    return;
+                }
+            }
+
+            setTimeout(() => {
+                window.location.href = resolvedMediaUrl;
+            }, 800);
+        });
+
+        // REVISI: Strict MIME Type Function (Pencegah otomatisasi pengubahan format menjadi WEBM)
+        function getMimeType(extension) {
+            switch(extension) {
+                case 'mp3': return 'audio/mpeg';
+                case 'm4a': return 'audio/mp4';
+                case 'mp4': return 'video/mp4';
+                case 'webm': return 'video/webm';
+                case 'ogg': return 'audio/ogg';
+                case 'jpg': return 'image/jpeg';
+                case 'png': return 'image/png';
+                default: return 'application/octet-stream';
+            }
+        }
+
+        // REVISI: LOGIKA BARU REAL SERVER KREAVERSE BLOB DL DENGAN PROXY CHAIN (FIX YOUTUBE)
+        realDownloadBtn.addEventListener('click', async () => {
+            if (!resolvedMediaUrl) return;
+            const container = document.getElementById('real-download-progress-container');
+            const fill = document.getElementById('real-download-fill');
+            const text = document.getElementById('real-download-text');
+            const speedEl = document.getElementById('real-download-speed');
+            
+            container.classList.remove('hidden');
+            fill.style.width = '0%'; text.innerText = '0%'; speedEl.innerText = 'Menghubungkan...';
+            realDownloadBtn.disabled = true;
+            
+            try {
+                let response;
+                // SISTEM PROXY CHAIN (Anti Limit YouTube Vercel)
+                const urlsToTry = [
+                    resolvedMediaUrl, // 1: Coba URL Asli (Bisa untuk TikTok/FB)
+                    `https://corsproxy.io/?${encodeURIComponent(resolvedMediaUrl)}`, // 2: Proxy Besar untuk YouTube
+                    `/api/ytdl?targetUrl=${encodeURIComponent(resolvedMediaUrl)}` // 3: Fallback Internal
+                ];
+
+                let isConnected = false;
+                for (let fetchUrl of urlsToTry) {
+                    try {
+                        response = await fetch(fetchUrl);
+                        if (response.ok) { isConnected = true; break; }
+                    } catch (err) { continue; }
+                }
+                
+                if (!isConnected || !response) throw new Error('Semua jalur proxy gagal terhubung');
+                
+                const contentLength = response.headers.get('content-length');
+                let totalBytes = contentLength ? parseInt(contentLength, 10) : 0;
+                
+                // Jika Header Content-Length tidak ada, kita tebak dari string "Ukuran: 5478267" hasil ekstraksi
+                if (!totalBytes && resolvedSizeStr) {
+                    if (!isNaN(resolvedSizeStr)) {
+                        totalBytes = parseInt(resolvedSizeStr, 10);
+                    } else if (resolvedSizeStr.toLowerCase().includes('mb')) {
+                        totalBytes = parseFloat(resolvedSizeStr) * 1024 * 1024;
+                    }
+                }
+
+                let loaded = 0;
+                const reader = response.body.getReader();
+                const chunks = [];
+                let lastTime = Date.now();
+                let lastLoaded = 0;
+
+                while(true) {
+                    const {done, value} = await reader.read();
+                    if (done) break;
+                    chunks.push(value);
+                    loaded += value.length;
+                    
+                    const now = Date.now();
+                    if (now - lastTime > 500) { 
+                        const diffTime = (now - lastTime) / 1000;
+                        const diffLoaded = loaded - lastLoaded;
+                        const speed = diffLoaded / diffTime; 
+                        const speedMB = (speed / (1024*1024)).toFixed(1);
+                        
+                        let percent = totalBytes ? Math.min(100, Math.round((loaded / totalBytes) * 100)) : 'Memuat...';
+                        fill.style.width = (totalBytes ? percent : 100) + '%';
+                        
+                        const loadedMB = (loaded / (1024*1024)).toFixed(1);
+                        if (totalBytes) {
+                            const totalMB = (totalBytes / (1024*1024)).toFixed(1);
+                            text.innerText = `${percent}% (${loadedMB}/${totalMB} MB)`;
+                        } else {
+                            text.innerText = `${loadedMB} MB (Ukuran asli disembunyikan)`;
+                        }
+
+                        speedEl.innerText = speedMB + ' MB/s';
+                        
+                        lastTime = now; lastLoaded = loaded;
+                    }
+                }
+                
+                text.innerText = '100%'; speedEl.innerText = 'Menyimpan...';
+                
+                // MENGUNCI EKSTENSI & MIME TYPE AGAR TIDAK JADI WEBM
+                const mimeType = getMimeType(resolvedExt);
+                const blob = new Blob(chunks, { type: mimeType });
+                
+                const objUrl = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = objUrl; 
+                a.download = resolvedFileName; // Terkunci MP4/MP3 sesuai pilihan
+                document.body.appendChild(a); 
+                a.click(); 
+                document.body.removeChild(a);
+                
+                setTimeout(() => URL.revokeObjectURL(objUrl), 10000);
+                setTimeout(() => { container.classList.add('hidden'); realDownloadBtn.disabled = false; }, 3000);
+                showIphoneNotif('Unduhan Selesai', `File ${resolvedExt.toUpperCase()} telah sukses tersimpan di memori perangkat Anda.`, 'fa-server');
+                
+            } catch(e) {
+                console.error("Blob Download Error:", e);
+                text.innerText = 'Gagal'; speedEl.innerText = 'Koneksi terputus';
+                fill.style.width = '0%';
+                realDownloadBtn.disabled = false;
+                
+                // Murni berjalan di dalam website, tidak meredirect jika gagal, melainkan info error
+                showIphoneNotif('Gagal Unduh', 'Server publik terlalu sibuk/memblokir akses aliran data stream. Coba gunakan tombol "Simpan ke Galeri".', 'fa-circle-xmark');
+                setTimeout(() => { container.classList.add('hidden'); }, 5000);
+            }
+        });
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && document.getElementById('player-settings-sheet').classList.contains('active')) {
+                closeSheet('player-settings-sheet');
+            }
+        });
+
+        document.getElementById('reset-btn').addEventListener('click', () => { urlInput.value = ""; urlInput.dispatchEvent(new Event('input')); resetUI(); urlInput.focus(); });
+
+    </script> 
         
         let controlsTimeout; // Untuk sistem Hilang/Muncul kontrol Pemutar
 
