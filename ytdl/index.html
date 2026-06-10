@@ -1126,9 +1126,8 @@
             const finalExt = ext ? ext.toLowerCase() : (type === 'audio' ? 'mp3' : (type === 'thumb' ? 'jpg' : 'mp4'));
             resolvedFileExt = finalExt;
             
-            // Sanitasi nama file agar kompatibel dengan Android Chrome Download Manager (bebas spasi & karakter khusus)
-            const cleanTitle = safeTitle.replace(/[^a-zA-Z0-9]/g, '_').replace(/_+/g, '_');
-            resolvedFileName = `${cleanTitle}.${finalExt}`;
+            // Format Nama File Premium sesuai permintaan: "Kreaverse AI - Judul Asli"
+            resolvedFileName = `Kreaverse AI - ${safeTitle}.${finalExt}`;
 
             let decodedThumb = '';
             try { if(base64Thumb) decodedThumb = atob(base64Thumb); } catch(e){}
@@ -1463,15 +1462,17 @@
                     setTimeout(() => URL.revokeObjectURL(objUrl), 5000);
                     return;
                 } catch(e) {
-                    // Fallback (Lewat tab baru HP)
-                    window.open(resolvedMediaUrl, '_blank');
+                    // Fallback ke Cloudflare Proxy direct download jika CORS gagal
+                    const CLOUDFLARE_WORKER_PROXY = "https://kreaverse-proxy.kreaverse-ai.workers.dev";
+                    window.location.href = `${CLOUDFLARE_WORKER_PROXY}?targetUrl=${encodeURIComponent(resolvedMediaUrl)}&filename=${encodeURIComponent(resolvedFileName)}`;
                     return;
                 }
             }
 
-            // STANDAR MEDIA: Buka langsung di window HP (Otomatis ditangkap Pengunduh Sistem)
+            // STANDAR MEDIA: Dialihkan lewat Cloudflare Worker dengan injeksi Content-Disposition agar terunduh native dengan nama file kustom
+            const CLOUDFLARE_WORKER_PROXY = "https://kreaverse-proxy.kreaverse-ai.workers.dev";
             setTimeout(() => {
-                window.location.href = resolvedMediaUrl;
+                window.location.href = `${CLOUDFLARE_WORKER_PROXY}?targetUrl=${encodeURIComponent(resolvedMediaUrl)}&filename=${encodeURIComponent(resolvedFileName)}`;
             }, 800);
         });
 
