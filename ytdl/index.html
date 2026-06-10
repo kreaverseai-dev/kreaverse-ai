@@ -1499,7 +1499,8 @@
                 
                 if (!success) {
                     // Menggunakan Cloudflare Worker gratis Anda yang berkapasitas tanpa batas
-                    const CLOUDFLARE_WORKER_PROXY = ""; 
+                    // Kosongkan saja jika tidak ingin repot menyetel Cloudflare di HP (Sistem otomatis beralih ke Allorigins gratis)
+                    const CLOUDFLARE_WORKER_PROXY = "https://kreaverse-proxy.kreaverse-ai.workers.dev"; 
 
                     const proxyChain = [
                         url => CLOUDFLARE_WORKER_PROXY ? CLOUDFLARE_WORKER_PROXY + "?targetUrl=" + encodeURIComponent(url) : "/api/ytdl?targetUrl=" + encodeURIComponent(url),
