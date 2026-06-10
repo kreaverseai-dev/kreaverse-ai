@@ -1438,7 +1438,7 @@
                 <p><strong>Ukuran File ${type === 'audio' ? 'Audio' : (type === 'video' ? 'Video' : 'Media')}:</strong> ${sizeFormatted ? sizeFormatted : 'Asli sesuai server'}</p>
                 ${duration ? `<p><strong>Durasi:</strong> ${duration}</p>` : ''}
                 <p><strong>Waktu Muat:</strong> Selesai dalam ${processSeconds} dtk - ${provider}</p>
-                <p><strong>Power by :</strong> Kreaverse AI ÃÂÃÂ vps</p>
+                <p><strong>Power by :</strong> Kreaverse AI &times; VPS</p>
             `;
             audioTitleDisplay.innerHTML = `<span class="audio-title-inner">${cleanTitle}</span>`;
             
@@ -1813,42 +1813,25 @@
             }
         });
 
-        // REVISI 2: DOWNLOAD DIRECT (WINDOW.LOCATION UNTUK PAKSA HP MENGUNDUH)
+        // REVISI: DOWNLOAD DIRECT NATIVE DENGAN KECEPATAN MAKSIMAL (MENGHINDARI DUPLIKASI PROSES)
         directDownloadLink.addEventListener('click', () => {
             if (!resolvedMediaUrl) return;
             
-            showIphoneNotif('Menyiapkan Berkas...', 'Mengamankan jalur unduhan ke perangkat Anda.', 'fa-cloud-arrow-down');
+            showIphoneNotif('Mengunduh Berkas...', 'Mengalirkan berkas secara langsung menggunakan downloader native browser dengan kecepatan maksimal.', 'fa-cloud-arrow-down');
             
-            // Gunakan Cloudflare Worker Proxy secara langsung untuk mengunduh dengan Content-Disposition kustom (Anti-Redirect Layar Hitam)
             const CLOUDFLARE_WORKER_PROXY = "https://kreaverse-proxy.kreaverse-ai.workers.dev";
             const proxyUrl = `${CLOUDFLARE_WORKER_PROXY}/?targetUrl=${encodeURIComponent(resolvedMediaUrl)}&filename=${encodeURIComponent(resolvedFileName)}`;
             
             setTimeout(() => {
-                window.location.href = proxyUrl;
-            }, 800);
-        });
-
-        // REVISI 2: DOWNLOAD DIRECT (WINDOW.LOCATION UNTUK PAKSA HP MENGUNDUH)
-        directDownloadLink.addEventListener('click', () => {
-            if (!resolvedMediaUrl) return;
-            
-            showIphoneNotif('Menyiapkan Berkas...', 'Mengamankan jalur unduhan ke perangkat Anda.', 'fa-cloud-arrow-down');
-            
-            const isYouTube = resolvedMediaUrl.includes('googlevideo.com') || resolvedMediaUrl.includes('youtube.com') || resolvedMediaUrl.includes('youtu.be');
-            
-            if (isYouTube) {
-                // Untuk YouTube, alihkan langsung ke realDownloadBtn agar mengunduh lewat XHR client-side direct (Anti-Banned IP & Anti-Layar Hitam & Full Speed)
-                realDownloadBtn.click();
-                return;
-            }
-
-            // Gunakan Cloudflare Worker Proxy secara langsung untuk non-YouTube agar Content-Disposition valid
-            const CLOUDFLARE_WORKER_PROXY = "https://kreaverse-proxy.kreaverse-ai.workers.dev";
-            const proxyUrl = `${CLOUDFLARE_WORKER_PROXY}/?targetUrl=${encodeURIComponent(resolvedMediaUrl)}&filename=${encodeURIComponent(resolvedFileName)}`;
-            
-            setTimeout(() => {
-                window.location.href = proxyUrl;
-            }, 800);
+                // Membuat elemen anchor sementara untuk memicu unduhan native tingkat sistem operasi
+                const a = document.createElement('a');
+                a.href = proxyUrl;
+                a.download = resolvedFileName;
+                a.style.display = 'none';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+            }, 500);
         });
 
         // REAL SERVER KREAVERSE BLOB DL (Sistem Progress 100% Nyata Lewat Jaringan - Tanpa Simulasi)
