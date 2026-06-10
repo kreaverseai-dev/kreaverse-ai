@@ -1457,16 +1457,18 @@
             } else if (type === 'video') {
                 isDualAudio = false;
                 const bestAudio = globalScannedOptions.filter(o => o.type === 'audio').sort((a, b) => parseInt(b.quality) - parseInt(a.quality))[0];
+                const isYouTube = url.includes('googlevideo.com') || url.includes('youtube.com') || url.includes('youtu.be');
                 const CLOUDFLARE_WORKER_PROXY = "https://kreaverse-proxy.kreaverse-ai.workers.dev";
 
                 if (bestAudio && bestAudio.url) { 
-                    customAudio.src = `${CLOUDFLARE_WORKER_PROXY}/?targetUrl=${encodeURIComponent(bestAudio.url)}`;
+                    const isAudioYT = bestAudio.url.includes('googlevideo.com') || bestAudio.url.includes('youtube.com') || bestAudio.url.includes('youtu.be');
+                    customAudio.src = isAudioYT ? bestAudio.url : `${CLOUDFLARE_WORKER_PROXY}/?targetUrl=${encodeURIComponent(bestAudio.url)}`;
                     isDualAudio = true; 
                     customVideo.muted = true; 
                 } 
                 else { customVideo.muted = false; }
                 
-                const finalStreamUrl = `${CLOUDFLARE_WORKER_PROXY}/?targetUrl=${encodeURIComponent(url)}`;
+                const finalStreamUrl = isYouTube ? url : `${CLOUDFLARE_WORKER_PROXY}/?targetUrl=${encodeURIComponent(url)}`;
                 activeMedia = customVideo; customVideo.src = finalStreamUrl;
                 mediaWrapper.classList.remove('audio-mode'); customVideo.style.display = "block";
                 document.getElementById('audio-ui').style.display = "none";
@@ -1477,8 +1479,9 @@
                 document.getElementById('real-download-btn').classList.remove('hidden');
 
             } else {
+                const isYouTube = url.includes('googlevideo.com') || url.includes('youtube.com') || url.includes('youtu.be');
                 const CLOUDFLARE_WORKER_PROXY = "https://kreaverse-proxy.kreaverse-ai.workers.dev";
-                const finalStreamUrl = `${CLOUDFLARE_WORKER_PROXY}/?targetUrl=${encodeURIComponent(url)}`;
+                const finalStreamUrl = isYouTube ? url : `${CLOUDFLARE_WORKER_PROXY}/?targetUrl=${encodeURIComponent(url)}`;
 
                 activeMedia = customAudio; customAudio.src = finalStreamUrl; customAudio.muted = false;
                 mediaWrapper.classList.add('audio-mode'); customVideo.style.display = "none";
@@ -1566,8 +1569,9 @@
                 resolvedFileName = arr.join('.') + '.' + extName.toLowerCase();
             }
 
+            const isYouTube = newUrl.includes('googlevideo.com') || newUrl.includes('youtube.com') || newUrl.includes('youtu.be');
             const CLOUDFLARE_WORKER_PROXY = "https://kreaverse-proxy.kreaverse-ai.workers.dev";
-            const finalStreamUrl = `${CLOUDFLARE_WORKER_PROXY}/?targetUrl=${encodeURIComponent(newUrl)}`;
+            const finalStreamUrl = isYouTube ? newUrl : `${CLOUDFLARE_WORKER_PROXY}/?targetUrl=${encodeURIComponent(newUrl)}`;
 
             activeMedia.src = finalStreamUrl;
             activeMedia.load(); 
