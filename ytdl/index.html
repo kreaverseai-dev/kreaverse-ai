@@ -287,11 +287,6 @@
             .footer-bottom { font-size: 0.75rem; }
             #live-clock-footer { font-size: 0.8rem; }
         }
-
-        @keyframes marqueeSlow {
-            0% { transform: translate3d(0, 0, 0); }
-            100% { transform: translate3d(-100%, 0, 0); }
-        }
     </style>
 </head>
 <body>
@@ -415,10 +410,8 @@
 
                 <div class="audio-ui-container" id="audio-ui">
                     <img src="" id="audio-thumbnail" class="spotify-thumbnail" alt="Cover Music" onerror="this.src='https://i.postimg.cc/mZdwnfsm/Claude-ai-icon-svg.png'">
-                    <div style="width:100%; padding: 0 10px; overflow: hidden;">
-                        <div style="width: 100%; overflow: hidden; display: flex; justify-content: flex-start; position: relative; margin-top: 10px;">
-                            <div class="audio-title-display" id="audio-title-display" style="display: inline-block; white-space: nowrap; font-weight: 800; font-size: 1.15rem; color: #FFF; animation: marqueeSlow 22s linear infinite; padding-left: 100%; will-change: transform;">Judul Lagu</div>
-                        </div>
+                    <div style="width:100%; padding: 0 10px;">
+                        <div class="audio-title-display" id="audio-title-display">Judul Lagu</div>
                         <div class="audio-artist-display">Kreaverse AI Player</div>
                     </div>
                 </div>
@@ -605,17 +598,6 @@
             return { icon: 'fa-solid fa-globe', color: 'var(--accent-color)' };
         }
         window.getPlatformIconAndColor = getPlatformIconAndColor;
-
-        function durationToSeconds(durStr) {
-            if (!durStr) return 0;
-            const parts = durStr.split(':').map(Number);
-            if (parts.length === 2) {
-                return parts[0] * 60 + parts[1];
-            } else if (parts.length === 3) {
-                return parts[0] * 3600 + parts[1] * 60 + parts[2];
-            }
-            return 0;
-        }
 
         const DEFAULT_CONFIG = {
             baseUrls: {
@@ -1142,30 +1124,7 @@
                         }
                     }
 
-                    // Deteksi otomatis perkiraan ukuran berkas jika kosong
-                    let optSize = opt.size || "";
-                    if ((!optSize || optSize === "undefined") && resultData.duration && opt.type !== 'thumb') {
-                        const seconds = durationToSeconds(resultData.duration);
-                        if (seconds > 0) {
-                            let bitrate = 192;
-                            if (opt.type === 'audio') {
-                                const numMatch = String(opt.quality).match(/\d+/);
-                                if (numMatch) bitrate = parseInt(numMatch[0]);
-                            } else {
-                                bitrate = 1500;
-                                const qLower = String(opt.quality).toLowerCase();
-                                if (qLower.includes('1080')) bitrate = 4500;
-                                else if (qLower.includes('720')) bitrate = 2200;
-                                else if (qLower.includes('480')) bitrate = 1000;
-                                else if (qLower.includes('360')) bitrate = 500;
-                            }
-                            const estMB = ((bitrate * 1000 * seconds) / 8 / (1024 * 1024)).toFixed(1);
-                            optSize = `${estMB} MB`;
-                            opt.size = optSize;
-                        }
-                    }
-
-                    const sizeStr = optSize ? `<span style="font-size:0.75rem; color:var(--text-light); margin-top:4px;">Ukuran: ${optSize}</span>` : '';
+                    const sizeStr = opt.size ? `<span style="font-size:0.75rem; color:var(--text-light); margin-top:4px;">Ukuran: ${opt.size}</span>` : '';
                     const extStr = opt.ext ? `<span class="q-badge format">${opt.ext}</span>` : '';
                     const safeTitle = resultData.title.replace(/'/g, "\\'").replace(/"/g, '&quot;');
                     const safeThumb = resultData.thumbnail ? btoa(resultData.thumbnail) : '';
@@ -1197,6 +1156,7 @@
         window.tampilkanHasilFinal = (url, title, duration, provider, type, quality, size, base64Thumb, ext) => {
             closeSheet('sheet-select-media');
             resolvedMediaUrl = url;
+            resolvedFileSizeString = size || "";
             
             // Saring teks "Kreaverse AI" & "Kreavese AI" agar tidak ganda di nama file
             let cleanTitle = title || "Media";
@@ -1211,37 +1171,14 @@
             // Format Nama File Premium sesuai permintaan: "Kreaverse AI - Judul Asli"
             resolvedFileName = `Kreaverse AI - ${safeTitle}.${finalExt}`;
 
-            // Deteksi otomatis perkiraan ukuran berkas jika dari API bernilai kosong/undefined
-            let finalSize = size || "";
-            if ((!finalSize || finalSize === "undefined") && duration && type !== 'thumb') {
-                const seconds = durationToSeconds(duration);
-                if (seconds > 0) {
-                    let bitrate = 192;
-                    if (type === 'audio') {
-                        const numMatch = String(quality).match(/\d+/);
-                        if (numMatch) bitrate = parseInt(numMatch[0]);
-                    } else {
-                        bitrate = 1500;
-                        const qLower = String(quality).toLowerCase();
-                        if (qLower.includes('1080')) bitrate = 4500;
-                        else if (qLower.includes('720')) bitrate = 2200;
-                        else if (qLower.includes('480')) bitrate = 1000;
-                        else if (qLower.includes('360')) bitrate = 500;
-                    }
-                    const estMB = ((bitrate * 1000 * seconds) / 8 / (1024 * 1024)).toFixed(1);
-                    finalSize = `${estMB} MB`;
-                }
-            }
-            resolvedFileSizeString = finalSize;
-
             let decodedThumb = '';
             try { if(base64Thumb) decodedThumb = atob(base64Thumb); } catch(e){}
             const finalThumb = decodedThumb || 'https://i.postimg.cc/mZdwnfsm/Claude-ai-icon-svg.png';
             audioThumbnail.src = finalThumb;
 
             document.getElementById('download-stats').innerHTML = `
-                <p><strong>Judul:</strong> Kreaverse AI - ${cleanTitle}</p>
-                <p><strong>Pilihan Anda:</strong> ${quality} (${type.toUpperCase()}) | ${finalExt.toUpperCase()} ${finalSize ? `- ${finalSize}` : ''} </p>
+                <p><strong>Judul:</strong> ${cleanTitle}</p>
+                <p><strong>Pilihan Anda:</strong> ${quality} (${type.toUpperCase()}) | ${finalExt.toUpperCase()} ${size ? `- ${size}` : ''} </p>
                 ${duration ? `<p><strong>Durasi:</strong> ${duration}</p>` : ''}
                 <p><strong>Waktu Muat:</strong> Selesai dalam ${processSeconds} dtk - ${provider}</p>
             `;
