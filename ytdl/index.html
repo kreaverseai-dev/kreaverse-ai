@@ -1438,7 +1438,7 @@
                 <p><strong>Ukuran File ${type === 'audio' ? 'Audio' : (type === 'video' ? 'Video' : 'Media')}:</strong> ${sizeFormatted ? sizeFormatted : 'Asli sesuai server'}</p>
                 ${duration ? `<p><strong>Durasi:</strong> ${duration}</p>` : ''}
                 <p><strong>Waktu Muat:</strong> Selesai dalam ${processSeconds} dtk - ${provider}</p>
-                <p><strong>Power by :</strong> Kreaverse AI × vps</p>
+                <p><strong>Power by :</strong> Kreaverse AI Ã vps</p>
             `;
             audioTitleDisplay.innerHTML = `<span class="audio-title-inner">${cleanTitle}</span>`;
             
@@ -1876,15 +1876,11 @@
             titleEl.innerText = resolvedFileName;
             statusIcon.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin" style="color:var(--accent-color);"></i>';
             
-            const isYouTube = resolvedMediaUrl.includes('googlevideo.com') || resolvedMediaUrl.includes('youtube.com') || resolvedMediaUrl.includes('youtu.be');
-            
-            // RUTE HYBRID NYATA: 
-            // 1. YouTube langsung diunduh lewat koneksi perumahan user (CORS diperbolehkan, full-speed 30 Mbps, bebas blokir IP Cloudflare)
-            // 2. Non-YouTube dilewatkan ke Cloudflare Worker Proxy untuk mem-bypass CORS platform asal.
+            // RUTE PROXY CLOUDFLARE KREAVERSE (Anti-CORS & Anti-Banned IP)
             const CLOUDFLARE_WORKER_PROXY = "https://kreaverse-proxy.kreaverse-ai.workers.dev";
             const mainProxyUrl = `${CLOUDFLARE_WORKER_PROXY}/?targetUrl=${encodeURIComponent(resolvedMediaUrl)}&filename=${encodeURIComponent(resolvedFileName)}`;
             
-            const fetchUrl = isYouTube ? resolvedMediaUrl : mainProxyUrl;
+            const fetchUrl = mainProxyUrl; // Mengalirkan unduhan melalui Cloudflare agar XHR client-side di dalam website berhasil 100% tanpa CORS Block
             // Sertakan Cache-Buster dinamis untuk mengabaikan cache lokal/CDN dan memaksa download jaringan asli
             const finalUrl = `${fetchUrl}${fetchUrl.includes('?') ? '&' : '?'}_cb=${Date.now()}`;
             const fallbackProxyUrl = `https://corsproxy.io/?${encodeURIComponent(resolvedMediaUrl)}&_cb=${Date.now()}`;
