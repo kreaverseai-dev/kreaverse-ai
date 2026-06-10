@@ -1497,13 +1497,30 @@
         // REAL SERVER KREAVERSE BLOB DL
         realDownloadBtn.addEventListener('click', async () => {
             if (!resolvedMediaUrl) return;
-            const container = document.getElementById('real-download-progress-container');
-            const fill = document.getElementById('real-download-fill');
-            const text = document.getElementById('real-download-text');
-            const speedEl = document.getElementById('real-download-speed');
             
-            container.classList.remove('hidden');
-            fill.style.width = '0%'; text.innerText = '0%'; speedEl.innerText = 'Menghubungkan...';
+            const isYouTube = resolvedMediaUrl.includes('googlevideo.com') || resolvedMediaUrl.includes('youtube.com') || resolvedMediaUrl.includes('youtu.be');
+            
+            if (isYouTube) {
+                showIphoneNotif('Unduhan Langsung YouTube', 'Memproses unduhan native berkecepatan maksimum...', 'fa-bolt');
+                setTimeout(() => {
+                    window.location.href = resolvedMediaUrl;
+                }, 800);
+                return;
+            }
+
+            const container = document.getElementById('progress-container');
+            const fill = document.getElementById('progress-bar-fill');
+            const speedEl = document.getElementById('progress-speed');
+            const sizeEl = document.getElementById('progress-size');
+            const titleEl = document.getElementById('progress-title');
+            const statusIcon = document.getElementById('progress-status-icon');
+            
+            container.style.display = 'block';
+            fill.style.width = '0%'; 
+            speedEl.innerHTML = '<i class="fa-solid fa-bolt" style="color:#F59E0B; margin-right:4px;"></i> Menghubungkan...';
+            sizeEl.innerText = '0.0 MB / -- MB';
+            titleEl.innerText = resolvedFileName;
+            statusIcon.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin" style="color:var(--accent-color);"></i>';
             
             try {
                 let response;
@@ -1517,8 +1534,6 @@
                 }
                 
                 if (!success) {
-                    // Menggunakan Cloudflare Worker gratis Anda yang berkapasitas tanpa batas
-                    // Kosongkan saja jika tidak ingin repot menyetel Cloudflare di HP (Sistem otomatis beralih ke Allorigins gratis)
                     const CLOUDFLARE_WORKER_PROXY = "https://kreaverse-proxy.kreaverse-ai.workers.dev"; 
 
                     const proxyChain = [
@@ -1576,6 +1591,8 @@
                 let lastTime = Date.now();
                 let lastLoaded = 0;
 
+                const formatSizeMB = (b) => (b / (1024 * 1024)).toFixed(1) + ' MB';
+
                 while(true) {
                     const {done, value} = await reader.read();
                     if (done) break;
@@ -1592,8 +1609,9 @@
                         let percent = total > 0 ? Math.round((loaded / total) * 100) : 0;
                         if (percent > 100) percent = 100;
                         fill.style.width = (percent || 100) + '%';
-                        text.innerText = total > 0 ? percent + '%' : (loaded / (1024*1024)).toFixed(1) + ' MB';
-                        speedEl.innerText = speedMB + ' MB/s';
+                        
+                        speedEl.innerHTML = `<i class="fa-solid fa-bolt" style="color:#F59E0B; margin-right:4px;"></i> ${speedMB} MB/s`;
+                        sizeEl.innerText = `${formatSizeMB(loaded)} / ${total > 0 ? formatSizeMB(total) : '-- MB'}`;
                         
                         lastTime = now; lastLoaded = loaded;
                     }
@@ -1608,7 +1626,7 @@
                 else if (extLower === 'jpg' || extLower === 'jpeg') mimeType = 'image/jpeg';
                 else if (extLower === 'png') mimeType = 'image/png';
 
-                text.innerText = '100%'; speedEl.innerText = 'Menyimpan...';
+                speedEl.innerHTML = '<i class="fa-solid fa-check" style="color:var(--success-color); margin-right:4px;"></i> Menyimpan...';
                 const blob = new Blob(chunks, { type: mimeType });
                 
                 if (window.activeObjectUrl) {
@@ -1625,15 +1643,16 @@
                 a.click(); 
                 document.body.removeChild(a);
                 
-                setTimeout(() => { container.classList.add('hidden'); }, 3000);
+                statusIcon.innerHTML = '<i class="fa-solid fa-circle-check" style="color:var(--success-color);"></i>';
+                setTimeout(() => { container.style.display = 'none'; }, 3000);
                 showIphoneNotif('Unduhan Selesai', 'File telah sukses tersimpan di HP Anda.', 'fa-server');
                 
             } catch(e) {
                 console.error(e);
-                text.innerText = 'Rute alternatif...'; speedEl.innerText = 'Mengalihkan ke Browser...';
+                speedEl.innerText = 'Rute alternatif...';
                 setTimeout(() => {
-                    container.classList.add('hidden');
-                    window.location.href = resolvedMediaUrl; // Paksa download di HP
+                    container.style.display = 'none';
+                    window.location.href = resolvedMediaUrl; 
                 }, 2000);
             }
         });
