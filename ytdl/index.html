@@ -333,17 +333,27 @@
             </button>
         </div>
 
-        <div class="progress-container" id="progress-container">
-            <div class="progress-header">
-                <span id="progress-text">Memproses... 0%</span>
-                <span id="progress-speed">0 MB/s</span>
-            </div>
-            <div class="progress-track">
-                <div class="progress-fill" id="progress-bar-fill"></div>
-            </div>
-            <div class="progress-footer">
-                <span id="progress-size">0 MB / -- MB</span>
-                <span id="progress-status-desc">Menghubungkan ke server...</span>
+        <div class="progress-container" id="progress-container" style="padding: 18px;">
+            <div style="display: flex; align-items: center; gap: 15px; text-align: left;">
+                <!-- Ikon berkas di sebelah kiri -->
+                <div style="font-size: 1.8rem; color: var(--accent-color); display: flex; align-items: center; justify-content: center; width: 48px; height: 48px; background: #EEF2FF; border-radius: 12px; flex-shrink: 0;">
+                    <i class="fa-solid fa-file-arrow-down"></i>
+                </div>
+                <!-- Detail di tengah -->
+                <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px;">
+                    <div id="progress-title" style="font-size: 0.9rem; font-weight: 800; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Memproses berkas...</div>
+                    <div class="progress-track" style="margin: 4px 0; height: 6px;">
+                        <div class="progress-fill" id="progress-bar-fill"></div>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.75rem; font-weight: 700; color: var(--text-secondary); font-family: monospace;">
+                        <span id="progress-speed"><i class="fa-solid fa-bolt" style="color: #F59E0B; margin-right: 4px;"></i> Menghubungkan...</span>
+                        <span id="progress-size">0.0 MB / -- MB</span>
+                    </div>
+                </div>
+                <!-- Ikon Status Putar di sebelah kanan -->
+                <div style="font-size: 1.1rem; color: var(--text-light); flex-shrink: 0; display: flex; align-items: center;" id="progress-status-icon">
+                    <i class="fa-solid fa-circle-notch fa-spin" style="color: var(--accent-color);"></i>
+                </div>
             </div>
         </div>
 
@@ -1442,9 +1452,19 @@
         // REVISI 2: DOWNLOAD DIRECT (WINDOW.LOCATION UNTUK PAKSA HP MENGUNDUH)
         directDownloadLink.addEventListener('click', async () => {
             if (!resolvedMediaUrl) return;
+            
+            const isYouTube = resolvedMediaUrl.includes('googlevideo.com') || resolvedMediaUrl.includes('youtube.com') || resolvedMediaUrl.includes('youtu.be');
+            
+            if (isYouTube) {
+                showIphoneNotif('Unduhan YouTube Aktif', 'Mengunduh langsung dengan kecepatan maksimum jaringan Anda...', 'fa-bolt');
+                setTimeout(() => {
+                    window.location.href = resolvedMediaUrl;
+                }, 800);
+                return;
+            }
+
             showIphoneNotif('Menyiapkan Berkas...', 'Mengamankan jalur unduhan ke perangkat Anda.', 'fa-cloud-arrow-down');
             
-            // JIKA THUMBNAIL, GUNAKAN FETCH LANGSUNG LALU JADIKAN BLOB LOCAL
             if (currentFormat === 'thumb') {
                 try {
                     const response = await fetch(resolvedMediaUrl);
@@ -1462,14 +1482,12 @@
                     setTimeout(() => URL.revokeObjectURL(objUrl), 5000);
                     return;
                 } catch(e) {
-                    // Fallback ke Cloudflare Proxy direct download jika CORS gagal
                     const CLOUDFLARE_WORKER_PROXY = "https://kreaverse-proxy.kreaverse-ai.workers.dev";
                     window.location.href = `${CLOUDFLARE_WORKER_PROXY}?targetUrl=${encodeURIComponent(resolvedMediaUrl)}&filename=${encodeURIComponent(resolvedFileName)}`;
                     return;
                 }
             }
 
-            // STANDAR MEDIA: Dialihkan lewat Cloudflare Worker dengan injeksi Content-Disposition agar terunduh native dengan nama file kustom
             const CLOUDFLARE_WORKER_PROXY = "https://kreaverse-proxy.kreaverse-ai.workers.dev";
             setTimeout(() => {
                 window.location.href = `${CLOUDFLARE_WORKER_PROXY}?targetUrl=${encodeURIComponent(resolvedMediaUrl)}&filename=${encodeURIComponent(resolvedFileName)}`;
