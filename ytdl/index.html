@@ -1528,9 +1528,10 @@
             const isYouTube = resolvedMediaUrl.includes('googlevideo.com') || resolvedMediaUrl.includes('youtube.com') || resolvedMediaUrl.includes('youtu.be');
             
             if (isYouTube) {
-                showIphoneNotif('Unduhan Langsung YouTube', 'Memproses unduhan native berkecepatan maksimum...', 'fa-bolt');
+                showIphoneNotif('Unduhan YouTube Aktif', 'Mengunduh langsung dari server YouTube di bar notifikasi Anda...', 'fa-bolt');
                 setTimeout(() => {
-                    window.location.href = resolvedMediaUrl;
+                    const cleanTitle = resolvedFileName.replace(/[^a-zA-Z0-9_\-\. ]/g, '').replace(/\s+/g, '_');
+                    window.location.href = `${resolvedMediaUrl}&title=${encodeURIComponent(cleanTitle)}`;
                 }, 800);
                 return;
             }
