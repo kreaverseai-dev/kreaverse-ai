@@ -1537,8 +1537,9 @@
             
             showIphoneNotif('Menyiapkan Berkas...', 'Mengamankan jalur unduhan ke perangkat Anda.', 'fa-cloud-arrow-down');
             
-            // Gunakan Vercel Edge Proxy unbuffered untuk memaksa download file asli dan nama kustom (Anti-Redirect Layar Hitam & Tanpa Batas Ukuran)
-            const proxyUrl = `/api/ytdl?targetUrl=${encodeURIComponent(resolvedMediaUrl)}&filename=${encodeURIComponent(resolvedFileName)}`;
+            // Gunakan Cloudflare Worker Proxy secara langsung untuk mengunduh dengan Content-Disposition kustom (Anti-Redirect Layar Hitam)
+            const CLOUDFLARE_WORKER_PROXY = "https://kreaverse-proxy.kreaverse-ai.workers.dev";
+            const proxyUrl = `${CLOUDFLARE_WORKER_PROXY}/?targetUrl=${encodeURIComponent(resolvedMediaUrl)}&filename=${encodeURIComponent(resolvedFileName)}`;
             
             setTimeout(() => {
                 window.location.href = proxyUrl;
@@ -1572,12 +1573,10 @@
             titleEl.innerText = resolvedFileName;
             statusIcon.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin" style="color:var(--accent-color);"></i>';
             
-            // Menggunakan Vercel Edge Proxy untuk mengalirkan berkas unbuffered ke client secara stabil dengan bypass CORS
-            const proxyUrl = `/api/ytdl?targetUrl=${encodeURIComponent(resolvedMediaUrl)}&filename=${encodeURIComponent(resolvedFileName)}`;
-
-            const xhr = new XMLHttpRequest();
-            xhr.open('GET', proxyUrl, true);
-            xhr.responseType = 'blob';
+            // Semua download menggunakan Cloudflare Worker Proxy
+            const CLOUDFLARE_WORKER_PROXY = "https://kreaverse-proxy.kreaverse-ai.workers.dev";
+            const mainProxyUrl = `${CLOUDFLARE_WORKER_PROXY}/?targetUrl=${encodeURIComponent(resolvedMediaUrl)}&filename=${encodeURIComponent(resolvedFileName)}`;
+            const fallbackProxyUrl = `https://corsproxy.io/?${encodeURIComponent(resolvedMediaUrl)}`;
 
             let startTime = Date.now();
 
@@ -1599,104 +1598,123 @@
                 }
             }
 
-            xhr.onprogress = (event) => {
-                let total = event.total;
-                let lengthComputable = event.lengthComputable;
-                
-                if (!lengthComputable || total === 0) {
-                    if (totalBytesFallback > 0) {
-                        total = totalBytesFallback;
-                        lengthComputable = true;
+            function startXhrDownload(url, isFallback = false) {
+                const xhr = new XMLHttpRequest();
+                xhr.open('GET', url, true);
+                xhr.responseType = 'blob';
+
+                xhr.onprogress = (event) => {
+                    let total = event.total;
+                    let lengthComputable = event.lengthComputable;
+                    
+                    if (!lengthComputable || total === 0) {
+                        if (totalBytesFallback > 0) {
+                            total = totalBytesFallback;
+                            lengthComputable = true;
+                        }
                     }
-                }
 
-                if (lengthComputable && total > 0) {
-                    const loaded = event.loaded;
-                    const percent = Math.round((loaded / total) * 100);
-                    
-                    fill.style.width = percent + '%';
-                    
-                    const elapsed = (Date.now() - startTime) / 1000;
-                    const speed = elapsed > 0 ? loaded / elapsed : 0;
-                    const speedMB = (speed / (1024 * 1024)).toFixed(1);
-                    const loadedMB = (loaded / (1024 * 1024)).toFixed(1);
-                    const totalMB = (total / (1024 * 1024)).toFixed(1);
-                    
-                    speedEl.innerHTML = `<i class="fa-solid fa-bolt" style="color:#F59E0B; margin-right:4px;"></i> ${speedMB} MB/s`;
-                    textEl.innerText = `${percent}% (${loadedMB} MB / ${totalMB} MB)`;
-                } else {
-                    const loaded = event.loaded;
-                    const loadedMB = (loaded / (1024 * 1024)).toFixed(1);
-                    const elapsed = (Date.now() - startTime) / 1000;
-                    const speed = elapsed > 0 ? loaded / elapsed : 0;
-                    const speedMB = (speed / (1024 * 1024)).toFixed(1);
-                    
-                    fill.style.width = '70%'; 
-                    speedEl.innerHTML = `<i class="fa-solid fa-bolt" style="color:#F59E0B; margin-right:4px;"></i> ${speedMB} MB/s`;
-                    textEl.innerText = `Mengunduh... (${loadedMB} MB)`;
-                }
-            };
+                    if (lengthComputable && total > 0) {
+                        const loaded = event.loaded;
+                        const percent = Math.min(100, Math.round((loaded / total) * 100));
+                        
+                        fill.style.width = percent + '%';
+                        
+                        const elapsed = (Date.now() - startTime) / 1000;
+                        const speed = elapsed > 0 ? loaded / elapsed : 0;
+                        const speedMB = (speed / (1024 * 1024)).toFixed(1);
+                        const loadedMB = (loaded / (1024 * 1024)).toFixed(1);
+                        const totalMB = (total / (1024 * 1024)).toFixed(1);
+                        
+                        speedEl.innerHTML = `<i class="fa-solid fa-bolt" style="color:#F59E0B; margin-right:4px;"></i> ${speedMB} MB/s`;
+                        textEl.innerText = `${percent}% (${loadedMB} MB / ${totalMB} MB)`;
+                    } else {
+                        const loaded = event.loaded;
+                        const loadedMB = (loaded / (1024 * 1024)).toFixed(1);
+                        const elapsed = (Date.now() - startTime) / 1000;
+                        const speed = elapsed > 0 ? loaded / elapsed : 0;
+                        const speedMB = (speed / (1024 * 1024)).toFixed(1);
+                        
+                        fill.style.width = '70%'; 
+                        speedEl.innerHTML = `<i class="fa-solid fa-bolt" style="color:#F59E0B; margin-right:4px;"></i> ${speedMB} MB/s`;
+                        textEl.innerText = `Mengunduh... (${loadedMB} MB)`;
+                    }
+                };
 
-            xhr.onload = () => {
-                if (xhr.status === 200) {
-                    const blob = xhr.response;
-                    
-                    let mimeType = 'application/octet-stream';
-                    const extLower = (resolvedFileExt || '').toLowerCase();
-                    if (extLower === 'mp3') mimeType = 'audio/mpeg';
-                    else if (extLower === 'mp4') mimeType = 'video/mp4';
-                    else if (extLower === 'm4a') mimeType = 'audio/mp4';
-                    else if (extLower === 'webm') mimeType = 'video/webm';
-                    else if (extLower === 'jpg' || extLower === 'jpeg') mimeType = 'image/jpeg';
-                    else if (extLower === 'png') mimeType = 'image/png';
+                xhr.onload = () => {
+                    if (xhr.status === 200) {
+                        const blob = xhr.response;
+                        
+                        let mimeType = 'application/octet-stream';
+                        const extLower = (resolvedFileExt || '').toLowerCase();
+                        if (extLower === 'mp3') mimeType = 'audio/mpeg';
+                        else if (extLower === 'mp4') mimeType = 'video/mp4';
+                        else if (extLower === 'm4a') mimeType = 'audio/mp4';
+                        else if (extLower === 'webm') mimeType = 'video/webm';
+                        else if (extLower === 'jpg' || extLower === 'jpeg') mimeType = 'image/jpeg';
+                        else if (extLower === 'png') mimeType = 'image/png';
 
                     const cleanBlob = new Blob([blob], { type: mimeType });
-                    
-                    if (window.activeObjectUrl) {
-                        URL.revokeObjectURL(window.activeObjectUrl);
+                        
+                        if (window.activeObjectUrl) {
+                            URL.revokeObjectURL(window.activeObjectUrl);
+                        }
+                        
+                        const objUrl = URL.createObjectURL(cleanBlob);
+                        window.activeObjectUrl = objUrl;
+                        
+                        const a = document.createElement('a');
+                        a.href = objUrl; 
+                        a.download = resolvedFileName;
+                        a.target = '_blank';
+                        document.body.appendChild(a); 
+                        a.click(); 
+                        document.body.removeChild(a);
+
+                        fill.style.width = '100%';
+                        speedEl.innerHTML = '<i class="fa-solid fa-check" style="color:var(--success-color); margin-right:4px;"></i> Selesai';
+                        textEl.innerText = '100% Berhasil Disimpan';
+                        statusIcon.innerHTML = '<i class="fa-solid fa-circle-check" style="color:var(--success-color);"></i>';
+                        
+                        setTimeout(() => { 
+                            container.style.display = 'none'; 
+                            container.classList.remove('active'); 
+                        }, 4000);
+                        
+                        showIphoneNotif('Unduhan Selesai', 'File telah sukses tersimpan di HP Anda.', 'fa-server');
+                    } else {
+                        if (!isFallback) {
+                            console.warn("Main proxy returned non-200 status, trying fallback proxy...");
+                            startXhrDownload(fallbackProxyUrl, true);
+                        } else {
+                            handleDownloadError();
+                        }
                     }
-                    
-                    const objUrl = URL.createObjectURL(cleanBlob);
-                    window.activeObjectUrl = objUrl;
-                    
-                    const a = document.createElement('a');
-                    a.href = objUrl; 
-                    a.download = resolvedFileName;
-                    a.target = '_blank';
-                    document.body.appendChild(a); 
-                    a.click(); 
-                    document.body.removeChild(a);
+                };
 
-                    fill.style.width = '100%';
-                    speedEl.innerHTML = '<i class="fa-solid fa-check" style="color:var(--success-color); margin-right:4px;"></i> Selesai';
-                    textEl.innerText = '100% Berhasil Disimpan';
-                    statusIcon.innerHTML = '<i class="fa-solid fa-circle-check" style="color:var(--success-color);"></i>';
-                    
-                    setTimeout(() => { 
-                        container.style.display = 'none'; 
-                        container.classList.remove('active'); 
-                    }, 4000);
-                    
-                    showIphoneNotif('Unduhan Selesai', 'File telah sukses tersimpan di HP Anda.', 'fa-server');
-                } else {
-                    handleDownloadError();
-                }
-            };
+                xhr.onerror = () => {
+                    if (!isFallback) {
+                        console.warn("Main proxy request failed, trying fallback proxy...");
+                        startXhrDownload(fallbackProxyUrl, true);
+                    } else {
+                        handleDownloadError();
+                    }
+                };
 
-            xhr.onerror = () => {
-                handleDownloadError();
-            };
+                xhr.send();
+            }
 
             function handleDownloadError() {
                 speedEl.innerText = 'Beralih ke rute alternatif...';
                 setTimeout(() => {
                     container.style.display = 'none';
                     container.classList.remove('active');
-                    window.location.href = proxyUrl; 
+                    window.location.href = mainProxyUrl; 
                 }, 1500);
             }
 
-            xhr.send();
+            // Memulai download lewat Cloudflare Worker Proxy utama
+            startXhrDownload(mainProxyUrl, false);
         });
 
         document.addEventListener('keydown', (e) => {
