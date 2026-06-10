@@ -1,3 +1,5 @@
+import { Readable } from 'stream';
+
 export default async function handler(req, res) {
     // Mengizinkan CORS agar bisa diakses dari frontend
     res.setHeader('Access-Control-Allow-Credentials', true);
@@ -29,6 +31,7 @@ export default async function handler(req, res) {
         });
 
         const contentType = response.headers.get('content-type') || '';
+        const contentLength = response.headers.get('content-length');
 
         // SOLUSI ERROR 500 VERCEL: Jika data adalah JSON (Fetch API Awal), kembalikan sebagai JSON
         if (contentType.includes('application/json')) {
@@ -36,16 +39,27 @@ export default async function handler(req, res) {
             return res.status(200).json(data);
         }
         
-        // SOLUSI ERROR 500 VERCEL: Jika data adalah File Video/Audio, alirkan sebagai Buffer Binary
-        // Ini yang membuat API Anda sebelumnya Error 500 (karena file video dipaksa dibaca sebagai JSON)
-        const arrayBuffer = await response.arrayBuffer();
-        const buffer = Buffer.from(arrayBuffer);
-        
+        // SOLUSI OPTIMAL STREAMING: Alirkan data secara langsung (chunk-by-chunk) ke client.
+        // Metode ini mencegah RAM server penuh dan mengatasi kegagalan unduh karena batasan muatan biner Vercel.
         res.setHeader('Content-Type', contentType);
-        res.setHeader('Content-Length', buffer.length);
-        return res.status(200).send(buffer);
+        if (contentLength) {
+            res.setHeader('Content-Length', contentLength);
+        }
+
+        const body = response.body;
+        if (body) {
+            if (typeof body.pipe === 'function') {
+                body.pipe(res);
+            } else {
+                Readable.fromWeb(body).pipe(res);
+            }
+        } else {
+            res.end();
+        }
 
     } catch (error) {
-        res.status(500).json({ error: "Gagal memproses target: " + error.message });
+        if (!res.headersSent) {
+            res.status(500).json({ error: "Gagal memproses target: " + error.message });
+        }
     }
 }
