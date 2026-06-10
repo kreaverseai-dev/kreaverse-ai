@@ -1817,26 +1817,72 @@
         directDownloadLink.addEventListener('click', () => {
             if (!resolvedMediaUrl) return;
             
-            showIphoneNotif('Mengunduh Berkas...', 'Mengalirkan berkas secara langsung menggunakan downloader native browser dengan kecepatan maksimal.', 'fa-cloud-arrow-down');
+            const isYouTube = resolvedMediaUrl.includes('googlevideo.com') || resolvedMediaUrl.includes('youtube.com') || resolvedMediaUrl.includes('youtu.be');
             
-            const CLOUDFLARE_WORKER_PROXY = "https://kreaverse-proxy.kreaverse-ai.workers.dev";
-            const proxyUrl = `${CLOUDFLARE_WORKER_PROXY}/?targetUrl=${encodeURIComponent(resolvedMediaUrl)}&filename=${encodeURIComponent(resolvedFileName)}`;
-            
-            setTimeout(() => {
-                // Membuat elemen anchor sementara untuk memicu unduhan native tingkat sistem operasi
-                const a = document.createElement('a');
-                a.href = proxyUrl;
-                a.download = resolvedFileName;
-                a.style.display = 'none';
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-            }, 500);
+            if (isYouTube) {
+                // Untuk YouTube, alihkan langsung ke Google CDN agar terhindar dari IP-Signature mismatch (ERR_INVALID_RESPONSE)
+                showIphoneNotif('Mengunduh dari Google...', 'Mengunduh langsung dari server Google CDN dengan kecepatan maksimal.', 'fa-cloud-arrow-down');
+                
+                let downloadUrl = resolvedMediaUrl;
+                if (!downloadUrl.includes('&title=')) {
+                    downloadUrl += `&title=${encodeURIComponent(resolvedFileName.replace(/\.[^/.]+$/, ""))}`;
+                }
+                
+                setTimeout(() => {
+                    const a = document.createElement('a');
+                    a.href = downloadUrl;
+                    a.download = resolvedFileName;
+                    a.target = '_blank';
+                    a.style.display = 'none';
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                }, 500);
+            } else {
+                showIphoneNotif('Mengunduh Berkas...', 'Mengalirkan berkas secara langsung menggunakan downloader native browser dengan kecepatan maksimal.', 'fa-cloud-arrow-down');
+                
+                const CLOUDFLARE_WORKER_PROXY = "https://kreaverse-proxy.kreaverse-ai.workers.dev";
+                const proxyUrl = `${CLOUDFLARE_WORKER_PROXY}/?targetUrl=${encodeURIComponent(resolvedMediaUrl)}&filename=${encodeURIComponent(resolvedFileName)}`;
+                
+                setTimeout(() => {
+                    const a = document.createElement('a');
+                    a.href = proxyUrl;
+                    a.download = resolvedFileName;
+                    a.style.display = 'none';
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                }, 500);
+            }
         });
 
         // REAL SERVER KREAVERSE BLOB DL (Sistem Progress 100% Nyata Lewat Jaringan - Tanpa Simulasi)
         realDownloadBtn.addEventListener('click', () => {
             if (!resolvedMediaUrl) return;
+            
+            const isYouTube = resolvedMediaUrl.includes('googlevideo.com') || resolvedMediaUrl.includes('youtube.com') || resolvedMediaUrl.includes('youtu.be');
+            
+            if (isYouTube) {
+                // Untuk YouTube, alihkan langsung ke Google CDN agar terhindar dari IP-Signature mismatch (ERR_INVALID_RESPONSE)
+                showIphoneNotif('Mengunduh dari Google...', 'Mengunduh langsung dari server Google CDN dengan kecepatan maksimal.', 'fa-server');
+                
+                let downloadUrl = resolvedMediaUrl;
+                if (!downloadUrl.includes('&title=')) {
+                    downloadUrl += `&title=${encodeURIComponent(resolvedFileName.replace(/\.[^/.]+$/, ""))}`;
+                }
+                
+                setTimeout(() => {
+                    const a = document.createElement('a');
+                    a.href = downloadUrl;
+                    a.download = resolvedFileName;
+                    a.target = '_blank';
+                    a.style.display = 'none';
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                }, 500);
+                return;
+            }
             
             // Sembunyikan progress bar di atas
             document.getElementById('progress-container').style.display = 'none';
