@@ -81,7 +81,7 @@
             height: 32px; 
             position: absolute; 
             left: 50%; 
-            transform: translateX(-50%); 
+            transform: translateX(-46%); /* Penyelarasan visual (optical center) agar presisi di tengah layar */
             z-index: 5; 
             pointer-events: none; 
         }
@@ -131,7 +131,8 @@
             gap: 2px; 
         }
         .format-btn { 
-            padding: 6px 18px; 
+            min-width: 95px; /* Menyamakan footprint lebar tiap tombol agar tombol tengah Audio berada tepat di center murni */
+            padding: 6px 12px; 
             border-radius: 99px; 
             background: transparent; 
             font-family: 'Plus Jakarta Sans', sans-serif;
@@ -140,8 +141,9 @@
             color: #4b5563; 
             cursor: pointer; 
             transition: var(--transition); 
-            display: flex; 
+            display: inline-flex; 
             align-items: center; 
+            justify-content: center;
             border: none;
             text-transform: none;
         }
@@ -179,6 +181,12 @@
             color: #9ca3af;
             margin-right: 12px;
             flex-shrink: 0;
+            cursor: pointer; /* Indikator dapat diklik */
+            transition: all 0.2s ease;
+        }
+        .url-icon-circle:hover {
+            background: #e5e7eb;
+            color: #374151;
         }
         .url-input { 
             flex: 1; 
@@ -499,7 +507,7 @@
             .settings-pills { padding: 0; gap: 6px; margin-bottom: 10px; }
             .pill { padding: 6px 12px; font-size: 0.75rem; border-radius: 99px; }
             .pill i { font-size: 0.8rem; }
-            .format-btn { padding: 6px 14px; font-size: 0.8rem; }
+            .format-btn { padding: 6px 12px; font-size: 0.8rem; min-width: 90px; }
             .format-toggle { gap: 2px; }
             
             /* Carousel Scroll untuk Fitur & Cara Kerja (Tidak Banyak Makan Scroll Bawah) */
@@ -912,10 +920,11 @@
         let activeMedia = null;
 
         // IKON TOMBOL TEMPEL & HAPUS
-        const clearBtn = document.getElementById('clear-btn');
-        if (clearBtn) {
-            clearBtn.addEventListener('click', () => {
+        const urlIconCircle = document.querySelector('.url-icon-circle');
+        if (urlIconCircle) {
+            urlIconCircle.addEventListener('click', () => {
                 urlInput.value = ''; urlInput.focus();
+                showIphoneNotif('Kolom Dibersihkan', 'Tautan di dalam kolom telah dihapus.', 'fa-circle-info');
             });
         }
         document.getElementById('paste-btn').addEventListener('click', async () => {
