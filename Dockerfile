@@ -1,9 +1,10 @@
 FROM node:18-slim
 
-# Pasang dependensi sistem: Python3, FFmpeg, dan Curl
+# Pasang dependensi sistem: Python3, python-is-python3, ca-certificates, FFmpeg, dan Curl
 RUN apt-get update && apt-get install -y \
     python3 \
     python-is-python3 \
+    ca-certificates \
     ffmpeg \
     curl \
     && rm -rf /var/lib/apt/lists/*
