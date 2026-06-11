@@ -19,4 +19,4 @@ jobs:
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
         run: |
-          git push --force https://habiid:$HF_TOKEN@huggingface.co/spaces/kreaverse-ai/ytdl-downloader main
+          git push --force https://kreaverse-ai:$HF_TOKEN@huggingface.co/spaces/kreaverse-ai/ytdl-downloader main
