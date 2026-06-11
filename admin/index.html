@@ -2291,6 +2291,34 @@ window.loadGallery = async () => {
 };
 window.deleteAllGallery = async () => { try { const snap = await getDocs(collection(db, "render_gallery")); const batch = writeBatch(db); snap.forEach(d => batch.delete(d.ref)); await batch.commit(); showToast("Berkas dikosongkan!", "success"); loadGallery(); } catch(e) {} };
 
+// ============================================================
+// HUGGING FACE REMOTE REBUILD SYSTEM (KONDENSASI PROPORSI)
+// ============================================================
+window.saveHfConfig = async () => {
+    const spaceId = document.getElementById('hfSpaceId').value.trim(), token = document.getElementById('hfToken').value.trim();
+    if(!spaceId || !token) return showToast("Space ID dan HF Token wajib diisi!", "warning");
+    try {
+        await updateDoc(doc(db, "settings", "downloader_api"), { hfConfig: { spaceId, token } });
+        await createLog({ type: 'info', host: 'Admin', request: 'SAVE_HF_CONFIG', message: `Menyimpan konfigurasi Hugging Face: ${spaceId}` });
+        showToast("Konfigurasi Hugging Face tersimpan!", "success");
+    } catch(e) { showToast("Gagal menyimpan konfigurasi", "danger"); }
+};
+
+window.triggerHfRebuild = async () => {
+    const spaceId = document.getElementById('hfSpaceId').value.trim(), token = document.getElementById('hfToken').value.trim();
+    if(!spaceId || !token) return showToast("Simpan Space ID dan Token terlebih dahulu sebelum Rebuild!", "warning");
+    const btn = document.getElementById('btn-rebuild-hf'), textEl = document.getElementById('rebuild-btn-text');
+    btn.disabled = true; textEl.innerText = "Mengirim Perintah...";
+    try {
+        const res = await fetch(`https://huggingface.co/api/spaces/${spaceId}/restart`, { method: "POST", headers: { "Authorization": `Bearer ${token}`, "Content-Type": "application/json" } });
+        if (res.ok) {
+            await createLog({ type: 'success', host: 'Hugging Face', request: 'RESTART_SPACE', message: `Perintah Rebuild sukses dikirim ke Space: ${spaceId}` });
+            showToast("Server diperintahkan untuk Rebuild! Tunggu 1-2 menit.", "success");
+        } else { showToast(`Gagal memicu rebuild: Error ${res.status}`, "danger"); }
+    } catch(e) { showToast("Terjadi kesalahan jaringan", "danger"); }
+    btn.disabled = false; textEl.innerText = "Rebuild/Restart Server Sekarang";
+};
+
 </script>
 </body>
 </html>
