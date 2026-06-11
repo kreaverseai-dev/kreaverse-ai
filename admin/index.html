@@ -754,30 +754,55 @@
                     </div>
                 </div>
 
-                <!-- PANEL INTEGRASI REBUILD HUGGING FACE -->
+                <!-- PANEL INTEGRASI REBUILD HUGGING FACE (MULTIPORT & STATUS NYATA) -->
                 <div class="panel" style="margin-top: 25px;">
                     <div class="panel-head">
                         <div class="panel-title"><i class="fa-solid fa-gears" style="color: var(--accent);"></i> Hubungkan Server Pribadi (Hugging Face)</div>
+                        <button class="btn btn-sm btn-danger" onclick="window.manageDeleteHfSpaces()"><i class="fa-solid fa-trash-can"></i> Hapus Akun</button>
                     </div>
                     <div class="panel-body">
                         <div style="font-size:0.85rem; color:var(--text-sec); margin-bottom: 20px; line-height: 1.5;">
-                            Gunakan panel ini untuk menghubungkan Hugging Face Space Anda. Anda bisa memicu pembangunan ulang (*Rebuild/Restart*) server secara langsung dari sini untuk meng-update `yt-dlp` tanpa perlu login ke Hugging Face.
+                            Gunakan panel ini untuk menghubungkan satu atau banyak Hugging Face Space Anda. Anda bisa memicu pembangunan ulang (*Rebuild/Restart*) server secara langsung dari sini untuk meng-update `yt-dlp` tanpa perlu login ke Hugging Face.
                         </div>
-                        <div class="form-row">
+                        
+                        <!-- DROP-DOWN PILIHAN MULTI-AKUN & INDIKATOR STATUS ASLI -->
+                        <div class="form-row" style="margin-bottom: 20px;">
                             <div>
-                                <label>Hugging Face Space ID (Contoh: username/space-name)</label>
-                                <input type="text" id="hfSpaceId" placeholder="username/space-name">
+                                <label>Pilih Server Hugging Face Aktif</label>
+                                <div class="custom-select-trigger" id="hfActive-trigger" onclick="openCustomSelect('hfActive')">
+                                    <span id="hfActive-label">Belum ada server tersimpan</span>
+                                    <i class="fa-solid fa-chevron-down"></i>
+                                </div>
+                                <input type="hidden" id="hfActive" value="">
                             </div>
                             <div>
-                                <label>Hugging Face User Access Token (Kunci Akses HF)</label>
-                                <input type="password" id="hfToken" placeholder="hf_xxxxxxxxxxxxxxxxxxxxxxxx">
+                                <label>Status Server Saat Ini (Real-time Nyata)</label>
+                                <div id="hf-status-indicator" style="padding:14px 16px; border:2px solid var(--border); border-radius:12px; font-weight:700; background:#FAFAFC; display:flex; align-items:center; gap:8px; font-size: 0.9rem;">
+                                    <span class="status-dot gray"></span> <span>Tidak Ada Koneksi</span>
+                                </div>
                             </div>
                         </div>
-                        <div style="display:flex; gap:12px;">
-                            <button class="btn btn-primary" id="btn-save-hf" onclick="window.saveHfConfig()" style="flex:1;">
-                                <i class="fa-solid fa-floppy-disk"></i> Simpan Token & Space ID
+
+                        <!-- INPUT FORM PENAMBAHAN AKUN BARU -->
+                        <div style="background:#FAFAFC; padding:18px; border-radius:12px; border:1px solid var(--border); margin-bottom: 20px;">
+                            <div style="font-size:0.8rem; font-weight:700; text-transform:uppercase; color:var(--accent); margin-bottom:12px;"><i class="fa-solid fa-plus"></i> Hubungkan Akun/Space Baru</div>
+                            <div class="form-row">
+                                <div>
+                                    <label>Hugging Face Space ID (Contoh: username/space-name)</label>
+                                    <input type="text" id="hfSpaceIdInput" placeholder="username/space-name">
+                                </div>
+                                <div>
+                                    <label>Hugging Face User Access Token (Kunci Akses HF)</label>
+                                    <input type="password" id="hfTokenInput" placeholder="hf_xxxxxxxxxxxxxxxxxxxxxxxx">
+                                </div>
+                            </div>
+                            <button class="btn btn-primary" onclick="window.saveNewHfSpace()" style="width:100%; margin-top:10px;">
+                                <i class="fa-solid fa-floppy-disk"></i> Simpan & Hubungkan Akun Baru
                             </button>
-                            <button class="btn btn-success" id="btn-rebuild-hf" onclick="window.triggerHfRebuild()" style="flex:1;">
+                        </div>
+
+                        <div style="display:flex; gap:12px;">
+                            <button class="btn btn-success" id="btn-rebuild-hf" onclick="window.triggerHfRebuild()" style="flex:1; height: 50px;">
                                 <i class="fa-solid fa-rotate"></i> <span id="rebuild-btn-text">Rebuild/Restart Server Sekarang</span>
                             </button>
                         </div>
@@ -1174,6 +1199,10 @@ function selectOptionValue(value, label) {
         else { expiryContainer.style.display = 'block'; }
     }
     if (activeSelectId === 'promoStatus' || activeSelectId === 'promoType') { updatePromoPreview(); }
+    if (activeSelectId === 'hfActive') {
+        const match = downloaderDataGlobal.hfSpaces.find(s => s.spaceId === value);
+        if (match) window.checkRealtimeHfStatus(match.spaceId, match.token);
+    }
     triggerCloseBottomSheet();
 }
 
@@ -1738,13 +1767,31 @@ function setupRealtimeDownloader() {
         
         downloaderDataGlobal = {
             baseUrls: rawData.baseUrls || {},
-            endpoints: rawData.endpoints || {}
+            endpoints: rawData.endpoints || {},
+            hfSpaces: rawData.hfSpaces || []
         };
         
-        // Tampilkan data token & Space ID Hugging Face dari database ke kolom input
-        if (rawData.hfConfig) {
-            document.getElementById('hfSpaceId').value = rawData.hfConfig.spaceId || "";
-            document.getElementById('hfToken').value = rawData.hfConfig.token || "";
+        // Buat opsi dropdown untuk daftar akun Hugging Face yang tersimpan di Firebase
+        const hfList = downloaderDataGlobal.hfSpaces || [];
+        window.CUSTOM_SELECT_OPTIONS.hfActive = hfList.map(item => ({
+            value: item.spaceId,
+            label: item.spaceId
+        }));
+        
+        // Set otomatis akun aktif pertama yang dipilih
+        const activeVal = document.getElementById('hfActive').value;
+        const match = hfList.find(s => s.spaceId === activeVal);
+        if (match) {
+            document.getElementById('hfActive-label').innerText = match.spaceId;
+            window.checkRealtimeHfStatus(match.spaceId, match.token);
+        } else if (hfList.length > 0) {
+            document.getElementById('hfActive').value = hfList[0].spaceId;
+            document.getElementById('hfActive-label').innerText = hfList[0].spaceId;
+            window.checkRealtimeHfStatus(hfList[0].spaceId, hfList[0].token);
+        } else {
+            document.getElementById('hfActive').value = "";
+            document.getElementById('hfActive-label').innerText = "Belum ada server tersimpan";
+            window.setHfStatusUI("OFFLINE", "Tidak Ada Koneksi", "gray");
         }
         
         renderDownloaderUI();
