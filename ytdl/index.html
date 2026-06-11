@@ -875,31 +875,9 @@
         let dbConfig = DEFAULT_CONFIG;
         let isConfigLoaded = true; // Langsung siap digunakan seketika tanpa jeda milidetik!
 
-        onSnapshot(doc(db, "settings", "downloader_api"), async (docSnap) => {
+        onSnapshot(doc(db, "settings", "downloader_api"), (docSnap) => {
             if (docSnap.exists()) {
                 dbConfig = docSnap.data();
-                
-                // Menggabungkan Server Hugging Face secara dinamis dari Realtime Database
-                try {
-                    const hfRes = await fetch(`${firebaseConfig.databaseURL}/huggingface_spaces.json`);
-                    if (hfRes.ok) {
-                        const hfData = await hfRes.json();
-                        if (hfData) {
-                            if (!dbConfig.baseUrls) dbConfig.baseUrls = {};
-                            Object.keys(hfData).forEach(key => {
-                                const space = hfData[key];
-                                dbConfig.baseUrls[key] = {
-                                    name: `HF Server - ${space.name}`,
-                                    url: space.url,
-                                    isHf: true
-                                };
-                            });
-                        }
-                    }
-                } catch (err) {
-                    console.error("Gagal menggabungkan Server Hugging Face:", err);
-                }
-
                 isConfigLoaded = true;
                 renderDynamicOptions();
                 window.pingSemuaServer();
@@ -1321,23 +1299,17 @@
             }
             const srvObj = dbConfig.baseUrls[targetServerKey];
             let pathsToTry = [];
-            if (srvObj && srvObj.isHf) {
-                // Rute default khusus untuk API Server Hugging Face Anda
-                pathsToTry = ["/api/download"];
+            if (currentPlatform === 'auto') {
+                for (const key in dbConfig.endpoints) {
+                    const ep = dbConfig.endpoints[key];
+                    let pText = (ep.paths && ep.paths[targetServerKey]) ? ep.paths[targetServerKey] : ep.path;
+                    if (pText) pathsToTry = pathsToTry.concat(pText.split('\n').map(p => p.trim()).filter(p => p !== ""));
+                }
             } else {
-                // Rute bawaan untuk platform lain (Siputzx/Atlantic)
-                if (currentPlatform === 'auto') {
-                    for (const key in dbConfig.endpoints) {
-                        const ep = dbConfig.endpoints[key];
-                        let pText = (ep.paths && ep.paths[targetServerKey]) ? ep.paths[targetServerKey] : ep.path;
-                        if (pText) pathsToTry = pathsToTry.concat(pText.split('\n').map(p => p.trim()).filter(p => p !== ""));
-                    }
-                } else {
-                    const ep = dbConfig.endpoints[currentPlatform];
-                    if (ep) {
-                        let pText = (ep.paths && ep.paths[targetServerKey]) ? ep.paths[targetServerKey] : ep.path;
-                        if (pText) pathsToTry = pText.split('\n').map(p => p.trim()).filter(p => p !== "");
-                    }
+                const ep = dbConfig.endpoints[currentPlatform];
+                if (ep) {
+                    let pText = (ep.paths && ep.paths[targetServerKey]) ? ep.paths[targetServerKey] : ep.path;
+                    if (pText) pathsToTry = pText.split('\n').map(p => p.trim()).filter(p => p !== "");
                 }
             }
             pathsToTry = [...new Set(pathsToTry)];
