@@ -1,0 +1,23 @@
+name: Deploy to Hugging Face Spaces
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  deploy-to-hf:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          lfs: true
+
+      - name: Push to Hugging Face
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+        run: |
+          # ganti 'kreaverse-dev' dengan username Hugging Face Anda, dan 'ytdl-downloader' dengan nama Space Anda jika berbeda
+          git push --force https://kreaverse-dev:$HF_TOKEN@huggingface.co/spaces/kreaverse-dev/ytdl-downloader main
