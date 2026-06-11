@@ -1813,76 +1813,30 @@
             }
         });
 
-        // REVISI: DOWNLOAD DIRECT NATIVE DENGAN KECEPATAN MAKSIMAL (MENGHINDARI DUPLIKASI PROSES)
+        // REVISI: DOWNLOAD DIRECT NATIVE DENGAN KECEPAN MAKSIMAL (MENGHINDARI DUPLIKASI PROSES)
         directDownloadLink.addEventListener('click', () => {
             if (!resolvedMediaUrl) return;
             
-            const isYouTube = resolvedMediaUrl.includes('googlevideo.com') || resolvedMediaUrl.includes('youtube.com') || resolvedMediaUrl.includes('youtu.be');
+            showIphoneNotif('Mengunduh Berkas...', 'Mengalirkan berkas secara langsung dengan nama premium...', 'fa-cloud-arrow-down');
             
-            if (isYouTube) {
-                // Untuk YouTube, alihkan langsung ke Google CDN agar terhindar dari IP-Signature mismatch (ERR_INVALID_RESPONSE)
-                showIphoneNotif('Mengunduh dari Google...', 'Mengunduh langsung dari server Google CDN dengan kecepatan maksimal.', 'fa-cloud-arrow-down');
-                
-                let downloadUrl = resolvedMediaUrl;
-                if (!downloadUrl.includes('&title=')) {
-                    downloadUrl += `&title=${encodeURIComponent(resolvedFileName.replace(/\.[^/.]+$/, ""))}`;
-                }
-                
-                setTimeout(() => {
-                    const a = document.createElement('a');
-                    a.href = downloadUrl;
-                    a.download = resolvedFileName;
-                    a.target = '_blank';
-                    a.style.display = 'none';
-                    document.body.appendChild(a);
-                    a.click();
-                    document.body.removeChild(a);
-                }, 500);
-            } else {
-                showIphoneNotif('Mengunduh Berkas...', 'Mengalirkan berkas secara langsung menggunakan downloader native browser dengan kecepatan maksimal.', 'fa-cloud-arrow-down');
-                
-                const CLOUDFLARE_WORKER_PROXY = "https://kreaverse-proxy.kreaverse-ai.workers.dev";
-                const proxyUrl = `${CLOUDFLARE_WORKER_PROXY}/?targetUrl=${encodeURIComponent(resolvedMediaUrl)}&filename=${encodeURIComponent(resolvedFileName)}`;
-                
-                setTimeout(() => {
-                    const a = document.createElement('a');
-                    a.href = proxyUrl;
-                    a.download = resolvedFileName;
-                    a.style.display = 'none';
-                    document.body.appendChild(a);
-                    a.click();
-                    document.body.removeChild(a);
-                }, 500);
-            }
+            // Menggunakan proxy lokal /api/ytdl secara konsisten untuk semua format (Video, Audio, Thumbnail)
+            // Ini akan memicu dialog download asli browser tanpa berpindah halaman atau membuka tab baru
+            const proxyUrl = `/api/ytdl?targetUrl=${encodeURIComponent(resolvedMediaUrl)}&filename=${encodeURIComponent(resolvedFileName)}`;
+            
+            setTimeout(() => {
+                const a = document.createElement('a');
+                a.href = proxyUrl;
+                a.download = resolvedFileName;
+                a.style.display = 'none';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+            }, 500);
         });
 
         // REAL SERVER KREAVERSE BLOB DL (Sistem Progress 100% Nyata Lewat Jaringan - Tanpa Simulasi)
         realDownloadBtn.addEventListener('click', () => {
             if (!resolvedMediaUrl) return;
-            
-            const isYouTube = resolvedMediaUrl.includes('googlevideo.com') || resolvedMediaUrl.includes('youtube.com') || resolvedMediaUrl.includes('youtu.be');
-            
-            if (isYouTube) {
-                // Untuk YouTube, alihkan langsung ke Google CDN agar terhindar dari IP-Signature mismatch (ERR_INVALID_RESPONSE)
-                showIphoneNotif('Mengunduh dari Google...', 'Mengunduh langsung dari server Google CDN dengan kecepatan maksimal.', 'fa-server');
-                
-                let downloadUrl = resolvedMediaUrl;
-                if (!downloadUrl.includes('&title=')) {
-                    downloadUrl += `&title=${encodeURIComponent(resolvedFileName.replace(/\.[^/.]+$/, ""))}`;
-                }
-                
-                setTimeout(() => {
-                    const a = document.createElement('a');
-                    a.href = downloadUrl;
-                    a.download = resolvedFileName;
-                    a.target = '_blank';
-                    a.style.display = 'none';
-                    document.body.appendChild(a);
-                    a.click();
-                    document.body.removeChild(a);
-                }, 500);
-                return;
-            }
             
             // Sembunyikan progress bar di atas
             document.getElementById('progress-container').style.display = 'none';
@@ -1909,14 +1863,16 @@
             titleEl.innerText = resolvedFileName;
             statusIcon.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin" style="color:var(--accent-color);"></i>';
             
-            // RUTE PROXY CLOUDFLARE KREAVERSE (Anti-CORS & Anti-Banned IP)
-            const CLOUDFLARE_WORKER_PROXY = "https://kreaverse-proxy.kreaverse-ai.workers.dev";
-            const mainProxyUrl = `${CLOUDFLARE_WORKER_PROXY}/?targetUrl=${encodeURIComponent(resolvedMediaUrl)}&filename=${encodeURIComponent(resolvedFileName)}`;
+            // RUTE PROXY LOKAL UTAMA /api/ytdl (Anti-CORS & Mendukung Nama Premium)
+            const mainProxyUrl = `/api/ytdl?targetUrl=${encodeURIComponent(resolvedMediaUrl)}&filename=${encodeURIComponent(resolvedFileName)}`;
             
-            const fetchUrl = mainProxyUrl; // Mengalirkan unduhan melalui Cloudflare agar XHR client-side di dalam website berhasil 100% tanpa CORS Block
+            const fetchUrl = mainProxyUrl; // Mengalirkan unduhan melalui proxy agar XHR client-side berhasil tanpa CORS Block
             // Sertakan Cache-Buster dinamis untuk mengabaikan cache lokal/CDN dan memaksa download jaringan asli
             const finalUrl = `${fetchUrl}${fetchUrl.includes('?') ? '&' : '?'}_cb=${Date.now()}`;
-            const fallbackProxyUrl = `https://corsproxy.io/?${encodeURIComponent(resolvedMediaUrl)}&_cb=${Date.now()}`;
+            
+            // Gunakan Cloudflare worker sebagai fallback cadangan jika rute lokal mengalami kendala
+            const CLOUDFLARE_WORKER_PROXY = "https://kreaverse-proxy.kreaverse-ai.workers.dev";
+            const fallbackProxyUrl = `${CLOUDFLARE_WORKER_PROXY}/?targetUrl=${encodeURIComponent(resolvedMediaUrl)}&filename=${encodeURIComponent(resolvedFileName)}&_cb=${Date.now()}`;
 
             let startTime = Date.now();
 
