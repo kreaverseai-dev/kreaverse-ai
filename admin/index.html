@@ -820,21 +820,55 @@
                         <div class="panel-title"><i class="fa-solid fa-book"></i> Dokumentasi Pengaturan Environment Variables (PENTING)</div>
                         <i class="fa-solid fa-chevron-down" id="env-guide-chevron" style="transition: transform 0.3s;"></i>
                     </div>
-                    <div class="panel-body" id="envGuideBody" style="display: none; line-height: 1.6; font-size: 0.9rem;">
-                        <div style="margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px solid var(--border);">
-                            <strong style="color: var(--accent);">1. Pengaturan di Vercel Dashboard</strong>
-                            <ul style="margin-left: 20px; margin-top: 5px; list-style-type: square; display: flex; flex-direction: column; gap: 4px;">
-                                <li><strong>FIREBASE_DATABASE_URL:</strong> URL Realtime Database Anda (Contoh: <code>https://kreaverse-ai0107-default-rtdb.asia-southeast1.firebasedatabase.app</code>).</li>
-                                <li><strong>FIREBASE_DATABASE_SECRET:</strong> Token rahasia database Anda dari menu Firebase Service Accounts.</li>
-                                <li><strong>CRON_SECRET:</strong> String sandi acak pengaman cron (Contoh: <code>h4b1StUdI0_Cr0n_SeCrEt_Key_2026</code>).</li>
-                            </ul>
+                    <div class="panel-body" id="envGuideBody" style="display: none; line-height: 1.6; font-size: 0.9rem; padding: 25px;">
+                        <div style="margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px solid var(--border);">
+                            <strong style="color: var(--accent); font-size: 1rem;"><i class="fa-solid fa-cubes"></i> 1. Pengaturan di Vercel Dashboard (Environment Variables)</strong>
+                            <div style="margin-top: 10px; display: flex; flex-direction: column; gap: 15px; padding-left: 10px;">
+                                <div>
+                                    <strong style="color: var(--text);">• FIREBASE_DATABASE_URL</strong>
+                                    <p style="font-size: 0.85rem; color: var(--text-sec); margin-top: 3px;">
+                                        <strong>Letak di Firebase:</strong> Buka <a href="https://console.firebase.google.com" target="_blank" style="color: var(--info); font-weight: 600;">Firebase Console</a> -> Pilih Proyek Anda -> Pada menu navigasi kiri, pilih <strong>Realtime Database</strong>.
+                                    </p>
+                                    <p style="font-size: 0.85rem; color: var(--text-sec); margin-top: 3px;">
+                                        <strong>Cara Ambil:</strong> Salin URL teks panjang yang tercantum tepat di bagian atas tabel database Anda (Contoh: <code>https://kreaverse-ai0107-default-rtdb.asia-southeast1.firebasedatabase.app</code> - pastikan salin tanpa tanda garis miring <code>/</code> di bagian akhir URL).
+                                    </p>
+                                </div>
+                                <div>
+                                    <strong style="color: var(--text);">• FIREBASE_DATABASE_SECRET</strong>
+                                    <p style="font-size: 0.85rem; color: var(--text-sec); margin-top: 3px;">
+                                        <strong>Letak di Firebase:</strong> Klik ikon gerigi <i class="fa-solid fa-gear"></i> (Settings) di sudut kiri atas layar Firebase Console Anda -> Pilih menu <strong>Project settings</strong> -> Klik tab <strong>Service accounts</strong> di bagian atas -> Di submenu sebelah kiri tengah, pilih <strong>Database secrets</strong>.
+                                    </p>
+                                    <p style="font-size: 0.85rem; color: var(--text-sec); margin-top: 3px;">
+                                        <strong>Cara Ambil:</strong> Arahkan kursor Anda ke kolom tabel secret yang disembunyikan, lalu klik tombol <strong>Show</strong>. Salin token karakter acak yang panjang tersebut ke Vercel sebagai kunci akses aman serverless.
+                                    </p>
+                                </div>
+                                <div>
+                                    <strong style="color: var(--text);">• CRON_SECRET</strong>
+                                    <p style="font-size: 0.85rem; color: var(--text-sec); margin-top: 3px;">
+                                        <strong>Cara Buat:</strong> Tidak perlu mencari di Firebase. Langsung buat variabel baru di Vercel bernama <code>CRON_SECRET</code> dan isi dengan token pengaman berikut: <code>h4b1StUdI0_Cr0n_SeCrEt_Key_2026</code>.
+                                    </p>
+                                </div>
+                            </div>
                         </div>
                         <div>
-                            <strong style="color: var(--info);">2. Pengaturan di GitHub Secrets</strong>
-                            <ul style="margin-left: 20px; margin-top: 5px; list-style-type: square; display: flex; flex-direction: column; gap: 4px;">
-                                <li><strong>VERCEL_DOMAIN:</strong> Domain Vercel aktif Anda tanpa https:// (Contoh: <code>kreaverse-ai-kappa.vercel.app</code>).</li>
-                                <li><strong>CRON_SECRET:</strong> Nilai token keamanan (Harus sama persis dengan yang dimasukkan di Vercel!).</li>
-                            </ul>
+                            <strong style="color: var(--info); font-size: 1rem;"><i class="fa-brands fa-github"></i> 2. Pengaturan di GitHub Secrets (Settings -> Secrets -> Actions)</strong>
+                            <div style="margin-top: 10px; display: flex; flex-direction: column; gap: 15px; padding-left: 10px;">
+                                <div>
+                                    <strong style="color: var(--text);">• VERCEL_DOMAIN (Penanganan Custom Domain)</strong>
+                                    <p style="font-size: 0.85rem; color: var(--text-sec); margin-top: 3px;">
+                                        <strong>Cara Menentukan:</strong> Jika website admin Anda masih menggunakan domain bawaan Vercel, masukkan domain vercel Anda (Contoh: <code>kreaverse-ai-kappa.vercel.app</code>).
+                                    </p>
+                                    <p style="font-size: 0.85rem; color: var(--text-sec); margin-top: 3px; background: rgba(0,122,255,0.05); padding: 10px; border-left: 4px solid var(--info); border-radius: 4px;">
+                                        <strong>Apabila menggunakan Custom Domain:</strong> Jika Anda sudah menghubungkan domain pribadi (misalnya: <code>admin.kreaverse.ai</code> atau <code>kreaverse.ai</code>), isi variabel <code>VERCEL_DOMAIN</code> ini menggunakan nama domain pribadi Anda tersebut (Contoh: <code>admin.kreaverse.ai</code> - pastikan diisi tanpa menyertakan <code>https://</code> dan tanpa garis miring <code>/</code> di akhir).
+                                    </p>
+                                </div>
+                                <div>
+                                    <strong style="color: var(--text);">• CRON_SECRET</strong>
+                                    <p style="font-size: 0.85rem; color: var(--text-sec); margin-top: 3px;">
+                                        <strong>Cara Atur:</strong> Tambahkan secret baru di GitHub bernama <code>CRON_SECRET</code> lalu masukkan nilai yang sama persis seperti di Vercel, yaitu: <code>h4b1StUdI0_Cr0n_SeCrEt_Key_2026</code>. Ini wajib sama agar sistem otentikasi di GitHub Actions diizinkan memicu penyegaran server di backend Vercel Anda.
+                                    </p>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -844,31 +878,80 @@
             <div id="hf-help-modal" class="bottom-sheet-overlay" onclick="window.closeHfHelpModal(event)">
                 <div class="bottom-sheet-container" style="max-width: 600px; border-radius: 24px; margin: auto; max-height: 85vh; overflow-y: auto;">
                     <div class="sheet-header">
-                        <span class="sheet-title">Panduan Membuat Space Hugging Face</span>
+                        <span class="sheet-title" style="font-weight: 800;"><i class="fa-solid fa-circle-info" style="color: var(--accent);"></i> Panduan Pembuatan & Integrasi Space HF</span>
                         <button class="sheet-close-btn" onclick="window.closeHfHelpModal()">&times;</button>
                     </div>
-                    <div style="padding-right: 10px; line-height: 1.6; font-size: 0.9rem; text-align: left;">
-                        <ol style="margin-left: 20px; display: flex; flex-direction: column; gap: 10px;">
-                            <li><strong>Buat Akun:</strong> Daftar di <a href="https://huggingface.co" target="_blank" style="color: var(--accent); font-weight: 700;">huggingface.co</a> jika belum punya.</li>
-                            <li><strong>Buat Space Baru:</strong> Klik profil Anda di kanan atas -> <strong>New Space</strong>.</li>
-                            <li><strong>Konfigurasi Space:</strong>
-                                <ul style="margin-left: 20px; list-style-type: circle;">
-                                    <li>Isi nama Space (Contoh: <code>ytdl-downloader</code>).</li>
-                                    <li>Pilih SDK: <strong>Docker</strong> -> pilih Blank / template kosong.</li>
-                                    <li>Pilih tipe Space: <strong>Public</strong> (Gratis).</li>
-                                </ul>
-                            </li>
-                            <li><strong>Buat Token Akses:</strong>
-                                <ul style="margin-left: 20px; list-style-type: circle;">
-                                    <li>Buka <strong>Settings</strong> akun HF Anda -> <strong>Access Tokens</strong>.</li>
-                                    <li>Klik <strong>New token</strong> -> Beri nama -> Pilih type: <strong>Write</strong> (Wajib agar sistem bisa memicu restart/rebuild).</li>
-                                    <li>Salin token tersebut (contoh diawali dengan <code>hf_...</code>) dan simpan ke formulir admin di atas.</li>
-                                </ul>
-                            </li>
-                            <li><strong>Direct URL:</strong> URL web Space Anda biasanya memiliki format <code>https://[username]-[nama-space].hf.space</code>.</li>
-                        </ol>
+                    <div style="padding-right: 10px; line-height: 1.6; font-size: 0.9rem; text-align: left; display: flex; flex-direction: column; gap: 15px;">
+                        <p style="color: var(--text-sec); font-size: 0.85rem; background: #FAFAFC; padding: 12px; border-radius: 8px; border: 1px solid var(--border);">
+                            Ikuti panduan langkah demi langkah di bawah ini untuk membuat server pengunduh (*downloader*) gratis di Hugging Face, mendapatkan kuncinya, dan mengintegrasikannya ke dashboard Kreaverse AI Anda.
+                        </p>
+                        
+                        <div style="border-left: 3px solid var(--accent); padding-left: 12px;">
+                            <strong style="color: var(--text);"><i class="fa-solid fa-user-plus"></i> Langkah 1: Mendaftar Akun Hugging Face</strong>
+                            <p style="color: var(--text-sec); font-size: 0.85rem; margin-top: 3px;">
+                                Buka situs resmi <a href="https://huggingface.co" target="_blank" style="color: var(--info); font-weight: 700;">huggingface.co</a>. Klik tombol <strong>Sign Up</strong> di pojok kanan atas, isi email, buat kata sandi, dan lakukan konfirmasi email Anda hingga akun aktif murni.
+                            </p>
+                        </div>
+
+                        <div style="border-left: 3px solid var(--accent); padding-left: 12px;">
+                            <strong style="color: var(--text);"><i class="fa-solid fa-folder-plus"></i> Langkah 2: Membuat Wadah Server (New Space)</strong>
+                            <p style="color: var(--text-sec); font-size: 0.85rem; margin-top: 3px;">
+                                Klik foto profil bulat Anda di sudut kanan atas halaman Hugging Face -> pilih menu <strong>New Space</strong>. Atur formulir pembuatannya persis seperti di bawah ini:
+                            </p>
+                            <ul style="margin-left: 15px; margin-top: 5px; list-style-type: disc; font-size: 0.85rem; color: var(--text-sec); display: flex; flex-direction: column; gap: 4px;">
+                                <li><strong>Owner:</strong> Pilih nama akun Anda pribadi.</li>
+                                <li><strong>Space Name:</strong> Tulis nama wadah server Anda bebas (Contoh: <code>ytdl-downloader</code>).</li>
+                                <li><strong>License:</strong> Biarkan kosong saja (opsional).</li>
+                                <li><strong>Select the Space SDK:</strong> Wajib pilih kotak <strong>Docker</strong>.</li>
+                                <li><strong>Docker Template:</strong> Pilih kotak <strong>Blank</strong> (opsi template kosong).</li>
+                                <li><strong>Space Hardware:</strong> Pilih hardware yang gratisan default yaitu <strong>CPU Basic • Free</strong>.</li>
+                                <li><strong>Public or Private:</strong> Pilih <strong>Public</strong> agar endpoint server bisa dipanggil dari jauh oleh program admin.</li>
+                                <li>Scroll ke bawah dan klik tombol <strong>Create Space</strong>.</li>
+                            </ul>
+                        </div>
+
+                        <div style="border-left: 3px solid var(--accent); padding-left: 12px;">
+                            <strong style="color: var(--text);"><i class="fa-solid fa-key"></i> Langkah 3: Membuat Access Token Hugging Face</strong>
+                            <p style="color: var(--text-sec); font-size: 0.85rem; margin-top: 3px;">
+                                Klik kembali foto profil bulat Anda di kanan atas halaman -> pilih <strong>Settings</strong> -> Di sidebar sebelah kiri, klik menu <strong>Access Tokens</strong> -> Klik tombol abu-abu <strong>New token</strong> di kanan atas, lalu atur:
+                            </p>
+                            <ul style="margin-left: 15px; margin-top: 5px; list-style-type: disc; font-size: 0.85rem; color: var(--text-sec); display: flex; flex-direction: column; gap: 4px;">
+                                <li><strong>Token Name:</strong> Beri nama pengenal bebas (Contoh: <code>HabiAdminPanel</code>).</li>
+                                <li><strong>Type:</strong> Sangat Wajib memilih opsi <strong>Write</strong> (Jangan pilih Read! Karena hak akses Write sangat diperlukan agar tombol Rebuild di dashboard admin bisa memerintahkan server melakukan restart jika versi yt-dlp mengalami kerusakan).</li>
+                                <li>Klik tombol <strong>Generate a token</strong> -> Salin kode token panjang yang muncul (Format token selalu diawali dengan teks <code>hf_...</code>). Simpan token ini dengan aman.</li>
+                            </ul>
+                        </div>
+
+                        <div style="border-left: 3px solid var(--success); padding-left: 12px; background: rgba(52,199,89,0.03); padding: 12px; border-radius: 8px;">
+                            <strong style="color: var(--success);"><i class="fa-solid fa-clipboard-check"></i> Langkah 4: Contoh Pengisian Formulir Dashboard Admin</strong>
+                            <p style="color: var(--text-sec); font-size: 0.85rem; margin-top: 5px;">
+                                Untuk menghubungkan server Hugging Face yang telah Anda buat ke dashboard Kreaverse AI ini, silakan isi kolom formulir pendaftaran di atas dengan format berikut:
+                            </p>
+                            <div style="margin-top: 8px; display: flex; flex-direction: column; gap: 10px; font-size: 0.85rem;">
+                                <div>
+                                    <span style="font-weight: 700; color: var(--text);">1. Nama/Label Server:</span>
+                                    <p style="color: var(--text-sec); margin-top: 2px;">Beri nama bebas penanda server Anda. Contoh: <code>Server HF Downloader Utama</code></p>
+                                </div>
+                                <div>
+                                    <span style="font-weight: 700; color: var(--text);">2. Username Hugging Face:</span>
+                                    <p style="color: var(--text-sec); margin-top: 2px;">Isi dengan username akun Hugging Face Anda pribadi. Contoh: <code>kreaverse-dev</code></p>
+                                </div>
+                                <div>
+                                    <span style="font-weight: 700; color: var(--text);">3. Space Name (ID Space):</span>
+                                    <p style="color: var(--text-sec); margin-top: 2px;">Isi nama wadah Space yang telah Anda buat pada Langkah 2. Contoh: <code>ytdl-downloader</code></p>
+                                </div>
+                                <div>
+                                    <span style="font-weight: 700; color: var(--text);">4. URL Direct Space (Web Endpoint):</span>
+                                    <p style="color: var(--text-sec); margin-top: 2px;">Gunakan pola penulisan: <code>https://[username]-[nama-space].hf.space</code>. Contoh pengisian: <code>https://kreaverse-dev-ytdl-downloader.hf.space</code> (pastikan tanpa menyertakan tanda garis miring <code>/</code> di bagian akhir).</p>
+                                </div>
+                                <div>
+                                    <span style="font-weight: 700; color: var(--text);">5. Hugging Face Access Token:</span>
+                                    <p style="color: var(--text-sec); margin-top: 2px;">Isi dengan token Write hasil salinan Anda pada Langkah 3. Contoh: <code>hf_QYnSuxxxxxxxxxx...</code></p>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    <button class="btn btn-primary" onclick="window.closeHfHelpModal()" style="margin-top: 20px; width: 100%;">Tutup Panduan</button>
+                    <button class="btn btn-primary" onclick="window.closeHfHelpModal()" style="margin-top: 20px; width: 100%;"><i class="fa-solid fa-circle-check"></i> Saya Mengerti, Tutup Panduan</button>
                 </div>
             </div>
 
