@@ -255,6 +255,8 @@
         .progress-fill { height: 100%; background: linear-gradient(90deg, var(--accent-color), #A855F7); width: 0%; border-radius: 4px; transition: width 0.4s ease; position: relative; }
         .progress-fill::after { content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.4) 50%, rgba(255,255,255,0) 100%); animation: shimmerProgress 1.5s infinite; }
         @keyframes shimmerProgress { 0% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
+        .progress-fill.indeterminate { width: auto !important; position: absolute; left: -35%; right: 100%; animation: indeterminateMove 1.5s infinite linear; }
+        @keyframes indeterminateMove { 0% { left: -35%; right: 70%; } 60% { left: 80%; right: -20%; } 100% { left: 100%; right: -35%; } }
         .progress-footer { display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--text-light); margin-top: 8px; font-family: monospace; font-weight: 600; }
 
         /* SETTINGS PILLS */
@@ -745,9 +747,12 @@
                                 <span id="real-download-text">0% (0.0 MB / -- MB)</span>
                             </div>
                         </div>
-                        <!-- Ikon Status Putar di sebelah kanan -->
-                        <div style="font-size: 1rem; color: var(--text-light); flex-shrink: 0; display: flex; align-items: center;" id="real-download-status-icon">
-                            <i class="fa-solid fa-circle-notch fa-spin" style="color: var(--accent-color);"></i>
+                        <!-- Ikon Status Putar & Tombol Batal di sebelah kanan -->
+                        <div style="font-size: 1rem; color: var(--text-light); flex-shrink: 0; display: flex; flex-direction: column; align-items: center; gap: 6px;">
+                            <div id="real-download-status-icon">
+                                <i class="fa-solid fa-circle-notch fa-spin" style="color: var(--accent-color);"></i>
+                            </div>
+                            <button id="cancel-download-btn" style="background: #fee2e2; color: #ef4444; border: 1px solid #fca5a5; border-radius: 99px; padding: 4px 10px; font-size: 0.65rem; font-weight: 800; cursor: pointer; display: none; transition: all 0.2s;">Batal</button>
                         </div>
                     </div>
                 </div>
@@ -890,6 +895,7 @@
         let processSeconds = 0;
         let globalScannedOptions = []; 
         let isDualAudio = false; 
+        let activeXhr = null; // Menyimpan objek XMLHttpRequest aktif untuk pembatalan
         
         let controlsTimeout; // Untuk sistem Hilang/Muncul kontrol Pemutar
 
@@ -1259,12 +1265,17 @@
             if (sizeEl) sizeEl.innerText = stepDetail;
 
             if (isComplete) {
-                if (fillEl) fillEl.style.width = '100%';
+                if (fillEl) {
+                    fillEl.classList.remove('indeterminate');
+                    fillEl.style.width = '100%';
+                }
                 if (speedEl) speedEl.innerHTML = '<i class="fa-solid fa-check" style="color: var(--success-color); margin-right: 4px;"></i> Berhasil';
                 if (statusIcon) statusIcon.innerHTML = '<i class="fa-solid fa-circle-check" style="color: var(--success-color);"></i>';
                 setTimeout(() => { container.style.display = 'none'; }, 1000);
             } else {
-                if (fillEl) fillEl.style.width = '50%';
+                if (fillEl) {
+                    fillEl.classList.add('indeterminate');
+                }
                 if (speedEl) speedEl.innerHTML = '<i class="fa-solid fa-bolt" style="color: #F59E0B; margin-right: 4px;"></i> Mengirim Permintaan...';
                 if (statusIcon) statusIcon.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin" style="color: var(--accent-color);"></i>';
             }
@@ -1896,6 +1907,9 @@
 
             function startXhrDownload(url, isFallback = false) {
                 const xhr = new XMLHttpRequest();
+                activeXhr = xhr; // Simpan xhr aktif untuk pembatalan
+                document.getElementById('cancel-download-btn').style.display = 'block'; // Tampilkan tombol Batal
+                
                 xhr.open('GET', url, true);
                 xhr.responseType = 'blob';
 
@@ -1938,6 +1952,9 @@
                 };
 
                 xhr.onload = () => {
+                    document.getElementById('cancel-download-btn').style.display = 'none'; // Sembunyikan tombol Batal
+                    activeXhr = null;
+                    
                     if (xhr.status === 200) {
                         const blob = xhr.response;
                         
@@ -1985,6 +2002,9 @@
                 };
 
                 xhr.onerror = () => {
+                    document.getElementById('cancel-download-btn').style.display = 'none'; // Sembunyikan tombol Batal
+                    activeXhr = null;
+                    
                     if (!isFallback) {
                         console.warn("Main proxy request failed, trying fallback proxy...");
                         startXhrDownload(fallbackProxyUrl, true);
