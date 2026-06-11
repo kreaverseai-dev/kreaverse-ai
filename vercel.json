@@ -4,8 +4,8 @@
   "trailingSlash": false,
   "crons": [
     {
-      "path": "/api/rebuild-spaces",
-      "schedule": "0 1 * * *"
+      "path": "/api/cron-rebuild",
+      "schedule": "0 18 * * *"
     }
   ],
   "rewrites": [
