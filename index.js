@@ -24,7 +24,20 @@ app.get('/api/download', (req, res) => {
     }
 
     // Eksekusi secara aman menggunakan interpreter python3 secara langsung untuk mengatasi blokir perizinan kontainer
-    execFile('python3', ['/usr/local/bin/yt-dlp', '--no-cache-dir', '--no-check-certificate', '-j', '--no-playlist', videoUrl], { maxBuffer: 1024 * 1024 * 10 }, (error, stdout, stderr) => {
+    // Tambahan: --extractor-args "youtube:player_client=ios,android,web_embedded" untuk memotong blokir IP awan Google pada YouTube
+    execFile('python3', [
+        '/usr/local/bin/yt-dlp', 
+        '--no-cache-dir', 
+        '--no-check-certificate', 
+        '--extractor-args', 'youtube:player_client=ios,android,web_embedded',
+        '-j', 
+        '--no-playlist', 
+        videoUrl
+    ], { 
+        maxBuffer: 1024 * 1024 * 10,
+        timeout: 15000, // Membatasi eksekusi maksimal 15 detik agar browser tidak hang berputar selamanya
+        killSignal: 'SIGKILL'
+    }, (error, stdout, stderr) => {
         if (error) {
             console.error("=== YT-DLP EXECUTION ERROR ===");
             console.error("Error:", error);
