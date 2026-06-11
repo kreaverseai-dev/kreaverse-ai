@@ -753,6 +753,36 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- PANEL INTEGRASI REBUILD HUGGING FACE -->
+                <div class="panel" style="margin-top: 25px;">
+                    <div class="panel-head">
+                        <div class="panel-title"><i class="fa-solid fa-gears" style="color: var(--accent);"></i> Hubungkan Server Pribadi (Hugging Face)</div>
+                    </div>
+                    <div class="panel-body">
+                        <div style="font-size:0.85rem; color:var(--text-sec); margin-bottom: 20px; line-height: 1.5;">
+                            Gunakan panel ini untuk menghubungkan Hugging Face Space Anda. Anda bisa memicu pembangunan ulang (*Rebuild/Restart*) server secara langsung dari sini untuk meng-update `yt-dlp` tanpa perlu login ke Hugging Face.
+                        </div>
+                        <div class="form-row">
+                            <div>
+                                <label>Hugging Face Space ID (Contoh: username/space-name)</label>
+                                <input type="text" id="hfSpaceId" placeholder="username/space-name">
+                            </div>
+                            <div>
+                                <label>Hugging Face User Access Token (Kunci Akses HF)</label>
+                                <input type="password" id="hfToken" placeholder="hf_xxxxxxxxxxxxxxxxxxxxxxxx">
+                            </div>
+                        </div>
+                        <div style="display:flex; gap:12px;">
+                            <button class="btn btn-primary" id="btn-save-hf" onclick="window.saveHfConfig()" style="flex:1;">
+                                <i class="fa-solid fa-floppy-disk"></i> Simpan Token & Space ID
+                            </button>
+                            <button class="btn btn-success" id="btn-rebuild-hf" onclick="window.triggerHfRebuild()" style="flex:1;">
+                                <i class="fa-solid fa-rotate"></i> <span id="rebuild-btn-text">Rebuild/Restart Server Sekarang</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <!-- LIVE MONITOR TAB -->
@@ -1672,12 +1702,15 @@ window.deleteAllCloudinary = function() {
 // ============================================================
 const DEFAULT_DOWNLOADER_DATA = {
     baseUrls: {
-        server1: { name: "Server 1 (Siputzx)", url: "https://api.siputzx.my.id" },
-        server2: { name: "Server 2 (Betabotz)", url: "https://api.betabotz.eu.org" }
+        siputzx: { name: "Siputzx API", url: "https://api.siputzx.my.id" }
     },
     endpoints: {
-        youtube: { name: "YouTube", paths: { server1: "/api/download/yt", server2: "/api/yt" } },
-        tiktok: { name: "TikTok", paths: { server1: "/api/download/tiktok", server2: "/api/tiktok" } }
+        allin: { name: "All-in-One Downloader", paths: { siputzx: "/api/download" } },
+        youtube: { name: "YouTube Downloader", paths: { siputzx: "/api/youtube" } },
+        tiktok: { name: "TikTok No Watermark", paths: { siputzx: "/api/tiktok" } },
+        instagram: { name: "Instagram Media", paths: { siputzx: "/api/instagram" } },
+        facebook: { name: "Facebook Video", paths: { siputzx: "/api/facebook" } },
+        spotify: { name: "Spotify Music", paths: { siputzx: "/api/spotify" } }
     }
 };
 
@@ -1694,10 +1727,26 @@ function setupRealtimeDownloader() {
         }
         
         let rawData = docSnap.data() || {};
+        
+        // Migrasi Otomatis: Jika database masih menggunakan format lama (mengandung 'server1'), perbarui ke konfigurasi Siputzx terpadu
+        if (rawData.baseUrls && rawData.baseUrls.server1) {
+            downloaderDataGlobal = DEFAULT_DOWNLOADER_DATA;
+            renderDownloaderUI();
+            try { await setDoc(doc(db, "settings", "downloader_api"), DEFAULT_DOWNLOADER_DATA); } catch (err) {}
+            return;
+        }
+        
         downloaderDataGlobal = {
             baseUrls: rawData.baseUrls || {},
             endpoints: rawData.endpoints || {}
         };
+        
+        // Tampilkan data token & Space ID Hugging Face dari database ke kolom input
+        if (rawData.hfConfig) {
+            document.getElementById('hfSpaceId').value = rawData.hfConfig.spaceId || "";
+            document.getElementById('hfToken').value = rawData.hfConfig.token || "";
+        }
+        
         renderDownloaderUI();
     }, (error) => {
         downloaderDataGlobal = DEFAULT_DOWNLOADER_DATA;
@@ -2137,7 +2186,7 @@ function updatePromoPreview() {
     if (!text) { preview.innerText = "Preview pengumuman akan tampil di sini..."; preview.style.background = "#F4F5F7"; preview.style.color = "var(--text-sec)"; return; }
     const colors = { info: ['rgba(0,122,255,0.1)', 'var(--info)'], promo: ['rgba(52,199,89,0.1)', 'var(--success)'], gangguan: ['rgba(255,59,48,0.1)', 'var(--danger)'], update: ['rgba(175,82,222,0.1)', '#AF52DE'] };
     
-    const icons = { info: 'ð¡', promo: 'ð', gangguan: 'â ï¸', update: 'â¨' };
+    const icons = { info: 'Ã°ÂÂÂ¡', promo: 'Ã°ÂÂÂ', gangguan: 'Ã¢ÂÂ Ã¯Â¸Â', update: 'Ã¢ÂÂ¨' };
     
     preview.style.background = colors[type][0]; preview.style.color = colors[type][1];    
     preview.innerHTML = `${icons[type]} ${text} ${status === 'nonaktif' ? '<span style="opacity:0.5;">(Tersembunyi)</span>' : ''}`;
@@ -2210,7 +2259,7 @@ function renderConversation(fb) {
     const senderName = matchedClient ? matchedClient.nama : (fb.name || fb.email || "Anonim");
     const photoUrl = matchedClient ? matchedClient.photo : null;
     const clientTier = matchedClient ? matchedClient.tier : "free";
-    const d = new Date(fb.timestamp); const timeFormatted = `${d.getDate()}/${d.getMonth()+1}/${d.getFullYear()} â¢ ${d.getHours().toString().padStart(2,'0')}:${d.getMinutes().toString().padStart(2,'0')}`;
+    const d = new Date(fb.timestamp); const timeFormatted = `${d.getDate()}/${d.getMonth()+1}/${d.getFullYear()} Ã¢ÂÂ¢ ${d.getHours().toString().padStart(2,'0')}:${d.getMinutes().toString().padStart(2,'0')}`;
     let tierBadge = "";
     if (clientTier === "max_lifetime" || clientTier === "max") tierBadge = `<span class="badge tier-max" style="font-size:0.7rem; padding:2px 6px; margin-left:4px;"><i class="fa-solid fa-crown"></i> Max</span>`; else if (clientTier === "pro") tierBadge = `<span class="badge tier-pro" style="font-size:0.7rem; padding:2px 6px; margin-left:4px;"><i class="fa-solid fa-gem"></i> Pro</span>`; else if (clientTier === "basic") tierBadge = `<span class="badge tier-basic" style="font-size:0.7rem; padding:2px 6px; margin-left:4px;"><i class="fa-solid fa-star"></i> Basic</span>`;
     let avatarHtml = `<div class="wa-avatar" style="width:40px;height:40px;">${senderName.charAt(0).toUpperCase()}</div>`;
