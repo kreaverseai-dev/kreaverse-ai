@@ -468,10 +468,6 @@
         <div class="nav-item" onclick="nav('downloader')">
             <i class="fa-solid fa-cloud-arrow-down" style="width:18px;"></i> Server Downloader
         </div>
-        <div class="nav-item" onclick="nav('huggingface')">
-            <i class="fa-solid fa-gears" style="width:18px;"></i> Server Hugging Face
-            <span id="hf-count-badge" class="badge badge-gray" style="margin-left:auto; font-size:0.7rem; padding:4px 8px;">0</span>
-        </div>
         <div class="nav-item" onclick="nav('monitor')">
             <i class="fa-solid fa-desktop" style="width:18px;"></i> Live Monitor
         </div>
@@ -754,47 +750,6 @@
                                     </td></tr>
                                 </tbody>
                             </table>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- HUGGING FACE TAB (MENU BARU KHUSUS) -->
-            <div id="tab-huggingface" class="section">
-                <div class="panel">
-                    <div class="panel-head">
-                        <div class="panel-title"><i class="fa-solid fa-gears" style="color:var(--accent);"></i> Pengelola Server Pribadi Hugging Face</div>
-                        <button class="btn btn-sm btn-info" onclick="window.showHfTutorial()"><i class="fa-solid fa-circle-question"></i> Panduan Cara Penggunaan</button>
-                    </div>
-                    <div class="panel-body">
-                        <!-- INPUT FORM PENAMBAHAN AKUN BARU -->
-                        <div style="background:#FAFAFC; padding:20px; border-radius:12px; border:1px solid var(--border); margin-bottom: 25px;">
-                            <div style="font-size:0.85rem; font-weight:700; text-transform:uppercase; color:var(--accent); margin-bottom:12px;"><i class="fa-solid fa-plus"></i> Hubungkan Akun / Space Baru</div>
-                            <div class="form-row">
-                                <div>
-                                    <label>Hugging Face Space ID (Contoh: username/space-name)</label>
-                                    <input type="text" id="hfSpaceIdInput" placeholder="username/space-name">
-                                </div>
-                                <div>
-                                    <label>Hugging Face User Access Token (Kunci Akses HF)</label>
-                                    <input type="password" id="hfTokenInput" placeholder="hf_xxxxxxxxxxxxxxxxxxxxxxxx">
-                                </div>
-                            </div>
-                            <button class="btn btn-primary" onclick="window.saveNewHfSpace()" style="width:100%; margin-top:10px;">
-                                <i class="fa-solid fa-floppy-disk"></i> Simpan & Hubungkan Akun Baru
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- GRID DAFTAR SEMUA AKUN HUGGING FACE SECARA REAL-TIME NYATA -->
-                <div class="panel">
-                    <div class="panel-head">
-                        <div class="panel-title"><i class="fa-solid fa-server" style="color:var(--accent);"></i> Jaringan Server Aktif Anda</div>
-                    </div>
-                    <div class="panel-body" style="background:#F4F5F7; padding: 25px;">
-                        <div id="hf-spaces-grid" style="display:grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px;">
-                            <div style="grid-column: 1/-1; text-align:center; padding:40px; color:var(--text-sec);">Belum ada akun terhubung. Silakan gunakan panel di atas untuk mendaftarkan server.</div>
                         </div>
                     </div>
                 </div>
@@ -1189,10 +1144,6 @@ function selectOptionValue(value, label) {
         else { expiryContainer.style.display = 'block'; }
     }
     if (activeSelectId === 'promoStatus' || activeSelectId === 'promoType') { updatePromoPreview(); }
-    if (activeSelectId === 'hfActive') {
-        const match = downloaderDataGlobal.hfSpaces.find(s => s.spaceId === value);
-        if (match) window.checkRealtimeHfStatus(match.spaceId, match.token);
-    }
     triggerCloseBottomSheet();
 }
 
@@ -1721,15 +1672,12 @@ window.deleteAllCloudinary = function() {
 // ============================================================
 const DEFAULT_DOWNLOADER_DATA = {
     baseUrls: {
-        siputzx: { name: "Siputzx API", url: "https://api.siputzx.my.id" }
+        server1: { name: "Server 1 (Siputzx)", url: "https://api.siputzx.my.id" },
+        server2: { name: "Server 2 (Betabotz)", url: "https://api.betabotz.eu.org" }
     },
     endpoints: {
-        allin: { name: "All-in-One Downloader", paths: { siputzx: "/api/download" } },
-        youtube: { name: "YouTube Downloader", paths: { siputzx: "/api/youtube" } },
-        tiktok: { name: "TikTok No Watermark", paths: { siputzx: "/api/tiktok" } },
-        instagram: { name: "Instagram Media", paths: { siputzx: "/api/instagram" } },
-        facebook: { name: "Facebook Video", paths: { siputzx: "/api/facebook" } },
-        spotify: { name: "Spotify Music", paths: { siputzx: "/api/spotify" } }
+        youtube: { name: "YouTube", paths: { server1: "/api/download/yt", server2: "/api/yt" } },
+        tiktok: { name: "TikTok", paths: { server1: "/api/download/tiktok", server2: "/api/tiktok" } }
     }
 };
 
@@ -1746,44 +1694,10 @@ function setupRealtimeDownloader() {
         }
         
         let rawData = docSnap.data() || {};
-        
-        // Migrasi Otomatis: Jika database masih menggunakan format lama (mengandung 'server1'), perbarui ke konfigurasi Siputzx terpadu
-        if (rawData.baseUrls && rawData.baseUrls.server1) {
-            downloaderDataGlobal = DEFAULT_DOWNLOADER_DATA;
-            renderDownloaderUI();
-            try { await setDoc(doc(db, "settings", "downloader_api"), DEFAULT_DOWNLOADER_DATA); } catch (err) {}
-            return;
-        }
-        
         downloaderDataGlobal = {
             baseUrls: rawData.baseUrls || {},
-            endpoints: rawData.endpoints || {},
-            hfSpaces: rawData.hfSpaces || []
+            endpoints: rawData.endpoints || {}
         };
-        
-        // Buat opsi dropdown untuk daftar akun Hugging Face yang tersimpan di Firebase
-        const hfList = downloaderDataGlobal.hfSpaces || [];
-        window.CUSTOM_SELECT_OPTIONS.hfActive = hfList.map(item => ({
-            value: item.spaceId,
-            label: item.spaceId
-        }));
-        
-        // Set otomatis akun aktif pertama yang dipilih
-        const activeVal = document.getElementById('hfActive').value;
-        const match = hfList.find(s => s.spaceId === activeVal);
-        if (match) {
-            document.getElementById('hfActive-label').innerText = match.spaceId;
-            window.checkRealtimeHfStatus(match.spaceId, match.token);
-        } else if (hfList.length > 0) {
-            document.getElementById('hfActive').value = hfList[0].spaceId;
-            document.getElementById('hfActive-label').innerText = hfList[0].spaceId;
-            window.checkRealtimeHfStatus(hfList[0].spaceId, hfList[0].token);
-        } else {
-            document.getElementById('hfActive').value = "";
-            document.getElementById('hfActive-label').innerText = "Belum ada server tersimpan";
-            window.setHfStatusUI("OFFLINE", "Tidak Ada Koneksi", "gray");
-        }
-        
         renderDownloaderUI();
     }, (error) => {
         downloaderDataGlobal = DEFAULT_DOWNLOADER_DATA;
@@ -2223,7 +2137,7 @@ function updatePromoPreview() {
     if (!text) { preview.innerText = "Preview pengumuman akan tampil di sini..."; preview.style.background = "#F4F5F7"; preview.style.color = "var(--text-sec)"; return; }
     const colors = { info: ['rgba(0,122,255,0.1)', 'var(--info)'], promo: ['rgba(52,199,89,0.1)', 'var(--success)'], gangguan: ['rgba(255,59,48,0.1)', 'var(--danger)'], update: ['rgba(175,82,222,0.1)', '#AF52DE'] };
     
-    const icons = { info: 'ÃÂÃÂ°ÃÂÃÂÃÂÃÂÃÂÃÂ¡', promo: 'ÃÂÃÂ°ÃÂÃÂÃÂÃÂÃÂÃÂ', gangguan: 'ÃÂÃÂ¢ÃÂÃÂÃÂÃÂ ÃÂÃÂ¯ÃÂÃÂ¸ÃÂÃÂ', update: 'ÃÂÃÂ¢ÃÂÃÂÃÂÃÂ¨' };
+    const icons = { info: 'ÃÂ°ÃÂÃÂÃÂ¡', promo: 'ÃÂ°ÃÂÃÂÃÂ', gangguan: 'ÃÂ¢ÃÂÃÂ ÃÂ¯ÃÂ¸ÃÂ', update: 'ÃÂ¢ÃÂÃÂ¨' };
     
     preview.style.background = colors[type][0]; preview.style.color = colors[type][1];    
     preview.innerHTML = `${icons[type]} ${text} ${status === 'nonaktif' ? '<span style="opacity:0.5;">(Tersembunyi)</span>' : ''}`;
@@ -2296,7 +2210,7 @@ function renderConversation(fb) {
     const senderName = matchedClient ? matchedClient.nama : (fb.name || fb.email || "Anonim");
     const photoUrl = matchedClient ? matchedClient.photo : null;
     const clientTier = matchedClient ? matchedClient.tier : "free";
-    const d = new Date(fb.timestamp); const timeFormatted = `${d.getDate()}/${d.getMonth()+1}/${d.getFullYear()} ÃÂÃÂ¢ÃÂÃÂÃÂÃÂ¢ ${d.getHours().toString().padStart(2,'0')}:${d.getMinutes().toString().padStart(2,'0')}`;
+    const d = new Date(fb.timestamp); const timeFormatted = `${d.getDate()}/${d.getMonth()+1}/${d.getFullYear()} ÃÂ¢ÃÂÃÂ¢ ${d.getHours().toString().padStart(2,'0')}:${d.getMinutes().toString().padStart(2,'0')}`;
     let tierBadge = "";
     if (clientTier === "max_lifetime" || clientTier === "max") tierBadge = `<span class="badge tier-max" style="font-size:0.7rem; padding:2px 6px; margin-left:4px;"><i class="fa-solid fa-crown"></i> Max</span>`; else if (clientTier === "pro") tierBadge = `<span class="badge tier-pro" style="font-size:0.7rem; padding:2px 6px; margin-left:4px;"><i class="fa-solid fa-gem"></i> Pro</span>`; else if (clientTier === "basic") tierBadge = `<span class="badge tier-basic" style="font-size:0.7rem; padding:2px 6px; margin-left:4px;"><i class="fa-solid fa-star"></i> Basic</span>`;
     let avatarHtml = `<div class="wa-avatar" style="width:40px;height:40px;">${senderName.charAt(0).toUpperCase()}</div>`;
@@ -2328,135 +2242,6 @@ window.loadGallery = async () => {
 };
 window.deleteAllGallery = async () => { try { const snap = await getDocs(collection(db, "render_gallery")); const batch = writeBatch(db); snap.forEach(d => batch.delete(d.ref)); await batch.commit(); showToast("Berkas dikosongkan!", "success"); loadGallery(); } catch(e) {} };
 
-// ============================================================
-// HUGGING FACE MULTI-AKUN, STATUS REALTIME, & AUTO REBUILD 24 JAM
-// ============================================================
-let hfGridStatusIntervals = {};
-
-// Pop-up Tutorial Manual
-window.showHfTutorial = () => { document.getElementById('hf-tutorial-modal').classList.add('open'); };
-window.closeHfTutorial = (e) => { if (e.target === document.getElementById('hf-tutorial-modal')) window.closeHfTutorialForce(); };
-window.closeHfTutorialForce = () => { document.getElementById('hf-tutorial-modal').classList.remove('open'); };
-
-// Polling status asli ke server Hugging Face (Bebas Simulasi)
-window.checkGridHfStatus = (spaceId, token, cardIndex) => {
-    if (hfGridStatusIntervals[spaceId]) { clearInterval(hfGridStatusIntervals[spaceId]); }
-    async function fetchCardStatus() {
-        try {
-            const res = await fetch(`https://huggingface.co/api/spaces/${spaceId}`, { headers: { "Authorization": `Bearer ${token}` } });
-            const dot = document.getElementById(`grid-dot-${cardIndex}`), text = document.getElementById(`grid-text-${cardIndex}`);
-            if (!dot || !text) return;
-
-            if (res.ok) {
-                const data = await res.json();
-                const stage = (data.runtime && data.runtime.stage) ? data.runtime.stage : "UNKNOWN";
-                const stageLower = stage.toLowerCase();
-                
-                if (stageLower === "running") {
-                    dot.className = "status-dot green"; text.innerText = "RUNNING (Aktif & Siap)";
-                } else if (stageLower === "building" || stageLower === "running_building") {
-                    dot.className = "status-dot orange"; text.innerText = "BUILDING (Merakit Kontainer)";
-                } else if (stageLower === "app_starting") {
-                    dot.className = "status-dot orange"; text.innerText = "STARTING (Booting Jaringan)";
-                } else if (stageLower === "sleeping") {
-                    dot.className = "status-dot gray"; text.innerText = "SLEEPING (Tidur/Idle)";
-                } else if (stageLower === "paused" || stageLower === "stopped") {
-                    dot.className = "status-dot red"; text.innerText = "STOPPED (Dihentikan)";
-                } else if (stageLower.includes("error")) {
-                    dot.className = "status-dot red"; text.innerText = "ERROR (Gangguan Kode)";
-                } else {
-                    dot.className = "status-dot gray"; text.innerText = stage.toUpperCase();
-                }
-            } else { dot.className = "status-dot red"; text.innerText = "ERROR (Token/ID Salah)"; }
-        } catch (e) {
-            const dot = document.getElementById(`grid-dot-${cardIndex}`), text = document.getElementById(`grid-text-${cardIndex}`);
-            if(dot && text) { dot.className = "status-dot red"; text.innerText = "OFFLINE"; }
-        }
-    }
-
-    fetchCardStatus();
-    hfGridStatusIntervals[spaceId] = setInterval(fetchCardStatus, 10000); // Polling status asli per 10 detik
-};
-
-// Scheduler Pintar: Jalankan Rebuild Otomatis 24 Jam jika waktu terlewati (Bebas Dummy)
-window.checkAndAutoRebuild = async (spaceId, token, lastRebuild, index) => {
-    const now = Date.now(), oneDay = 24 * 60 * 60 * 1000;
-    if (!lastRebuild || (now - lastRebuild) >= oneDay) {
-        try {
-            const res = await fetch(`https://huggingface.co/api/spaces/${spaceId}/restart`, { method: "POST", headers: { "Authorization": `Bearer ${token}`, "Content-Type": "application/json" } });
-            if (res.ok) {
-                const currentSpaces = downloaderDataGlobal.hfSpaces || [];
-                const updatedSpaces = currentSpaces.map(s => s.spaceId === spaceId ? { ...s, lastRebuild: now } : s);
-                await updateDoc(doc(db, "settings", "downloader_api"), { hfSpaces: updatedSpaces });
-                await createLog({ type: 'success', host: 'Hugging Face Scheduler', request: 'AUTO_REBUILD', message: `Memicu Rebuild Otomatis 24 Jam untuk Space: ${spaceId}` });
-            }
-        } catch (e) { console.error("Auto-rebuild gagal:", e); }
-    }
-};
-
-window.saveNewHfSpace = async () => {
-    const spaceId = document.getElementById('hfSpaceIdInput').value.trim(), token = document.getElementById('hfTokenInput').value.trim();
-    if(!spaceId || !token) return showToast("Space ID dan HF Token wajib diisi!", "warning");
-    const currentSpaces = downloaderDataGlobal.hfSpaces || [];
-    if (currentSpaces.some(s => s.spaceId.toLowerCase() === spaceId.toLowerCase())) return showToast("Space ID ini sudah terhubung!", "warning");
-    
-    const newList = [...currentSpaces, { spaceId, token, lastRebuild: 0 }];
-    try {
-        await updateDoc(doc(db, "settings", "downloader_api"), { hfSpaces: newList });
-        document.getElementById('hfSpaceIdInput').value = ""; document.getElementById('hfTokenInput').value = "";
-        await createLog({ type: 'info', host: 'Admin', request: 'ADD_HF_SPACE', message: `Menghubungkan akun Hugging Face baru: ${spaceId}` });
-        showToast("Akun Hugging Face tersimpan!", "success");
-    } catch(e) { showToast("Gagal menyimpan akun", "danger"); }
-};
-
-window.manageDeleteHfSpaces = () => {
-    document.getElementById('delete-list-title').innerText = "Hapus Akun Hugging Face";
-    const container = document.getElementById('delete-list-container'); container.innerHTML = "";
-    const spaces = downloaderDataGlobal.hfSpaces || [];
-    if(spaces.length === 0) {
-        container.innerHTML = "<p style='text-align:center; color:#999; padding:20px;'>Belum ada server tersimpan.</p>";
-    } else {
-        spaces.forEach(s => {
-            const row = document.createElement('div');
-            row.style = "display:flex; justify-content:space-between; align-items:center; padding:12px; border:1px solid var(--border); border-radius:12px; background:#FAFAFC;";
-            row.innerHTML = `<div style="font-weight:700; font-size:0.85rem; color:var(--text); word-break:break-all; max-width:80%;"><i class="fa-solid fa-server" style="color:var(--accent); margin-right:6px;"></i>${s.spaceId}</div><button class="btn btn-sm btn-danger" onclick="window.deleteHfSpaceItem('${s.spaceId}')"><i class="fa-solid fa-trash"></i></button>`;
-            container.appendChild(row);
-        });
-    }
-    document.getElementById('delete-list-modal').classList.add('visible');
-};
-
-window.deleteHfSpaceItem = async (spaceId) => {
-    confirmAction(`Yakin ingin memutus hubungan akun Hugging Face "${spaceId}"?`, async () => {
-        const newList = (downloaderDataGlobal.hfSpaces || []).filter(s => s.spaceId !== spaceId);
-        try {
-            await updateDoc(doc(db, "settings", "downloader_api"), { hfSpaces: newList });
-            await createLog({ type: 'warning', host: 'Admin', request: 'DEL_HF_SPACE', message: `Memutus hubungan akun Hugging Face: ${spaceId}` });
-            showToast("Akun berhasil dihapus!", "success"); window.manageDeleteHfSpaces();
-        } catch(e) { showToast("Gagal memutuskan hubungan", "danger"); }
-    });
-};
-
-window.triggerGridHfRebuild = async (spaceId, token, index) => {
-    const btn = document.getElementById(`btn-rebuild-grid-${index}`);
-    if (!btn) return;
-    btn.disabled = true; btn.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin"></i> Memproses...`;
-    try {
-        const res = await fetch(`https://huggingface.co/api/spaces/${spaceId}/restart`, { method: "POST", headers: { "Authorization": `Bearer ${token}`, "Content-Type": "application/json" } });
-        if (res.ok) {
-            const now = Date.now(), currentSpaces = downloaderDataGlobal.hfSpaces || [];
-            const updatedSpaces = currentSpaces.map(s => s.spaceId === spaceId ? { ...s, lastRebuild: now } : s);
-            await updateDoc(doc(db, "settings", "downloader_api"), { hfSpaces: updatedSpaces });
-            await createLog({ type: 'success', host: 'Hugging Face', request: 'RESTART_SPACE', message: `Perintah Rebuild sukses dikirim ke Space: ${spaceId}` });
-            showToast("Perintah Rebuild terkirim! Status terpantau otomatis.", "success");
-            window.checkGridHfStatus(spaceId, token, index);
-        } else { showToast(`Gagal memicu rebuild: Error ${res.status}`, "danger"); }
-    } catch(e) { showToast("Terjadi kesalahan jaringan", "danger"); }
-    btn.disabled = false; btn.innerHTML = `<i class="fa-solid fa-rotate"></i> Rebuild / Restart`;
-};
-
 </script>
-</body>
-</html>
 </body>
 </html>
