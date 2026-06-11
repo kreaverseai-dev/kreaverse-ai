@@ -24,7 +24,7 @@ app.get('/api/download', (req, res) => {
     }
 
     // Eksekusi secara aman menggunakan interpreter python3 secara langsung untuk mengatasi blokir perizinan kontainer
-    execFile('python3', ['/usr/local/bin/yt-dlp', '--no-cache-dir', '-j', '--no-playlist', videoUrl], { maxBuffer: 1024 * 1024 * 10 }, (error, stdout, stderr) => {
+    execFile('python3', ['/usr/local/bin/yt-dlp', '--no-cache-dir', '--no-check-certificate', '-j', '--no-playlist', videoUrl], { maxBuffer: 1024 * 1024 * 10 }, (error, stdout, stderr) => {
         if (error) {
             console.error("=== YT-DLP EXECUTION ERROR ===");
             console.error("Error:", error);
