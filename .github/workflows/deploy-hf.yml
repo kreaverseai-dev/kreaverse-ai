@@ -11,10 +11,26 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
-          lfs: true
 
-      - name: Push to Hugging Face
+      - name: Sync to Hugging Face Spaces
         run: |
-          git push --force https://kreaverse-ai:${{ secrets.HF_TOKEN }}@huggingface.co/spaces/kreaverse-ai/ytdl-downloader HEAD:main
+          # 1. Konfigurasi identitas Git di runner
+          git config --global user.email "actions@github.com"
+          git config --global user.name "GitHub Actions"
+
+          # 2. Buat folder sementara dan kloning Space Hugging Face secara bersih
+          CLONE_DIR=$(mktemp -d)
+          git clone "https://kreaverse-ai:${{ secrets.HF_TOKEN }}@huggingface.co/spaces/kreaverse-ai/ytdl-downloader" "$CLONE_DIR"
+
+          # 3. Salin file-file utama Anda dari GitHub ke folder kloning tersebut
+          cp -rf Dockerfile index.js package.json README.md "$CLONE_DIR/"
+
+          # 4. Masuk ke folder kloning, lakukan add, commit, dan push standard
+          cd "$CLONE_DIR"
+          git add -A
+          
+          # Lakukan commit jika ada perubahan, jika tidak ada abaikan agar tidak error
+          git diff-index --quiet HEAD || git commit -m "Sync from GitHub Actions: ${{ github.sha }}"
+          
+          # Push secara aman ke cabang main Hugging Face
+          git push "https://kreaverse-ai:${{ secrets.HF_TOKEN }}@huggingface.co/spaces/kreaverse-ai/ytdl-downloader" main
