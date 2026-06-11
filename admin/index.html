@@ -468,6 +468,9 @@
         <div class="nav-item" onclick="nav('downloader')">
             <i class="fa-solid fa-cloud-arrow-down" style="width:18px;"></i> Server Downloader
         </div>
+        <div class="nav-item" onclick="nav('huggingface')">
+            <i class="fa-solid fa-server" style="width:18px;"></i> Server Hugging Face
+        </div>
         <div class="nav-item" onclick="nav('monitor')">
             <i class="fa-solid fa-desktop" style="width:18px;"></i> Live Monitor
         </div>
@@ -755,6 +758,120 @@
                 </div>
             </div>
 
+            <!-- SERVER HUGGING FACE TAB -->
+            <div id="tab-huggingface" class="section">
+                <!-- FORM PANEL -->
+                <div class="panel">
+                    <div class="panel-head">
+                        <div class="panel-title"><i class="fa-solid fa-server"></i> Registrasi Server Hugging Face</div>
+                        <button class="btn btn-sm btn-info" onclick="window.openHfHelpModal()"><i class="fa-solid fa-circle-question"></i> Panduan Membuat Space</button>
+                    </div>
+                    <div class="panel-body">
+                        <form id="formHfSpace">
+                            <div class="form-row">
+                                <div>
+                                    <label>Nama/Label Server</label>
+                                    <input type="text" id="hfName" required placeholder="Contoh: Server HF Utama" autocomplete="off">
+                                </div>
+                                <div>
+                                    <label>Username Hugging Face</label>
+                                    <input type="text" id="hfUser" required placeholder="Contoh: kreaverse-dev" autocomplete="off">
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div>
+                                    <label>Space Name (ID Space)</label>
+                                    <input type="text" id="hfSpaceName" required placeholder="Contoh: ytdl-downloader" autocomplete="off">
+                                </div>
+                                <div>
+                                    <label>URL Direct Space (Web Endpoint)</label>
+                                    <input type="url" id="hfUrl" required placeholder="Contoh: https://kreaverse-dev-ytdl-downloader.hf.space" autocomplete="off">
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div style="grid-column: span 1;">
+                                    <label>Hugging Face Access Token (Write Permission)</label>
+                                    <input type="password" id="hfToken" required placeholder="Contoh: hf_xxxxxxxxxxxxxxxxxxxxxxxxxxxxx" autocomplete="off">
+                                </div>
+                            </div>
+                            <button type="submit" class="btn btn-primary" style="width:100%;">
+                                <i class="fa-solid fa-cloud-arrow-up"></i> Simpan Server Hugging Face
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- MONITORING PANEL -->
+                <div class="panel">
+                    <div class="panel-head">
+                        <div class="panel-title"><i class="fa-solid fa-network-wired"></i> Monitoring & Kontrol Server</div>
+                        <button class="btn btn-sm btn-success" onclick="window.checkAllHfStatus()"><i class="fa-solid fa-arrows-rotate"></i> Refresh Semua Status</button>
+                    </div>
+                    <div class="panel-body">
+                        <div id="hfCardsContainer" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px;">
+                            <!-- Kartu status server akan disisipkan di sini secara dinamis -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- DOCUMENTATION PANEL -->
+                <div class="panel">
+                    <div class="panel-head" onclick="window.toggleEnvGuide()" style="cursor: pointer;">
+                        <div class="panel-title"><i class="fa-solid fa-book"></i> Dokumentasi Pengaturan Environment Variables (PENTING)</div>
+                        <i class="fa-solid fa-chevron-down" id="env-guide-chevron" style="transition: transform 0.3s;"></i>
+                    </div>
+                    <div class="panel-body" id="envGuideBody" style="display: none; line-height: 1.6; font-size: 0.9rem;">
+                        <div style="margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px solid var(--border);">
+                            <strong style="color: var(--accent);">1. Pengaturan di Vercel Dashboard</strong>
+                            <ul style="margin-left: 20px; margin-top: 5px; list-style-type: square; display: flex; flex-direction: column; gap: 4px;">
+                                <li><strong>FIREBASE_DATABASE_URL:</strong> URL Realtime Database Anda (Contoh: <code>https://kreaverse-ai0107-default-rtdb.asia-southeast1.firebasedatabase.app</code>).</li>
+                                <li><strong>FIREBASE_DATABASE_SECRET:</strong> Token rahasia database Anda dari menu Firebase Service Accounts.</li>
+                                <li><strong>CRON_SECRET:</strong> String sandi acak pengaman cron (Contoh: <code>h4b1StUdI0_Cr0n_SeCrEt_Key_2026</code>).</li>
+                            </ul>
+                        </div>
+                        <div>
+                            <strong style="color: var(--info);">2. Pengaturan di GitHub Secrets</strong>
+                            <ul style="margin-left: 20px; margin-top: 5px; list-style-type: square; display: flex; flex-direction: column; gap: 4px;">
+                                <li><strong>VERCEL_DOMAIN:</strong> Domain Vercel aktif Anda tanpa https:// (Contoh: <code>kreaverse-ai-kappa.vercel.app</code>).</li>
+                                <li><strong>CRON_SECRET:</strong> Nilai token keamanan (Harus sama persis dengan yang dimasukkan di Vercel!).</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- MODAL BANTUAN SPACE HF -->
+            <div id="hf-help-modal" class="bottom-sheet-overlay" onclick="window.closeHfHelpModal(event)">
+                <div class="bottom-sheet-container" style="max-width: 600px; border-radius: 24px; margin: auto; max-height: 85vh; overflow-y: auto;">
+                    <div class="sheet-header">
+                        <span class="sheet-title">Panduan Membuat Space Hugging Face</span>
+                        <button class="sheet-close-btn" onclick="window.closeHfHelpModal()">&times;</button>
+                    </div>
+                    <div style="padding-right: 10px; line-height: 1.6; font-size: 0.9rem; text-align: left;">
+                        <ol style="margin-left: 20px; display: flex; flex-direction: column; gap: 10px;">
+                            <li><strong>Buat Akun:</strong> Daftar di <a href="https://huggingface.co" target="_blank" style="color: var(--accent); font-weight: 700;">huggingface.co</a> jika belum punya.</li>
+                            <li><strong>Buat Space Baru:</strong> Klik profil Anda di kanan atas -> <strong>New Space</strong>.</li>
+                            <li><strong>Konfigurasi Space:</strong>
+                                <ul style="margin-left: 20px; list-style-type: circle;">
+                                    <li>Isi nama Space (Contoh: <code>ytdl-downloader</code>).</li>
+                                    <li>Pilih SDK: <strong>Docker</strong> -> pilih Blank / template kosong.</li>
+                                    <li>Pilih tipe Space: <strong>Public</strong> (Gratis).</li>
+                                </ul>
+                            </li>
+                            <li><strong>Buat Token Akses:</strong>
+                                <ul style="margin-left: 20px; list-style-type: circle;">
+                                    <li>Buka <strong>Settings</strong> akun HF Anda -> <strong>Access Tokens</strong>.</li>
+                                    <li>Klik <strong>New token</strong> -> Beri nama -> Pilih type: <strong>Write</strong> (Wajib agar sistem bisa memicu restart/rebuild).</li>
+                                    <li>Salin token tersebut (contoh diawali dengan <code>hf_...</code>) dan simpan ke formulir admin di atas.</li>
+                                </ul>
+                            </li>
+                            <li><strong>Direct URL:</strong> URL web Space Anda biasanya memiliki format <code>https://[username]-[nama-space].hf.space</code>.</li>
+                        </ol>
+                    </div>
+                    <button class="btn btn-primary" onclick="window.closeHfHelpModal()" style="margin-top: 20px; width: 100%;">Tutup Panduan</button>
+                </div>
+            </div>
+
             <!-- LIVE MONITOR TAB -->
             <div id="tab-monitor" class="section">
                 <div class="panel">
@@ -998,7 +1115,7 @@ const db = getFirestore(app);
 const rtdb = getDatabase(app);
 const googleProvider = new GoogleAuthProvider();
 
-let unsubApiKeys = null, unsubUsers = null, unsubLogs = null, unsubFeedbacks = null, unsubDownloader = null, unsubApiProviders = null, unsubCloudinary = null, unsubMonitor = null;
+let unsubApiKeys = null, unsubUsers = null, unsubLogs = null, unsubFeedbacks = null, unsubDownloader = null, unsubApiProviders = null, unsubCloudinary = null, unsubMonitor = null, unsubHuggingFace = null;
 
 const ALLOWED_ADMINS = [
     "holifhidayah@gmail.com",
@@ -1287,7 +1404,7 @@ window.doLogout = () => {
     confirmAction('Yakin ingin keluar dari dashboard admin?', async () => {
         try {
             await signOut(auth);
-            [unsubApiKeys, unsubUsers, unsubLogs, unsubFeedbacks, unsubDownloader, unsubApiProviders, unsubCloudinary, unsubMonitor].forEach(u => u && u());
+            [unsubApiKeys, unsubUsers, unsubLogs, unsubFeedbacks, unsubDownloader, unsubApiProviders, unsubCloudinary, unsubMonitor, unsubHuggingFace].forEach(u => u && u());
             showToast("Berhasil keluar!", "info");
             localStorage.removeItem('kreaverse_admin_tab');
             setTimeout(() => location.reload(), 1200);
@@ -1328,6 +1445,7 @@ function loadAllModules() {
     setupRealtimeMonitor();
     setupRealtimeFeedback();
     setupRealtimeDownloader(); 
+    setupRealtimeHuggingFace();
     loadGallery();
     loadPromo();
     setupPromoPreview();
@@ -2137,7 +2255,7 @@ function updatePromoPreview() {
     if (!text) { preview.innerText = "Preview pengumuman akan tampil di sini..."; preview.style.background = "#F4F5F7"; preview.style.color = "var(--text-sec)"; return; }
     const colors = { info: ['rgba(0,122,255,0.1)', 'var(--info)'], promo: ['rgba(52,199,89,0.1)', 'var(--success)'], gangguan: ['rgba(255,59,48,0.1)', 'var(--danger)'], update: ['rgba(175,82,222,0.1)', '#AF52DE'] };
     
-    const icons = { info: 'ÃÂ°ÃÂÃÂÃÂ¡', promo: 'ÃÂ°ÃÂÃÂÃÂ', gangguan: 'ÃÂ¢ÃÂÃÂ ÃÂ¯ÃÂ¸ÃÂ', update: 'ÃÂ¢ÃÂÃÂ¨' };
+    const icons = { info: 'ÃÂÃÂ°ÃÂÃÂÃÂÃÂÃÂÃÂ¡', promo: 'ÃÂÃÂ°ÃÂÃÂÃÂÃÂÃÂÃÂ', gangguan: 'ÃÂÃÂ¢ÃÂÃÂÃÂÃÂ ÃÂÃÂ¯ÃÂÃÂ¸ÃÂÃÂ', update: 'ÃÂÃÂ¢ÃÂÃÂÃÂÃÂ¨' };
     
     preview.style.background = colors[type][0]; preview.style.color = colors[type][1];    
     preview.innerHTML = `${icons[type]} ${text} ${status === 'nonaktif' ? '<span style="opacity:0.5;">(Tersembunyi)</span>' : ''}`;
@@ -2210,7 +2328,7 @@ function renderConversation(fb) {
     const senderName = matchedClient ? matchedClient.nama : (fb.name || fb.email || "Anonim");
     const photoUrl = matchedClient ? matchedClient.photo : null;
     const clientTier = matchedClient ? matchedClient.tier : "free";
-    const d = new Date(fb.timestamp); const timeFormatted = `${d.getDate()}/${d.getMonth()+1}/${d.getFullYear()} ÃÂ¢ÃÂÃÂ¢ ${d.getHours().toString().padStart(2,'0')}:${d.getMinutes().toString().padStart(2,'0')}`;
+    const d = new Date(fb.timestamp); const timeFormatted = `${d.getDate()}/${d.getMonth()+1}/${d.getFullYear()} ÃÂÃÂ¢ÃÂÃÂÃÂÃÂ¢ ${d.getHours().toString().padStart(2,'0')}:${d.getMinutes().toString().padStart(2,'0')}`;
     let tierBadge = "";
     if (clientTier === "max_lifetime" || clientTier === "max") tierBadge = `<span class="badge tier-max" style="font-size:0.7rem; padding:2px 6px; margin-left:4px;"><i class="fa-solid fa-crown"></i> Max</span>`; else if (clientTier === "pro") tierBadge = `<span class="badge tier-pro" style="font-size:0.7rem; padding:2px 6px; margin-left:4px;"><i class="fa-solid fa-gem"></i> Pro</span>`; else if (clientTier === "basic") tierBadge = `<span class="badge tier-basic" style="font-size:0.7rem; padding:2px 6px; margin-left:4px;"><i class="fa-solid fa-star"></i> Basic</span>`;
     let avatarHtml = `<div class="wa-avatar" style="width:40px;height:40px;">${senderName.charAt(0).toUpperCase()}</div>`;
@@ -2241,6 +2359,214 @@ window.loadGallery = async () => {
     } catch(e) {}
 };
 window.deleteAllGallery = async () => { try { const snap = await getDocs(collection(db, "render_gallery")); const batch = writeBatch(db); snap.forEach(d => batch.delete(d.ref)); await batch.commit(); showToast("Berkas dikosongkan!", "success"); loadGallery(); } catch(e) {} };
+
+// ============================================================
+// MODUL SERVER HUGGING FACE (KONTROL & MONITOR)
+// ============================================================
+async function getHfSpaceStatus(repoId, token) {
+    try {
+        const headers = {};
+        if (token) headers['Authorization'] = `Bearer ${token}`;
+        const res = await fetch(`https://huggingface.co/api/spaces/${repoId}`, { headers });
+        if (!res.ok) return 'OFFLINE';
+        const data = await res.json();
+        return data.runtime?.stage || 'UNKNOWN';
+    } catch (err) {
+        return 'ERROR';
+    }
+}
+
+async function rebuildHfSpace(repoId, token) {
+    try {
+        const res = await fetch(`https://huggingface.co/api/spaces/${repoId}/restart`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ factory: true })
+        });
+        return res.ok;
+    } catch (e) {
+        return false;
+    }
+}
+
+document.getElementById('formHfSpace').addEventListener('submit', async e => {
+    e.preventDefault();
+    const name = document.getElementById('hfName').value.trim();
+    const username = document.getElementById('hfUser').value.trim();
+    const spaceName = document.getElementById('hfSpaceName').value.trim();
+    const url = document.getElementById('hfUrl').value.trim();
+    const token = document.getElementById('hfToken').value.trim();
+    const repoId = `${username}/${spaceName}`;
+    const id = repoId.replace('/', '_');
+
+    const btn = e.target.querySelector('button[type="submit"]');
+    btn.disabled = true;
+    btn.innerHTML = `<div class="loading-spinner sm"></div> Menyimpan...`;
+
+    try {
+        await set(ref(rtdb, 'huggingface_spaces/' + id), {
+            name,
+            username,
+            space_name: spaceName,
+            repo_id: repoId,
+            url,
+            hf_token: token,
+            createdAt: Date.now()
+        });
+        await createLog({ type: 'success', host: 'Admin', request: 'ADD_HF_SPACE', message: `Menambahkan Server Hugging Face: ${name} (${repoId})` });
+        showToast("Server Hugging Face berhasil didaftarkan!", "success");
+        document.getElementById('formHfSpace').reset();
+    } catch (err) {
+        showToast("Gagal menyimpan ke Realtime Database", "danger");
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = `<i class="fa-solid fa-cloud-arrow-up"></i> Simpan Server Hugging Face`;
+    }
+});
+
+function setupRealtimeHuggingFace() {
+    if (unsubHuggingFace) { unsubHuggingFace(); unsubHuggingFace = null; }
+    const hfRef = ref(rtdb, 'huggingface_spaces');
+    unsubHuggingFace = onValue(hfRef, snapshot => {
+        const dataObj = snapshot.val();
+        const container = document.getElementById('hfCardsContainer');
+        if (!dataObj) {
+            container.innerHTML = `<div style="grid-column: span 3; text-align:center; padding:40px; color:var(--text-sec);"><i class="fa-solid fa-server" style="font-size:2rem; display:block; margin-bottom:10px; opacity:0.3;"></i>Belum ada server Hugging Face terdaftar.</div>`;
+            return;
+        }
+
+        const keys = Object.keys(dataObj);
+        let html = "";
+        keys.forEach(key => {
+            const space = dataObj[key];
+            html += `
+                <div class="card" id="hf-card-${key}" style="cursor: default;">
+                    <i class="fa-solid fa-server card-icon" style="opacity: 0.05;"></i>
+                    <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 12px; gap: 10px;">
+                        <div class="card-title" style="font-size: 0.95rem; font-weight: 800; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${space.name}</div>
+                        <span class="badge badge-gray" id="hf-status-${key}" style="font-size: 0.72rem; font-weight: 800;"><span class="status-dot gray" id="hf-dot-${key}"></span> MEMUAT</span>
+                    </div>
+                    <div style="font-size: 0.8rem; color: var(--text-sec); display: flex; flex-direction: column; gap: 4px; margin-bottom: 20px;">
+                        <div style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"><i class="fa-solid fa-folder" style="width: 14px;"></i> Repo: <span style="font-family: monospace;">${space.repo_id}</span></div>
+                        <div style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"><i class="fa-solid fa-link" style="width: 14px;"></i> URL: <a href="${space.url}" target="_blank" style="color: var(--accent); font-weight: 600;">${space.url}</a></div>
+                    </div>
+                    <div style="display: flex; gap: 8px;">
+                        <button class="btn btn-sm btn-info" onclick="window.checkSingleHfStatus('${key}', '${space.repo_id}', '${space.hf_token}')" style="flex: 1; padding: 8px 10px; font-size: 0.75rem;"><i class="fa-solid fa-rotate"></i> Cek Status</button>
+                        <button class="btn btn-sm btn-warning" onclick="window.triggerRebuildHf('${key}', '${space.repo_id}', '${space.hf_token}', '${space.name}')" style="flex: 1; padding: 8px 10px; font-size: 0.75rem;"><i class="fa-solid fa-hammer"></i> Rebuild</button>
+                        <button class="btn btn-sm btn-danger" onclick="window.triggerDeleteHf('${key}', '${space.name}')" style="padding: 8px 12px;"><i class="fa-solid fa-trash"></i></button>
+                    </div>
+                </div>
+            `;
+        });
+        container.innerHTML = html;
+
+        setTimeout(() => {
+            keys.forEach(key => {
+                const space = dataObj[key];
+                window.checkSingleHfStatus(key, space.repo_id, space.hf_token);
+            });
+        }, 500);
+    });
+}
+
+window.checkSingleHfStatus = async function(key, repoId, token) {
+    const badge = document.getElementById(`hf-status-${key}`);
+    const dot = document.getElementById(`hf-dot-${key}`);
+    if (!badge || !dot) return;
+
+    badge.className = "badge badge-gray";
+    badge.innerHTML = `<span class="status-dot orange"></span> MEMERIKSA`;
+
+    const status = await getHfSpaceStatus(repoId, token);
+    
+    let badgeClass = "badge-gray";
+    let dotClass = "gray";
+    let label = status;
+
+    if (status === "RUNNING") {
+        badgeClass = "badge-green";
+        dotClass = "green";
+    } else if (status === "BUILDING" || status === "STARTING" || status === "RUNNING_BUILDING") {
+        badgeClass = "badge-orange";
+        dotClass = "orange";
+    } else if (status === "SLEEPING") {
+        badgeClass = "badge-gray";
+        dotClass = "gray";
+    } else if (status === "ERROR" || status === "OFFLINE") {
+        badgeClass = "badge-red";
+        dotClass = "red";
+    }
+
+    badge.className = `badge ${badgeClass}`;
+    badge.innerHTML = `<span class="status-dot ${dotClass}"></span> ${label}`;
+};
+
+window.checkAllHfStatus = function() {
+    const hfRef = ref(rtdb, 'huggingface_spaces');
+    const container = document.getElementById('hfCardsContainer');
+    if (container.children.length === 0 || container.innerText.includes("Belum ada")) {
+        showToast("Tidak ada server untuk diperiksa", "warning");
+        return;
+    }
+    onValue(hfRef, snapshot => {
+        const dataObj = snapshot.val();
+        if (dataObj) {
+            Object.keys(dataObj).forEach(key => {
+                const space = dataObj[key];
+                window.checkSingleHfStatus(key, space.repo_id, space.hf_token);
+            });
+            showToast("Semua status server diperbarui!", "success");
+        }
+    }, { onlyOnce: true });
+};
+
+window.triggerRebuildHf = function(key, repoId, token, name) {
+    confirmAction(`Rebuild (Factory Restart) server "${name}"? Kontainer akan dibangun ulang dari awal.`, async () => {
+        showToast(`Memulai proses rebuild untuk ${name}...`, "info");
+        const success = await rebuildHfSpace(repoId, token);
+        if (success) {
+            showToast(`Perintah Rebuild berhasil dikirim!`, "success");
+            await createLog({ type: 'warning', host: 'Admin', request: 'REBUILD_HF', message: `Memulai Rebuild server Hugging Face: ${name}` });
+            setTimeout(() => window.checkSingleHfStatus(key, repoId, token), 2000);
+        } else {
+            showToast("Gagal mengirim perintah Rebuild", "danger");
+        }
+    });
+};
+
+window.triggerDeleteHf = function(key, name) {
+    confirmAction(`Hapus server Hugging Face "${name}" dari dashboard?`, async () => {
+        try {
+            await set(ref(rtdb, 'huggingface_spaces/' + key), null);
+            await createLog({ type: 'warning', host: 'Admin', request: 'DEL_HF_SPACE', message: `Menghapus Server Hugging Face: ${name}` });
+            showToast(`Server ${name} berhasil dihapus!`, "success");
+        } catch (e) {
+            showToast("Gagal menghapus server", "danger");
+        }
+    });
+};
+
+window.toggleEnvGuide = function() {
+    const body = document.getElementById('envGuideBody');
+    const chevron = document.getElementById('env-guide-chevron');
+    if (body.style.display === "none") {
+        body.style.display = "block";
+        chevron.style.transform = "rotate(180deg)";
+    } else {
+        body.style.display = "none";
+        chevron.style.transform = "rotate(0deg)";
+    }
+};
+
+window.openHfHelpModal = () => document.getElementById('hf-help-modal').classList.add('open');
+window.closeHfHelpModal = (e) => {
+    if (!e || e.target === document.getElementById('hf-help-modal') || e.target.className === 'sheet-close-btn' || e.target.tagName === 'BUTTON') {
+        document.getElementById('hf-help-modal').classList.remove('open');
+    }
+};
 
 </script>
 </body>
