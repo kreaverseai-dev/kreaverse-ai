@@ -34,11 +34,18 @@ export default async function handler(req) {
     try {
         const safeUrl = new URL(targetUrl).href;
 
+        // Meneruskan header Range dari browser ke server target untuk mendukung pemutaran streaming parsial (seeking/scrubbing)
+        const rangeHeader = req.headers.get('range');
+        const fetchHeaders = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+        };
+        if (rangeHeader) {
+            fetchHeaders['Range'] = rangeHeader;
+        }
+
         const response = await fetch(safeUrl, {
             method: 'GET',
-            headers: {
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
-            },
+            headers: fetchHeaders,
             redirect: 'follow'
         });
 
@@ -61,11 +68,18 @@ export default async function handler(req) {
         headers.set('Access-Control-Allow-Origin', '*');
         headers.set('Access-Control-Allow-Methods', 'GET, OPTIONS');
         headers.set('Access-Control-Allow-Headers', '*');
-        headers.set('Access-Control-Expose-Headers', 'Content-Length, Content-Disposition');
+        headers.set('Access-Control-Expose-Headers', 'Content-Length, Content-Disposition, Content-Range, Accept-Ranges');
         
         if (contentLength) {
             headers.set('Content-Length', contentLength);
         }
+
+        // Meneruskan header informasi potongan byte berkas dari CDN target untuk kestabilan pemutar browser
+        const contentRange = response.headers.get('content-range');
+        if (contentRange) {
+            headers.set('Content-Range', contentRange);
+        }
+        headers.set('Accept-Ranges', 'bytes');
 
         if (filename) {
             const cleanFilename = filename.replace(/"/g, '');
