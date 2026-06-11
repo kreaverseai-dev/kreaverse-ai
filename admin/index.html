@@ -468,6 +468,10 @@
         <div class="nav-item" onclick="nav('downloader')">
             <i class="fa-solid fa-cloud-arrow-down" style="width:18px;"></i> Server Downloader
         </div>
+        <div class="nav-item" onclick="nav('huggingface')">
+            <i class="fa-solid fa-gears" style="width:18px;"></i> Server Hugging Face
+            <span id="hf-count-badge" class="badge badge-gray" style="margin-left:auto; font-size:0.7rem; padding:4px 8px;">0</span>
+        </div>
         <div class="nav-item" onclick="nav('monitor')">
             <i class="fa-solid fa-desktop" style="width:18px;"></i> Live Monitor
         </div>
@@ -753,39 +757,19 @@
                         </div>
                     </div>
                 </div>
+            </div>
 
-                <!-- PANEL INTEGRASI REBUILD HUGGING FACE (MULTIPORT & STATUS NYATA) -->
-                <div class="panel" style="margin-top: 25px;">
+            <!-- HUGGING FACE TAB (MENU BARU KHUSUS) -->
+            <div id="tab-huggingface" class="section">
+                <div class="panel">
                     <div class="panel-head">
-                        <div class="panel-title"><i class="fa-solid fa-gears" style="color: var(--accent);"></i> Hubungkan Server Pribadi (Hugging Face)</div>
-                        <button class="btn btn-sm btn-danger" onclick="window.manageDeleteHfSpaces()"><i class="fa-solid fa-trash-can"></i> Hapus Akun</button>
+                        <div class="panel-title"><i class="fa-solid fa-gears" style="color:var(--accent);"></i> Pengelola Server Pribadi Hugging Face</div>
+                        <button class="btn btn-sm btn-info" onclick="window.showHfTutorial()"><i class="fa-solid fa-circle-question"></i> Panduan Cara Penggunaan</button>
                     </div>
                     <div class="panel-body">
-                        <div style="font-size:0.85rem; color:var(--text-sec); margin-bottom: 20px; line-height: 1.5;">
-                            Gunakan panel ini untuk menghubungkan satu atau banyak Hugging Face Space Anda. Anda bisa memicu pembangunan ulang (*Rebuild/Restart*) server secara langsung dari sini untuk meng-update `yt-dlp` tanpa perlu login ke Hugging Face.
-                        </div>
-                        
-                        <!-- DROP-DOWN PILIHAN MULTI-AKUN & INDIKATOR STATUS ASLI -->
-                        <div class="form-row" style="margin-bottom: 20px;">
-                            <div>
-                                <label>Pilih Server Hugging Face Aktif</label>
-                                <div class="custom-select-trigger" id="hfActive-trigger" onclick="openCustomSelect('hfActive')">
-                                    <span id="hfActive-label">Belum ada server tersimpan</span>
-                                    <i class="fa-solid fa-chevron-down"></i>
-                                </div>
-                                <input type="hidden" id="hfActive" value="">
-                            </div>
-                            <div>
-                                <label>Status Server Saat Ini (Real-time Nyata)</label>
-                                <div id="hf-status-indicator" style="padding:14px 16px; border:2px solid var(--border); border-radius:12px; font-weight:700; background:#FAFAFC; display:flex; align-items:center; gap:8px; font-size: 0.9rem;">
-                                    <span class="status-dot gray"></span> <span>Tidak Ada Koneksi</span>
-                                </div>
-                            </div>
-                        </div>
-
                         <!-- INPUT FORM PENAMBAHAN AKUN BARU -->
-                        <div style="background:#FAFAFC; padding:18px; border-radius:12px; border:1px solid var(--border); margin-bottom: 20px;">
-                            <div style="font-size:0.8rem; font-weight:700; text-transform:uppercase; color:var(--accent); margin-bottom:12px;"><i class="fa-solid fa-plus"></i> Hubungkan Akun/Space Baru</div>
+                        <div style="background:#FAFAFC; padding:20px; border-radius:12px; border:1px solid var(--border); margin-bottom: 25px;">
+                            <div style="font-size:0.85rem; font-weight:700; text-transform:uppercase; color:var(--accent); margin-bottom:12px;"><i class="fa-solid fa-plus"></i> Hubungkan Akun / Space Baru</div>
                             <div class="form-row">
                                 <div>
                                     <label>Hugging Face Space ID (Contoh: username/space-name)</label>
@@ -800,11 +784,17 @@
                                 <i class="fa-solid fa-floppy-disk"></i> Simpan & Hubungkan Akun Baru
                             </button>
                         </div>
+                    </div>
+                </div>
 
-                        <div style="display:flex; gap:12px;">
-                            <button class="btn btn-success" id="btn-rebuild-hf" onclick="window.triggerHfRebuild()" style="flex:1; height: 50px;">
-                                <i class="fa-solid fa-rotate"></i> <span id="rebuild-btn-text">Rebuild/Restart Server Sekarang</span>
-                            </button>
+                <!-- GRID DAFTAR SEMUA AKUN HUGGING FACE SECARA REAL-TIME NYATA -->
+                <div class="panel">
+                    <div class="panel-head">
+                        <div class="panel-title"><i class="fa-solid fa-server" style="color:var(--accent);"></i> Jaringan Server Aktif Anda</div>
+                    </div>
+                    <div class="panel-body" style="background:#F4F5F7; padding: 25px;">
+                        <div id="hf-spaces-grid" style="display:grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px;">
+                            <div style="grid-column: 1/-1; text-align:center; padding:40px; color:var(--text-sec);">Belum ada akun terhubung. Silakan gunakan panel di atas untuk mendaftarkan server.</div>
                         </div>
                     </div>
                 </div>
