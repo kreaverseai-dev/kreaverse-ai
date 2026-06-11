@@ -2037,6 +2037,11 @@
 
         document.getElementById('reset-btn').addEventListener('click', () => { urlInput.value = ""; urlInput.dispatchEvent(new Event('input')); resetUI(); urlInput.focus(); });
 
+        // Auto-ping cerdas (15s) otomatis dijeda di latar belakang saat tab tidak aktif
+        setInterval(() => { if (!document.hidden && typeof window.pingSemuaServer === 'function') window.pingSemuaServer(); }, 15000);
+        setTimeout(() => { if (typeof window.pingSemuaServer === 'function') window.pingSemuaServer(); }, 1500);
+        document.addEventListener('visibilitychange', () => { if (!document.hidden && typeof window.pingSemuaServer === 'function') window.pingSemuaServer(); });
+
     </script>
 </body>
 </html>
