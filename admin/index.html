@@ -2223,7 +2223,7 @@ function updatePromoPreview() {
     if (!text) { preview.innerText = "Preview pengumuman akan tampil di sini..."; preview.style.background = "#F4F5F7"; preview.style.color = "var(--text-sec)"; return; }
     const colors = { info: ['rgba(0,122,255,0.1)', 'var(--info)'], promo: ['rgba(52,199,89,0.1)', 'var(--success)'], gangguan: ['rgba(255,59,48,0.1)', 'var(--danger)'], update: ['rgba(175,82,222,0.1)', '#AF52DE'] };
     
-    const icons = { info: 'Ã°ÂÂÂ¡', promo: 'Ã°ÂÂÂ', gangguan: 'Ã¢ÂÂ Ã¯Â¸Â', update: 'Ã¢ÂÂ¨' };
+    const icons = { info: 'ÃÂ°ÃÂÃÂÃÂ¡', promo: 'ÃÂ°ÃÂÃÂÃÂ', gangguan: 'ÃÂ¢ÃÂÃÂ ÃÂ¯ÃÂ¸ÃÂ', update: 'ÃÂ¢ÃÂÃÂ¨' };
     
     preview.style.background = colors[type][0]; preview.style.color = colors[type][1];    
     preview.innerHTML = `${icons[type]} ${text} ${status === 'nonaktif' ? '<span style="opacity:0.5;">(Tersembunyi)</span>' : ''}`;
@@ -2296,7 +2296,7 @@ function renderConversation(fb) {
     const senderName = matchedClient ? matchedClient.nama : (fb.name || fb.email || "Anonim");
     const photoUrl = matchedClient ? matchedClient.photo : null;
     const clientTier = matchedClient ? matchedClient.tier : "free";
-    const d = new Date(fb.timestamp); const timeFormatted = `${d.getDate()}/${d.getMonth()+1}/${d.getFullYear()} Ã¢ÂÂ¢ ${d.getHours().toString().padStart(2,'0')}:${d.getMinutes().toString().padStart(2,'0')}`;
+    const d = new Date(fb.timestamp); const timeFormatted = `${d.getDate()}/${d.getMonth()+1}/${d.getFullYear()} ÃÂ¢ÃÂÃÂ¢ ${d.getHours().toString().padStart(2,'0')}:${d.getMinutes().toString().padStart(2,'0')}`;
     let tierBadge = "";
     if (clientTier === "max_lifetime" || clientTier === "max") tierBadge = `<span class="badge tier-max" style="font-size:0.7rem; padding:2px 6px; margin-left:4px;"><i class="fa-solid fa-crown"></i> Max</span>`; else if (clientTier === "pro") tierBadge = `<span class="badge tier-pro" style="font-size:0.7rem; padding:2px 6px; margin-left:4px;"><i class="fa-solid fa-gem"></i> Pro</span>`; else if (clientTier === "basic") tierBadge = `<span class="badge tier-basic" style="font-size:0.7rem; padding:2px 6px; margin-left:4px;"><i class="fa-solid fa-star"></i> Basic</span>`;
     let avatarHtml = `<div class="wa-avatar" style="width:40px;height:40px;">${senderName.charAt(0).toUpperCase()}</div>`;
@@ -2329,33 +2329,134 @@ window.loadGallery = async () => {
 window.deleteAllGallery = async () => { try { const snap = await getDocs(collection(db, "render_gallery")); const batch = writeBatch(db); snap.forEach(d => batch.delete(d.ref)); await batch.commit(); showToast("Berkas dikosongkan!", "success"); loadGallery(); } catch(e) {} };
 
 // ============================================================
-// HUGGING FACE REMOTE REBUILD SYSTEM (KONDENSASI PROPORSI)
+// HUGGING FACE MULTI-AKUN, STATUS REALTIME, & AUTO REBUILD 24 JAM
 // ============================================================
-window.saveHfConfig = async () => {
-    const spaceId = document.getElementById('hfSpaceId').value.trim(), token = document.getElementById('hfToken').value.trim();
-    if(!spaceId || !token) return showToast("Space ID dan HF Token wajib diisi!", "warning");
-    try {
-        await updateDoc(doc(db, "settings", "downloader_api"), { hfConfig: { spaceId, token } });
-        await createLog({ type: 'info', host: 'Admin', request: 'SAVE_HF_CONFIG', message: `Menyimpan konfigurasi Hugging Face: ${spaceId}` });
-        showToast("Konfigurasi Hugging Face tersimpan!", "success");
-    } catch(e) { showToast("Gagal menyimpan konfigurasi", "danger"); }
+let hfGridStatusIntervals = {};
+
+// Pop-up Tutorial Manual
+window.showHfTutorial = () => { document.getElementById('hf-tutorial-modal').classList.add('open'); };
+window.closeHfTutorial = (e) => { if (e.target === document.getElementById('hf-tutorial-modal')) window.closeHfTutorialForce(); };
+window.closeHfTutorialForce = () => { document.getElementById('hf-tutorial-modal').classList.remove('open'); };
+
+// Polling status asli ke server Hugging Face (Bebas Simulasi)
+window.checkGridHfStatus = (spaceId, token, cardIndex) => {
+    if (hfGridStatusIntervals[spaceId]) { clearInterval(hfGridStatusIntervals[spaceId]); }
+    async function fetchCardStatus() {
+        try {
+            const res = await fetch(`https://huggingface.co/api/spaces/${spaceId}`, { headers: { "Authorization": `Bearer ${token}` } });
+            const dot = document.getElementById(`grid-dot-${cardIndex}`), text = document.getElementById(`grid-text-${cardIndex}`);
+            if (!dot || !text) return;
+
+            if (res.ok) {
+                const data = await res.json();
+                const stage = (data.runtime && data.runtime.stage) ? data.runtime.stage : "UNKNOWN";
+                const stageLower = stage.toLowerCase();
+                
+                if (stageLower === "running") {
+                    dot.className = "status-dot green"; text.innerText = "RUNNING (Aktif & Siap)";
+                } else if (stageLower === "building" || stageLower === "running_building") {
+                    dot.className = "status-dot orange"; text.innerText = "BUILDING (Merakit Kontainer)";
+                } else if (stageLower === "app_starting") {
+                    dot.className = "status-dot orange"; text.innerText = "STARTING (Booting Jaringan)";
+                } else if (stageLower === "sleeping") {
+                    dot.className = "status-dot gray"; text.innerText = "SLEEPING (Tidur/Idle)";
+                } else if (stageLower === "paused" || stageLower === "stopped") {
+                    dot.className = "status-dot red"; text.innerText = "STOPPED (Dihentikan)";
+                } else if (stageLower.includes("error")) {
+                    dot.className = "status-dot red"; text.innerText = "ERROR (Gangguan Kode)";
+                } else {
+                    dot.className = "status-dot gray"; text.innerText = stage.toUpperCase();
+                }
+            } else { dot.className = "status-dot red"; text.innerText = "ERROR (Token/ID Salah)"; }
+        } catch (e) {
+            const dot = document.getElementById(`grid-dot-${cardIndex}`), text = document.getElementById(`grid-text-${cardIndex}`);
+            if(dot && text) { dot.className = "status-dot red"; text.innerText = "OFFLINE"; }
+        }
+    }
+
+    fetchCardStatus();
+    hfGridStatusIntervals[spaceId] = setInterval(fetchCardStatus, 10000); // Polling status asli per 10 detik
 };
 
-window.triggerHfRebuild = async () => {
-    const spaceId = document.getElementById('hfSpaceId').value.trim(), token = document.getElementById('hfToken').value.trim();
-    if(!spaceId || !token) return showToast("Simpan Space ID dan Token terlebih dahulu sebelum Rebuild!", "warning");
-    const btn = document.getElementById('btn-rebuild-hf'), textEl = document.getElementById('rebuild-btn-text');
-    btn.disabled = true; textEl.innerText = "Mengirim Perintah...";
+// Scheduler Pintar: Jalankan Rebuild Otomatis 24 Jam jika waktu terlewati (Bebas Dummy)
+window.checkAndAutoRebuild = async (spaceId, token, lastRebuild, index) => {
+    const now = Date.now(), oneDay = 24 * 60 * 60 * 1000;
+    if (!lastRebuild || (now - lastRebuild) >= oneDay) {
+        try {
+            const res = await fetch(`https://huggingface.co/api/spaces/${spaceId}/restart`, { method: "POST", headers: { "Authorization": `Bearer ${token}`, "Content-Type": "application/json" } });
+            if (res.ok) {
+                const currentSpaces = downloaderDataGlobal.hfSpaces || [];
+                const updatedSpaces = currentSpaces.map(s => s.spaceId === spaceId ? { ...s, lastRebuild: now } : s);
+                await updateDoc(doc(db, "settings", "downloader_api"), { hfSpaces: updatedSpaces });
+                await createLog({ type: 'success', host: 'Hugging Face Scheduler', request: 'AUTO_REBUILD', message: `Memicu Rebuild Otomatis 24 Jam untuk Space: ${spaceId}` });
+            }
+        } catch (e) { console.error("Auto-rebuild gagal:", e); }
+    }
+};
+
+window.saveNewHfSpace = async () => {
+    const spaceId = document.getElementById('hfSpaceIdInput').value.trim(), token = document.getElementById('hfTokenInput').value.trim();
+    if(!spaceId || !token) return showToast("Space ID dan HF Token wajib diisi!", "warning");
+    const currentSpaces = downloaderDataGlobal.hfSpaces || [];
+    if (currentSpaces.some(s => s.spaceId.toLowerCase() === spaceId.toLowerCase())) return showToast("Space ID ini sudah terhubung!", "warning");
+    
+    const newList = [...currentSpaces, { spaceId, token, lastRebuild: 0 }];
+    try {
+        await updateDoc(doc(db, "settings", "downloader_api"), { hfSpaces: newList });
+        document.getElementById('hfSpaceIdInput').value = ""; document.getElementById('hfTokenInput').value = "";
+        await createLog({ type: 'info', host: 'Admin', request: 'ADD_HF_SPACE', message: `Menghubungkan akun Hugging Face baru: ${spaceId}` });
+        showToast("Akun Hugging Face tersimpan!", "success");
+    } catch(e) { showToast("Gagal menyimpan akun", "danger"); }
+};
+
+window.manageDeleteHfSpaces = () => {
+    document.getElementById('delete-list-title').innerText = "Hapus Akun Hugging Face";
+    const container = document.getElementById('delete-list-container'); container.innerHTML = "";
+    const spaces = downloaderDataGlobal.hfSpaces || [];
+    if(spaces.length === 0) {
+        container.innerHTML = "<p style='text-align:center; color:#999; padding:20px;'>Belum ada server tersimpan.</p>";
+    } else {
+        spaces.forEach(s => {
+            const row = document.createElement('div');
+            row.style = "display:flex; justify-content:space-between; align-items:center; padding:12px; border:1px solid var(--border); border-radius:12px; background:#FAFAFC;";
+            row.innerHTML = `<div style="font-weight:700; font-size:0.85rem; color:var(--text); word-break:break-all; max-width:80%;"><i class="fa-solid fa-server" style="color:var(--accent); margin-right:6px;"></i>${s.spaceId}</div><button class="btn btn-sm btn-danger" onclick="window.deleteHfSpaceItem('${s.spaceId}')"><i class="fa-solid fa-trash"></i></button>`;
+            container.appendChild(row);
+        });
+    }
+    document.getElementById('delete-list-modal').classList.add('visible');
+};
+
+window.deleteHfSpaceItem = async (spaceId) => {
+    confirmAction(`Yakin ingin memutus hubungan akun Hugging Face "${spaceId}"?`, async () => {
+        const newList = (downloaderDataGlobal.hfSpaces || []).filter(s => s.spaceId !== spaceId);
+        try {
+            await updateDoc(doc(db, "settings", "downloader_api"), { hfSpaces: newList });
+            await createLog({ type: 'warning', host: 'Admin', request: 'DEL_HF_SPACE', message: `Memutus hubungan akun Hugging Face: ${spaceId}` });
+            showToast("Akun berhasil dihapus!", "success"); window.manageDeleteHfSpaces();
+        } catch(e) { showToast("Gagal memutuskan hubungan", "danger"); }
+    });
+};
+
+window.triggerGridHfRebuild = async (spaceId, token, index) => {
+    const btn = document.getElementById(`btn-rebuild-grid-${index}`);
+    if (!btn) return;
+    btn.disabled = true; btn.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin"></i> Memproses...`;
     try {
         const res = await fetch(`https://huggingface.co/api/spaces/${spaceId}/restart`, { method: "POST", headers: { "Authorization": `Bearer ${token}`, "Content-Type": "application/json" } });
         if (res.ok) {
+            const now = Date.now(), currentSpaces = downloaderDataGlobal.hfSpaces || [];
+            const updatedSpaces = currentSpaces.map(s => s.spaceId === spaceId ? { ...s, lastRebuild: now } : s);
+            await updateDoc(doc(db, "settings", "downloader_api"), { hfSpaces: updatedSpaces });
             await createLog({ type: 'success', host: 'Hugging Face', request: 'RESTART_SPACE', message: `Perintah Rebuild sukses dikirim ke Space: ${spaceId}` });
-            showToast("Server diperintahkan untuk Rebuild! Tunggu 1-2 menit.", "success");
+            showToast("Perintah Rebuild terkirim! Status terpantau otomatis.", "success");
+            window.checkGridHfStatus(spaceId, token, index);
         } else { showToast(`Gagal memicu rebuild: Error ${res.status}`, "danger"); }
     } catch(e) { showToast("Terjadi kesalahan jaringan", "danger"); }
-    btn.disabled = false; textEl.innerText = "Rebuild/Restart Server Sekarang";
+    btn.disabled = false; btn.innerHTML = `<i class="fa-solid fa-rotate"></i> Rebuild / Restart`;
 };
 
 </script>
+</body>
+</html>
 </body>
 </html>
