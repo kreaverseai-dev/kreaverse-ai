@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LyricShot AI - Kreaverse AI</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>LyricShot AI 🎬</h1>
+        <p>Ubah lirik lagu Anda menjadi storyboard video klip (MV) siap produksi.</p>
+
+        <div class="input-section">
+            <textarea id="lyricsInput" placeholder="Masukkan lirik lagu Anda di sini..."></textarea>
+            
+            <div class="options">
+                <label for="visualStyle">Gaya Visual:</label>
+                <select id="visualStyle">
+                    <option value="Cinematic Moody">Cinematic Moody</option>
+                    <option value="Anime / Ghibli Style">Anime / Ghibli</option>
+                    <option value="Cyberpunk Neon">Cyberpunk Neon</option>
+                    <option value="Retro 90s VHS">Retro 90s VHS</option>
+                    <option value="Minimalist / Aesthetic">Aesthetic Minimalist</option>
+                </select>
+            </div>
+
+            <button id="generateBtn" onclick="generateStoryboard()">Buat Storyboard</button>
+        </div>
+
+        <!-- Indikator Loading -->
+        <div id="loading" class="hidden">Menganalisis lirik dan menyusun adegan...</div>
+
+        <!-- Kontainer Hasil -->
+        <div id="resultContainer" class="hidden">
+            <h2>Storyboard Hasil Analisis</h2>
+            <div id="storyboardGrid"></div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
