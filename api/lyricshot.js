@@ -1,32 +1,37 @@
 // api/lyricshot.js
 
-// 1. Daftar Provider yang menggunakan standar format OpenAI (OpenAI-Compatible)
+// Daftar Provider Standar OpenAI (Jika tidak menggunakan custom config dari dashboard)
 const OPENAI_COMPATIBLE_PROVIDERS = {
-    "openai": {
-        url: "https://api.openai.com/v1/chat/completions",
-        defaultModel: "gpt-4o-mini"
-    },
-    "deepseek": {
-        url: "https://api.deepseek.com/v1/chat/completions",
-        defaultModel: "deepseek-chat"
-    },
-    "groq": {
-        url: "https://api.groq.com/openai/v1/chat/completions",
-        defaultModel: "llama3-8b-8192"
-    },
-    "openrouter": {
-        url: "https://openrouter.ai/api/v1/chat/completions",
-        defaultModel: "google/gemini-2.5-flash"
-    },
-    "mistral": {
-        url: "https://api.mistral.ai/v1/chat/completions",
-        defaultModel: "mistral-tiny"
-    },
-    "together": {
-        url: "https://api.together.xyz/v1/chat/completions",
-        defaultModel: "meta-llama/Llama-3-8b-chat-hf"
-    }
+    "openai": { url: "https://api.openai.com/v1/chat/completions", defaultModel: "gpt-4o-mini" },
+    "deepseek": { url: "https://api.deepseek.com/v1/chat/completions", defaultModel: "deepseek-chat" },
+    "groq": { url: "https://api.groq.com/openai/v1/chat/completions", defaultModel: "llama3-8b-8192" },
+    "openrouter": { url: "https://openrouter.ai/api/v1/chat/completions", defaultModel: "google/gemini-2.5-flash" },
+    "mistral": { url: "https://api.mistral.ai/v1/chat/completions", defaultModel: "mistral-tiny" },
+    "together": { url: "https://api.together.xyz/v1/chat/completions", defaultModel: "meta-llama/Llama-3-8b-chat-hf" }
 };
+
+// Fungsi Pintar untuk membuang teks basa-basi AI dan mengambil hanya bagian JSON [ ... ]
+function extractCleanJson(text) {
+    if (typeof text !== 'string') return text;
+    
+    // Cari posisi kurung siku pertama dan terakhir
+    const firstBracket = text.indexOf('[');
+    const lastBracket = text.lastIndexOf(']');
+    
+    if (firstBracket !== -1 && lastBracket !== -1 && lastBracket > firstBracket) {
+        return text.substring(firstBracket, lastBracket + 1);
+    }
+    
+    // Cari posisi kurung kurawal pertama dan terakhir (jika AI mengembalikan objek {} bukan array [])
+    const firstBrace = text.indexOf('{');
+    const lastBrace = text.lastIndexOf('}');
+    
+    if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
+        return text.substring(firstBrace, lastBrace + 1);
+    }
+    
+    return text;
+}
 
 export default async function handler(req, res) {
     if (req.method === 'OPTIONS') return res.status(200).end();
@@ -42,7 +47,7 @@ export default async function handler(req, res) {
             return res.status(400).json({ error: "Lirik tidak boleh kosong." });
         }
 
-        // 2. Ambil Kunci API Aktif Tertinggi dari Firebase
+        // 1. Ambil Kunci API Aktif Tertinggi dari Firebase
         const firebaseUrl = "https://firestore.googleapis.com/v1/projects/kreaverse-ai0107/databases/(default)/documents/api_keys";
         const fbRes = await fetch(firebaseUrl);
         const fbData = await fbRes.json();
@@ -71,6 +76,11 @@ export default async function handler(req, res) {
         const providerName = activeDoc.fields.provider.stringValue.toLowerCase().trim();
         const apiKey = activeDoc.fields.key.stringValue.trim();
 
+        // Ambil konfigurasi kustom (Base URL, Endpoint Path, Model ID) dari dashboard jika tersedia
+        const customBaseUrl = activeDoc.fields.base_url?.stringValue || activeDoc.fields.baseUrl?.stringValue || null;
+        const customEndpointPath = activeDoc.fields.endpoint_path?.stringValue || activeDoc.fields.endpointPath?.stringValue || activeDoc.fields.endpoint?.stringValue || null;
+        const customModelId = activeDoc.fields.id_model?.stringValue || activeDoc.fields.model?.stringValue || null;
+
         // System Prompt untuk instruksi Storyboard
         const systemPrompt = `Anda adalah sutradara video klip profesional. Tugas Anda adalah menganalisis lirik lagu yang diberikan dan membaginya menjadi beberapa adegan storyboard yang berurutan.
 Tentukan jenis shot, deskripsi visual yang detail dengan gaya visual "${style}", serta berikan prompt gambar dan prompt video untuk AI generator.
@@ -90,88 +100,123 @@ Respon Anda WAJIB dalam format JSON murni yang valid tanpa tambahan markdown ata
         let responseText = "";
         let responseStatus = 200;
 
-        // 3. Cari tahu apakah provider yang aktif termasuk dalam standar OpenAI-Compatible
-        const compatibleProviderKey = Object.keys(OPENAI_COMPATIBLE_PROVIDERS).find(p => providerName.includes(p));
-
-        if (compatibleProviderKey) {
-            // JALUR UNIVERSAL (Otomatis mendukung OpenAI, DeepSeek, Groq, OpenRouter, Mistral, dll.)
-            const providerConfig = OPENAI_COMPATIBLE_PROVIDERS[compatibleProviderKey];
+        // 2. Tentukan Jalur Panggilan API
+        if (customBaseUrl && customEndpointPath) {
+            // JALUR DINAMIS DASHBOARD (Jika Anda mengisi form "Tambah Provider API" seperti di input_file_5)
+            const cleanBase = customBaseUrl.endsWith('/') ? customBaseUrl.slice(0, -1) : customBaseUrl;
+            const cleanPath = customEndpointPath.startsWith('/') ? customEndpointPath : '/' + customEndpointPath;
+            const fullUrl = `${cleanBase}${cleanPath}`;
             
-            const aiRes = await fetch(providerConfig.url, {
+            // Pilih model pertama dari ID Model kustom Anda, jika tidak ada gunakan default gemini
+            const modelToUse = customModelId ? customModelId.split(',')[0].trim() : "gemini-1.5-flash";
+
+            const customRes = await fetch(fullUrl, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${apiKey}`
                 },
                 body: JSON.stringify({
-                    model: providerConfig.defaultModel,
+                    model: modelToUse,
                     messages: [
                         { role: "system", content: systemPrompt },
                         { role: "user", content: `Lirik Lagu:\n${lyrics}` }
                     ]
                 })
             });
-            responseStatus = aiRes.status;
-            responseText = await aiRes.text();
-
-        } else if (providerName.includes("betabotz")) {
-            // JALUR KHUSUS BETABOTZ (karena struktur payload request-nya sedikit berbeda)
-            const betabotzRes = await fetch("https://api.betabotz.eu.org/api/search/openai-custom", {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    message: [
-                        { role: "system", content: systemPrompt },
-                        { role: "user", content: `Lirik Lagu:\n${lyrics}` }
-                    ],
-                    apikey: apiKey
-                })
-            });
-            responseStatus = betabotzRes.status;
-            responseText = await betabotzRes.text();
-
-        } else if (providerName.includes("google") || providerName.includes("gemini")) {
-            // JALUR KHUSUS GOOGLE GEMINI (karena format request-nya berbeda sendiri)
-            const geminiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    contents: [{
-                        parts: [{ text: `${systemPrompt}\n\nLirik Lagu:\n${lyrics}` }]
-                    }]
-                })
-            });
-            responseStatus = geminiRes.status;
-            responseText = await geminiRes.text();
+            responseStatus = customRes.status;
+            responseText = await customRes.text();
 
         } else {
-            return res.status(400).json({ error: `Provider '${providerName}' yang aktif belum didukung oleh script LyricShot AI.` });
+            // JALUR HARDCODE CADANGAN (Jika tidak ada isian kustom di database)
+            const compatibleProviderKey = Object.keys(OPENAI_COMPATIBLE_PROVIDERS).find(p => providerName.includes(p));
+
+            if (compatibleProviderKey) {
+                const providerConfig = OPENAI_COMPATIBLE_PROVIDERS[compatibleProviderKey];
+                const aiRes = await fetch(providerConfig.url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${apiKey}`
+                    },
+                    body: JSON.stringify({
+                        model: providerConfig.defaultModel,
+                        messages: [
+                            { role: "system", content: systemPrompt },
+                            { role: "user", content: `Lirik Lagu:\n${lyrics}` }
+                        ]
+                    })
+                });
+                responseStatus = aiRes.status;
+                responseText = await aiRes.text();
+
+            } else if (providerName.includes("betabotz")) {
+                const betabotzRes = await fetch("https://api.betabotz.eu.org/api/search/openai-custom", {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        message: [
+                            { role: "system", content: systemPrompt },
+                            { role: "user", content: `Lirik Lagu:\n${lyrics}` }
+                        ],
+                        apikey: apiKey
+                    })
+                });
+                responseStatus = betabotzRes.status;
+                responseText = await betabotzRes.text();
+
+            } else if (providerName.includes("google") || providerName.includes("gemini")) {
+                // PANGGILAN NATIVE GEMINI (Dengan pengaman responseMimeType agar murni JSON)
+                const geminiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        contents: [{
+                            parts: [{ text: `${systemPrompt}\n\nLirik Lagu:\n${lyrics}` }]
+                        }],
+                        generationConfig: {
+                            responseMimeType: "application/json" // Memaksa output hanya JSON
+                        }
+                    })
+                });
+                responseStatus = geminiRes.status;
+                responseText = await geminiRes.text();
+
+            } else {
+                return res.status(400).json({ error: `Provider '${providerName}' tidak terdeteksi konfigurasinya.` });
+            }
         }
 
-        // 4. Penguraian Respon berdasarkan tipe provider
+        // 3. Penguraian Respon
         let responseData;
         try { 
             responseData = JSON.parse(responseText); 
         } catch (e) { 
-            return res.status(responseStatus).json({ error: `Gagal membaca respon dari server ${providerName}.`, details: responseText }); 
+            return res.status(responseStatus).json({ error: `Gagal membaca JSON dari server ${providerName}.`, details: responseText }); 
         }
 
+        // Ambil isi teks teks kasar berdasarkan asal provider
         let aiText = "";
-        if (compatibleProviderKey) {
-            aiText = responseData.choices?.[0]?.message?.content || "";
-        } else if (providerName.includes("betabotz")) {
-            aiText = responseData.result || responseData.response || responseData;
-        } else if (providerName.includes("google") || providerName.includes("gemini")) {
-            aiText = responseData.candidates?.[0]?.content?.parts?.[0]?.text || "";
+        if (customBaseUrl && customEndpointPath) {
+            aiText = responseData.choices?.[0]?.message?.content || responseData.result || responseData.response || responseText;
+        } else {
+            const compatibleProviderKey = Object.keys(OPENAI_COMPATIBLE_PROVIDERS).find(p => providerName.includes(p));
+            if (compatibleProviderKey) {
+                aiText = responseData.choices?.[0]?.message?.content || "";
+            } else if (providerName.includes("betabotz")) {
+                aiText = responseData.result || responseData.response || responseData;
+            } else if (providerName.includes("google") || providerName.includes("gemini")) {
+                aiText = responseData.candidates?.[0]?.content?.parts?.[0]?.text || "";
+            }
         }
 
-        // 5. Bersihkan format markdown JSON dari AI jika ada, lalu kirim kembali ke browser
+        // 4. Ekstrak Hanya Bagian JSON yang valid, buang teks obrolan basa-basi di sekitarnya
         if (typeof aiText === 'string') {
-            aiText = aiText.replace(/```json/g, '').replace(/```/g, '').trim();
+            const cleanJsonText = extractCleanJson(aiText);
             try {
-                aiText = JSON.parse(aiText);
+                aiText = JSON.parse(cleanJsonText);
             } catch (parseError) {
-                return res.status(500).json({ error: "Format hasil AI tidak dapat diterjemahkan ke JSON.", details: aiText });
+                return res.status(500).json({ error: "Gagal memotong teks obrolan AI ke JSON bersih.", details: aiText });
             }
         }
 
