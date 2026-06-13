@@ -37,7 +37,9 @@ export default async function handler(req, res) {
             return res.status(400).json({ error: "Lirik tidak boleh kosong." });
         }
 
-        const lines = lyrics.split('\n').filter(line => line.trim().length > 0);
+        const lines = lyrics.split(/(?:\r?\n|(?<=[a-z\.\s])(?=[A-Z])|(?=\([A-Za-z]))/g)
+                            .map(line => line.trim())
+                            .filter(line => line.length > 0);
         const totalClipsCount = lines.length;
 
         // 1. Tarik semua kunci aktif & akun Cloudinary aktif dari Firebase
