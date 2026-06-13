@@ -150,11 +150,12 @@
             grid-template-columns: 1fr;
             gap: 16px;
         }
-        @media (min-width: 600px) {
+        @media (min-width: 640px) {
             .options-bar { grid-template-columns: 1fr 1fr; }
+            .ratio-group-span { grid-column: span 2; }
         }
         .option-group { display: flex; flex-direction: column; gap: 6px; }
-        .option-group label { font-size: 0.8rem; color: var(--text-secondary); font-weight: 700; }
+        .option-group label { font-size: 0.8rem; color: var(--text-secondary); font-weight: 700; text-align: left; }
         select {
             background: #ffffff;
             border: 1px solid var(--border-color);
@@ -167,6 +168,7 @@
             outline: none;
             transition: var(--transition);
             box-shadow: var(--shadow-sm);
+            width: 100%;
         }
         select:focus {
             border-color: var(--accent-color);
@@ -201,10 +203,11 @@
             gap: 16px;
             margin-top: 12px;
         }
-        @media (min-width: 600px) {
+        @media (min-width: 640px) {
             .upload-grid { grid-template-columns: 1fr 1fr; }
+            .upload-section .file-input-group[style*="grid-column"] { grid-column: span 2 !important; }
         }
-        .file-input-group { display: flex; flex-direction: column; gap: 6px; }
+        .file-input-group { display: flex; flex-direction: column; gap: 6px; text-align: left; }
         .file-input-group label { font-size: 0.8rem; color: var(--text-secondary); font-weight: 700; }
         .file-input-group input {
             background: #ffffff;
@@ -303,7 +306,37 @@
         .footer-links { display: flex; justify-content: center; gap: 24px; margin-bottom: 20px; flex-wrap: wrap; }
         .footer-links a { color: var(--text-secondary); transition: color 0.2s; font-size: 0.85rem; font-weight: 600; text-decoration: none; }
         .footer-links a:hover { color: var(--accent-color); }
-        .footer-bottom { border-top: 1px solid var(--border-color); padding-top: 20px; font-size: 0.75rem; display: flex; flex-direction: column; align-items: center; gap: 10px; color: var(--text-light); }
+        .footer-bottom { border-top: 1px solid var(--border-color); padding-top: 20px; font-size: 0.85rem; display: flex; flex-direction: column; align-items: center; gap: 8px; color: var(--text-light); }
+
+        /* RESPONSIVE MOBILE ADJUSTMENTS */
+        @media (max-width: 640px) {
+            .navbar { padding: 12px 16px; }
+            .logo-container { width: 130px; height: 32px; }
+            h1.hero-title { font-size: 1.55rem; letter-spacing: -0.5px; line-height: 1.25; }
+            .subtitle { font-size: 0.8rem; padding: 0 10px; }
+            .input-section { padding: 20px; border-radius: 20px; }
+            textarea { padding: 12px; font-size: 0.9rem; height: 120px; }
+            .options-bar { gap: 12px; margin: 16px 0; }
+            select { padding: 10px 12px; font-size: 0.85rem; border-radius: 10px; }
+            .upload-section { padding: 16px; border-radius: 16px; }
+            .upload-grid { gap: 12px; grid-template-columns: 1fr; }
+            .upload-section .file-input-group[style*="grid-column"] { grid-column: span 1 !important; }
+            .file-input-group label { font-size: 0.75rem; }
+            .file-input-group input { padding: 8px; border-radius: 8px; font-size: 0.75rem; }
+            button { padding: 14px 20px; font-size: 0.9rem; }
+            #storyboardGrid { gap: 16px; }
+            .storyboard-card { border-radius: 20px; }
+            .card-header { padding: 12px 16px; }
+            .card-body { padding: 16px; gap: 12px; }
+            .lyrics-quote { padding: 10px 14px; font-size: 0.85rem; }
+            .description { font-size: 0.85rem; }
+            .download-btn { padding: 12px; font-size: 0.8rem; }
+            .footer { padding: 30px 15px 20px; margin-top: 30px; border-radius: 16px 16px 0 0; }
+            .footer-logo { font-size: 1.3rem; }
+            .footer-links { gap: 12px; flex-direction: column; align-items: center; }
+            .footer-links a { font-size: 0.85rem; }
+            .footer-bottom { font-size: 0.75rem; gap: 6px; }
+        }
     </style>
 </head>
 <body>
@@ -333,7 +366,7 @@
             
             <div id="durationDisplay" class="duration-info hidden"></div>
 
-            <div class="options-bar" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));">
+            <div class="options-bar">
                 <div class="option-group">
                     <label for="providerNaskahSelect">Provider AI (Naskah/Lirik):</label>
                     <select id="providerNaskahSelect" onchange="updateNaskahModels()">
@@ -358,7 +391,7 @@
                         <option value="">Memuat...</option>
                     </select>
                 </div>
-                <div class="option-group" style="grid-column: span 2;">
+                <div class="option-group ratio-group-span">
                     <label for="ratioSelect">Resolusi Video:</label>
                     <select id="ratioSelect">
                         <option value="9:16">TikTok / Shorts (Vertikal 9:16)</option>
@@ -424,6 +457,7 @@
             </div>
             <div class="footer-bottom">
                 <p>&copy; 2026 Kreaverse AI. All rights reserved.</p>
+                <div id="live-clock-footer" style="font-family: monospace; color: var(--text-secondary); font-weight:700; line-height: 1.5; font-size: 0.8rem;"></div>
             </div>
         </footer>
     </div>
@@ -452,6 +486,41 @@
             durationDisplay.classList.remove('hidden');
             durationDisplay.innerHTML = `📊 <strong>Informasi Video Musik:</strong> Terdeteksi ${lines.length} baris lirik. Total durasi video otomatis disesuaikan menjadi ${timeString} (${lines.length} klip video x 10 detik).`;
         }
+
+        // Jam server real-time dinamis beserta hari, tanggal, bulan, tahun, dan info update
+        function updateLiveClock() {
+            const d = new Date();
+            
+            // Format Jam, Menit, Detik
+            let hours = d.getHours(); 
+            let minutes = d.getMinutes(); 
+            let seconds = d.getSeconds(); 
+            let ampm = hours >= 12 ? 'PM' : 'AM';
+            hours = hours % 12 || 12; 
+            minutes = minutes < 10 ? '0' + minutes : minutes;
+            seconds = seconds < 10 ? '0' + seconds : seconds;
+            
+            // Format Hari Ini
+            const days = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+            const months = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+            const dayName = days[d.getDay()];
+            const dayNum = d.getDate();
+            const monthName = months[d.getMonth()];
+            const year = d.getFullYear();
+            
+            const dateString = `${dayName}, ${dayNum} ${monthName} ${year}`;
+            
+            const footerEl = document.getElementById('live-clock-footer');
+            if (footerEl) {
+                footerEl.innerHTML = `
+                    <div>Hari Ini: <strong>${dateString}</strong></div>
+                    <div style="margin-top: 4px;">Waktu Server: <strong>${hours}:${minutes}:${seconds} ${ampm} WIB</strong></div>
+                    <div style="margin-top: 4px; font-size: 0.72rem; opacity: 0.8; font-weight: 500;">Terakhir Update: <strong>${year}</strong></div>
+                `;
+            }
+        }
+        setInterval(updateLiveClock, 1000); 
+        updateLiveClock();
     </script>
 </body>
 </html>
