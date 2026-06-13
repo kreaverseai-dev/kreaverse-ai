@@ -1,3 +1,5 @@
+lyricshot/script.js
+
 let activeProviders = [];
 
 document.addEventListener('DOMContentLoaded', async () => {
@@ -195,6 +197,7 @@ async function generateStoryboard() {
         const modelNaskah = document.getElementById('modelNaskahSelect').value;
         const modelVideo = document.getElementById('modelVideoSelect').value;
         const payload = {
+            email: localStorage.getItem('kreaverse_user_email') || "anon@kreaverse.ai",
             lyrics,
             providerId,
             providerNaskahId,
@@ -245,30 +248,8 @@ async function generateStoryboard() {
 
         if (response.ok) {
             const scenes = Array.isArray(data) ? data : [];
-            const userEmail = localStorage.getItem('kreaverse_user_email') || "anon@kreaverse.ai";
-            
-            for (const item of scenes) {
-                let firestoreId = "";
-                if (window.db && window.collection && window.addDoc && item.status === "pending" && item.task_id) {
-                    try {
-                        const docRef = await window.addDoc(window.collection(window.db, "render_gallery"), {
-                            email: userEmail,
-                            tool: "LyricShot AI",
-                            status: item.status,
-                            task_id: item.task_id,
-                            provider: item.provider || "Leonardo AI",
-                            model: modelVideo || "default",
-                            lyrics_segment: item.lyrics_segment,
-                            prompt: item.visual_description || "",
-                            url: "",
-                            timestamp: Date.now()
-                        });
-                        firestoreId = docRef.id;
-                    } catch (e) {
-                        console.error("Gagal menyimpan ke render_gallery:", e);
-                    }
-                }
-
+            scenes.forEach(item => {
+                const firestoreId = item.firestore_id || "";
                 const card = document.createElement('div');
                 card.className = 'storyboard-card';
                 
@@ -306,7 +287,7 @@ async function generateStoryboard() {
                     </div>
                 `;
                 storyboardGrid.appendChild(card);
-            }
+            });
             resultContainer.classList.remove('hidden');
             
             // Mulai sistem pemantauan latar belakang (Polling)
