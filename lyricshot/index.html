@@ -170,7 +170,7 @@
 <body>
     <div class="container">
         <header>
-            <h1>LyricShot AI <span>🎬</span></h1>
+            <h1>LyricShot AI <span>ð¬</span></h1>
             <p class="subtitle">Ubah lirik lagu Anda menjadi storyboard video klip (MV) siap produksi.</p>
         </header>
 
@@ -182,19 +182,27 @@
             <div class="options-bar" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));">
                 <div class="option-group">
                     <label for="providerNaskahSelect">Provider AI (Naskah/Lirik):</label>
-                    <select id="providerNaskahSelect" onchange="updateNaskahModels()"></select>
+                    <select id="providerNaskahSelect" onchange="updateNaskahModels()">
+                        <option value="">Memuat...</option>
+                    </select>
                 </div>
                 <div class="option-group">
                     <label for="modelNaskahSelect">Model AI (Naskah):</label>
-                    <select id="modelNaskahSelect"></select>
+                    <select id="modelNaskahSelect">
+                        <option value="">Memuat...</option>
+                    </select>
                 </div>
                 <div class="option-group">
                     <label for="providerSelect">Provider AI (Video):</label>
-                    <select id="providerSelect" onchange="updateVideoModels(); toggleUploadFields();"></select>
+                    <select id="providerSelect" onchange="updateVideoModels(); toggleUploadFields();">
+                        <option value="">Memuat...</option>
+                    </select>
                 </div>
                 <div class="option-group">
                     <label for="modelVideoSelect">Model AI (Video):</label>
-                    <select id="modelVideoSelect"></select>
+                    <select id="modelVideoSelect">
+                        <option value="">Memuat...</option>
+                    </select>
                 </div>
                 <div class="option-group" style="grid-column: span 2;">
                     <label for="ratioSelect">Resolusi Video:</label>
@@ -273,7 +281,7 @@
                 timeString += ` (sekitar <strong>${minutes} menit ${seconds > 0 ? seconds + ' detik' : ''}</strong>)`;
             }
             durationDisplay.classList.remove('hidden');
-            durationDisplay.innerHTML = `📊 <strong>Informasi Video Musik:</strong> Terdeteksi ${lines.length} baris lirik. Total durasi video otomatis disesuaikan menjadi ${timeString} (${lines.length} klip video x 10 detik).`;
+            durationDisplay.innerHTML = `ð <strong>Informasi Video Musik:</strong> Terdeteksi ${lines.length} baris lirik. Total durasi video otomatis disesuaikan menjadi ${timeString} (${lines.length} klip video x 10 detik).`;
         }
     </script>
 </body>
