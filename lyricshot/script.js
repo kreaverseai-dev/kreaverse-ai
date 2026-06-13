@@ -80,7 +80,7 @@ function calculateDuration() {
                         .filter(line => line.length > 0);
     const totalDuration = lines.length * 10;
     durationDisplay.classList.remove('hidden');
-    durationDisplay.innerHTML = `ð <strong>Informasi Video Musik:</strong> Terdeteksi ${lines.length} baris lirik. Total durasi video otomatis disesuaikan menjadi <strong>${totalDuration} detik</strong> (${lines.length} klip video x 10 detik).`;
+    durationDisplay.innerHTML = `📊 <strong>Informasi Video Musik:</strong> Terdeteksi ${lines.length} baris lirik. Total durasi video otomatis disesuaikan menjadi <strong>${totalDuration} detik</strong> (${lines.length} klip video x 10 detik).`;
 }
 
 function toggleUploadFields() {
@@ -245,7 +245,30 @@ async function generateStoryboard() {
 
         if (response.ok) {
             const scenes = Array.isArray(data) ? data : [];
-            scenes.forEach(item => {
+            const userEmail = localStorage.getItem('kreaverse_user_email') || "anon@kreaverse.ai";
+            
+            for (const item of scenes) {
+                let firestoreId = "";
+                if (window.db && window.collection && window.addDoc && item.status === "pending" && item.task_id) {
+                    try {
+                        const docRef = await window.addDoc(window.collection(window.db, "render_gallery"), {
+                            email: userEmail,
+                            tool: "LyricShot AI",
+                            status: item.status,
+                            task_id: item.task_id,
+                            provider: item.provider || "Leonardo AI",
+                            model: modelVideo || "default",
+                            lyrics_segment: item.lyrics_segment,
+                            prompt: item.visual_description || "",
+                            url: "",
+                            timestamp: Date.now()
+                        });
+                        firestoreId = docRef.id;
+                    } catch (e) {
+                        console.error("Gagal menyimpan ke render_gallery:", e);
+                    }
+                }
+
                 const card = document.createElement('div');
                 card.className = 'storyboard-card';
                 
@@ -254,8 +277,8 @@ async function generateStoryboard() {
                 
                 if (item.status === "pending" && item.task_id) {
                     mediaElement = `
-                        <div class="video-loader" id="loader-${item.scene}" data-scene="${item.scene}" data-task-id="${item.task_id}" data-provider="${item.provider}" style="padding: 30px 10px; text-align: center; color: var(--accent-purple); font-size: 0.9rem; font-weight: 500; display: flex; flex-direction: column; align-items: center; gap: 10px;">
-                            <div>â³ Sedang merender adegan... (30-60 detik)</div>
+                        <div class="video-loader" id="loader-${item.scene}" data-scene="${item.scene}" data-task-id="${item.task_id}" data-provider="${item.provider}" data-firestore-id="${firestoreId}" style="padding: 30px 10px; text-align: center; color: var(--accent-purple); font-size: 0.9rem; font-weight: 500; display: flex; flex-direction: column; align-items: center; gap: 10px;">
+                            <div>⏳ Sedang merender adegan... (30-60 detik)</div>
                             <button onclick="window.batalPolling(${item.scene})" style="background: #fee2e2; color: #ef4444; border: 1px solid #fca5a5; border-radius: 99px; padding: 6px 16px; font-size: 0.75rem; font-weight: 800; cursor: pointer; width: max-content;">Batalkan Pemantauan</button>
                         </div>
                     `;
@@ -283,7 +306,7 @@ async function generateStoryboard() {
                     </div>
                 `;
                 storyboardGrid.appendChild(card);
-            });
+            }
             resultContainer.classList.remove('hidden');
             
             // Mulai sistem pemantauan latar belakang (Polling)
@@ -318,6 +341,7 @@ function startStatusPolling() {
         const taskId = loader.getAttribute('data-task-id');
         const provider = loader.getAttribute('data-provider');
         const scene = loader.getAttribute('data-scene');
+        const firestoreId = loader.getAttribute('data-firestore-id');
         if (!taskId) return;
 
         const interval = setInterval(async () => {
@@ -335,9 +359,32 @@ function startStatusPolling() {
                     const downloadBtn = document.getElementById(`download-btn-${scene}`);
                     downloadBtn.href = data.video_url;
                     downloadBtn.classList.remove('hidden');
+
+                    // Update Firestore status ke complete
+                    if (firestoreId && window.db && window.doc && window.updateDoc) {
+                        try {
+                            await window.updateDoc(window.doc(window.db, "render_gallery", firestoreId), {
+                                status: "complete",
+                                url: data.video_url
+                            });
+                        } catch (e) {
+                            console.error("Gagal update status selesai di firestore:", e);
+                        }
+                    }
                 } else if (data.status === "failed") {
                     clearInterval(interval);
-                    loader.innerHTML = "â Gagal merender adegan ini.";
+                    loader.innerHTML = "❌ Gagal merender adegan ini.";
+
+                    // Update Firestore status ke failed
+                    if (firestoreId && window.db && window.doc && window.updateDoc) {
+                        try {
+                            await window.updateDoc(window.doc(window.db, "render_gallery", firestoreId), {
+                                status: "failed"
+                            });
+                        } catch (e) {
+                            console.error("Gagal update status gagal di firestore:", e);
+                        }
+                    }
                 }
             } catch (err) {
                 console.error("Polling error:", err);
