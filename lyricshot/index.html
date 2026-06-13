@@ -4,11 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>LyricShot AI - Kreaverse AI</title>
-    <!-- Menggunakan font modern 'Inter' agar tampilan serasi dengan Kreaverse AI -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
     <style>
-        /* === RESET & VARIABEL WARNA === */
         :root {
             --bg-color: #0b0c10;
             --card-bg: #1f2833;
@@ -41,7 +39,6 @@
             margin-top: 20px;
         }
 
-        /* === HEADER === */
         header {
             text-align: center;
             margin-bottom: 30px;
@@ -67,7 +64,6 @@
             font-size: 0.95rem;
         }
 
-        /* === FORM INPUT === */
         .input-section {
             background: var(--card-bg);
             padding: 25px;
@@ -79,7 +75,7 @@
 
         textarea {
             width: 100%;
-            height: 140px;
+            height: 130px;
             background: rgba(0, 0, 0, 0.3);
             border: 1px solid rgba(255, 255, 255, 0.1);
             border-radius: 8px;
@@ -96,26 +92,41 @@
             border-color: var(--accent-purple);
         }
 
+        /* === GRID PILIHAN === */
         .options-bar {
             margin: 20px 0;
-            display: flex;
-            align-items: center;
-            gap: 12px;
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 15px;
         }
 
-        .options-bar label {
-            font-size: 0.9rem;
+        @media (min-width: 600px) {
+            .options-bar {
+                grid-template-columns: 1fr 1fr 1fr;
+            }
+        }
+
+        .option-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .option-group label {
+            font-size: 0.85rem;
             color: var(--text-muted);
+            font-weight: 500;
         }
 
         select {
             background: rgba(0, 0, 0, 0.3);
             border: 1px solid rgba(255, 255, 255, 0.1);
             color: #fff;
-            padding: 10px 15px;
+            padding: 10px 12px;
             border-radius: 6px;
             font-family: inherit;
             cursor: pointer;
+            width: 100%;
             transition: border-color 0.2s;
         }
 
@@ -152,7 +163,6 @@
             transform: none;
         }
 
-        /* === LOADING STATE === */
         #loading {
             text-align: center;
             font-size: 1.1rem;
@@ -172,7 +182,6 @@
             display: none !important;
         }
 
-        /* === STORYBOARD RESULT GRID === */
         #resultContainer h2 {
             font-size: 1.4rem;
             margin-bottom: 20px;
@@ -296,23 +305,31 @@
             <textarea id="lyricsInput" placeholder="Masukkan lirik lagu Anda di sini...&#10;Contoh: Kuberjalan di bawah rintik hujan, mencari bayangmu yang perlahan sirna..."></textarea>
             
             <div class="options-bar">
-                <label for="visualStyle">Gaya Visual:</label>
-                <select id="visualStyle">
-                    <option value="Cinematic Moody">Cinematic Moody</option>
-                    <option value="Anime / Studio Ghibli Style">Anime / Ghibli</option>
-                    <option value="Cyberpunk Neon Retro">Cyberpunk Neon</option>
-                    <option value="Retro 90s VHS / Analog Film">Retro 90s VHS</option>
-                    <option value="Minimalist Aesthetic / Pastel Tone">Aesthetic Minimalist</option>
-                </select>
+                <div class="option-group">
+                    <label for="providerSelect">Provider AI:</label>
+                    <select id="providerSelect" onchange="updateModelsDropdown()"></select>
+                </div>
+                <div class="option-group">
+                    <label for="modelSelect">Model AI:</label>
+                    <select id="modelSelect"></select>
+                </div>
+                <div class="option-group">
+                    <label for="visualStyle">Gaya Visual:</label>
+                    <select id="visualStyle">
+                        <option value="Cinematic Moody">Cinematic Moody</option>
+                        <option value="Anime / Studio Ghibli Style">Anime / Ghibli</option>
+                        <option value="Cyberpunk Neon Retro">Cyberpunk Neon</option>
+                        <option value="Retro 90s VHS / Analog Film">Retro 90s VHS</option>
+                        <option value="Minimalist Aesthetic / Pastel Tone">Aesthetic Minimalist</option>
+                    </select>
+                </div>
             </div>
 
             <button id="generateBtn" onclick="generateStoryboard()">Buat Storyboard</button>
         </div>
 
-        <!-- Indikator Loading -->
         <div id="loading" class="hidden">Menafsirkan lirik & menyusun shot list adegan...</div>
 
-        <!-- Kontainer Hasil -->
         <div id="resultContainer" class="hidden">
             <h2>Storyboard Hasil Analisis</h2>
             <div id="storyboardGrid"></div>
@@ -320,9 +337,69 @@
     </div>
 
     <script>
+        let availableProviders = [];
+
+        // Memanggil daftar provider aktif dari database Firebase via backend saat halaman dimuat
+        document.addEventListener('DOMContentLoaded', async () => {
+            const providerSelect = document.getElementById('providerSelect');
+            const modelSelect = document.getElementById('modelSelect');
+            providerSelect.innerHTML = '<option value="">Memuat provider...</option>';
+            modelSelect.innerHTML = '<option value="">Memuat model...</option>';
+
+            try {
+                const response = await fetch('/api/providers');
+                const data = await response.json();
+
+                if (response.ok && data.length > 0) {
+                    availableProviders = data;
+                    providerSelect.innerHTML = '';
+                    
+                    data.forEach(provider => {
+                        const opt = document.createElement('option');
+                        opt.value = provider.id;
+                        opt.textContent = provider.name;
+                        providerSelect.appendChild(opt);
+                    });
+
+                    updateModelsDropdown();
+                } else {
+                    providerSelect.innerHTML = '<option value="">Gagal memuat provider</option>';
+                    modelSelect.innerHTML = '<option value="">Model tidak tersedia</option>';
+                }
+            } catch (err) {
+                console.error("Gagal memuat daftar provider:", err);
+                providerSelect.innerHTML = '<option value="">Koneksi error</option>';
+            }
+        });
+
+        // Memperbarui daftar pilihan model saat provider diubah
+        function updateModelsDropdown() {
+            const providerSelect = document.getElementById('providerSelect');
+            const modelSelect = document.getElementById('modelSelect');
+            const selectedId = providerSelect.value;
+            modelSelect.innerHTML = '';
+
+            const selectedProvider = availableProviders.find(p => p.id === selectedId);
+            if (selectedProvider && selectedProvider.models.length > 0) {
+                selectedProvider.models.forEach(model => {
+                    const opt = document.createElement('option');
+                    opt.value = model;
+                    opt.textContent = model;
+                    modelSelect.appendChild(opt);
+                });
+            } else {
+                const opt = document.createElement('option');
+                opt.value = "default";
+                opt.textContent = "Default Model";
+                modelSelect.appendChild(opt);
+            }
+        }
+
         async function generateStoryboard() {
             const lyrics = document.getElementById('lyricsInput').value;
             const style = document.getElementById('visualStyle').value;
+            const providerId = document.getElementById('providerSelect').value;
+            const model = document.getElementById('modelSelect').value;
             const generateBtn = document.getElementById('generateBtn');
             const loading = document.getElementById('loading');
             const resultContainer = document.getElementById('resultContainer');
@@ -333,43 +410,23 @@
                 return;
             }
 
-            // Atur status Loading
             generateBtn.disabled = true;
             loading.classList.remove('hidden');
             resultContainer.classList.add('hidden');
             storyboardGrid.innerHTML = '';
 
             try {
-                // Endpoint pemanggilan API backend Anda
                 const response = await fetch('/api/lyricshot', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ lyrics, style })
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ lyrics, style, providerId, model })
                 });
 
                 const data = await response.json();
 
                 if (response.ok) {
-                    // Penyesuaian pembacaan data JSON
-                    let scenes = [];
-                    if (Array.isArray(data)) {
-                        scenes = data;
-                    } else if (data.storyboard) {
-                        scenes = data.storyboard;
-                    } else if (data.scenes) {
-                        scenes = data.scenes;
-                    } else {
-                        // Jika respons terbungkus objek lain
-                        scenes = Object.values(data)[0] || [];
-                    }
-
-                    if (scenes.length === 0) {
-                        alert("Gagal mem-parsing format storyboard dari AI. Silakan coba kembali.");
-                        return;
-                    }
-
+                    let scenes = Array.isArray(data) ? data : (data.storyboard || data.scenes || []);
+                    
                     scenes.forEach(item => {
                         const card = document.createElement('div');
                         card.className = 'storyboard-card';
@@ -379,7 +436,7 @@
                                 <span class="shot-type">${item.shot_type || 'Custom Shot'}</span>
                             </div>
                             <div class="card-body">
-                                <p class="lyrics-quote">"<em>${item.lyrics_segment || 'Instrumental / No Lyrics'}</em>"</p>
+                                <p class="lyrics-quote">"<em>${item.lyrics_segment || 'Instrumental'}</em>"</p>
                                 <p class="description"><strong>Visual:</strong> ${item.visual_description || '-'}</p>
                                 <hr>
                                 <div class="prompt-box">
@@ -397,11 +454,11 @@
 
                     resultContainer.classList.remove('hidden');
                 } else {
-                    alert("Terjadi kesalahan: " + (data.error || "Gagal memproses lirik. Periksa API key Anda."));
+                    alert("Terjadi masalah: " + (data.error || "Gagal memproses lirik. Silakan coba sesaat lagi."));
                 }
             } catch (err) {
                 console.error(err);
-                alert("Gagal terhubung dengan server backend API.");
+                alert("Koneksi gagal terhubung dengan server.");
             } finally {
                 generateBtn.disabled = false;
                 loading.classList.add('hidden');
