@@ -22,7 +22,7 @@ function extractCleanJson(text) {
         return text.substring(firstBracket, lastBracket + 1);
     }
     
-    // Cari posisi kurung kurawal pertama dan terakhir (jika AI mengembalikan objek {} bukan array [])
+    // Cari posisi kurung kurawal pertama dan terakhir
     const firstBrace = text.indexOf('{');
     const lastBrace = text.lastIndexOf('}');
     
@@ -102,12 +102,11 @@ Respon Anda WAJIB dalam format JSON murni yang valid tanpa tambahan markdown ata
 
         // 2. Tentukan Jalur Panggilan API
         if (customBaseUrl && customEndpointPath) {
-            // JALUR DINAMIS DASHBOARD (Jika Anda mengisi form "Tambah Provider API" seperti di input_file_5)
+            // JALUR DINAMIS DASHBOARD
             const cleanBase = customBaseUrl.endsWith('/') ? customBaseUrl.slice(0, -1) : customBaseUrl;
             const cleanPath = customEndpointPath.startsWith('/') ? customEndpointPath : '/' + customEndpointPath;
             const fullUrl = `${cleanBase}${cleanPath}`;
             
-            // Pilih model pertama dari ID Model kustom Anda, jika tidak ada gunakan default gemini
             const modelToUse = customModelId ? customModelId.split(',')[0].trim() : "gemini-1.5-flash";
 
             const customRes = await fetch(fullUrl, {
@@ -128,7 +127,7 @@ Respon Anda WAJIB dalam format JSON murni yang valid tanpa tambahan markdown ata
             responseText = await customRes.text();
 
         } else {
-            // JALUR HARDCODE CADANGAN (Jika tidak ada isian kustom di database)
+            // JALUR HARDCODE CADANGAN
             const compatibleProviderKey = Object.keys(OPENAI_COMPATIBLE_PROVIDERS).find(p => providerName.includes(p));
 
             if (compatibleProviderKey) {
@@ -166,7 +165,6 @@ Respon Anda WAJIB dalam format JSON murni yang valid tanpa tambahan markdown ata
                 responseText = await betabotzRes.text();
 
             } else if (providerName.includes("google") || providerName.includes("gemini")) {
-                // PANGGILAN NATIVE GEMINI (Dengan pengaman responseMimeType agar murni JSON)
                 const geminiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -175,7 +173,7 @@ Respon Anda WAJIB dalam format JSON murni yang valid tanpa tambahan markdown ata
                             parts: [{ text: `${systemPrompt}\n\nLirik Lagu:\n${lyrics}` }]
                         }],
                         generationConfig: {
-                            responseMimeType: "application/json" // Memaksa output hanya JSON
+                            responseMimeType: "application/json"
                         }
                     })
                 });
@@ -187,7 +185,7 @@ Respon Anda WAJIB dalam format JSON murni yang valid tanpa tambahan markdown ata
             }
         }
 
-        // 3. Penguraian Respon
+        // 3. Penguraian Respon Dasar
         let responseData;
         try { 
             responseData = JSON.parse(responseText); 
@@ -195,7 +193,16 @@ Respon Anda WAJIB dalam format JSON murni yang valid tanpa tambahan markdown ata
             return res.status(responseStatus).json({ error: `Gagal membaca JSON dari server ${providerName}.`, details: responseText }); 
         }
 
-        // Ambil isi teks teks kasar berdasarkan asal provider
+        // === PROTEKSI BARU: JIKA SERVER AI MENGEMBALIKAN ERROR HTTP (Seperti 400, 401, 403, 429) ===
+        if (responseStatus < 200 || responseStatus >= 300) {
+            const errorMsg = responseData.error?.message || responseData.error || responseText;
+            return res.status(responseStatus).json({ 
+                error: `Server ${providerName} mengembalikan Error HTTP ${responseStatus}`, 
+                details: typeof errorMsg === 'object' ? JSON.stringify(errorMsg) : errorMsg 
+            });
+        }
+
+        // Ambil isi teks kasar berdasarkan asal provider
         let aiText = "";
         if (customBaseUrl && customEndpointPath) {
             aiText = responseData.choices?.[0]?.message?.content || responseData.result || responseData.response || responseText;
@@ -210,7 +217,7 @@ Respon Anda WAJIB dalam format JSON murni yang valid tanpa tambahan markdown ata
             }
         }
 
-        // 4. Ekstrak Hanya Bagian JSON yang valid, buang teks obrolan basa-basi di sekitarnya
+        // 4. Ekstrak Hanya Bagian JSON yang valid
         if (typeof aiText === 'string') {
             const cleanJsonText = extractCleanJson(aiText);
             try {
