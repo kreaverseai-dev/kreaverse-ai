@@ -248,6 +248,8 @@ async function generateStoryboard() {
 
         if (response.ok) {
             const scenes = Array.isArray(data) ? data : [];
+            const timeStr = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+            
             scenes.forEach(item => {
                 const firestoreId = item.firestore_id || "";
                 const card = document.createElement('div');
@@ -255,12 +257,18 @@ async function generateStoryboard() {
                 
                 let mediaElement = "";
                 let downloadClass = "download-btn";
+                let boxClass = "video-box";
                 
                 if (item.status === "pending" && item.task_id) {
+                    boxClass += " loading-state";
                     mediaElement = `
-                        <div class="video-loader" id="loader-${item.scene}" data-scene="${item.scene}" data-task-id="${item.task_id}" data-provider="${item.provider}" data-firestore-id="${firestoreId}" style="padding: 30px 10px; text-align: center; color: var(--accent-purple); font-size: 0.9rem; font-weight: 500; display: flex; flex-direction: column; align-items: center; gap: 10px;">
-                            <div>⏳ Sedang merender adegan... (30-60 detik)</div>
-                            <button onclick="window.batalPolling(${item.scene})" style="background: #fee2e2; color: #ef4444; border: 1px solid #fca5a5; border-radius: 99px; padding: 6px 16px; font-size: 0.75rem; font-weight: 800; cursor: pointer; width: max-content;">Batalkan Pemantauan</button>
+                        <div class="video-loader-container" id="loader-${item.scene}" data-scene="${item.scene}" data-task-id="${item.task_id}" data-provider="${item.provider}" data-firestore-id="${firestoreId}">
+                            <div class="ai-glow-orb">
+                                <i class="fa-solid fa-wand-magic-sparkles"></i>
+                            </div>
+                            <div class="loader-title">Melukis Adegan ${item.scene}...</div>
+                            <div class="loader-subtitle">Menyusun piksel sinematik AI (30-60 detik)</div>
+                            <button class="btn-cancel-render" onclick="window.batalPolling(${item.scene})"><i class="fa-solid fa-circle-stop"></i> Batalkan Pemantauan</button>
                         </div>
                     `;
                     downloadClass += " hidden";
@@ -275,12 +283,13 @@ async function generateStoryboard() {
                     <div class="card-header">
                         <span class="scene-badge">Klip ${item.scene}</span>
                         <span class="shot-type">${item.shot_type || 'Cinematic'}</span>
+                        <span style="font-size: 0.72rem; color: var(--text-light); font-weight: 700; margin-left: auto;"><i class="fa-regular fa-clock"></i> ${timeStr}</span>
                     </div>
                     <div class="card-body">
                         <p class="lyrics-quote">"<em>${item.lyrics_segment}</em>"</p>
                         <p class="description"><strong>Visual:</strong> ${item.visual_description}</p>
                         <hr>
-                        <div class="video-box" id="video-box-${item.scene}">
+                        <div class="${boxClass}" id="video-box-${item.scene}">
                             ${mediaElement}
                         </div>
                         <a href="${item.video_url || '#'}" target="_blank" download="Klip-${item.scene}.mp4" id="download-btn-${item.scene}" class="${downloadClass}">Unduh Klip ${item.scene}</a>
@@ -317,7 +326,7 @@ window.batalPolling = function(scene) {
 };
 
 function startStatusPolling() {
-    const loaders = document.querySelectorAll('.video-loader');
+    const loaders = document.querySelectorAll('.video-loader-container');
     loaders.forEach(loader => {
         const taskId = loader.getAttribute('data-task-id');
         const provider = loader.getAttribute('data-provider');
@@ -334,12 +343,17 @@ function startStatusPolling() {
                     clearInterval(interval);
                     // Pasang pemutar video asli
                     const videoBox = document.getElementById(`video-box-${scene}`);
-                    videoBox.innerHTML = `<video controls autoplay loop src="${data.video_url}"></video>`;
+                    if (videoBox) {
+                        videoBox.classList.remove('loading-state');
+                        videoBox.innerHTML = `<video controls autoplay loop src="${data.video_url}"></video>`;
+                    }
                     
                     // Aktifkan tombol unduh asli
                     const downloadBtn = document.getElementById(`download-btn-${scene}`);
-                    downloadBtn.href = data.video_url;
-                    downloadBtn.classList.remove('hidden');
+                    if (downloadBtn) {
+                        downloadBtn.href = data.video_url;
+                        downloadBtn.classList.remove('hidden');
+                    }
 
                     // Update Firestore status ke complete
                     if (firestoreId && window.db && window.doc && window.updateDoc) {
@@ -354,7 +368,11 @@ function startStatusPolling() {
                     }
                 } else if (data.status === "failed") {
                     clearInterval(interval);
-                    loader.innerHTML = "❌ Gagal merender adegan ini.";
+                    const videoBox = document.getElementById(`video-box-${scene}`);
+                    if (videoBox) {
+                        videoBox.classList.remove('loading-state');
+                        videoBox.innerHTML = `<div style="padding: 40px 20px; text-align: center; color: var(--danger-color); font-size: 0.85rem; font-weight: 700; background: #fff0f0; border-radius: 12px; width: 100%; border: 1px solid #fca5a5; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; height: 100%;"><i class="fa-solid fa-circle-exclamation" style="font-size: 1.5rem;"></i> Gagal merender adegan ini.</div>`;
+                    }
 
                     // Update Firestore status ke failed
                     if (firestoreId && window.db && window.doc && window.updateDoc) {
