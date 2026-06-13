@@ -20,29 +20,47 @@ export default async function handler(req, res) {
                 return pA - pB;
             });
 
+            const uniqueProviders = {};
             activeDocs.forEach(doc => {
                 const name = doc.fields?.provider?.stringValue || "Unknown";
-                const rawModels = doc.fields?.id_model?.stringValue || doc.fields?.model?.stringValue || "";
+                let standardName = name;
+                const nameLower = name.toLowerCase();
                 
-                // Pisahkan model berdasarkan tanda koma
+                if (nameLower.includes("gemini") || nameLower.includes("google")) {
+                    standardName = "Google Gemini";
+                } else if (nameLower.includes("openrouter")) {
+                    standardName = "OpenRouter";
+                } else if (nameLower.includes("magic")) {
+                    standardName = "Magic Hour";
+                } else if (nameLower.includes("leonardo")) {
+                    standardName = "Leonardo AI";
+                }
+
+                const rawModels = doc.fields?.id_model?.stringValue || doc.fields?.model?.stringValue || "";
                 let models = rawModels ? rawModels.split(',').map(m => m.trim()) : [];
                 
-                // Tambahkan model default jika di database kosong
-                const nameLower = name.toLowerCase();
                 if (models.length === 0) {
-                    if (nameLower.includes("openai")) models = ["gpt-4o-mini"];
-                    else if (nameLower.includes("gemini") || nameLower.includes("google")) models = ["gemini-2.5-flash"];
-                    else if (nameLower.includes("betabotz")) models = ["openai-custom"];
-                    else if (nameLower.includes("openrouter")) models = ["google/gemini-2.5-flash"];
+                    if (standardName === "Google Gemini") models = ["gemini-2.5-flash"];
+                    else if (standardName === "OpenRouter") models = ["google/gemini-2.5-flash"];
                     else models = ["default"];
                 }
 
-                providers.push({
-                    id: doc.name.split('/').pop(), // ID dokumen Firebase
-                    name: name,
-                    models: models
-                });
+                const providerId = standardName.toLowerCase().replace(/\s+/g, "");
+                if (!uniqueProviders[providerId]) {
+                    uniqueProviders[providerId] = {
+                        id: providerId,
+                        name: standardName,
+                        models: new Set()
+                    };
+                }
+                models.forEach(m => uniqueProviders[providerId].models.add(m));
             });
+
+            providers.push(...Object.values(uniqueProviders).map(p => ({
+                id: p.id,
+                name: p.name,
+                models: Array.from(p.models)
+            })));
         }
 
         return res.status(200).json(providers);
