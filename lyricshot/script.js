@@ -80,7 +80,7 @@ function calculateDuration() {
                         .filter(line => line.length > 0);
     const totalDuration = lines.length * 10;
     durationDisplay.classList.remove('hidden');
-    durationDisplay.innerHTML = `ð <strong>Informasi Video Musik:</strong> Terdeteksi ${lines.length} baris lirik. Total durasi video otomatis disesuaikan menjadi <strong>${totalDuration} detik</strong> (${lines.length} klip video x 10 detik).`;
+    durationDisplay.innerHTML = `📊 <strong>Informasi Video Musik:</strong> Terdeteksi ${lines.length} baris lirik. Total durasi video otomatis disesuaikan menjadi <strong>${totalDuration} detik</strong> (${lines.length} klip video x 10 detik).`;
 }
 
 function toggleUploadFields() {
@@ -253,7 +253,12 @@ async function generateStoryboard() {
                 let downloadClass = "download-btn";
                 
                 if (item.status === "pending" && item.task_id) {
-                    mediaElement = `<div class="video-loader" id="loader-${item.scene}" data-scene="${item.scene}" data-task-id="${item.task_id}" data-provider="${item.provider}" style="padding: 40px; text-align: center; color: var(--accent-purple); font-size: 0.9rem; font-weight: 500;">â³ Sedang merender adegan... (30-60 detik)</div>`;
+                    mediaElement = `
+                        <div class="video-loader" id="loader-${item.scene}" data-scene="${item.scene}" data-task-id="${item.task_id}" data-provider="${item.provider}" style="padding: 30px 10px; text-align: center; color: var(--accent-purple); font-size: 0.9rem; font-weight: 500; display: flex; flex-direction: column; align-items: center; gap: 10px;">
+                            <div>⏳ Sedang merender adegan... (30-60 detik)</div>
+                            <button onclick="window.batalPolling(${item.scene})" style="background: #fee2e2; color: #ef4444; border: 1px solid #fca5a5; border-radius: 99px; padding: 6px 16px; font-size: 0.75rem; font-weight: 800; cursor: pointer; width: max-content;">Batalkan Pemantauan</button>
+                        </div>
+                    `;
                     downloadClass += " hidden";
                 } else if (item.status === "failed" || !item.video_url) {
                     mediaElement = `<div style="padding: 40px 20px; text-align: center; color: var(--danger-color); font-size: 0.85rem; font-weight: 700; background: #fff0f0; border-radius: 12px; width: 100%; border: 1px solid #fca5a5;"><i class="fa-solid fa-circle-exclamation"></i> Gagal membuat video. Cek saldo & validitas API Key di Dashboard.</div>`;
@@ -281,33 +286,6 @@ async function generateStoryboard() {
             });
             resultContainer.classList.remove('hidden');
             
-            // Kirim detail data ke koleksi render_gallery agar otomatis tersimpan di halaman Berkas AI
-            if (window.db && window.addDoc && window.collection) {
-                const userEmail = localStorage.getItem('kreaverse_user_email');
-                if (userEmail) {
-                    scenes.forEach(async (item) => {
-                        try {
-                            await window.addDoc(window.collection(window.db, "render_gallery"), {
-                                email: userEmail,
-                                type: "video",
-                                url: item.video_url || "",
-                                prompt: item.visual_description || "",
-                                lyrics_segment: item.lyrics_segment || "",
-                                shot_type: item.shot_type || "",
-                                provider: item.provider || "Leonardo AI",
-                                model: modelVideo || "default",
-                                tool: "LyricShot AI",
-                                task_id: item.task_id || "",
-                                status: item.status || "pending",
-                                timestamp: Date.now()
-                            });
-                        } catch (e) {
-                            console.error("Gagal mendaftarkan adegan ke Berkas AI:", e);
-                        }
-                    });
-                }
-            }
-            
             // Mulai sistem pemantauan latar belakang (Polling)
             startStatusPolling();
         } else {
@@ -321,6 +299,18 @@ async function generateStoryboard() {
         loading.classList.add('hidden');
     }
 }
+
+window.pollingIntervals = window.pollingIntervals || {};
+window.batalPolling = function(scene) {
+    if (window.pollingIntervals && window.pollingIntervals[scene]) {
+        clearInterval(window.pollingIntervals[scene]);
+        delete window.pollingIntervals[scene];
+    }
+    const videoBox = document.getElementById(`video-box-${scene}`);
+    if (videoBox) {
+        videoBox.innerHTML = `<div style="padding: 40px 20px; text-align: center; color: var(--text-secondary); font-size: 0.82rem; font-weight: 700; background: #f3f4f6; border-radius: 12px; border: 1px solid var(--border-color);"><i class="fa-solid fa-circle-stop"></i> Pemantauan dibatalkan. Anda dapat melihat hasil video ini nanti melalui halaman Berkas AI.</div>`;
+    }
+};
 
 function startStatusPolling() {
     const loaders = document.querySelectorAll('.video-loader');
@@ -347,11 +337,12 @@ function startStatusPolling() {
                     downloadBtn.classList.remove('hidden');
                 } else if (data.status === "failed") {
                     clearInterval(interval);
-                    loader.innerHTML = "â Gagal merender adegan ini.";
+                    loader.innerHTML = "❌ Gagal merender adegan ini.";
                 }
             } catch (err) {
                 console.error("Polling error:", err);
             }
         }, 5000); // Tanyakan status ke server setiap 5 detik
+        window.pollingIntervals[scene] = interval;
     });
 }
