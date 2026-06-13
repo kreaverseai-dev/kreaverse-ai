@@ -80,7 +80,7 @@ function calculateDuration() {
                         .filter(line => line.length > 0);
     const totalDuration = lines.length * 10;
     durationDisplay.classList.remove('hidden');
-    durationDisplay.innerHTML = `Ã°ÂÂÂ <strong>Informasi Video Musik:</strong> Terdeteksi ${lines.length} baris lirik. Total durasi video otomatis disesuaikan menjadi <strong>${totalDuration} detik</strong> (${lines.length} klip video x 10 detik).`;
+    durationDisplay.innerHTML = `ÃÂ°ÃÂÃÂÃÂ <strong>Informasi Video Musik:</strong> Terdeteksi ${lines.length} baris lirik. Total durasi video otomatis disesuaikan menjadi <strong>${totalDuration} detik</strong> (${lines.length} klip video x 10 detik).`;
 }
 
 function toggleUploadFields() {
@@ -178,6 +178,17 @@ async function generateStoryboard() {
             scenes.forEach(item => {
                 const card = document.createElement('div');
                 card.className = 'storyboard-card';
+                
+                let mediaElement = "";
+                let downloadClass = "download-btn";
+                
+                if (item.status === "pending" && item.task_id) {
+                    mediaElement = `<div class="video-loader" id="loader-${item.scene}" data-scene="${item.scene}" data-task-id="${item.task_id}" data-provider="${item.provider}" style="padding: 40px; text-align: center; color: var(--accent-purple); font-size: 0.9rem; font-weight: 500;">⏳ Sedang merender adegan... (30-60 detik)</div>`;
+                    downloadClass += " hidden";
+                } else {
+                    mediaElement = `<video controls preload="metadata" src="${item.video_url || 'https://res.cloudinary.com/demo/video/upload/dog.mp4'}"></video>`;
+                }
+
                 card.innerHTML = `
                     <div class="card-header">
                         <span class="scene-badge">Klip ${item.scene}</span>
@@ -187,15 +198,18 @@ async function generateStoryboard() {
                         <p class="lyrics-quote">"<em>${item.lyrics_segment}</em>"</p>
                         <p class="description"><strong>Visual:</strong> ${item.visual_description}</p>
                         <hr>
-                        <div class="video-box">
-                            <video controls preload="metadata" src="${item.video_url || ''}"></video>
+                        <div class="video-box" id="video-box-${item.scene}">
+                            ${mediaElement}
                         </div>
-                        <a href="${item.video_url || '#'}" target="_blank" download="Klip-${item.scene}.mp4" class="download-btn">Unduh Klip ${item.scene}</a>
+                        <a href="${item.video_url || '#'}" target="_blank" download="Klip-${item.scene}.mp4" id="download-btn-${item.scene}" class="${downloadClass}">Unduh Klip ${item.scene}</a>
                     </div>
                 `;
                 storyboardGrid.appendChild(card);
             });
             resultContainer.classList.remove('hidden');
+            
+            // Mulai sistem pemantauan latar belakang (Polling)
+            startStatusPolling();
         } else {
             alert("Gagal memproses: " + (data.error || "Terjadi kesalahan sistem. Silakan coba kembali."));
         }
