@@ -8,21 +8,21 @@ export default async function handler(req, res) {
         
         const providers = [];
         if (fbData.documents) {
-            // Saring hanya kunci API yang berstatus aktif
+            // Saring hanya kunci API yang berstatus aktif dengan aman
             const activeDocs = fbData.documents.filter(doc => 
-                doc.fields && doc.fields.status && doc.fields.status.stringValue.toLowerCase() === "aktif"
+                doc.fields?.status?.stringValue?.toLowerCase() === "aktif"
             );
             
             // Urutkan berdasarkan prioritas terkecil (tertinggi)
             activeDocs.sort((a, b) => {
-                const pA = a.fields.priority ? parseInt(a.fields.priority.integerValue || a.fields.priority.stringValue) : 99;
-                const pB = b.fields.priority ? parseInt(b.fields.priority.integerValue || b.fields.priority.stringValue) : 99;
+                const pA = a.fields?.priority ? parseInt(a.fields.priority.integerValue || a.fields.priority.stringValue || 99) : 99;
+                const pB = b.fields?.priority ? parseInt(b.fields.priority.integerValue || b.fields.priority.stringValue || 99) : 99;
                 return pA - pB;
             });
 
             activeDocs.forEach(doc => {
-                const name = doc.fields.provider.stringValue;
-                const rawModels = doc.fields.id_model?.stringValue || doc.fields.model?.stringValue || "";
+                const name = doc.fields?.provider?.stringValue || "Unknown";
+                const rawModels = doc.fields?.id_model?.stringValue || doc.fields?.model?.stringValue || "";
                 
                 // Pisahkan model berdasarkan tanda koma
                 let models = rawModels ? rawModels.split(',').map(m => m.trim()) : [];
