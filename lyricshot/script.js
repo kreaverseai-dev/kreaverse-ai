@@ -255,8 +255,11 @@ async function generateStoryboard() {
                 if (item.status === "pending" && item.task_id) {
                     mediaElement = `<div class="video-loader" id="loader-${item.scene}" data-scene="${item.scene}" data-task-id="${item.task_id}" data-provider="${item.provider}" style="padding: 40px; text-align: center; color: var(--accent-purple); font-size: 0.9rem; font-weight: 500;">⏳ Sedang merender adegan... (30-60 detik)</div>`;
                     downloadClass += " hidden";
+                } else if (item.status === "failed" || !item.video_url) {
+                    mediaElement = `<div style="padding: 40px 20px; text-align: center; color: var(--danger-color); font-size: 0.85rem; font-weight: 700; background: #fff0f0; border-radius: 12px; width: 100%; border: 1px solid #fca5a5;"><i class="fa-solid fa-circle-exclamation"></i> Gagal membuat video. Cek saldo & validitas API Key di Dashboard.</div>`;
+                    downloadClass += " hidden";
                 } else {
-                    mediaElement = `<video controls preload="metadata" src="${item.video_url || 'https://res.cloudinary.com/demo/video/upload/dog.mp4'}"></video>`;
+                    mediaElement = `<video controls preload="metadata" src="${item.video_url}"></video>`;
                 }
 
                 card.innerHTML = `
