@@ -380,7 +380,7 @@
     <!-- FIREBASE & LOGIC SCRIPT -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-        import { getFirestore, collection, query, orderBy, onSnapshot, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+        import { getFirestore, collection, query, orderBy, onSnapshot, deleteDoc, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
         // FIREBASE CONFIG KREAVERSE
         const firebaseConfig = {
@@ -518,7 +518,7 @@
             hours = hours % 12;
             hours = hours ? hours : 12; 
             minutes = minutes < 10 ? '0' + minutes : minutes;
-            return `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()} • ${hours}:${minutes} ${ampm}`;
+            return `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()} â¢ ${hours}:${minutes} ${ampm}`;
         }
 
         window.renderList = function() {
@@ -581,31 +581,64 @@
                         </div>
                     `;
                 } else {
-                    // RENDER ITEM AI GENERATE
+                    // RENDER ITEM AI GENERATE (DIPERBAIKI UNTUK LYRICSHOT AI)
                     const isImage = item.type === 'image';
                     const isAudio = item.type === 'audio';
                     const iconClass = isImage ? 'fa-image' : (isAudio ? 'fa-music' : 'fa-video');
                     const bgClass = isImage ? 'image' : (isAudio ? 'audio' : 'video');
-                    const title = item.prompt ? item.prompt.substring(0, 50) + '...' : 'Media AI Generate';
                     
+                    // Deteksi jika item berasal dari LyricShot AI
+                    const isLyricShot = item.tool === "LyricShot AI";
+                    const title = isLyricShot ? `LyricShot AI - "${item.lyrics_segment || 'Klip Video'}"` : (item.prompt ? item.prompt.substring(0, 50) + '...' : 'Media AI Generate');
+                    
+                    let statusLabel = '';
+                    let actionButtons = '';
+                    
+                    if (isLyricShot && item.status === "pending") {
+                        statusLabel = `<span style="font-size:0.75rem; color:#F59E0B; font-weight:700; display:flex; align-items:center; gap:6px;"><i class="fa-solid fa-circle-notch fa-spin"></i> Rendering (Cek 30d)</span>`;
+                        actionButtons = `
+                            <button class="action-btn play" style="background:#F3F4F6; color:var(--text-light); cursor:not-allowed;" disabled><i class="fa-solid fa-circle-notch fa-spin"></i></button>
+                            <button class="action-btn dl" style="background:#F3F4F6; color:var(--text-light); cursor:not-allowed;" disabled><i class="fa-solid fa-hourglass-start"></i></button>
+                            <button class="action-btn del" onclick="deleteFile('${item.id}', 'gen')" title="Hapus"><i class="fa-solid fa-trash"></i></button>
+                        `;
+                    } else if (isLyricShot && item.status === "failed") {
+                        statusLabel = `<span style="font-size:0.75rem; color:var(--danger-color); font-weight:700;"><i class="fa-solid fa-circle-xmark"></i> Gagal Render</span>`;
+                        actionButtons = `
+                            <button class="action-btn play" style="background:#FEE2E2; color:var(--danger-color); cursor:not-allowed;" disabled><i class="fa-solid fa-triangle-exclamation"></i></button>
+                            <button class="action-btn del" onclick="deleteFile('${item.id}', 'gen')" title="Hapus"><i class="fa-solid fa-trash"></i></button>
+                        `;
+                    } else {
+                        actionButtons = `
+                            ${isImage ? 
+                                `<button class="action-btn play" onclick="window.open('${item.url}', '_blank')" title="Lihat"><i class="fa-solid fa-eye"></i></button>` : 
+                                `<button class="action-btn play" onclick="openPlayer('${item.url}', '${title.replace(/'/g, "\\'")}', '${item.type}', '')" title="Putar"><i class="fa-solid fa-play"></i></button>`
+                            }
+                            <button class="action-btn dl" onclick="downloadFile('${item.url}', 'Kreaverse_AI_Generate')" title="Unduh"><i class="fa-solid fa-download"></i></button>
+                            <button class="action-btn del" onclick="deleteFile('${item.id}', 'gen')" title="Hapus"><i class="fa-solid fa-trash"></i></button>
+                        `;
+                    }
+
+                    const toolBadge = isLyricShot ? `<span class="meta-badge" style="background:#EEF2FF; color:#6366F1; font-weight:800;"><i class="fa-solid fa-clapperboard"></i> LyricShot AI</span>` : '';
+                    const providerBadge = isLyricShot ? `<span class="meta-badge provider">${item.provider || 'Leonardo AI'}</span>` : '';
+                    const modelBadge = isLyricShot ? `<span class="meta-badge" style="background:#E0E7FF; color:#4F46E5; font-weight:700;">${item.model || 'default'}</span>` : '';
+
                     html += `
                         <div class="berkas-item">
                             <div class="item-number">${num}.</div>
                             <div class="item-icon ${bgClass}"><i class="fa-solid ${iconClass}"></i></div>
                             <div class="item-info">
-                                <div class="item-title" title="${item.prompt || 'Media'}">${title}</div>
+                                <div class="item-title" title="${isLyricShot ? (item.prompt || 'Adegan') : (item.prompt || 'Media')}">${title}</div>
                                 <div class="item-meta">
                                     <span>${dateStr}</span>
                                     <span class="meta-badge">${item.type.toUpperCase()}</span>
+                                    ${toolBadge}
+                                    ${providerBadge}
+                                    ${modelBadge}
+                                    ${statusLabel}
                                 </div>
                             </div>
                             <div class="item-actions">
-                                ${isImage ? 
-                                    `<button class="action-btn play" onclick="window.open('${item.url}', '_blank')" title="Lihat"><i class="fa-solid fa-eye"></i></button>` : 
-                                    `<button class="action-btn play" onclick="openPlayer('${item.url}', 'AI Generate', '${item.type}', '')" title="Putar"><i class="fa-solid fa-play"></i></button>`
-                                }
-                                <button class="action-btn dl" onclick="downloadFile('${item.url}', 'Kreaverse_AI_Generate')" title="Unduh"><i class="fa-solid fa-download"></i></button>
-                                <button class="action-btn del" onclick="deleteFile('${item.id}', 'gen')" title="Hapus"><i class="fa-solid fa-trash"></i></button>
+                                ${actionButtons}
                             </div>
                         </div>
                     `;
@@ -614,6 +647,16 @@
 
             container.innerHTML = html;
         };
+
+        // SISTEM AUTO-CHECK STATUS GENERATE LATAR BELAKANG (SETIAP 30 DETIK)
+        function startBackgroundStatusPolling() {
+            setInterval(async () => {
+                const pendingItems = genData.filter(item => item.tool === "LyricShot AI" && item.status === "pending" && item.task_id);
+                if (pendingItems.length === 0) return;
+
+                for (const item of pendingItems) {
+                    try {
+                        const res = await fetch(`/api/check-
 
         // FUNGSI PLAYER BERKAS ALA YTDL (MODERN)
         let activeMedia = null;
