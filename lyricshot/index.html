@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>LyricShot AI - Kreaverse AI</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    
     <style>
         :root {
             --bg-color: #0b0c10;
@@ -16,13 +15,7 @@
             --text-muted: #9ca3af;
             --border-color: rgba(139, 92, 246, 0.15);
         }
-
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-
+        * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
             font-family: 'Inter', sans-serif;
             background-color: var(--bg-color);
@@ -32,38 +25,11 @@
             min-height: 100vh;
             padding: 20px;
         }
-
-        .container {
-            max-width: 900px;
-            width: 100%;
-            margin-top: 20px;
-        }
-
-        header {
-            text-align: center;
-            margin-bottom: 30px;
-        }
-
-        h1 {
-            color: #fff;
-            font-size: 2rem;
-            font-weight: 700;
-            margin-bottom: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-        }
-
-        h1 span {
-            color: var(--accent-purple);
-        }
-
-        .subtitle {
-            color: var(--text-muted);
-            font-size: 0.95rem;
-        }
-
+        .container { max-width: 900px; width: 100%; margin-top: 20px; }
+        header { text-align: center; margin-bottom: 30px; }
+        h1 { color: #fff; font-size: 2rem; font-weight: 700; margin-bottom: 8px; display: flex; align-items: center; justify-content: center; gap: 10px; }
+        h1 span { color: var(--accent-purple); }
+        .subtitle { color: var(--text-muted); font-size: 0.95rem; }
         .input-section {
             background: var(--card-bg);
             padding: 25px;
@@ -72,7 +38,6 @@
             box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
             margin-bottom: 30px;
         }
-
         textarea {
             width: 100%;
             height: 130px;
@@ -84,40 +49,19 @@
             font-size: 0.95rem;
             font-family: inherit;
             resize: vertical;
-            transition: border-color 0.2s;
         }
-
-        textarea:focus {
-            outline: none;
-            border-color: var(--accent-purple);
-        }
-
-        /* === GRID PILIHAN === */
+        textarea:focus { outline: none; border-color: var(--accent-purple); }
         .options-bar {
             margin: 20px 0;
             display: grid;
             grid-template-columns: 1fr;
             gap: 15px;
         }
-
         @media (min-width: 600px) {
-            .options-bar {
-                grid-template-columns: 1fr 1fr 1fr;
-            }
+            .options-bar { grid-template-columns: 1fr 1fr; }
         }
-
-        .option-group {
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-        }
-
-        .option-group label {
-            font-size: 0.85rem;
-            color: var(--text-muted);
-            font-weight: 500;
-        }
-
+        .option-group { display: flex; flex-direction: column; gap: 6px; }
+        .option-group label { font-size: 0.85rem; color: var(--text-muted); font-weight: 500; }
         select {
             background: rgba(0, 0, 0, 0.3);
             border: 1px solid rgba(255, 255, 255, 0.1);
@@ -126,15 +70,42 @@
             border-radius: 6px;
             font-family: inherit;
             cursor: pointer;
-            width: 100%;
-            transition: border-color 0.2s;
         }
-
-        select:focus {
-            outline: none;
-            border-color: var(--accent-purple);
+        .duration-info {
+            background: rgba(139, 92, 246, 0.08);
+            border-left: 4px solid var(--accent-purple);
+            padding: 12px;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            margin-bottom: 15px;
+            color: #fff;
         }
-
+        .upload-section {
+            background: rgba(0, 0, 0, 0.2);
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border: 1px dashed rgba(255, 255, 255, 0.1);
+        }
+        .upload-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 15px;
+            margin-top: 10px;
+        }
+        @media (min-width: 600px) {
+            .upload-grid { grid-template-columns: 1fr 1fr; }
+        }
+        .file-input-group { display: flex; flex-direction: column; gap: 6px; }
+        .file-input-group label { font-size: 0.8rem; color: var(--text-muted); }
+        .file-input-group input {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #fff;
+            padding: 8px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+        }
         button {
             background: var(--accent-purple);
             color: #fff;
@@ -145,73 +116,26 @@
             border-radius: 8px;
             cursor: pointer;
             width: 100%;
-            transition: background 0.2s, transform 0.1s;
+            transition: background 0.2s;
         }
-
-        button:hover {
-            background: var(--accent-purple-hover);
-        }
-
-        button:active {
-            transform: scale(0.98);
-        }
-
-        button:disabled {
-            background: #4b5563;
-            color: #9ca3af;
-            cursor: not-allowed;
-            transform: none;
-        }
-
-        #loading {
-            text-align: center;
-            font-size: 1.1rem;
-            color: var(--accent-purple);
-            margin: 40px 0;
-            font-weight: 500;
-            animation: pulse 1.5s infinite;
-        }
-
-        @keyframes pulse {
-            0% { opacity: 0.6; }
-            50% { opacity: 1; }
-            100% { opacity: 0.6; }
-        }
-
-        .hidden {
-            display: none !important;
-        }
-
-        #resultContainer h2 {
-            font-size: 1.4rem;
-            margin-bottom: 20px;
-            border-left: 4px solid var(--accent-purple);
-            padding-left: 12px;
-        }
-
-        #storyboardGrid {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 25px;
-            margin-top: 15px;
-        }
-
+        button:hover { background: var(--accent-purple-hover); }
+        button:disabled { background: #4b5563; color: #9ca3af; cursor: not-allowed; }
+        #loading { text-align: center; font-size: 1.1rem; color: var(--accent-purple); margin: 40px 0; font-weight: 500; animation: pulse 1.5s infinite; }
+        @keyframes pulse { 0% { opacity: 0.6; } 50% { opacity: 1; } 100% { opacity: 0.6; } }
+        .hidden { display: none !important; }
+        #resultContainer h2 { font-size: 1.4rem; margin-bottom: 20px; border-left: 4px solid var(--accent-purple); padding-left: 12px; }
+        #storyboardGrid { display: grid; grid-template-columns: 1fr; gap: 25px; margin-top: 15px; }
         @media (min-width: 768px) {
-            #storyboardGrid {
-                grid-template-columns: 1fr 1fr;
-            }
+            #storyboardGrid { grid-template-columns: 1fr 1fr; }
         }
-
         .storyboard-card {
             background: var(--card-bg);
             border: 1px solid var(--border-color);
             border-radius: 12px;
             overflow: hidden;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
             display: flex;
             flex-direction: column;
         }
-
         .card-header {
             background: rgba(0, 0, 0, 0.2);
             padding: 15px;
@@ -220,78 +144,27 @@
             align-items: center;
             border-bottom: 1px solid rgba(255, 255, 255, 0.05);
         }
-
-        .scene-badge {
-            background: var(--accent-purple);
+        .scene-badge { background: var(--accent-purple); color: #fff; font-weight: 700; padding: 4px 10px; border-radius: 6px; font-size: 0.75rem; }
+        .shot-type { color: var(--accent-purple); font-size: 0.8rem; font-weight: 700; text-transform: uppercase; }
+        .card-body { padding: 20px; display: flex; flex-direction: column; gap: 15px; flex-grow: 1; }
+        .lyrics-quote { color: #fff; font-style: italic; background: rgba(139, 92, 246, 0.08); padding: 10px 15px; border-radius: 6px; border-left: 4px solid var(--accent-purple); margin: 0; font-size: 0.9rem; }
+        .description { font-size: 0.9rem; line-height: 1.6; color: #d1d5db; }
+        .video-box { margin-top: 10px; border-radius: 8px; overflow: hidden; background: #000; display: flex; justify-content: center; }
+        video { width: 100%; max-height: 250px; display: block; }
+        .download-btn {
+            background: #10b981;
             color: #fff;
-            font-weight: 700;
-            padding: 4px 10px;
-            border-radius: 6px;
-            font-size: 0.75rem;
-        }
-
-        .shot-type {
-            color: var(--accent-purple);
-            font-size: 0.8rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .card-body {
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-            flex-grow: 1;
-        }
-
-        .lyrics-quote {
-            color: #fff;
-            font-style: italic;
-            background: rgba(139, 92, 246, 0.08);
-            padding: 10px 15px;
-            border-radius: 6px;
-            border-left: 4px solid var(--accent-purple);
-            margin: 0;
-            font-size: 0.9rem;
-            line-height: 1.4;
-        }
-
-        .description {
-            font-size: 0.9rem;
-            line-height: 1.6;
-            color: #d1d5db;
-        }
-
-        hr {
-            border: 0;
-            border-top: 1px solid rgba(255, 255, 255, 0.05);
-            margin: 5px 0;
-        }
-
-        .prompt-box {
-            background: rgba(0, 0, 0, 0.2);
-            padding: 12px;
-            border-radius: 8px;
-            font-size: 0.8rem;
-        }
-
-        .prompt-box strong {
-            color: var(--accent-purple);
+            text-align: center;
+            text-decoration: none;
             display: block;
-            margin-bottom: 6px;
-            font-size: 0.75rem;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
+            padding: 10px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-top: 10px;
+            transition: background 0.2s;
         }
-
-        .prompt-text {
-            margin: 0;
-            color: var(--text-muted);
-            word-break: break-word;
-            line-height: 1.4;
-        }
+        .download-btn:hover { background: #059669; }
     </style>
 </head>
 <body>
@@ -302,168 +175,70 @@
         </header>
 
         <div class="input-section">
-            <textarea id="lyricsInput" placeholder="Masukkan lirik lagu Anda di sini...&#10;Contoh: Kuberjalan di bawah rintik hujan, mencari bayangmu yang perlahan sirna..."></textarea>
+            <textarea id="lyricsInput" placeholder="Masukkan lirik lagu Anda di sini...&#10;Contoh: Kuberjalan di bawah rintik hujan, mencari bayangmu yang perlahan sirna..." oninput="calculateDuration()"></textarea>
             
+            <div id="durationDisplay" class="duration-info hidden"></div>
+
             <div class="options-bar">
                 <div class="option-group">
-                    <label for="providerSelect">Provider AI:</label>
-                    <select id="providerSelect" onchange="updateModelsDropdown()"></select>
+                    <label for="providerSelect">Provider AI (Video):</label>
+                    <select id="providerSelect" onchange="toggleUploadFields()"></select>
                 </div>
                 <div class="option-group">
-                    <label for="modelSelect">Model AI:</label>
-                    <select id="modelSelect"></select>
-                </div>
-                <div class="option-group">
-                    <label for="visualStyle">Gaya Visual:</label>
-                    <select id="visualStyle">
-                        <option value="Cinematic Moody">Cinematic Moody</option>
-                        <option value="Anime / Studio Ghibli Style">Anime / Ghibli</option>
-                        <option value="Cyberpunk Neon Retro">Cyberpunk Neon</option>
-                        <option value="Retro 90s VHS / Analog Film">Retro 90s VHS</option>
-                        <option value="Minimalist Aesthetic / Pastel Tone">Aesthetic Minimalist</option>
+                    <label for="ratioSelect">Resolusi Video:</label>
+                    <select id="ratioSelect">
+                        <option value="9:16">TikTok / Shorts (Vertikal 9:16)</option>
+                        <option value="16:9">YouTube (Horizontal 16:9)</option>
                     </select>
                 </div>
             </div>
 
-            <button id="generateBtn" onclick="generateStoryboard()">Buat Storyboard</button>
+            <!-- Upload Atribut Karakter untuk Magic Hour -->
+            <div id="magicHourUploads" class="upload-section hidden">
+                <h3 style="font-size: 0.95rem; margin-bottom: 10px; color: var(--accent-purple);">Kunci Atribut Karakter (Magic Hour)</h3>
+                <div class="upload-grid">
+                    <div class="file-input-group">
+                        <label for="faceInput">Foto Wajah (Lock Wajah):</label>
+                        <input type="file" id="faceInput" accept="image/*">
+                    </div>
+                    <div class="file-input-group">
+                        <label for="hijabInput">Foto Hijab (Opsional):</label>
+                        <input type="file" id="hijabInput" accept="image/*">
+                    </div>
+                    <div class="file-input-group">
+                        <label for="bajuInput">Foto Gamis / Baju:</label>
+                        <input type="file" id="bajuInput" accept="image/*">
+                    </div>
+                    <div class="file-input-group">
+                        <label for="sepatuInput">Foto Sepatu (Opsional):</label>
+                        <input type="file" id="sepatuInput" accept="image/*">
+                    </div>
+                    <div class="file-input-group" style="grid-column: span 2;">
+                        <label for="aksesorisInput">Foto Aksesoris (Kacamata/Payung/Tas):</label>
+                        <input type="file" id="aksesorisInput" accept="image/*">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Upload Karakter Utuh untuk Leonardo AI -->
+            <div id="leonardoUploads" class="upload-section hidden">
+                <h3 style="font-size: 0.95rem; margin-bottom: 10px; color: var(--accent-purple);">Unggah Model Karakter Utuh (Leonardo AI)</h3>
+                <div class="file-input-group">
+                    <label for="fullModelInput">Unggah 1 Foto Karakter Berbusana Lengkap:</label>
+                    <input type="file" id="fullModelInput" accept="image/*">
+                </div>
+            </div>
+
+            <button id="generateBtn" onclick="generateStoryboard()">Buat Storyboard & Video</button>
         </div>
 
-        <div id="loading" class="hidden">Menafsirkan lirik & menyusun shot list adegan...</div>
+        <div id="loading" class="hidden">Menafsirkan lirik & menyusun adegan...</div>
 
         <div id="resultContainer" class="hidden">
-            <h2>Storyboard Hasil Analisis</h2>
+            <h2>Daftar Klip Video Hasil Render</h2>
             <div id="storyboardGrid"></div>
         </div>
     </div>
-
-    <script>
-        let availableProviders = [];
-
-        // Memanggil daftar provider aktif dari database Firebase via backend saat halaman dimuat
-        document.addEventListener('DOMContentLoaded', async () => {
-            const providerSelect = document.getElementById('providerSelect');
-            const modelSelect = document.getElementById('modelSelect');
-            providerSelect.innerHTML = '<option value="">Memuat provider...</option>';
-            modelSelect.innerHTML = '<option value="">Memuat model...</option>';
-
-            try {
-                const response = await fetch('/api/providers');
-                const data = await response.json();
-
-                if (response.ok && data.length > 0) {
-                    availableProviders = data;
-                    providerSelect.innerHTML = '';
-                    
-                    data.forEach(provider => {
-                        const opt = document.createElement('option');
-                        opt.value = provider.id;
-                        opt.textContent = provider.name;
-                        providerSelect.appendChild(opt);
-                    });
-
-                    updateModelsDropdown();
-                } else {
-                    providerSelect.innerHTML = '<option value="">Gagal memuat provider</option>';
-                    modelSelect.innerHTML = '<option value="">Model tidak tersedia</option>';
-                }
-            } catch (err) {
-                console.error("Gagal memuat daftar provider:", err);
-                providerSelect.innerHTML = '<option value="">Koneksi error</option>';
-            }
-        });
-
-        // Memperbarui daftar pilihan model saat provider diubah
-        function updateModelsDropdown() {
-            const providerSelect = document.getElementById('providerSelect');
-            const modelSelect = document.getElementById('modelSelect');
-            const selectedId = providerSelect.value;
-            modelSelect.innerHTML = '';
-
-            const selectedProvider = availableProviders.find(p => p.id === selectedId);
-            if (selectedProvider && selectedProvider.models.length > 0) {
-                selectedProvider.models.forEach(model => {
-                    const opt = document.createElement('option');
-                    opt.value = model;
-                    opt.textContent = model;
-                    modelSelect.appendChild(opt);
-                });
-            } else {
-                const opt = document.createElement('option');
-                opt.value = "default";
-                opt.textContent = "Default Model";
-                modelSelect.appendChild(opt);
-            }
-        }
-
-        async function generateStoryboard() {
-            const lyrics = document.getElementById('lyricsInput').value;
-            const style = document.getElementById('visualStyle').value;
-            const providerId = document.getElementById('providerSelect').value;
-            const model = document.getElementById('modelSelect').value;
-            const generateBtn = document.getElementById('generateBtn');
-            const loading = document.getElementById('loading');
-            const resultContainer = document.getElementById('resultContainer');
-            const storyboardGrid = document.getElementById('storyboardGrid');
-
-            if (!lyrics.trim()) {
-                alert("Harap masukkan lirik lagu terlebih dahulu.");
-                return;
-            }
-
-            generateBtn.disabled = true;
-            loading.classList.remove('hidden');
-            resultContainer.classList.add('hidden');
-            storyboardGrid.innerHTML = '';
-
-            try {
-                const response = await fetch('/api/lyricshot', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ lyrics, style, providerId, model })
-                });
-
-                const data = await response.json();
-
-                if (response.ok) {
-                    let scenes = Array.isArray(data) ? data : (data.storyboard || data.scenes || []);
-                    
-                    scenes.forEach(item => {
-                        const card = document.createElement('div');
-                        card.className = 'storyboard-card';
-                        card.innerHTML = `
-                            <div class="card-header">
-                                <span class="scene-badge">Scene ${item.scene || '?'}</span>
-                                <span class="shot-type">${item.shot_type || 'Custom Shot'}</span>
-                            </div>
-                            <div class="card-body">
-                                <p class="lyrics-quote">"<em>${item.lyrics_segment || 'Instrumental'}</em>"</p>
-                                <p class="description"><strong>Visual:</strong> ${item.visual_description || '-'}</p>
-                                <hr>
-                                <div class="prompt-box">
-                                    <strong>Image Prompt (Stable Diffusion / Midjourney):</strong>
-                                    <p class="prompt-text">${item.image_prompt || '-'}</p>
-                                </div>
-                                <div class="prompt-box">
-                                    <strong>Video Prompt (Runway / Sora / Luma):</strong>
-                                    <p class="prompt-text">${item.video_prompt || '-'}</p>
-                                </div>
-                            </div>
-                        `;
-                        storyboardGrid.appendChild(card);
-                    });
-
-                    resultContainer.classList.remove('hidden');
-                } else {
-                    alert("Terjadi masalah: " + (data.error || "Gagal memproses lirik. Silakan coba sesaat lagi."));
-                }
-            } catch (err) {
-                console.error(err);
-                alert("Koneksi gagal terhubung dengan server.");
-            } finally {
-                generateBtn.disabled = false;
-                loading.classList.add('hidden');
-            }
-        }
-    </script>
+    <script src="script.js"></script>
 </body>
 </html>
