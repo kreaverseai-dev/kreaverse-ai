@@ -64,6 +64,8 @@ export default async function handler(req, res) {
         if (naskahDocs.length === 0) return res.status(500).json({ error: "Kunci API Naskah aktif tidak ditemukan." });
         if (videoDocs.length === 0) return res.status(500).json({ error: "Kunci API Video aktif tidak ditemukan." });
 
+        const selectedProviderName = videoDocs[0]?.fields?.provider?.stringValue?.toLowerCase() || "";
+
         // Deteksi apakah pengguna mengunggah setidaknya satu foto acuan
         const hasUploads = faceImage || hijabImage || bajuImage || sepatuImage || aksesorisImage || fullModelImage;
         
