@@ -170,7 +170,7 @@
 <body>
     <div class="container">
         <header>
-            <h1>LyricShot AI <span>Ã°ÂÂÂ¬</span></h1>
+            <h1>LyricShot AI <span>ÃÂ°ÃÂÃÂÃÂ¬</span></h1>
             <p class="subtitle">Ubah lirik lagu Anda menjadi storyboard video klip (MV) siap produksi.</p>
         </header>
 
@@ -252,5 +252,29 @@
         </div>
     </div>
     <script src="/lyricshot/script.js"></script>
+    <script>
+        // Override fungsi durasi dengan kalkulasi menit & detik terformat bersih
+        window.calculateDuration = function() {
+            const lyrics = document.getElementById('lyricsInput').value.trim();
+            const durationDisplay = document.getElementById('durationDisplay');
+            if (!lyrics) {
+                durationDisplay.classList.add('hidden');
+                return;
+            }
+            const lines = lyrics.split(/(?:\r?\n|(?<=[a-z\.\s])(?=[A-Z])|(?=\([A-Za-z]))/g)
+                                .map(line => line.trim())
+                                .filter(line => line.length > 0);
+                                
+            const totalDuration = lines.length * 10;
+            const minutes = Math.floor(totalDuration / 60);
+            const seconds = totalDuration % 60;
+            let timeString = `<strong>${totalDuration} detik</strong>`;
+            if (minutes > 0) {
+                timeString += ` (sekitar <strong>${minutes} menit ${seconds > 0 ? seconds + ' detik' : ''}</strong>)`;
+            }
+            durationDisplay.classList.remove('hidden');
+            durationDisplay.innerHTML = `📊 <strong>Informasi Video Musik:</strong> Terdeteksi ${lines.length} baris lirik. Total durasi video otomatis disesuaikan menjadi ${timeString} (${lines.length} klip video x 10 detik).`;
+        }
+    </script>
 </body>
 </html>
