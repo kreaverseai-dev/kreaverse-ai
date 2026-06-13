@@ -221,3 +221,37 @@ async function generateStoryboard() {
         loading.classList.add('hidden');
     }
 }
+
+function startStatusPolling() {
+    const loaders = document.querySelectorAll('.video-loader');
+    loaders.forEach(loader => {
+        const taskId = loader.getAttribute('data-task-id');
+        const provider = loader.getAttribute('data-provider');
+        const scene = loader.getAttribute('data-scene');
+        if (!taskId) return;
+
+        const interval = setInterval(async () => {
+            try {
+                const res = await fetch(`/api/check-status?taskId=${taskId}&provider=${provider}`);
+                const data = await res.json();
+                
+                if (res.ok && data.status === "complete" && data.video_url) {
+                    clearInterval(interval);
+                    // Pasang pemutar video asli
+                    const videoBox = document.getElementById(`video-box-${scene}`);
+                    videoBox.innerHTML = `<video controls autoplay loop src="${data.video_url}"></video>`;
+                    
+                    // Aktifkan tombol unduh asli
+                    const downloadBtn = document.getElementById(`download-btn-${scene}`);
+                    downloadBtn.href = data.video_url;
+                    downloadBtn.classList.remove('hidden');
+                } else if (data.status === "failed") {
+                    clearInterval(interval);
+                    loader.innerHTML = "❌ Gagal merender adegan ini.";
+                }
+            } catch (err) {
+                console.error("Polling error:", err);
+            }
+        }, 5000); // Tanyakan status ke server setiap 5 detik
+    });
+}
