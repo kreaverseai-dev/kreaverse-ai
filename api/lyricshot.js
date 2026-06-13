@@ -201,11 +201,8 @@ Respon Anda WAJIB dalam format JSON murni yang valid tanpa tambahan markdown ata
                 let payload = {};
 
                 if (provName.includes("magic")) {
-                    // Otomatis beralih ke Text-to-Video jika tidak mengunggah foto
                     const isCustomGen = faceUrl || bajuUrl || hijabUrl;
-                    apiEndpoint = isCustomGen ? 
-                        "https://api.magichour.ai/v1/face-swap" : 
-                        "https://api.magichour.ai/v1/video-generation";
+                    apiEndpoint = "https://api.magichour.ai/v1/text-to-video";
                     
                     let defaultCharacter = "";
                     if (!isCustomGen) {
@@ -215,23 +212,14 @@ Respon Anda WAJIB dalam format JSON murni yang valid tanpa tambahan markdown ata
                     }
                     if (aksesorisUrl) defaultCharacter += " and styled with accessories";
 
-                    payload = isCustomGen ? {
-                        assets: {
-                            image: faceUrl || "https://res.cloudinary.com/demo/image/upload/v1312461204/sample.jpg",
-                            clothing: bajuUrl || null,
-                            hijab: hijabUrl || null,
-                            shoes: sepatuUrl || null,
-                            accessories: aksesorisUrl || null
+                    payload = {
+                        end_seconds: 5.0,
+                        orientation: ratio === "9:16" ? "portrait" : "landscape",
+                        style: {
+                            prompt: `${scene.video_prompt}, ${defaultCharacter}, ${style}`
                         },
-                        prompt: `${scene.video_prompt}, ${defaultCharacter}, ${style}`,
-                        aspect_ratio: ratio === "9:16" ? "9:16" : "16:9",
-                        duration: 10,
-                        silent: true
-                    } : {
-                        style: { type: "realistic" },
-                        text_prompt: `${scene.video_prompt}, ${defaultCharacter}, ${style}`,
-                        aspect_ratio: ratio === "9:16" ? "9:16" : "16:9",
-                        duration: 10
+                        name: `Lyrics Shot - Scene ${scene.scene}`,
+                        resolution: "720p"
                     };
 
                     try {
@@ -254,28 +242,24 @@ Respon Anda WAJIB dalam format JSON murni yang valid tanpa tambahan markdown ata
                     }
 
                 } else if (provName.includes("leonardo")) {
-                    // Otomatis gunakan Text-to-Video jika tidak ada foto (Menjamin saldo terpotong & render sukses)
-                    apiEndpoint = fullModelUrl ? 
-                        "https://cloud.leonardo.ai/api/rest/v1/generations-image-to-video" : 
-                        "https://cloud.leonardo.ai/api/rest/v1/generations-text-to-video";
+                    apiEndpoint = "https://cloud.leonardo.ai/api/rest/v1/generations-text-to-video";
                     
+                    const width = ratio === "9:16" ? 480 : 832;
+                    const height = ratio === "9:16" ? 832 : 480;
+
                     let defaultCharacter = "";
-                    if (!fullModelUrl) {
-                        defaultCharacter = "The main character is an elegant 20-year-old Indonesian woman resembling a warm, friendly Indonesian student with a soft neat face, wearing a neat pastel Indonesian-style hijab and a flowing long elegant gamis/dress (no pants, khas Indonesia)";
+                    if (fullModelUrl) {
+                        defaultCharacter = `An Indonesian model resembling the model in this reference: ${fullModelUrl}, elegant cinematic, `;
+                    } else {
+                        defaultCharacter = "The main character is an elegant 20-year-old Indonesian woman resembling a warm, friendly Indonesian student with a soft neat face, wearing a neat pastel Indonesian-style hijab and a flowing long elegant gamis/dress (no pants, khas Indonesia), ";
                     }
 
-                    payload = fullModelUrl ? {
-                        modelId: modelVideo || "kino-xl",
-                        prompt: `${scene.video_prompt}, high quality cinematic style, ${style}`,
-                        imageUrl: fullModelUrl,
-                        motionStrength: 5,
-                        aspectRatio: ratio === "9:16" ? "9:16" : "16:9",
-                        duration: 10
-                    } : {
-                        prompt: `${scene.video_prompt}, ${defaultCharacter}, high quality cinematic style, ${style}`,
+                    payload = {
+                        prompt: `${scene.video_prompt}, ${defaultCharacter}high quality cinematic style, ${style}`,
                         model: "MOTION2FAST",
-                        aspectRatio: ratio === "9:16" ? "9:16" : "16:9",
-                        duration: 5
+                        width: width,
+                        height: height,
+                        frameInterpolation: true
                     };
 
                     try {
