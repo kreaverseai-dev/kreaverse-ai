@@ -1,30 +1,72 @@
 let activeProviders = [];
 
 document.addEventListener('DOMContentLoaded', async () => {
+    const providerNaskahSelect = document.getElementById('providerNaskahSelect');
     const providerSelect = document.getElementById('providerSelect');
     try {
         const res = await fetch('/api/providers');
         const data = await res.json();
         if (res.ok && data.length > 0) {
             activeProviders = data;
+            providerNaskahSelect.innerHTML = '';
             providerSelect.innerHTML = '';
             data.forEach(p => {
-                if (p.name.toLowerCase().includes('magic') || p.name.toLowerCase().includes('leonardo')) {
+                const nameLower = p.name.toLowerCase();
+                if (nameLower.includes('gemini') || nameLower.includes('openrouter')) {
+                    const opt = document.createElement('option');
+                    opt.value = p.id;
+                    opt.textContent = p.name;
+                    providerNaskahSelect.appendChild(opt);
+                } else if (nameLower.includes('magic') || nameLower.includes('leonardo')) {
                     const opt = document.createElement('option');
                     opt.value = p.id;
                     opt.textContent = p.name;
                     providerSelect.appendChild(opt);
                 }
             });
+            updateNaskahModels();
+            updateVideoModels();
             toggleUploadFields();
         } else {
-            providerSelect.innerHTML = '<option value="">Gagal memuat provider video</option>';
+            providerSelect.innerHTML = '<option value="">Gagal memuat provider</option>';
         }
     } catch (err) {
         console.error(err);
         providerSelect.innerHTML = '<option value="">Koneksi API Error</option>';
     }
 });
+
+function updateNaskahModels() {
+    const providerSelect = document.getElementById('providerNaskahSelect');
+    const modelSelect = document.getElementById('modelNaskahSelect');
+    const selectedId = providerSelect.value;
+    modelSelect.innerHTML = '';
+    const p = activeProviders.find(item => item.id === selectedId);
+    if (p && p.models.length > 0) {
+        p.models.forEach(m => {
+            const opt = document.createElement('option');
+            opt.value = m;
+            opt.textContent = m;
+            modelSelect.appendChild(opt);
+        });
+    }
+}
+
+function updateVideoModels() {
+    const providerSelect = document.getElementById('providerSelect');
+    const modelSelect = document.getElementById('modelVideoSelect');
+    const selectedId = providerSelect.value;
+    modelSelect.innerHTML = '';
+    const p = activeProviders.find(item => item.id === selectedId);
+    if (p && p.models.length > 0) {
+        p.models.forEach(m => {
+            const opt = document.createElement('option');
+            opt.value = m;
+            opt.textContent = m;
+            modelSelect.appendChild(opt);
+        });
+    }
+}
 
 function calculateDuration() {
     const lyrics = document.getElementById('lyricsInput').value.trim();
@@ -36,7 +78,7 @@ function calculateDuration() {
     const lines = lyrics.split('\n').filter(line => line.trim().length > 0);
     const totalDuration = lines.length * 10;
     durationDisplay.classList.remove('hidden');
-    durationDisplay.innerHTML = `📊 <strong>Informasi Video Musik:</strong> Terdeteksi ${lines.length} baris lirik. Total durasi video otomatis disesuaikan menjadi <strong>${totalDuration} detik</strong> (${lines.length} klip video x 10 detik).`;
+    durationDisplay.innerHTML = `ð <strong>Informasi Video Musik:</strong> Terdeteksi ${lines.length} baris lirik. Total durasi video otomatis disesuaikan menjadi <strong>${totalDuration} detik</strong> (${lines.length} klip video x 10 detik).`;
 }
 
 function toggleUploadFields() {
@@ -89,9 +131,15 @@ async function generateStoryboard() {
     storyboardGrid.innerHTML = '';
 
     try {
+        const providerNaskahId = document.getElementById('providerNaskahSelect').value;
+        const modelNaskah = document.getElementById('modelNaskahSelect').value;
+        const modelVideo = document.getElementById('modelVideoSelect').value;
         const payload = {
             lyrics,
             providerId,
+            providerNaskahId,
+            modelNaskah,
+            modelVideo,
             ratio,
             style: "Cinematic Moody",
             faceImage: null,
