@@ -1,3 +1,5 @@
+api/check-status.js
+
 export default async function handler(req, res) {
     // Izinkan koneksi langsung dari Dasbor Kreaverse
     res.setHeader('Access-Control-Allow-Credentials', true);
@@ -7,6 +9,68 @@ export default async function handler(req, res) {
 
     if (req.method === 'OPTIONS') {
         return res.status(200).end();
+    }
+
+    // INTERSEPSI: Pengecekan status render video LyricShot AI (Magic Hour & Leonardo)
+    const { taskId, provider } = req.query;
+    if (taskId && provider) {
+        try {
+            const firebaseUrl = "https://firestore.googleapis.com/v1/projects/kreaverse-ai0107/databases/(default)/documents/api_keys";
+            const fbRes = await fetch(firebaseUrl);
+            const fbData = await fbRes.json();
+            
+            let apiKey = null;
+            if (fbData.documents) {
+                const activeDocs = fbData.documents.filter(doc => doc.fields?.status?.stringValue?.toLowerCase() === "aktif");
+                const matchedDoc = activeDocs.find(doc => doc.fields?.provider?.stringValue?.toLowerCase().includes(provider.toLowerCase()));
+                if (matchedDoc) {
+                    apiKey = matchedDoc.fields.key.stringValue.trim();
+                }
+            }
+
+            if (!apiKey) {
+                return res.status(500).json({ error: "API Key untuk pemantauan tidak ditemukan." });
+            }
+
+            let videoUrl = "";
+            let status = "processing";
+
+            if (provider.toLowerCase().includes("magic")) {
+                const statusRes = await fetch(`https://api.magichour.ai/v1/video-generation/${taskId}`, {
+                    headers: { 'Authorization': `Bearer ${apiKey}` }
+                });
+                if (statusRes.ok) {
+                    const data = await statusRes.json();
+                    if (data.status === "complete" && data.download_url) {
+                        status = "complete";
+                        videoUrl = data.download_url;
+                    } else if (data.status === "failed") {
+                        status = "failed";
+                    }
+                }
+            } else if (provider.toLowerCase().includes("leonardo")) {
+                const statusRes = await fetch(`https://cloud.leonardo.ai/api/rest/v1/generations/${taskId}`, {
+                    headers: { 'Authorization': `Bearer ${apiKey}` }
+                });
+                if (statusRes.ok) {
+                    const data = await statusRes.json();
+                    const gen = data.generations_by_pk;
+                    if (gen) {
+                        if (gen.status === "COMPLETE" && gen.generated_images?.[0]?.url) {
+                            status = "complete";
+                            videoUrl = gen.generated_images[0].url;
+                        } else if (gen.status === "FAILED") {
+                            status = "failed";
+                        }
+                    }
+                }
+            }
+
+            return res.status(200).json({ status, videoUrl });
+        } catch (error) {
+            console.error("Status Checker Error:", error);
+            return res.status(500).json({ error: "Internal Server Error" });
+        }
     }
 
     // MENGAMBIL KUNCI ASLI DARI DATABASE (Via POST Body)
