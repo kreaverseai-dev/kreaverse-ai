@@ -82,7 +82,7 @@ function calculateDuration() {
                         .filter(line => line.length > 0);
     const totalDuration = lines.length * 10;
     durationDisplay.classList.remove('hidden');
-    durationDisplay.innerHTML = `📊 <strong>Informasi Video Musik:</strong> Terdeteksi ${lines.length} baris lirik. Total durasi video otomatis disesuaikan menjadi <strong>${totalDuration} detik</strong> (${lines.length} klip video x 10 detik).`;
+    durationDisplay.innerHTML = `ð <strong>Informasi Video Musik:</strong> Terdeteksi ${lines.length} baris lirik. Total durasi video otomatis disesuaikan menjadi <strong>${totalDuration} detik</strong> (${lines.length} klip video x 10 detik).`;
 }
 
 function toggleUploadFields() {
@@ -254,11 +254,10 @@ async function generateStoryboard() {
                 let mediaElement = "";
                 let downloadClass = "download-btn";
                 
-                } else if (data.status === "failed") {
-                    clearInterval(interval);
-                    loader.innerHTML = "❌ Gagal merender adegan ini.";
-                }
-            } catch (err) {
+                if (item.status === "pending" && item.task_id) {
+                    mediaElement = `<div class="video-loader" id="loader-${item.scene}" data-scene="${item.scene}" data-task-id="${item.task_id}" data-provider="${item.provider}" style="padding: 40px; text-align: center; color: var(--accent-purple); font-size: 0.9rem; font-weight: 500;">⏳ Sedang merender adegan... (30-60 detik)</div>`;
+                    downloadClass += " hidden";
+                } else {
                     mediaElement = `<video controls preload="metadata" src="${item.video_url || 'https://res.cloudinary.com/demo/video/upload/dog.mp4'}"></video>`;
                 }
 
@@ -320,7 +319,7 @@ function startStatusPolling() {
                     downloadBtn.classList.remove('hidden');
                 } else if (data.status === "failed") {
                     clearInterval(interval);
-                    loader.innerHTML = "Ã¢ÂÂ Gagal merender adegan ini.";
+                    loader.innerHTML = "❌ Gagal merender adegan ini.";
                 }
             } catch (err) {
                 console.error("Polling error:", err);
