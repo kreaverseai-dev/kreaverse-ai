@@ -57,9 +57,17 @@ export default async function handler(req, res) {
             });
         }
 
-        // Ambil daftar semua kunci aktif untuk Naskah & Video
-        const naskahDocs = activeKeys.filter(doc => doc.name.endsWith(providerNaskahId) || doc.fields?.provider?.stringValue?.toLowerCase().includes("gemini") || doc.fields?.provider?.stringValue?.toLowerCase().includes("openrouter"));
-        const videoDocs = activeKeys.filter(doc => doc.name.endsWith(providerId) || doc.fields?.provider?.stringValue?.toLowerCase().includes("magic") || doc.fields?.provider?.stringValue?.toLowerCase().includes("leonardo"));
+        // Ambil daftar kunci aktif yang sesuai dengan pilihan pengguna secara spesifik
+        let naskahDocs = activeKeys.filter(doc => doc.name.endsWith(providerNaskahId));
+        let videoDocs = activeKeys.filter(doc => doc.name.endsWith(providerId));
+
+        // Jika tidak ditemukan, gunakan fallback berdasarkan nama provider
+        if (naskahDocs.length === 0) {
+            naskahDocs = activeKeys.filter(doc => doc.fields?.provider?.stringValue?.toLowerCase().includes("gemini") || doc.fields?.provider?.stringValue?.toLowerCase().includes("openrouter"));
+        }
+        if (videoDocs.length === 0) {
+            videoDocs = activeKeys.filter(doc => doc.fields?.provider?.stringValue?.toLowerCase().includes("magic") || doc.fields?.provider?.stringValue?.toLowerCase().includes("leonardo"));
+        }
 
         if (naskahDocs.length === 0) return res.status(500).json({ error: "Kunci API Naskah aktif tidak ditemukan." });
         if (videoDocs.length === 0) return res.status(500).json({ error: "Kunci API Video aktif tidak ditemukan." });
@@ -236,6 +244,9 @@ Respon Anda WAJIB dalam format JSON murni yang valid tanpa tambahan markdown ata
                             const videoData = await videoRes.json();
                             finalVideoUrl = videoData.id || ""; // Mengambil Task ID Magic Hour
                             break; 
+                        } else {
+                            const errorText = await videoRes.text();
+                            console.error(`Magic Hour API Error [Status ${videoRes.status}]:`, errorText);
                         }
                     } catch (e) {
                         console.error("Magic Hour Key failed:", e);
@@ -277,6 +288,9 @@ Respon Anda WAJIB dalam format JSON murni yang valid tanpa tambahan markdown ata
                             const videoData = await videoRes.json();
                             finalVideoUrl = videoData.sdGenerationJob?.generationId || videoData.generationId || ""; // Mengambil Generation ID Leonardo
                             break; 
+                        } else {
+                            const errorText = await videoRes.text();
+                            console.error(`Leonardo AI API Error [Status ${videoRes.status}]:`, errorText);
                         }
                     } catch (e) {
                         console.error("Leonardo Key failed:", e);
