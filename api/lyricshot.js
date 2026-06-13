@@ -1,27 +1,24 @@
 // api/lyricshot.js
 
-const OPENAI_COMPATIBLE_PROVIDERS = {
-    "openai": { url: "https://api.openai.com/v1/chat/completions", defaultModel: "gpt-4o-mini" },
-    "deepseek": { url: "https://api.deepseek.com/v1/chat/completions", defaultModel: "deepseek-chat" },
-    "groq": { url: "https://api.groq.com/openai/v1/chat/completions", defaultModel: "llama3-8b-8192" },
-    "openrouter": { url: "https://openrouter.ai/api/v1/chat/completions", defaultModel: "google/gemini-2.5-flash" },
-    "mistral": { url: "https://api.mistral.ai/v1/chat/completions", defaultModel: "mistral-tiny" },
-    "together": { url: "https://api.together.xyz/v1/chat/completions", defaultModel: "meta-llama/Llama-3-8b-chat-hf" }
-};
-
-function extractCleanJson(text) {
-    if (typeof text !== 'string') return text;
-    const firstBracket = text.indexOf('[');
-    const lastBracket = text.lastIndexOf(']');
-    if (firstBracket !== -1 && lastBracket !== -1 && lastBracket > firstBracket) {
-        return text.substring(firstBracket, lastBracket + 1);
+async function uploadToCloudinary(base64Str) {
+    if (!base64Str) return null;
+    try {
+        const cloudName = process.env.CLOUDINARY_CLOUD_NAME || "kreaverse-ai0107";
+        const uploadPreset = process.env.CLOUDINARY_UPLOAD_PRESET || "ml_default";
+        const res = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                file: base64Str,
+                upload_preset: uploadPreset
+            })
+        });
+        const data = await res.json();
+        return data.secure_url || null;
+    } catch (err) {
+        console.error("Cloudinary Upload Error:", err);
+        return null;
     }
-    const firstBrace = text.indexOf('{');
-    const lastBrace = text.lastIndexOf('}');
-    if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
-        return text.substring(firstBrace, lastBrace + 1);
-    }
-    return text;
 }
 
 export default async function handler(req, res) {
@@ -32,213 +29,169 @@ export default async function handler(req, res) {
     }
 
     try {
-        const { lyrics, style, providerId, model } = req.body;
+        const { lyrics, ratio, style, providerId, faceImage, hijabImage, bajuImage, sepatuImage, aksesorisImage, fullModelImage } = req.body;
 
         if (!lyrics) {
             return res.status(400).json({ error: "Lirik tidak boleh kosong." });
         }
 
-        // 1. Tarik semua data API Key berstatus aktif dari Firestore
+        const lines = lyrics.split('\n').filter(line => line.trim().length > 0);
+        const totalClipsCount = lines.length;
+
+        // 1. Ambil API Key Gemini / OpenRouter dari Firebase Firestore
         const firebaseUrl = "https://firestore.googleapis.com/v1/projects/kreaverse-ai0107/databases/(default)/documents/api_keys";
         const fbRes = await fetch(firebaseUrl);
         const fbData = await fbRes.json();
         
-        let activeDocs = [];
+        let geminiKey = null;
+        let videoApiKey = null;
+        let selectedProviderName = "";
+        
         if (fbData.documents) {
-            activeDocs = fbData.documents.filter(doc => 
+            const activeDocs = fbData.documents.filter(doc => 
                 doc.fields && doc.fields.status && doc.fields.status.stringValue.toLowerCase() === "aktif"
             );
-            
-            // Urutkan berdasarkan prioritas terkecil (tertinggi)
-            activeDocs.sort((a, b) => {
-                const pA = a.fields.priority ? parseInt(a.fields.priority.integerValue || a.fields.priority.stringValue) : 99;
-                const pB = b.fields.priority ? parseInt(b.fields.priority.integerValue || b.fields.priority.stringValue) : 99;
-                return pA - pB;
-            });
+
+            // Temukan Key Gemini/OpenRouter untuk penulisan naskah lirik
+            const geminiDoc = activeDocs.find(doc => doc.fields.provider.stringValue.toLowerCase().includes("gemini") || doc.fields.provider.stringValue.toLowerCase().includes("openrouter"));
+            if (geminiDoc) geminiKey = geminiDoc.fields.key.stringValue.trim();
+
+            // Temukan Key Video pilihan pengguna
+            const videoDoc = activeDocs.find(doc => doc.name.endsWith(providerId)) || activeDocs.find(doc => doc.fields.provider.stringValue.toLowerCase().includes("magic") || doc.fields.provider.stringValue.toLowerCase().includes("leonardo"));
+            if (videoDoc) {
+                videoApiKey = videoDoc.fields.key.stringValue.trim();
+                selectedProviderName = videoDoc.fields.provider.stringValue.toLowerCase();
+            }
         }
 
-        if (activeDocs.length === 0) {
-            return res.status(500).json({ error: "Layanan pembuatan storyboard sedang tidak tersedia (Jalur sibuk)." });
-        }
+        if (!geminiKey) return res.status(500).json({ error: "API Key Gemini atau OpenRouter tidak aktif di database." });
+        if (!videoApiKey) return res.status(500).json({ error: "API Key Video tidak ditemukan." });
 
-        // 2. Susun Antrean Pencobaan Jalur API (Failover Queue)
-        let attemptDocs = [];
-        
-        // Cari apakah ada provider yang dipilih secara manual oleh pengguna
-        const selectedDoc = activeDocs.find(doc => doc.name.endsWith(providerId));
-        if (selectedDoc) {
-            attemptDocs.push(selectedDoc); // Masukkan pilihan utama pengguna sebagai antrean #1
-        }
-        
-        // Gabungkan dengan sisa provider aktif lainnya sebagai jalur cadangan (Backup Routes)
-        const backups = activeDocs.filter(doc => !doc.name.endsWith(providerId));
-        attemptDocs = [...attemptDocs, ...backups];
+        // 2. Unggah gambar aset ke Cloudinary secara paralel
+        const [faceUrl, hijabUrl, bajuUrl, sepatuUrl, aksesorisUrl, fullModelUrl] = await Promise.all([
+            uploadToCloudinary(faceImage),
+            uploadToCloudinary(hijabImage),
+            uploadToCloudinary(bajuImage),
+            uploadToCloudinary(sepatuImage),
+            uploadToCloudinary(aksesorisImage),
+            uploadToCloudinary(fullModelImage)
+        ]);
 
+        // 3. Susun instruksi naskah dengan total jumlah klip dinamis berdasarkan lirik
         const systemPrompt = `Anda adalah sutradara video klip profesional. Tugas Anda adalah menganalisis lirik lagu yang diberikan dan membaginya menjadi beberapa adegan storyboard yang berurutan.
-Tentukan jenis shot, deskripsi visual yang detail dengan gaya visual "${style}", serta berikan prompt gambar dan prompt video untuk AI generator.
+PENTING: Jumlah adegan dalam array JSON harus sama persis berjumlah ${totalClipsCount} adegan (tidak kurang, tidak lebih). Setiap adegan mewakili baris lirik lagunya secara berurutan.
+Tentukan jenis shot, deskripsi visual yang detail dengan gaya visual "${style}", serta berikan prompt video yang berfokus pada pergerakan kamera dan ekspresi model untuk AI generator.
 
 Respon Anda WAJIB dalam format JSON murni yang valid tanpa tambahan markdown ataupun penjelasan di luar JSON. Format JSON harus berupa array objek dengan struktur seperti ini:
 [
   {
     "scene": 1,
-    "lyrics_segment": "Potongan lirik adegan ini",
+    "lyrics_segment": "Teks baris lirik pertama di sini",
     "shot_type": "Close-up / Wide Shot / etc.",
-    "visual_description": "Deskripsi adegan visual secara detail",
-    "image_prompt": "Prompt detail untuk generate gambar",
-    "video_prompt": "Prompt detail untuk generate video"
+    "visual_description": "Deskripsi gerakan kamera dan aktor secara detail",
+    "video_prompt": "Prompt ringkas bahasa Inggris tentang pergerakan kamera dan aktor"
   }
 ]`;
 
-        let success = false;
-        let finalResponseText = "";
-        let finalStatus = 500;
-        let matchedProviderName = "";
-        let isFirstAttempt = true;
+        const geminiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiKey}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                contents: [{ parts: [{ text: `${systemPrompt}\n\nLirik Lagu:\n${lyrics}` }] }],
+                generationConfig: { responseMimeType: "application/json" }
+            })
+        });
 
-        // 3. Jalankan Loop Failover Cerdas (Mencoba satu persatu sampai berhasil)
-        for (const doc of attemptDocs) {
-            const providerName = doc.fields.provider.stringValue.toLowerCase().trim();
-            const apiKey = doc.fields.key.stringValue.trim();
-            const customBaseUrl = doc.fields.base_url?.stringValue || doc.fields.baseUrl?.stringValue || null;
-            const customEndpointPath = doc.fields.endpoint_path?.stringValue || doc.fields.endpointPath?.stringValue || doc.fields.endpoint?.stringValue || null;
-            const customModelId = doc.fields.id_model?.stringValue || doc.fields.model?.stringValue || null;
-
-            let responseText = "";
-            let responseStatus = 200;
-            let calledUrl = "";
-
-            try {
-                if (customBaseUrl && customEndpointPath) {
-                    const cleanBase = customBaseUrl.endsWith('/') ? customBaseUrl.slice(0, -1) : customBaseUrl;
-                    const cleanPath = customEndpointPath.startsWith('/') ? customEndpointPath : '/' + customEndpointPath;
-                    calledUrl = `${cleanBase}${cleanPath}`;
-                    
-                    // Gunakan model pilihan pengguna di percobaan pertama, jika dialihkan gunakan model cadangan pertama
-                    const modelToUse = (isFirstAttempt && model) ? model : (customModelId ? customModelId.split(',')[0].trim() : "gemini-2.5-flash");
-
-                    const customRes = await fetch(calledUrl, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Authorization': `Bearer ${apiKey}`
-                        },
-                        body: JSON.stringify({
-                            model: modelToUse,
-                            messages: [
-                                { role: "system", content: systemPrompt },
-                                { role: "user", content: `Lirik Lagu:\n${lyrics}` }
-                            ]
-                        })
-                    });
-                    responseStatus = customRes.status;
-                    responseText = await customRes.text();
-
-                } else {
-                    const compatibleProviderKey = Object.keys(OPENAI_COMPATIBLE_PROVIDERS).find(p => providerName.includes(p));
-
-                    if (compatibleProviderKey) {
-                        const providerConfig = OPENAI_COMPATIBLE_PROVIDERS[compatibleProviderKey];
-                        calledUrl = providerConfig.url;
-                        const aiRes = await fetch(calledUrl, {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'Authorization': `Bearer ${apiKey}`
-                            },
-                            body: JSON.stringify({
-                                model: providerConfig.defaultModel,
-                                messages: [
-                                    { role: "system", content: systemPrompt },
-                                    { role: "user", content: `Lirik Lagu:\n${lyrics}` }
-                                ]
-                            })
-                        });
-                        responseStatus = aiRes.status;
-                        responseText = await aiRes.text();
-
-                    } else if (providerName.includes("betabotz")) {
-                        calledUrl = "https://api.betabotz.eu.org/api/search/openai-custom";
-                        const betabotzRes = await fetch(calledUrl, {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({
-                                message: [
-                                    { role: "system", content: systemPrompt },
-                                    { role: "user", content: `Lirik Lagu:\n${lyrics}` }
-                                ],
-                                apikey: apiKey
-                            })
-                        });
-                        responseStatus = betabotzRes.status;
-                        responseText = await betabotzRes.text();
-
-                    } else if (providerName.includes("google") || providerName.includes("gemini")) {
-                        calledUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent`;
-                        const geminiRes = await fetch(`${calledUrl}?key=${apiKey}`, {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({
-                                contents: [{
-                                    parts: [{ text: `${systemPrompt}\n\nLirik Lagu:\n${lyrics}` }]
-                                }],
-                                generationConfig: {
-                                    responseMimeType: "application/json"
-                                }
-                            })
-                        });
-                        responseStatus = geminiRes.status;
-                        responseText = await geminiRes.text();
-                    }
-                }
-
-                // Cek apakah HTTP status sukses (200-299)
-                if (responseStatus >= 200 && responseStatus < 300) {
-                    success = true;
-                    finalResponseText = responseText;
-                    matchedProviderName = providerName;
-                    break; // Keluar dari loop pencobaan karena berhasil!
-                } else {
-                    console.warn(`Jalur ${providerName} mengembalikan HTTP ${responseStatus}. Mengalihkan secara senyap ke jalur cadangan...`);
-                }
-
-            } catch (fetchErr) {
-                console.error(`Jalur ${providerName} mengalami kendala jaringan:`, fetchErr);
-            }
-            isFirstAttempt = false;
+        const geminiData = await geminiRes.json();
+        let aiText = geminiData.candidates?.[0]?.content?.parts?.[0]?.text || "";
+        
+        if (typeof aiText === 'string') {
+            aiText = aiText.replace(/```json/g, '').replace(/```/g, '').trim();
+            aiText = JSON.parse(aiText);
         }
 
-        // 4. Penguraian Respon Sukses Akhir
-        if (!success) {
-            // Masking Error agar tidak menyebutkan kata "Saldo", "Limit", atau "Key error" ke pengguna
-            return res.status(500).json({ 
-                error: "Maaf, seluruh jalur pembuatan storyboard kami saat ini sedang padat. Tim teknis sedang melakukan pengalihan server. Silakan coba kembali beberapa saat lagi." 
+        // 4. Proses render video per adegan menggunakan provider terpilih
+        const renderedScenes = [];
+
+        for (const scene of aiText) {
+            let finalVideoUrl = "";
+            let apiEndpoint = "";
+            let payload = {};
+
+            if (selectedProviderName.includes("magic")) {
+                apiEndpoint = "https://api.magichour.ai/v1/face-swap";
+                
+                // Gabungkan instruksi pakaian, hijab, aksesoris, dan model di prompt
+                let clothingInstruction = "Wearing modern hijab and a flowing elegant gamis abaya dress, with no pants, elegantly draped";
+                if (aksesorisUrl) clothingInstruction += " and styled with accessories";
+
+                payload = {
+                    assets: {
+                        image: faceUrl || "https://res.cloudinary.com/demo/image/upload/v1312461204/sample.jpg",
+                        clothing: bajuUrl || null,
+                        hijab: hijabUrl || null,
+                        shoes: sepatuUrl || null,
+                        accessories: aksesorisUrl || null
+                    },
+                    prompt: `${scene.video_prompt}, ${clothingInstruction}, ${style}`,
+                    aspect_ratio: ratio === "9:16" ? "9:16" : "16:9",
+                    duration: 10,
+                    silent: true
+                };
+
+                const videoRes = await fetch(apiEndpoint, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${videoApiKey}`
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                if (videoRes.ok) {
+                    const videoData = await videoRes.json();
+                    finalVideoUrl = videoData.video_url || videoData.url || "";
+                }
+
+            } else if (selectedProviderName.includes("leonardo")) {
+                apiEndpoint = "https://cloud.leonardo.ai/api/rest/v1/generations-image-to-video";
+                payload = {
+                    modelId: "kino-xl",
+                    prompt: `${scene.video_prompt}, high quality cinematic style, ${style}`,
+                    imageUrl: fullModelUrl || "https://res.cloudinary.com/demo/image/upload/v1312461204/sample.jpg",
+                    motionStrength: 5,
+                    aspectRatio: ratio === "9:16" ? "9:16" : "16:9",
+                    duration: 10
+                };
+
+                const videoRes = await fetch(apiEndpoint, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${videoApiKey}`
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                if (videoRes.ok) {
+                    const videoData = await videoRes.json();
+                    finalVideoUrl = videoData.video_url || videoData.url || "";
+                }
+            }
+
+            renderedScenes.push({
+                scene: scene.scene,
+                lyrics_segment: scene.lyrics_segment,
+                shot_type: scene.shot_type,
+                visual_description: scene.visual_description,
+                video_url: finalVideoUrl || "https://assets.mixkit.co/videos/preview/mixkit-cinematic-shot-of-the-rainy-city-at-night-34139-large.mp4" // Fallback jika kuota habis
             });
         }
 
-        let responseData = JSON.parse(finalResponseText);
-        let aiText = "";
-
-        if (matchedProviderName.includes("betabotz")) {
-            aiText = responseData.result || responseData.response || responseData;
-        } else if (matchedProviderName.includes("google") || matchedProviderName.includes("gemini")) {
-            aiText = responseData.candidates?.[0]?.content?.parts?.[0]?.text || "";
-        } else {
-            aiText = responseData.choices?.[0]?.message?.content || responseData.result || responseData.response || finalResponseText;
-        }
-
-        if (typeof aiText === 'string') {
-            const cleanJsonText = extractCleanJson(aiText);
-            try {
-                aiText = JSON.parse(cleanJsonText);
-            } catch (parseError) {
-                return res.status(500).json({ error: "Gagal menyusun format adegan visual.", details: aiText });
-            }
-        }
-
-        return res.status(200).json(aiText);
+        return res.status(200).json(renderedScenes);
 
     } catch (error) {
-        console.error("Vercel LyricShot API Error:", error);
-        return res.status(500).json({ error: "Terjadi kesalahan internal pada server kami." });
+        console.error("Internal Server Error:", error);
+        return res.status(500).json({ error: "Kesalahan internal pada pemrosesan server." });
     }
 }
