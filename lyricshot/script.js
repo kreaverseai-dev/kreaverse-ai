@@ -75,10 +75,12 @@ function calculateDuration() {
         durationDisplay.classList.add('hidden');
         return;
     }
-    const lines = lyrics.split('\n').filter(line => line.trim().length > 0);
+    const lines = lyrics.split(/(?:\r?\n|(?<=[a-z\.\s])(?=[A-Z])|(?=\([A-Za-z]))/g)
+                        .map(line => line.trim())
+                        .filter(line => line.length > 0);
     const totalDuration = lines.length * 10;
     durationDisplay.classList.remove('hidden');
-    durationDisplay.innerHTML = `ð <strong>Informasi Video Musik:</strong> Terdeteksi ${lines.length} baris lirik. Total durasi video otomatis disesuaikan menjadi <strong>${totalDuration} detik</strong> (${lines.length} klip video x 10 detik).`;
+    durationDisplay.innerHTML = `Ã°ÂÂÂ <strong>Informasi Video Musik:</strong> Terdeteksi ${lines.length} baris lirik. Total durasi video otomatis disesuaikan menjadi <strong>${totalDuration} detik</strong> (${lines.length} klip video x 10 detik).`;
 }
 
 function toggleUploadFields() {
