@@ -170,7 +170,7 @@
 <body>
     <div class="container">
         <header>
-            <h1>LyricShot AI <span>ð¬</span></h1>
+            <h1>LyricShot AI <span>Ã°ÂÂÂ¬</span></h1>
             <p class="subtitle">Ubah lirik lagu Anda menjadi storyboard video klip (MV) siap produksi.</p>
         </header>
 
@@ -179,12 +179,24 @@
             
             <div id="durationDisplay" class="duration-info hidden"></div>
 
-            <div class="options-bar">
+            <div class="options-bar" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));">
                 <div class="option-group">
-                    <label for="providerSelect">Provider AI (Video):</label>
-                    <select id="providerSelect" onchange="toggleUploadFields()"></select>
+                    <label for="providerNaskahSelect">Provider AI (Naskah/Lirik):</label>
+                    <select id="providerNaskahSelect" onchange="updateNaskahModels()"></select>
                 </div>
                 <div class="option-group">
+                    <label for="modelNaskahSelect">Model AI (Naskah):</label>
+                    <select id="modelNaskahSelect"></select>
+                </div>
+                <div class="option-group">
+                    <label for="providerSelect">Provider AI (Video):</label>
+                    <select id="providerSelect" onchange="updateVideoModels(); toggleUploadFields();"></select>
+                </div>
+                <div class="option-group">
+                    <label for="modelVideoSelect">Model AI (Video):</label>
+                    <select id="modelVideoSelect"></select>
+                </div>
+                <div class="option-group" style="grid-column: span 2;">
                     <label for="ratioSelect">Resolusi Video:</label>
                     <select id="ratioSelect">
                         <option value="9:16">TikTok / Shorts (Vertikal 9:16)</option>
