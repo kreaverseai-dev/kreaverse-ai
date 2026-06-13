@@ -491,16 +491,15 @@
                 if (currentMainTab === 'dl') renderList();
             });
 
-            // AMBIL DATA AI GENERATE DARI FIREBASE (MENDUKUNG FILTER EMAIL & USER ID)
-            const userEmail = localStorage.getItem('kreaverse_user_email') || '';
-            const userId = localStorage.getItem('kreaverse_user_id') || '';
-            if (userEmail || userId) {
+            // AMBIL DATA AI GENERATE DARI FIREBASE
+            const userEmail = localStorage.getItem('kreaverse_user_email');
+            if (userEmail) {
                 const qGen = query(collection(db, "render_gallery"), orderBy("timestamp", "desc"));
                 onSnapshot(qGen, (snapshot) => {
                     genData = [];
                     snapshot.forEach((doc) => {
                         const data = doc.data();
-                        if ((userEmail && data.email === userEmail) || (userId && data.userId === userId)) {
+                        if (data.email === userEmail) {
                             genData.push({ id: doc.id, ...data });
                         }
                     });
@@ -519,7 +518,7 @@
             hours = hours % 12;
             hours = hours ? hours : 12; 
             minutes = minutes < 10 ? '0' + minutes : minutes;
-            return `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()} â¢ ${hours}:${minutes} ${ampm}`;
+            return `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()} • ${hours}:${minutes} ${ampm}`;
         }
 
         window.renderList = function() {
@@ -659,7 +658,7 @@
 
                 for (const item of pendingItems) {
                     try {
-                        const res = await fetch(`/api/check-status?taskId=${item.task_id}&provider=${item.provider}&_cb=${Date.now()}`);
+                        const res = await fetch(`/api/check-status?taskId=${item.task_id}&provider=${item.provider}`);
                         const data = await res.json();
                         
                         if (res.ok && data.status === "complete" && data.video_url) {
