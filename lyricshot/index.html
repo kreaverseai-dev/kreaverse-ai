@@ -357,7 +357,7 @@
     <div class="container">
         <!-- HEADER DENGAN REVISI TULISAN PREMIUM -->
         <header>
-            <h1 class="hero-title">LyricShot AI - Premium <span>🎬</span></h1>
+            <h1 class="hero-title">LyricShot AI - Premium <span>ð¬</span></h1>
             <p class="subtitle">Ubah baris lirik lagu Anda menjadi rancangan adegan storyboard video klip (MV) sinematik berkualitas tinggi secara instan.</p>
         </header>
 
@@ -463,6 +463,29 @@
     </div>
     
     <script src="/lyricshot/script.js"></script>
+    <!-- Inisialisasi Firebase untuk Komunikasi Database Langsung -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+        import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyAO8JV4jkJmbHChYvjUCS7wqfVbKr94tHM",
+            authDomain: "kreaverse-ai0107.firebaseapp.com",
+            databaseURL: "https://kreaverse-ai0107-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "kreaverse-ai0107",
+            storageBucket: "kreaverse-ai0107.firebasestorage.app",
+            messagingSenderId: "1048550433011",
+            appId: "1:1048550433011:web:0cf2e4074b20fe09909786",
+            measurementId: "G-CJHMKKYQ4C"
+        };
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        
+        // Ekspos ke window agar dibaca oleh script.js
+        window.db = db;
+        window.collection = collection;
+        window.addDoc = addDoc;
+    </script>
     <script>
         // Override fungsi durasi dengan kalkulasi menit & detik terformat bersih
         window.calculateDuration = function() {
@@ -484,7 +507,7 @@
                 timeString += ` (sekitar <strong>${minutes} menit ${seconds > 0 ? seconds + ' detik' : ''}</strong>)`;
             }
             durationDisplay.classList.remove('hidden');
-            durationDisplay.innerHTML = `📊 <strong>Informasi Video Musik:</strong> Terdeteksi ${lines.length} baris lirik. Total durasi video otomatis disesuaikan menjadi ${timeString} (${lines.length} klip video x 10 detik).`;
+            durationDisplay.innerHTML = `ð <strong>Informasi Video Musik:</strong> Terdeteksi ${lines.length} baris lirik. Total durasi video otomatis disesuaikan menjadi ${timeString} (${lines.length} klip video x 10 detik).`;
         }
 
         // Jam server real-time dinamis beserta hari, tanggal, bulan, tahun, dan info update
