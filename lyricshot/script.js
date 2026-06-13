@@ -80,7 +80,7 @@ function calculateDuration() {
                         .filter(line => line.length > 0);
     const totalDuration = lines.length * 10;
     durationDisplay.classList.remove('hidden');
-    durationDisplay.innerHTML = `📊 <strong>Informasi Video Musik:</strong> Terdeteksi ${lines.length} baris lirik. Total durasi video otomatis disesuaikan menjadi <strong>${totalDuration} detik</strong> (${lines.length} klip video x 10 detik).`;
+    durationDisplay.innerHTML = `ð <strong>Informasi Video Musik:</strong> Terdeteksi ${lines.length} baris lirik. Total durasi video otomatis disesuaikan menjadi <strong>${totalDuration} detik</strong> (${lines.length} klip video x 10 detik).`;
 }
 
 function toggleUploadFields() {
@@ -253,7 +253,7 @@ async function generateStoryboard() {
                 let downloadClass = "download-btn";
                 
                 if (item.status === "pending" && item.task_id) {
-                    mediaElement = `<div class="video-loader" id="loader-${item.scene}" data-scene="${item.scene}" data-task-id="${item.task_id}" data-provider="${item.provider}" style="padding: 40px; text-align: center; color: var(--accent-purple); font-size: 0.9rem; font-weight: 500;">⏳ Sedang merender adegan... (30-60 detik)</div>`;
+                    mediaElement = `<div class="video-loader" id="loader-${item.scene}" data-scene="${item.scene}" data-task-id="${item.task_id}" data-provider="${item.provider}" style="padding: 40px; text-align: center; color: var(--accent-purple); font-size: 0.9rem; font-weight: 500;">â³ Sedang merender adegan... (30-60 detik)</div>`;
                     downloadClass += " hidden";
                 } else if (item.status === "failed" || !item.video_url) {
                     mediaElement = `<div style="padding: 40px 20px; text-align: center; color: var(--danger-color); font-size: 0.85rem; font-weight: 700; background: #fff0f0; border-radius: 12px; width: 100%; border: 1px solid #fca5a5;"><i class="fa-solid fa-circle-exclamation"></i> Gagal membuat video. Cek saldo & validitas API Key di Dashboard.</div>`;
@@ -280,6 +280,33 @@ async function generateStoryboard() {
                 storyboardGrid.appendChild(card);
             });
             resultContainer.classList.remove('hidden');
+            
+            // Kirim detail data ke koleksi render_gallery agar otomatis tersimpan di halaman Berkas AI
+            if (window.db && window.addDoc && window.collection) {
+                const userEmail = localStorage.getItem('kreaverse_user_email');
+                if (userEmail) {
+                    scenes.forEach(async (item) => {
+                        try {
+                            await window.addDoc(window.collection(window.db, "render_gallery"), {
+                                email: userEmail,
+                                type: "video",
+                                url: item.video_url || "",
+                                prompt: item.visual_description || "",
+                                lyrics_segment: item.lyrics_segment || "",
+                                shot_type: item.shot_type || "",
+                                provider: item.provider || "Leonardo AI",
+                                model: modelVideo || "default",
+                                tool: "LyricShot AI",
+                                task_id: item.task_id || "",
+                                status: item.status || "pending",
+                                timestamp: Date.now()
+                            });
+                        } catch (e) {
+                            console.error("Gagal mendaftarkan adegan ke Berkas AI:", e);
+                        }
+                    });
+                }
+            }
             
             // Mulai sistem pemantauan latar belakang (Polling)
             startStatusPolling();
@@ -320,7 +347,7 @@ function startStatusPolling() {
                     downloadBtn.classList.remove('hidden');
                 } else if (data.status === "failed") {
                     clearInterval(interval);
-                    loader.innerHTML = "❌ Gagal merender adegan ini.";
+                    loader.innerHTML = "â Gagal merender adegan ini.";
                 }
             } catch (err) {
                 console.error("Polling error:", err);
