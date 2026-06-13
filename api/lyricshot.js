@@ -57,15 +57,22 @@ export default async function handler(req, res) {
             });
         }
 
-        // Ambil daftar kunci aktif yang sesuai dengan pilihan pengguna secara spesifik
-        let naskahDocs = activeKeys.filter(doc => doc.name.endsWith(providerNaskahId));
-        let videoDocs = activeKeys.filter(doc => doc.name.endsWith(providerId));
-
-        // Jika tidak ditemukan, gunakan fallback berdasarkan nama provider
-        if (naskahDocs.length === 0) {
+        // Ambil daftar kunci aktif berdasarkan provider terstandarisasi yang dipilih
+        let naskahDocs = [];
+        if (providerNaskahId === "googlegemini") {
+            naskahDocs = activeKeys.filter(doc => doc.fields?.provider?.stringValue?.toLowerCase().includes("gemini") || doc.fields?.provider?.stringValue?.toLowerCase().includes("google"));
+        } else if (providerNaskahId === "openrouter") {
+            naskahDocs = activeKeys.filter(doc => doc.fields?.provider?.stringValue?.toLowerCase().includes("openrouter"));
+        } else {
             naskahDocs = activeKeys.filter(doc => doc.fields?.provider?.stringValue?.toLowerCase().includes("gemini") || doc.fields?.provider?.stringValue?.toLowerCase().includes("openrouter"));
         }
-        if (videoDocs.length === 0) {
+
+        let videoDocs = [];
+        if (providerId === "magichour") {
+            videoDocs = activeKeys.filter(doc => doc.fields?.provider?.stringValue?.toLowerCase().includes("magic"));
+        } else if (providerId === "leonardoai") {
+            videoDocs = activeKeys.filter(doc => doc.fields?.provider?.stringValue?.toLowerCase().includes("leonardo"));
+        } else {
             videoDocs = activeKeys.filter(doc => doc.fields?.provider?.stringValue?.toLowerCase().includes("magic") || doc.fields?.provider?.stringValue?.toLowerCase().includes("leonardo"));
         }
 
