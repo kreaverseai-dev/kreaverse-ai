@@ -99,17 +99,18 @@ Respon Anda WAJIB dalam format JSON murni yang valid tanpa tambahan markdown ata
 
         let responseText = "";
         let responseStatus = 200;
+        let calledUrl = "";
 
         // 2. Tentukan Jalur Panggilan API
         if (customBaseUrl && customEndpointPath) {
             // JALUR DINAMIS DASHBOARD
             const cleanBase = customBaseUrl.endsWith('/') ? customBaseUrl.slice(0, -1) : customBaseUrl;
             const cleanPath = customEndpointPath.startsWith('/') ? customEndpointPath : '/' + customEndpointPath;
-            const fullUrl = `${cleanBase}${cleanPath}`;
+            calledUrl = `${cleanBase}${cleanPath}`;
             
             const modelToUse = customModelId ? customModelId.split(',')[0].trim() : "gemini-1.5-flash";
 
-            const customRes = await fetch(fullUrl, {
+            const customRes = await fetch(calledUrl, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -132,7 +133,8 @@ Respon Anda WAJIB dalam format JSON murni yang valid tanpa tambahan markdown ata
 
             if (compatibleProviderKey) {
                 const providerConfig = OPENAI_COMPATIBLE_PROVIDERS[compatibleProviderKey];
-                const aiRes = await fetch(providerConfig.url, {
+                calledUrl = providerConfig.url;
+                const aiRes = await fetch(calledUrl, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -150,7 +152,8 @@ Respon Anda WAJIB dalam format JSON murni yang valid tanpa tambahan markdown ata
                 responseText = await aiRes.text();
 
             } else if (providerName.includes("betabotz")) {
-                const betabotzRes = await fetch("https://api.betabotz.eu.org/api/search/openai-custom", {
+                calledUrl = "https://api.betabotz.eu.org/api/search/openai-custom";
+                const betabotzRes = await fetch(calledUrl, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
@@ -165,7 +168,8 @@ Respon Anda WAJIB dalam format JSON murni yang valid tanpa tambahan markdown ata
                 responseText = await betabotzRes.text();
 
             } else if (providerName.includes("google") || providerName.includes("gemini")) {
-                const geminiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
+                calledUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent`;
+                const geminiRes = await fetch(`${calledUrl}?key=${apiKey}`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
@@ -190,15 +194,18 @@ Respon Anda WAJIB dalam format JSON murni yang valid tanpa tambahan markdown ata
         try { 
             responseData = JSON.parse(responseText); 
         } catch (e) { 
-            return res.status(responseStatus).json({ error: `Gagal membaca JSON dari server ${providerName}.`, details: responseText }); 
+            return res.status(responseStatus).json({ 
+                error: `Gagal membaca JSON dari server ${providerName} (HTTP ${responseStatus}). URL: ${calledUrl}`, 
+                details: responseText 
+            }); 
         }
 
-        // === PROTEKSI BARU: JIKA SERVER AI MENGEMBALIKAN ERROR HTTP (Seperti 400, 401, 403, 429) ===
+        // === PROTEKSI: JIKA SERVER AI MENGEMBALIKAN ERROR HTTP (Seperti 400, 401, 403, 404, 429) ===
         if (responseStatus < 200 || responseStatus >= 300) {
             const errorMsg = responseData.error?.message || responseData.error || responseText;
+            const cleanErrorMsg = typeof errorMsg === 'object' ? JSON.stringify(errorMsg) : errorMsg;
             return res.status(responseStatus).json({ 
-                error: `Server ${providerName} mengembalikan Error HTTP ${responseStatus}`, 
-                details: typeof errorMsg === 'object' ? JSON.stringify(errorMsg) : errorMsg 
+                error: `HTTP ${responseStatus}: ${cleanErrorMsg} (URL: ${calledUrl})`
             });
         }
 
