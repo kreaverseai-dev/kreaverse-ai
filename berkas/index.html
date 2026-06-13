@@ -518,14 +518,14 @@
             hours = hours % 12;
             hours = hours ? hours : 12; 
             minutes = minutes < 10 ? '0' + minutes : minutes;
-            return `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()} â¢ ${hours}:${minutes} ${ampm}`;
+            return `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()} • ${hours}:${minutes} ${ampm}`;
         }
 
         window.renderList = function() {
             const container = document.getElementById('berkas-list-container');
             let dataToRender = currentMainTab === 'dl' ? [...dlData] : [...genData];
 
-            // Terapkan Filter
+            // Terapkan Filter (All, Video, Audio, Image)
             if (currentFilter !== 'all') {
                 dataToRender = dataToRender.filter(item => item.type === currentFilter);
             }
@@ -554,7 +554,7 @@
                 const dateStr = formatDate(item.timestamp);
                 
                 if (currentMainTab === 'dl') {
-                    // RENDER ITEM DOWNLOADER
+                    // RENDER ITEM DOWNLOADER (TETAP UTUH TANPA PERUBAHAN)
                     const isAudio = item.type === 'audio';
                     const iconClass = isAudio ? 'fa-music' : 'fa-video';
                     const bgClass = isAudio ? 'audio' : 'video';
@@ -581,9 +581,11 @@
                         </div>
                     `;
                 } else {
-                    // RENDER ITEM AI GENERATE (DIPERBAIKI UNTUK LYRICSHOT AI)
+                    // RENDER ITEM AI GENERATE (DIPERBAIKI UNTUK PROSES SEPARASI TIPE DAN METADATA)
                     const isImage = item.type === 'image';
                     const isAudio = item.type === 'audio';
+                    const isVideo = item.type === 'video';
+                    
                     const iconClass = isImage ? 'fa-image' : (isAudio ? 'fa-music' : 'fa-video');
                     const bgClass = isImage ? 'image' : (isAudio ? 'audio' : 'video');
                     
@@ -602,7 +604,7 @@
                             <button class="action-btn del" onclick="deleteFile('${item.id}', 'gen')" title="Hapus"><i class="fa-solid fa-trash"></i></button>
                         `;
                     } else if (isLyricShot && item.status === "failed") {
-                        statusLabel = `<span style="font-size:0.75rem; color:var(--danger-color); font-weight:700;"><i class="fa-solid fa-circle-xmark"></i> Gagal Render</span>`;
+                        statusLabel = `<span style="font-size:0.75rem; color:var(--danger-color); font-weight:700;"><i class="fa-solid fa-circle-xmark"></i> Gagal</span>`;
                         actionButtons = `
                             <button class="action-btn play" style="background:#FEE2E2; color:var(--danger-color); cursor:not-allowed;" disabled><i class="fa-solid fa-triangle-exclamation"></i></button>
                             <button class="action-btn del" onclick="deleteFile('${item.id}', 'gen')" title="Hapus"><i class="fa-solid fa-trash"></i></button>
@@ -656,7 +658,30 @@
 
                 for (const item of pendingItems) {
                     try {
-                        const res = await fetch(`/api/check-
+                        const res = await fetch(`/api/check-status?taskId=${item.task_id}&provider=${item.provider}`);
+                        const data = await res.json();
+                        
+                        if (res.ok && data.status === "complete" && data.video_url) {
+                            // Update database Firestore ke status selesai
+                            await updateDoc(doc(db, "render_gallery", item.id), {
+                                status: "complete",
+                                url: data.video_url
+                            });
+                            showIphoneNotif('Video Selesai!', `Klip LyricShot "${item.lyrics_segment || 'Klip'}" berhasil di-render.`, 'fa-circle-check');
+                        } else if (data.status === "failed") {
+                            // Update database Firestore ke status gagal
+                            await updateDoc(doc(db, "render_gallery", item.id), {
+                                status: "failed"
+                            });
+                            showIphoneNotif('Render Gagal', `Klip LyricShot "${item.lyrics_segment || 'Klip'}" gagal dibuat.`, 'fa-triangle-exclamation');
+                        }
+                    } catch (err) {
+                        console.error("Gagal memantau status latar belakang:", err);
+                    }
+                }
+            }, 30000); // Tepat 30 Detik Sekali Sesuai Permintaan
+        }
+        startBackgroundStatusPolling();
 
         // FUNGSI PLAYER BERKAS ALA YTDL (MODERN)
         let activeMedia = null;
