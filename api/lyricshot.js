@@ -244,28 +244,7 @@ Respon Anda WAJIB dalam format JSON murni yang valid tanpa tambahan markdown ata
 
                         if (videoRes.ok) {
                             const videoData = await videoRes.json();
-                            const taskId = videoData.id || "";
-                            
-                            // Pemantauan Cepat (Short Polling) 6 detik untuk mengambil video langsung dari Magic Hour
-                            if (taskId) {
-                                for (let i = 0; i < 3; i++) {
-                                    await new Promise(resolve => setTimeout(resolve, 2000));
-                                    const statusRes = await fetch(`https://api.magichour.ai/v1/video-generation/${taskId}`, {
-                                        headers: { 'Authorization': `Bearer ${key}` }
-                                    });
-                                    if (statusRes.ok) {
-                                        const statusData = await statusRes.json();
-                                        if (statusData.status === "complete" && statusData.download_url) {
-                                            finalVideoUrl = statusData.download_url;
-                                            break;
-                                        }
-                                    }
-                                }
-                            }
-
-                            if (!finalVideoUrl) {
-                                finalVideoUrl = "https://res.cloudinary.com/demo/video/upload/dog.mp4";
-                            }
+                            finalVideoUrl = videoData.id || ""; // Mengambil Task ID Magic Hour
                             break; 
                         }
                     } catch (e) {
@@ -309,29 +288,7 @@ Respon Anda WAJIB dalam format JSON murni yang valid tanpa tambahan markdown ata
 
                         if (videoRes.ok) {
                             const videoData = await videoRes.json();
-                            const generationId = videoData.sdGenerationJob?.generationId || videoData.generationId || "";
-                            
-                            // Pemantauan cepat (Short Polling) 6 detik untuk mengambil video langsung dari Leonardo AI
-                            if (generationId) {
-                                for (let i = 0; i < 3; i++) {
-                                    await new Promise(resolve => setTimeout(resolve, 2000));
-                                    const statusRes = await fetch(`https://cloud.leonardo.ai/api/rest/v1/generations/${generationId}`, {
-                                        headers: { 'Authorization': `Bearer ${key}` }
-                                    });
-                                    if (statusRes.ok) {
-                                        const statusData = await statusRes.json();
-                                        const gen = statusData.generations_by_pk;
-                                        if (gen && gen.status === "COMPLETE" && gen.generated_images?.[0]?.url) {
-                                            finalVideoUrl = gen.generated_images[0].url;
-                                            break;
-                                        }
-                                    }
-                                }
-                            }
-                            
-                            if (!finalVideoUrl) {
-                                finalVideoUrl = "https://res.cloudinary.com/demo/video/upload/dog.mp4";
-                            }
+                            finalVideoUrl = videoData.sdGenerationJob?.generationId || videoData.generationId || ""; // Mengambil Generation ID Leonardo
                             break; 
                         }
                     } catch (e) {
@@ -345,7 +302,10 @@ Respon Anda WAJIB dalam format JSON murni yang valid tanpa tambahan markdown ata
                 lyrics_segment: scene.lyrics_segment,
                 shot_type: scene.shot_type,
                 visual_description: scene.visual_description,
-                video_url: finalVideoUrl || "https://res.cloudinary.com/demo/video/upload/dog.mp4" // Fallback video stabil jika seluruh kunci API habis
+                status: finalVideoUrl ? "pending" : "failed",
+                task_id: finalVideoUrl || "",
+                provider: selectedProviderName,
+                video_url: ""
             });
         }
 
