@@ -23,6 +23,40 @@ async function uploadToCloudinary(base64Str, clAccounts) {
     return null;
 }
 
+async function saveToFirestore(fields) {
+    try {
+        const payload = {
+            fields: {
+                email: { stringValue: fields.email || "anon@kreaverse.ai" },
+                tool: { stringValue: "LyricShot AI" },
+                status: { stringValue: fields.status || "pending" },
+                task_id: { stringValue: fields.task_id || "" },
+                provider: { stringValue: fields.provider || "" },
+                model: { stringValue: fields.model || "default" },
+                lyrics_segment: { stringValue: fields.lyrics_segment || "" },
+                prompt: { stringValue: fields.prompt || "" },
+                url: { stringValue: fields.url || "" },
+                timestamp: { integerValue: String(fields.timestamp || Date.now()) }
+            }
+        };
+        const res = await fetch("https://firestore.googleapis.com/v1/projects/kreaverse-ai0107/databases/(default)/documents/render_gallery?key=AIzaSyAO8JV4jkJmbHChYvjUCS7wqfVbKr94tHM", {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+        if (res.ok) {
+            const data = await res.json();
+            if (data.name) return data.name.split('/').pop();
+        } else {
+            const errText = await res.text();
+            console.error("Firestore write failed:", errText);
+        }
+    } catch (err) {
+        console.error("Firestore write network error:", err);
+    }
+    return "";
+}
+
 export default async function handler(req, res) {
     if (req.method === 'OPTIONS') return res.status(200).end();
 
@@ -31,7 +65,7 @@ export default async function handler(req, res) {
     }
 
     try {
-        const { lyrics, ratio, style, providerId, providerNaskahId, modelNaskah, modelVideo, faceImage, hijabImage, bajuImage, sepatuImage, aksesorisImage, fullModelImage } = req.body;
+        const { email, lyrics, ratio, style, providerId, providerNaskahId, modelNaskah, modelVideo, faceImage, hijabImage, bajuImage, sepatuImage, aksesorisImage, fullModelImage } = req.body;
 
         if (!lyrics) {
             return res.status(400).json({ error: "Lirik tidak boleh kosong." });
@@ -206,10 +240,8 @@ Respon Anda WAJIB dalam format JSON murni yang valid tanpa tambahan markdown ata
 
         if (!naskahSuccess) return res.status(500).json({ error: "Gagal membuat naskah. Semua API Key naskah habis saldo." });
 
-        // 4. Proses render video per adegan menggunakan Rotasi Kunci Video otomatis (Bypass limit & saldo)
-        const renderedScenes = [];
-
-        for (const scene of aiText) {
+        // 4. Proses render video per adegan menggunakan Rotasi Kunci Video otomatis secara parallel
+        const renderPromises = aiText.map(async (scene) => {
             let finalVideoUrl = "";
             
             for (const doc of videoDocs) {
@@ -299,12 +331,9 @@ Respon Anda WAJIB dalam format JSON murni yang valid tanpa tambahan markdown ata
 
                         if (videoRes.ok) {
                             const videoData = await videoRes.json();
-                            console.log(`Leonardo AI API Response:`, JSON.stringify(videoData));
                             finalVideoUrl = videoData.sdGenerationJob?.generationId || videoData.generationId || ""; // Mengambil Generation ID Leonardo
                             if (finalVideoUrl) {
                                 break; 
-                            } else {
-                                console.error("Leonardo AI Generation ID is missing in response:", JSON.stringify(videoData));
                             }
                         } else {
                             const errorText = await videoRes.text();
@@ -316,7 +345,7 @@ Respon Anda WAJIB dalam format JSON murni yang valid tanpa tambahan markdown ata
                 }
             }
 
-            renderedScenes.push({
+            const sceneResult = {
                 scene: scene.scene,
                 lyrics_segment: scene.lyrics_segment,
                 shot_type: scene.shot_type,
@@ -325,9 +354,26 @@ Respon Anda WAJIB dalam format JSON murni yang valid tanpa tambahan markdown ata
                 task_id: finalVideoUrl || "",
                 provider: selectedProviderName,
                 video_url: ""
-            });
-        }
+            };
 
+            // Simpan langsung ke Firestore render_gallery di sisi server (Offline Background support!)
+            const firestoreId = await saveToFirestore({
+                email: email || "anon@kreaverse.ai",
+                status: sceneResult.status,
+                task_id: sceneResult.task_id,
+                provider: selectedProviderName,
+                model: modelVideo || "default",
+                lyrics_segment: sceneResult.lyrics_segment,
+                prompt: sceneResult.visual_description,
+                url: "",
+                timestamp: Date.now()
+            });
+
+            sceneResult.firestore_id = firestoreId;
+            return sceneResult;
+        });
+
+        const renderedScenes = await Promise.all(renderPromises);
         return res.status(200).json(renderedScenes);
 
     } catch (error) {
