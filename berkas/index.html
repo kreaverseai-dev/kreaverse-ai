@@ -491,15 +491,16 @@
                 if (currentMainTab === 'dl') renderList();
             });
 
-            // AMBIL DATA AI GENERATE DARI FIREBASE
-            const userEmail = localStorage.getItem('kreaverse_user_email');
-            if (userEmail) {
+            // AMBIL DATA AI GENERATE DARI FIREBASE (MENDUKUNG FILTER EMAIL & USER ID)
+            const userEmail = localStorage.getItem('kreaverse_user_email') || '';
+            const userId = localStorage.getItem('kreaverse_user_id') || '';
+            if (userEmail || userId) {
                 const qGen = query(collection(db, "render_gallery"), orderBy("timestamp", "desc"));
                 onSnapshot(qGen, (snapshot) => {
                     genData = [];
                     snapshot.forEach((doc) => {
                         const data = doc.data();
-                        if (data.email === userEmail) {
+                        if ((userEmail && data.email === userEmail) || (userId && data.userId === userId)) {
                             genData.push({ id: doc.id, ...data });
                         }
                     });
