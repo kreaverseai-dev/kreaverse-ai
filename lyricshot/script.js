@@ -80,7 +80,7 @@ function calculateDuration() {
                         .filter(line => line.length > 0);
     const totalDuration = lines.length * 10;
     durationDisplay.classList.remove('hidden');
-    durationDisplay.innerHTML = `📊 <strong>Informasi Video Musik:</strong> Terdeteksi ${lines.length} baris lirik. Total durasi video otomatis disesuaikan menjadi <strong>${totalDuration} detik</strong> (${lines.length} klip video x 10 detik).`;
+    durationDisplay.innerHTML = `ð <strong>Informasi Video Musik:</strong> Terdeteksi ${lines.length} baris lirik. Total durasi video otomatis disesuaikan menjadi <strong>${totalDuration} detik</strong> (${lines.length} klip video x 10 detik).`;
 }
 
 function toggleUploadFields() {
@@ -255,7 +255,7 @@ async function generateStoryboard() {
                 if (item.status === "pending" && item.task_id) {
                     mediaElement = `
                         <div class="video-loader" id="loader-${item.scene}" data-scene="${item.scene}" data-task-id="${item.task_id}" data-provider="${item.provider}" style="padding: 30px 10px; text-align: center; color: var(--accent-purple); font-size: 0.9rem; font-weight: 500; display: flex; flex-direction: column; align-items: center; gap: 10px;">
-                            <div>⏳ Sedang merender adegan... (30-60 detik)</div>
+                            <div>â³ Sedang merender adegan... (30-60 detik)</div>
                             <button onclick="window.batalPolling(${item.scene})" style="background: #fee2e2; color: #ef4444; border: 1px solid #fca5a5; border-radius: 99px; padding: 6px 16px; font-size: 0.75rem; font-weight: 800; cursor: pointer; width: max-content;">Batalkan Pemantauan</button>
                         </div>
                     `;
@@ -322,7 +322,7 @@ function startStatusPolling() {
 
         const interval = setInterval(async () => {
             try {
-                const res = await fetch(`/api/check-status?taskId=${taskId}&provider=${provider}`);
+                const res = await fetch(`/api/check-status?taskId=${taskId}&provider=${provider}&_cb=${Date.now()}`);
                 const data = await res.json();
                 
                 if (res.ok && data.status === "complete" && data.video_url) {
@@ -337,7 +337,7 @@ function startStatusPolling() {
                     downloadBtn.classList.remove('hidden');
                 } else if (data.status === "failed") {
                     clearInterval(interval);
-                    loader.innerHTML = "❌ Gagal merender adegan ini.";
+                    loader.innerHTML = "â Gagal merender adegan ini.";
                 }
             } catch (err) {
                 console.error("Polling error:", err);
