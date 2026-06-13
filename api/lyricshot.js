@@ -165,6 +165,7 @@ Respon Anda WAJIB dalam format JSON murni yang valid tanpa tambahan markdown ata
                     geminiRes = await fetch("https://openrouter.ai/api/v1/chat/completions", {
                         method: 'POST',
                         headers: {
+                            'accept': 'application/json',
                             'Content-Type': 'application/json',
                             'Authorization': `Bearer ${key}`
                         },
@@ -187,6 +188,9 @@ Respon Anda WAJIB dalam format JSON murni yang valid tanpa tambahan markdown ata
                         naskahSuccess = true;
                         break;
                     }
+                } else {
+                    const errorText = await geminiRes.text();
+                    console.error(`${provName.toUpperCase()} API Error [Status ${geminiRes.status}]:`, errorText);
                 }
             } catch (err) {
                 console.error("LLM Key Fail, trying next...", err);
@@ -227,13 +231,14 @@ Respon Anda WAJIB dalam format JSON murni yang valid tanpa tambahan markdown ata
                             prompt: `${scene.video_prompt}, ${defaultCharacter}, ${style}`
                         },
                         name: `Lyrics Shot - Scene ${scene.scene}`,
-                        resolution: "720p"
+                        resolution: "540p"
                     };
 
                     try {
                         const videoRes = await fetch(apiEndpoint, {
                             method: 'POST',
                             headers: {
+                                'accept': 'application/json',
                                 'Content-Type': 'application/json',
                                 'Authorization': `Bearer ${key}`
                             },
@@ -278,6 +283,7 @@ Respon Anda WAJIB dalam format JSON murni yang valid tanpa tambahan markdown ata
                         const videoRes = await fetch(apiEndpoint, {
                             method: 'POST',
                             headers: {
+                                'accept': 'application/json',
                                 'Content-Type': 'application/json',
                                 'Authorization': `Bearer ${key}`
                             },
