@@ -259,6 +259,7 @@ Respon Anda WAJIB dalam format JSON murni yang valid tanpa tambahan markdown ata
                         model: "MOTION2FAST",
                         width: width,
                         height: height,
+                        resolution: "RESOLUTION_480",
                         frameInterpolation: true
                     };
 
