@@ -1,4 +1,4 @@
-api/check-status.js
+// api/check-status.js
 
 export default async function handler(req, res) {
     // Izinkan koneksi langsung dari Dasbor Kreaverse
