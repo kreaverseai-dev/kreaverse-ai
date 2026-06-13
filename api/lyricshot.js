@@ -108,7 +108,8 @@ Respon Anda WAJIB dalam format JSON murni yang valid tanpa tambahan markdown ata
             const cleanPath = customEndpointPath.startsWith('/') ? customEndpointPath : '/' + customEndpointPath;
             calledUrl = `${cleanBase}${cleanPath}`;
             
-            const modelToUse = customModelId ? customModelId.split(',')[0].trim() : "gemini-1.5-flash";
+            // Default model menggunakan Gemini 2.5 Flash yang didukung penuh di tahun 2026
+            const modelToUse = customModelId ? customModelId.split(',')[0].trim() : "gemini-2.5-flash";
 
             const customRes = await fetch(calledUrl, {
                 method: 'POST',
@@ -168,7 +169,8 @@ Respon Anda WAJIB dalam format JSON murni yang valid tanpa tambahan markdown ata
                 responseText = await betabotzRes.text();
 
             } else if (providerName.includes("google") || providerName.includes("gemini")) {
-                calledUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent`;
+                // Diperbarui menggunakan Gemini 2.5 Flash sebagai standar stabil masa kini
+                calledUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent`;
                 const geminiRes = await fetch(`${calledUrl}?key=${apiKey}`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -200,7 +202,7 @@ Respon Anda WAJIB dalam format JSON murni yang valid tanpa tambahan markdown ata
             }); 
         }
 
-        // === PROTEKSI: JIKA SERVER AI MENGEMBALIKAN ERROR HTTP (Seperti 400, 401, 403, 404, 429) ===
+        // === PROTEKSI: JIKA SERVER AI MENGEMBALIKAN ERROR HTTP ===
         if (responseStatus < 200 || responseStatus >= 300) {
             const errorMsg = responseData.error?.message || responseData.error || responseText;
             const cleanErrorMsg = typeof errorMsg === 'object' ? JSON.stringify(errorMsg) : errorMsg;
@@ -209,7 +211,7 @@ Respon Anda WAJIB dalam format JSON murni yang valid tanpa tambahan markdown ata
             });
         }
 
-        // Ambil isi teks kasar berdasarkan asal provider
+        // Ambal isi teks kasar berdasarkan asal provider
         let aiText = "";
         if (customBaseUrl && customEndpointPath) {
             aiText = responseData.choices?.[0]?.message?.content || responseData.result || responseData.response || responseText;
