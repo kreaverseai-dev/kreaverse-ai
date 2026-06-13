@@ -1,3 +1,5 @@
+////lyricshot/script.js
+
 let activeProviders = [];
 
 document.addEventListener('DOMContentLoaded', async () => {
@@ -80,7 +82,7 @@ function calculateDuration() {
                         .filter(line => line.length > 0);
     const totalDuration = lines.length * 10;
     durationDisplay.classList.remove('hidden');
-    durationDisplay.innerHTML = `ÃÂ°ÃÂÃÂÃÂ <strong>Informasi Video Musik:</strong> Terdeteksi ${lines.length} baris lirik. Total durasi video otomatis disesuaikan menjadi <strong>${totalDuration} detik</strong> (${lines.length} klip video x 10 detik).`;
+    durationDisplay.innerHTML = `ÃÂÃÂ°ÃÂÃÂÃÂÃÂÃÂÃÂ <strong>Informasi Video Musik:</strong> Terdeteksi ${lines.length} baris lirik. Total durasi video otomatis disesuaikan menjadi <strong>${totalDuration} detik</strong> (${lines.length} klip video x 10 detik).`;
 }
 
 function toggleUploadFields() {
@@ -105,6 +107,48 @@ function toggleUploadFields() {
 
 async function getBase64(file) {
     if (!file) return null;
+    if (file.type && file.type.startsWith('image/')) {
+        return new Promise((resolve) => {
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = (event) => {
+                const img = new Image();
+                img.src = event.target.result;
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    const maxW = 1024;
+                    const maxH = 1024;
+                    let width = img.width;
+                    let height = img.height;
+
+                    if (width > height) {
+                        if (width > maxW) {
+                            height = Math.round((height * maxW) / width);
+                            width = maxW;
+                        }
+                    } else {
+                        if (height > maxH) {
+                            width = Math.round((width * maxH) / height);
+                            height = maxH;
+                        }
+                    }
+
+                    canvas.width = width;
+                    canvas.height = height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, width, height);
+                    resolve(canvas.toDataURL('image/jpeg', 0.8));
+                };
+                img.onerror = () => {
+                    const rawReader = new FileReader();
+                    rawReader.readAsDataURL(file);
+                    rawReader.onload = () => resolve(rawReader.result);
+                    rawReader.onerror = () => resolve(null);
+                };
+            };
+            reader.onerror = () => resolve(null);
+        });
+    }
     return new Promise((resolve, reject) => {
         const reader = new FileReader();
         reader.readAsDataURL(file);
@@ -133,7 +177,23 @@ async function generateStoryboard() {
     storyboardGrid.innerHTML = '';
 
     try {
-        const providerNaskahId = document.getElementById('providerNaskahSelect').value;
+        const providerNaskahSelect = document.getElementById('providerNaskahSelect');
+        const providerSelect = document.getElementById('providerSelect');
+
+        if (providerNaskahSelect.selectedIndex === -1) {
+            alert("Harap pilih Provider AI (Naskah/Lirik) terlebih dahulu.");
+            generateBtn.disabled = false;
+            loading.classList.add('hidden');
+            return;
+        }
+        if (providerSelect.selectedIndex === -1) {
+            alert("Harap pilih Provider AI (Video) terlebih dahulu.");
+            generateBtn.disabled = false;
+            loading.classList.add('hidden');
+            return;
+        }
+
+        const providerNaskahId = providerNaskahSelect.value;
         const modelNaskah = document.getElementById('modelNaskahSelect').value;
         const modelVideo = document.getElementById('modelVideoSelect').value;
         const payload = {
@@ -152,7 +212,6 @@ async function generateStoryboard() {
             fullModelImage: null
         };
 
-        const providerSelect = document.getElementById('providerSelect');
         const providerName = providerSelect.options[providerSelect.selectedIndex].text.toLowerCase();
 
         if (providerName.includes('magic')) {
@@ -171,7 +230,20 @@ async function generateStoryboard() {
             body: JSON.stringify(payload)
         });
 
-        const data = await response.json();
+        let data = {};
+        const contentType = response.headers.get("content-type");
+        if (contentType && contentType.includes("application/json")) {
+            data = await response.json();
+        } else {
+            const rawText = await response.text();
+            if (rawText.includes("504") || response.status === 504) {
+                throw new Error("Timeout Server Vercel (Proses pembuatan storyboard/video memakan waktu terlalu lama).");
+            } else if (rawText.includes("413") || response.status === 413) {
+                throw new Error("Berkas terlalu besar, mohon gunakan gambar dengan resolusi yang lebih rendah.");
+            } else {
+                throw new Error(`Sistem Error (${response.status})`);
+            }
+        }
 
         if (response.ok) {
             const scenes = Array.isArray(data) ? data : [];
@@ -183,7 +255,7 @@ async function generateStoryboard() {
                 let downloadClass = "download-btn";
                 
                 if (item.status === "pending" && item.task_id) {
-                    mediaElement = `<div class="video-loader" id="loader-${item.scene}" data-scene="${item.scene}" data-task-id="${item.task_id}" data-provider="${item.provider}" style="padding: 40px; text-align: center; color: var(--accent-purple); font-size: 0.9rem; font-weight: 500;">⏳ Sedang merender adegan... (30-60 detik)</div>`;
+                    mediaElement = `<div class="video-loader" id="loader-${item.scene}" data-scene="${item.scene}" data-task-id="${item.task_id}" data-provider="${item.provider}" style="padding: 40px; text-align: center; color: var(--accent-purple); font-size: 0.9rem; font-weight: 500;">â³ Sedang merender adegan... (30-60 detik)</div>`;
                     downloadClass += " hidden";
                 } else {
                     mediaElement = `<video controls preload="metadata" src="${item.video_url || 'https://res.cloudinary.com/demo/video/upload/dog.mp4'}"></video>`;
@@ -247,7 +319,7 @@ function startStatusPolling() {
                     downloadBtn.classList.remove('hidden');
                 } else if (data.status === "failed") {
                     clearInterval(interval);
-                    loader.innerHTML = "❌ Gagal merender adegan ini.";
+                    loader.innerHTML = "â Gagal merender adegan ini.";
                 }
             } catch (err) {
                 console.error("Polling error:", err);
