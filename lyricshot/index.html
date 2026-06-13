@@ -2,176 +2,330 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>LyricShot AI - Kreaverse AI</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
-            --bg-color: #0b0c10;
-            --card-bg: #1f2833;
-            --accent-purple: #8b5cf6;
-            --accent-purple-hover: #7c3aed;
-            --text-main: #f3f4f6;
-            --text-muted: #9ca3af;
-            --border-color: rgba(139, 92, 246, 0.15);
+            --text-primary: #111827;
+            --text-secondary: #4b5563;
+            --text-light: #9ca3af;
+            --accent-color: #5e5ce6; 
+            --accent-hover: #4f46e5;
+            --success-color: #10B981;
+            --danger-color: #ef4444;
+            --surface-color: #ffffff;
+            --border-color: #e5e7eb;
+            --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.02);
+            --shadow-md: 0 8px 16px rgba(0, 0, 0, 0.04);
+            --shadow-lg: 0 12px 24px -4px rgba(0, 0, 0, 0.05);
+            --shadow-xl: 0 20px 30px -6px rgba(0, 0, 0, 0.08);
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-main);
+
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body { 
+            font-family: 'Plus Jakarta Sans', sans-serif; 
+            color: var(--text-primary); 
+            background: radial-gradient(circle at top left, #fff0f5 0%, #f0f8ff 45%, #fafafc 100%); 
+            overflow-x: hidden; 
+            min-height: 100vh;
             display: flex;
             justify-content: center;
-            min-height: 100vh;
             padding: 20px;
         }
-        .container { max-width: 900px; width: 100%; margin-top: 20px; }
+        
+        .container { max-width: 900px; width: 100%; margin-top: 90px; }
+        
+        /* NAVBAR */
+        .navbar { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            padding: 16px 20px; 
+            background: transparent !important; 
+            position: absolute; 
+            top: 0; 
+            left: 0;
+            width: 100%; 
+            z-index: 1000; 
+            border: none !important;
+            box-shadow: none !important;
+            backdrop-filter: none !important;
+            -webkit-backdrop-filter: none !important;
+        }
+        .back-btn { 
+            font-size: 0.8rem; 
+            color: var(--text-secondary); 
+            background: #ffffff;
+            border: 1px solid rgba(0, 0, 0, 0.08);
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: var(--transition);
+            box-shadow: var(--shadow-sm);
+        }
+        .back-btn:hover { 
+            color: var(--text-primary); 
+            background-color: #f3f4f6; 
+            transform: scale(1.05);
+        }
+        .logo-container { 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            width: 140px; 
+            height: 32px; 
+            position: absolute; 
+            left: 50%; 
+            transform: translateX(-46%); 
+            z-index: 5; 
+            pointer-events: none; 
+        }
+        .krea-logo-svg { width: 100%; height: 100%; display: block; }
+        .nav-right { width: 32px; }
+
+        /* HEADER */
         header { text-align: center; margin-bottom: 30px; }
-        h1 { color: #fff; font-size: 2rem; font-weight: 700; margin-bottom: 8px; display: flex; align-items: center; justify-content: center; gap: 10px; }
-        h1 span { color: var(--accent-purple); }
-        .subtitle { color: var(--text-muted); font-size: 0.95rem; }
+        h1.hero-title { 
+            font-family: 'Plus Jakarta Sans', sans-serif; 
+            font-size: 1.95rem; 
+            font-weight: 800; 
+            color: #111827; 
+            margin-bottom: 12px; 
+            line-height: 1.25; 
+            letter-spacing: -1px; 
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        h1.hero-title span { color: var(--accent-color); }
+        .subtitle { 
+            font-size: 0.85rem; 
+            font-weight: 500; 
+            color: var(--text-secondary); 
+            max-width: 480px; 
+            margin: 0 auto;
+            line-height: 1.6; 
+        }
+
+        /* INPUT SECTION */
         .input-section {
-            background: var(--card-bg);
-            padding: 25px;
-            border-radius: 12px;
+            background: var(--surface-color);
+            padding: 30px;
+            border-radius: 24px;
             border: 1px solid var(--border-color);
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+            box-shadow: var(--shadow-xl);
             margin-bottom: 30px;
         }
         textarea {
             width: 100%;
-            height: 130px;
-            background: rgba(0, 0, 0, 0.3);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 8px;
-            color: #fff;
-            padding: 15px;
+            height: 140px;
+            background: #f9fafb;
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            color: var(--text-primary);
+            padding: 18px;
             font-size: 0.95rem;
             font-family: inherit;
             resize: vertical;
+            transition: var(--transition);
         }
-        textarea:focus { outline: none; border-color: var(--accent-purple); }
+        textarea:focus { 
+            outline: none; 
+            border-color: var(--accent-color); 
+            box-shadow: 0 0 0 4px rgba(94, 92, 230, 0.08);
+            background: #ffffff;
+        }
+        
         .options-bar {
-            margin: 20px 0;
+            margin: 24px 0;
             display: grid;
             grid-template-columns: 1fr;
-            gap: 15px;
+            gap: 16px;
         }
         @media (min-width: 600px) {
             .options-bar { grid-template-columns: 1fr 1fr; }
         }
         .option-group { display: flex; flex-direction: column; gap: 6px; }
-        .option-group label { font-size: 0.85rem; color: var(--text-muted); font-weight: 500; }
+        .option-group label { font-size: 0.8rem; color: var(--text-secondary); font-weight: 700; }
         select {
-            background: rgba(0, 0, 0, 0.3);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            color: #fff;
-            padding: 10px 12px;
-            border-radius: 6px;
+            background: #ffffff;
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            padding: 12px 16px;
+            border-radius: 12px;
             font-family: inherit;
+            font-weight: 600;
             cursor: pointer;
+            outline: none;
+            transition: var(--transition);
+            box-shadow: var(--shadow-sm);
         }
+        select:focus {
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 4px rgba(94, 92, 230, 0.08);
+        }
+        
         .duration-info {
-            background: rgba(139, 92, 246, 0.08);
-            border-left: 4px solid var(--accent-purple);
-            padding: 12px;
-            border-radius: 6px;
-            font-size: 0.9rem;
-            margin-bottom: 15px;
-            color: #fff;
-        }
-        .upload-section {
-            background: rgba(0, 0, 0, 0.2);
-            padding: 20px;
-            border-radius: 8px;
+            background: rgba(94, 92, 230, 0.06);
+            border-left: 4px solid var(--accent-color);
+            padding: 14px 18px;
+            border-radius: 12px;
+            font-size: 0.85rem;
             margin-bottom: 20px;
-            border: 1px dashed rgba(255, 255, 255, 0.1);
+            color: var(--text-primary);
+            font-weight: 600;
+            line-height: 1.5;
+            text-align: left;
+        }
+        
+        /* UPLOADS STYLE */
+        .upload-section {
+            background: #f9fafb;
+            padding: 24px;
+            border-radius: 20px;
+            margin-bottom: 24px;
+            border: 1px dashed var(--border-color);
+            transition: var(--transition);
         }
         .upload-grid {
             display: grid;
             grid-template-columns: 1fr;
-            gap: 15px;
-            margin-top: 10px;
+            gap: 16px;
+            margin-top: 12px;
         }
         @media (min-width: 600px) {
             .upload-grid { grid-template-columns: 1fr 1fr; }
         }
         .file-input-group { display: flex; flex-direction: column; gap: 6px; }
-        .file-input-group label { font-size: 0.8rem; color: var(--text-muted); }
+        .file-input-group label { font-size: 0.8rem; color: var(--text-secondary); font-weight: 700; }
         .file-input-group input {
-            background: rgba(0, 0, 0, 0.3);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            color: #fff;
-            padding: 8px;
-            border-radius: 6px;
+            background: #ffffff;
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            padding: 10px;
+            border-radius: 12px;
             font-size: 0.8rem;
+            width: 100%;
+            transition: var(--transition);
         }
+        .file-input-group input:focus {
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 3px rgba(94, 92, 230, 0.06);
+        }
+        
+        /* BUTTONS */
         button {
-            background: var(--accent-purple);
-            color: #fff;
+            background: #5e5ce6;
+            color: #ffffff;
             border: none;
-            padding: 14px 24px;
-            font-size: 1rem;
-            font-weight: 600;
-            border-radius: 8px;
+            padding: 16px 28px;
+            font-size: 0.95rem;
+            font-weight: 700;
+            border-radius: 99px;
             cursor: pointer;
             width: 100%;
-            transition: background 0.2s;
+            transition: var(--transition);
+            box-shadow: 0 4px 14px rgba(94, 92, 230, 0.3);
         }
-        button:hover { background: var(--accent-purple-hover); }
-        button:disabled { background: #4b5563; color: #9ca3af; cursor: not-allowed; }
-        #loading { text-align: center; font-size: 1.1rem; color: var(--accent-purple); margin: 40px 0; font-weight: 500; animation: pulse 1.5s infinite; }
+        button:hover:not(:disabled) { 
+            background: var(--accent-hover); 
+            transform: translateY(-1px); 
+            box-shadow: 0 6px 20px rgba(94, 92, 230, 0.4); 
+        }
+        button:disabled { background: #d1d5db; color: #9ca3af; cursor: not-allowed; box-shadow: none; transform: none; }
+        
+        #loading { text-align: center; font-size: 1.1rem; color: var(--accent-color); margin: 40px 0; font-weight: 700; animation: pulse 1.5s infinite; }
         @keyframes pulse { 0% { opacity: 0.6; } 50% { opacity: 1; } 100% { opacity: 0.6; } }
         .hidden { display: none !important; }
-        #resultContainer h2 { font-size: 1.4rem; margin-bottom: 20px; border-left: 4px solid var(--accent-purple); padding-left: 12px; }
-        #storyboardGrid { display: grid; grid-template-columns: 1fr; gap: 25px; margin-top: 15px; }
+        
+        /* STORYBOARD CARDS (LIGHT THEME) */
+        #resultContainer h2 { font-size: 1.3rem; font-weight: 900; margin-bottom: 24px; border-left: 4px solid var(--accent-color); padding-left: 12px; text-align: left; }
+        #storyboardGrid { display: grid; grid-template-columns: 1fr; gap: 24px; margin-top: 15px; }
         @media (min-width: 768px) {
             #storyboardGrid { grid-template-columns: 1fr 1fr; }
         }
         .storyboard-card {
-            background: var(--card-bg);
+            background: var(--surface-color);
             border: 1px solid var(--border-color);
-            border-radius: 12px;
+            border-radius: 24px;
             overflow: hidden;
             display: flex;
             flex-direction: column;
+            box-shadow: var(--shadow-lg);
+            transition: var(--transition);
+        }
+        .storyboard-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-xl);
         }
         .card-header {
-            background: rgba(0, 0, 0, 0.2);
-            padding: 15px;
+            background: #f9fafb;
+            padding: 16px 20px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            border-bottom: 1px solid var(--border-color);
         }
-        .scene-badge { background: var(--accent-purple); color: #fff; font-weight: 700; padding: 4px 10px; border-radius: 6px; font-size: 0.75rem; }
-        .shot-type { color: var(--accent-purple); font-size: 0.8rem; font-weight: 700; text-transform: uppercase; }
-        .card-body { padding: 20px; display: flex; flex-direction: column; gap: 15px; flex-grow: 1; }
-        .lyrics-quote { color: #fff; font-style: italic; background: rgba(139, 92, 246, 0.08); padding: 10px 15px; border-radius: 6px; border-left: 4px solid var(--accent-purple); margin: 0; font-size: 0.9rem; }
-        .description { font-size: 0.9rem; line-height: 1.6; color: #d1d5db; }
-        .video-box { margin-top: 10px; border-radius: 8px; overflow: hidden; background: #000; display: flex; justify-content: center; }
-        video { width: 100%; max-height: 250px; display: block; }
+        .scene-badge { background: var(--accent-color); color: #fff; font-weight: 800; padding: 6px 12px; border-radius: 99px; font-size: 0.75rem; }
+        .shot-type { color: var(--accent-color); font-size: 0.8rem; font-weight: 800; text-transform: uppercase; }
+        .card-body { padding: 20px; display: flex; flex-direction: column; gap: 16px; flex-grow: 1; text-align: left; }
+        .lyrics-quote { color: var(--text-primary); font-style: italic; background: rgba(94, 92, 230, 0.05); padding: 12px 18px; border-radius: 12px; border-left: 4px solid var(--accent-color); margin: 0; font-size: 0.9rem; font-weight: 600; }
+        .description { font-size: 0.9rem; line-height: 1.6; color: var(--text-secondary); font-weight: 500; }
+        .video-box { margin-top: 8px; border-radius: 16px; overflow: hidden; background: #000; display: flex; justify-content: center; aspect-ratio: 16/9; }
+        video { width: 100%; height: 100%; object-fit: cover; display: block; }
         .download-btn {
             background: #10b981;
             color: #fff;
             text-align: center;
             text-decoration: none;
             display: block;
-            padding: 10px;
-            border-radius: 6px;
+            padding: 14px;
+            border-radius: 99px;
             font-size: 0.85rem;
-            font-weight: 600;
+            font-weight: 700;
             margin-top: 10px;
-            transition: background 0.2s;
+            transition: var(--transition);
+            box-shadow: 0 4px 10px rgba(16, 185, 129, 0.2);
         }
-        .download-btn:hover { background: #059669; }
+        .download-btn:hover { background: #059669; box-shadow: 0 6px 15px rgba(16, 185, 129, 0.3); }
+
+        /* FOOTER (CLEAN LIGHT WHITE) */
+        .footer { background: #FFFFFF; color: var(--text-secondary); padding: 40px 20px 30px; text-align: center; border-top: 1px solid var(--border-color); margin-top: 50px; border-radius: 24px 24px 0 0; }
+        .footer-logo { color: var(--text-primary); font-size: 1.3rem; font-weight: 900; margin-bottom: 20px; letter-spacing: -0.5px; }
+        .footer-links { display: flex; justify-content: center; gap: 24px; margin-bottom: 20px; flex-wrap: wrap; }
+        .footer-links a { color: var(--text-secondary); transition: color 0.2s; font-size: 0.85rem; font-weight: 600; text-decoration: none; }
+        .footer-links a:hover { color: var(--accent-color); }
+        .footer-bottom { border-top: 1px solid var(--border-color); padding-top: 20px; font-size: 0.75rem; display: flex; flex-direction: column; align-items: center; gap: 10px; color: var(--text-light); }
     </style>
 </head>
 <body>
+
+    <!-- NAVBAR PREMIUM -->
+    <nav class="navbar">
+        <a href="/" class="back-btn" title="Kembali"><i class="fa-solid fa-chevron-left"></i></a>
+        <div class="logo-container">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 60" class="krea-logo-svg">
+                <defs><linearGradient id="kreaGrad" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#D97757" /><stop offset="50%" stop-color="#AF52DE" /><stop offset="100%" stop-color="#007AFF" /></linearGradient></defs>
+                <g><path d="M 30,10 Q 30,30 50,30 Q 30,30 30,50 Q 30,30 10,30 Q 30,30 30,10 Z" fill="url(#kreaGrad)" /><path d="M 30,17 Q 30,30 43,30 Q 30,30 30,43 Q 30,30 17,30 Q 30,30 30,17 Z" fill="url(#kreaGrad)" transform="rotate(45, 30, 30)" opacity="0.85" /></g>
+                <text x="65" y="38" font-family="'Plus Jakarta Sans', sans-serif" font-weight="800" font-size="21" fill="currentColor" letter-spacing="-0.5px">Kreaverse<tspan font-weight="500" fill="#D97757"> AI</tspan></text>
+            </svg>
+        </div>
+        <div class="nav-right"></div>
+    </nav>
+
     <div class="container">
+        <!-- HEADER DENGAN REVISI TULISAN PREMIUM -->
         <header>
-            <h1>LyricShot AI <span>ð¬</span></h1>
-            <p class="subtitle">Ubah lirik lagu Anda menjadi storyboard video klip (MV) siap produksi.</p>
+            <h1 class="hero-title">LyricShot AI - Premium <span>🎬</span></h1>
+            <p class="subtitle">Ubah baris lirik lagu Anda menjadi rancangan adegan storyboard video klip (MV) sinematik berkualitas tinggi secara instan.</p>
         </header>
 
         <div class="input-section">
@@ -215,7 +369,7 @@
 
             <!-- Upload Atribut Karakter untuk Magic Hour -->
             <div id="magicHourUploads" class="upload-section hidden">
-                <h3 style="font-size: 0.95rem; margin-bottom: 10px; color: var(--accent-purple);">Kunci Atribut Karakter (Magic Hour)</h3>
+                <h3 style="font-size: 0.95rem; margin-bottom: 12px; color: var(--accent-color); font-weight:800;">Kunci Atribut Karakter (Magic Hour)</h3>
                 <div class="upload-grid">
                     <div class="file-input-group">
                         <label for="faceInput">Foto Wajah (Lock Wajah):</label>
@@ -242,7 +396,7 @@
 
             <!-- Upload Karakter Utuh untuk Leonardo AI -->
             <div id="leonardoUploads" class="upload-section hidden">
-                <h3 style="font-size: 0.95rem; margin-bottom: 10px; color: var(--accent-purple);">Unggah Model Karakter Utuh (Leonardo AI)</h3>
+                <h3 style="font-size: 0.95rem; margin-bottom: 12px; color: var(--accent-color); font-weight:800;">Unggah Model Karakter Utuh (Leonardo AI)</h3>
                 <div class="file-input-group">
                     <label for="fullModelInput">Unggah 1 Foto Karakter Berbusana Lengkap:</label>
                     <input type="file" id="fullModelInput" accept="image/*">
@@ -258,7 +412,22 @@
             <h2>Daftar Klip Video Hasil Render</h2>
             <div id="storyboardGrid"></div>
         </div>
+
+        <!-- FOOTER PREMIUM -->
+        <footer class="footer">
+            <div class="footer-logo">Kreaverse AI</div>
+            <div class="footer-links">
+                <a href="/">Beranda</a>
+                <a href="/ytdl">Premium Downloader</a>
+                <a href="/ketentuan">Syarat & Ketentuan</a>
+                <a href="/privasi">Kebijakan Privasi</a>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2026 Kreaverse AI. All rights reserved.</p>
+            </div>
+        </footer>
     </div>
+    
     <script src="/lyricshot/script.js"></script>
     <script>
         // Override fungsi durasi dengan kalkulasi menit & detik terformat bersih
@@ -281,7 +450,7 @@
                 timeString += ` (sekitar <strong>${minutes} menit ${seconds > 0 ? seconds + ' detik' : ''}</strong>)`;
             }
             durationDisplay.classList.remove('hidden');
-            durationDisplay.innerHTML = `ð <strong>Informasi Video Musik:</strong> Terdeteksi ${lines.length} baris lirik. Total durasi video otomatis disesuaikan menjadi ${timeString} (${lines.length} klip video x 10 detik).`;
+            durationDisplay.innerHTML = `📊 <strong>Informasi Video Musik:</strong> Terdeteksi ${lines.length} baris lirik. Total durasi video otomatis disesuaikan menjadi ${timeString} (${lines.length} klip video x 10 detik).`;
         }
     </script>
 </body>
