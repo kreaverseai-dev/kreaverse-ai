@@ -4,24 +4,305 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>LyricShot AI - Kreaverse AI</title>
-    <link rel="stylesheet" href="style.css">
+    <!-- Menggunakan font modern 'Inter' agar tampilan serasi dengan Kreaverse AI -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        /* === RESET & VARIABEL WARNA === */
+        :root {
+            --bg-color: #0b0c10;
+            --card-bg: #1f2833;
+            --accent-purple: #8b5cf6;
+            --accent-purple-hover: #7c3aed;
+            --text-main: #f3f4f6;
+            --text-muted: #9ca3af;
+            --border-color: rgba(139, 92, 246, 0.15);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            display: flex;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            width: 100%;
+            margin-top: 20px;
+        }
+
+        /* === HEADER === */
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            color: #fff;
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        h1 span {
+            color: var(--accent-purple);
+        }
+
+        .subtitle {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+        }
+
+        /* === FORM INPUT === */
+        .input-section {
+            background: var(--card-bg);
+            padding: 25px;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+            margin-bottom: 30px;
+        }
+
+        textarea {
+            width: 100%;
+            height: 140px;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            color: #fff;
+            padding: 15px;
+            font-size: 0.95rem;
+            font-family: inherit;
+            resize: vertical;
+            transition: border-color 0.2s;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: var(--accent-purple);
+        }
+
+        .options-bar {
+            margin: 20px 0;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .options-bar label {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        select {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #fff;
+            padding: 10px 15px;
+            border-radius: 6px;
+            font-family: inherit;
+            cursor: pointer;
+            transition: border-color 0.2s;
+        }
+
+        select:focus {
+            outline: none;
+            border-color: var(--accent-purple);
+        }
+
+        button {
+            background: var(--accent-purple);
+            color: #fff;
+            border: none;
+            padding: 14px 24px;
+            font-size: 1rem;
+            font-weight: 600;
+            border-radius: 8px;
+            cursor: pointer;
+            width: 100%;
+            transition: background 0.2s, transform 0.1s;
+        }
+
+        button:hover {
+            background: var(--accent-purple-hover);
+        }
+
+        button:active {
+            transform: scale(0.98);
+        }
+
+        button:disabled {
+            background: #4b5563;
+            color: #9ca3af;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* === LOADING STATE === */
+        #loading {
+            text-align: center;
+            font-size: 1.1rem;
+            color: var(--accent-purple);
+            margin: 40px 0;
+            font-weight: 500;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 0.6; }
+            50% { opacity: 1; }
+            100% { opacity: 0.6; }
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* === STORYBOARD RESULT GRID === */
+        #resultContainer h2 {
+            font-size: 1.4rem;
+            margin-bottom: 20px;
+            border-left: 4px solid var(--accent-purple);
+            padding-left: 12px;
+        }
+
+        #storyboardGrid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 25px;
+            margin-top: 15px;
+        }
+
+        @media (min-width: 768px) {
+            #storyboardGrid {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        .storyboard-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .card-header {
+            background: rgba(0, 0, 0, 0.2);
+            padding: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .scene-badge {
+            background: var(--accent-purple);
+            color: #fff;
+            font-weight: 700;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 0.75rem;
+        }
+
+        .shot-type {
+            color: var(--accent-purple);
+            font-size: 0.8rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .card-body {
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            flex-grow: 1;
+        }
+
+        .lyrics-quote {
+            color: #fff;
+            font-style: italic;
+            background: rgba(139, 92, 246, 0.08);
+            padding: 10px 15px;
+            border-radius: 6px;
+            border-left: 4px solid var(--accent-purple);
+            margin: 0;
+            font-size: 0.9rem;
+            line-height: 1.4;
+        }
+
+        .description {
+            font-size: 0.9rem;
+            line-height: 1.6;
+            color: #d1d5db;
+        }
+
+        hr {
+            border: 0;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            margin: 5px 0;
+        }
+
+        .prompt-box {
+            background: rgba(0, 0, 0, 0.2);
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 0.8rem;
+        }
+
+        .prompt-box strong {
+            color: var(--accent-purple);
+            display: block;
+            margin-bottom: 6px;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .prompt-text {
+            margin: 0;
+            color: var(--text-muted);
+            word-break: break-word;
+            line-height: 1.4;
+        }
+    </style>
 </head>
 <body>
     <div class="container">
-        <h1>LyricShot AI 🎬</h1>
-        <p>Ubah lirik lagu Anda menjadi storyboard video klip (MV) siap produksi.</p>
+        <header>
+            <h1>LyricShot AI <span>🎬</span></h1>
+            <p class="subtitle">Ubah lirik lagu Anda menjadi storyboard video klip (MV) siap produksi.</p>
+        </header>
 
         <div class="input-section">
-            <textarea id="lyricsInput" placeholder="Masukkan lirik lagu Anda di sini..."></textarea>
+            <textarea id="lyricsInput" placeholder="Masukkan lirik lagu Anda di sini...&#10;Contoh: Kuberjalan di bawah rintik hujan, mencari bayangmu yang perlahan sirna..."></textarea>
             
-            <div class="options">
+            <div class="options-bar">
                 <label for="visualStyle">Gaya Visual:</label>
                 <select id="visualStyle">
                     <option value="Cinematic Moody">Cinematic Moody</option>
-                    <option value="Anime / Ghibli Style">Anime / Ghibli</option>
-                    <option value="Cyberpunk Neon">Cyberpunk Neon</option>
-                    <option value="Retro 90s VHS">Retro 90s VHS</option>
-                    <option value="Minimalist / Aesthetic">Aesthetic Minimalist</option>
+                    <option value="Anime / Studio Ghibli Style">Anime / Ghibli</option>
+                    <option value="Cyberpunk Neon Retro">Cyberpunk Neon</option>
+                    <option value="Retro 90s VHS / Analog Film">Retro 90s VHS</option>
+                    <option value="Minimalist Aesthetic / Pastel Tone">Aesthetic Minimalist</option>
                 </select>
             </div>
 
@@ -29,7 +310,7 @@
         </div>
 
         <!-- Indikator Loading -->
-        <div id="loading" class="hidden">Menganalisis lirik dan menyusun adegan...</div>
+        <div id="loading" class="hidden">Menafsirkan lirik & menyusun shot list adegan...</div>
 
         <!-- Kontainer Hasil -->
         <div id="resultContainer" class="hidden">
@@ -38,6 +319,94 @@
         </div>
     </div>
 
-    <script src="script.js"></script>
+    <script>
+        async function generateStoryboard() {
+            const lyrics = document.getElementById('lyricsInput').value;
+            const style = document.getElementById('visualStyle').value;
+            const generateBtn = document.getElementById('generateBtn');
+            const loading = document.getElementById('loading');
+            const resultContainer = document.getElementById('resultContainer');
+            const storyboardGrid = document.getElementById('storyboardGrid');
+
+            if (!lyrics.trim()) {
+                alert("Harap masukkan lirik lagu terlebih dahulu.");
+                return;
+            }
+
+            // Atur status Loading
+            generateBtn.disabled = true;
+            loading.classList.remove('hidden');
+            resultContainer.classList.add('hidden');
+            storyboardGrid.innerHTML = '';
+
+            try {
+                // Endpoint pemanggilan API backend Anda
+                const response = await fetch('/api/lyricshot', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ lyrics, style })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    // Penyesuaian pembacaan data JSON
+                    let scenes = [];
+                    if (Array.isArray(data)) {
+                        scenes = data;
+                    } else if (data.storyboard) {
+                        scenes = data.storyboard;
+                    } else if (data.scenes) {
+                        scenes = data.scenes;
+                    } else {
+                        // Jika respons terbungkus objek lain
+                        scenes = Object.values(data)[0] || [];
+                    }
+
+                    if (scenes.length === 0) {
+                        alert("Gagal mem-parsing format storyboard dari AI. Silakan coba kembali.");
+                        return;
+                    }
+
+                    scenes.forEach(item => {
+                        const card = document.createElement('div');
+                        card.className = 'storyboard-card';
+                        card.innerHTML = `
+                            <div class="card-header">
+                                <span class="scene-badge">Scene ${item.scene || '?'}</span>
+                                <span class="shot-type">${item.shot_type || 'Custom Shot'}</span>
+                            </div>
+                            <div class="card-body">
+                                <p class="lyrics-quote">"<em>${item.lyrics_segment || 'Instrumental / No Lyrics'}</em>"</p>
+                                <p class="description"><strong>Visual:</strong> ${item.visual_description || '-'}</p>
+                                <hr>
+                                <div class="prompt-box">
+                                    <strong>Image Prompt (Stable Diffusion / Midjourney):</strong>
+                                    <p class="prompt-text">${item.image_prompt || '-'}</p>
+                                </div>
+                                <div class="prompt-box">
+                                    <strong>Video Prompt (Runway / Sora / Luma):</strong>
+                                    <p class="prompt-text">${item.video_prompt || '-'}</p>
+                                </div>
+                            </div>
+                        `;
+                        storyboardGrid.appendChild(card);
+                    });
+
+                    resultContainer.classList.remove('hidden');
+                } else {
+                    alert("Terjadi kesalahan: " + (data.error || "Gagal memproses lirik. Periksa API key Anda."));
+                }
+            } catch (err) {
+                console.error(err);
+                alert("Gagal terhubung dengan server backend API.");
+            } finally {
+                generateBtn.disabled = false;
+                loading.classList.add('hidden');
+            }
+        }
+    </script>
 </body>
 </html>
