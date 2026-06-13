@@ -47,23 +47,6 @@ export default async function handler(req, res) {
         const fbRes = await fetch(firebaseUrl);
         const fbData = await fbRes.json();
 
-        const clRes = await fetch("https://firestore.googleapis.com/v1/projects/kreaverse-ai0107/databases/(default)/documents/cloudinary");
-        const clData = await clRes.json();
-        
-        const activeCloudinaries = [];
-        if (clData.documents) {
-            const activeClDocs = clData.documents.filter(doc => doc.fields?.status?.stringValue?.toLowerCase() === "aktif");
-            activeClDocs.forEach(doc => {
-                activeCloudinaries.push({
-                    cloudName: doc.fields?.cloud_name?.stringValue || doc.fields?.cloudName?.stringValue || "",
-                    uploadPreset: doc.fields?.upload_preset?.stringValue || doc.fields?.uploadPreset?.stringValue || ""
-                });
-            });
-        }
-        if (activeCloudinaries.length === 0) {
-            return res.status(500).json({ error: "Penyimpanan media (Cloudinary) tidak aktif." });
-        }
-
         let activeKeys = [];
         if (fbData.documents) {
             activeKeys = fbData.documents.filter(doc => doc.fields?.status?.stringValue?.toLowerCase() === "aktif");
@@ -81,15 +64,58 @@ export default async function handler(req, res) {
         if (naskahDocs.length === 0) return res.status(500).json({ error: "Kunci API Naskah aktif tidak ditemukan." });
         if (videoDocs.length === 0) return res.status(500).json({ error: "Kunci API Video aktif tidak ditemukan." });
 
-        // 2. Unggah gambar aset menggunakan rotasi Cloudinary otomatis
-        const [faceUrl, hijabUrl, bajuUrl, sepatuUrl, aksesorisUrl, fullModelUrl] = await Promise.all([
-            uploadToCloudinary(faceImage, activeCloudinaries),
-            uploadToCloudinary(hijabImage, activeCloudinaries),
-            uploadToCloudinary(bajuImage, activeCloudinaries),
-            uploadToCloudinary(sepatuImage, activeCloudinaries),
-            uploadToCloudinary(aksesorisImage, activeCloudinaries),
-            uploadToCloudinary(fullModelImage, activeCloudinaries)
-        ]);
+        // Deteksi apakah pengguna mengunggah setidaknya satu foto acuan
+        const hasUploads = faceImage || hijabImage || bajuImage || sepatuImage || aksesorisImage || fullModelImage;
+        
+        let faceUrl = null;
+        let hijabUrl = null;
+        let bajuUrl = null;
+        let sepatuUrl = null;
+        let aksesorisUrl = null;
+        let fullModelUrl = null;
+
+        if (hasUploads) {
+            // Hanya memproses database Cloudinary jika pengguna mengunggah foto
+            let activeCloudinaries = [];
+            const cloudinaryCollections = ["cloudinary", "cloudinary_db", "cloudinary_accounts"];
+            
+            for (const col of cloudinaryCollections) {
+                try {
+                    const clRes = await fetch(`https://firestore.googleapis.com/v1/projects/kreaverse-ai0107/databases/(default)/documents/${col}`);
+                    if (clRes.ok) {
+                        const clData = await clRes.json();
+                        if (clData.documents && clData.documents.length > 0) {
+                            const activeClDocs = clData.documents.filter(doc => doc.fields?.status?.stringValue?.toLowerCase() === "aktif");
+                            if (activeClDocs.length > 0) {
+                                activeClDocs.forEach(doc => {
+                                    activeCloudinaries.push({
+                                        cloudName: doc.fields?.cloud_name?.stringValue || doc.fields?.cloudName?.stringValue || doc.fields?.cloud_name_unsigned?.stringValue || "",
+                                        uploadPreset: doc.fields?.upload_preset?.stringValue || doc.fields?.uploadPreset?.stringValue || doc.fields?.upload_preset_unsigned?.stringValue || ""
+                                    });
+                                });
+                                break;
+                            }
+                        }
+                    }
+                } catch (err) {
+                    console.error(`Gagal memuat alternatif koleksi Cloudinary ${col}:`, err);
+                }
+            }
+
+            if (activeCloudinaries.length === 0) {
+                return res.status(500).json({ error: "Penyimpanan media (Cloudinary) tidak aktif. Periksa nama koleksi Cloudinary Anda di Firestore." });
+            }
+
+            // 2. Unggah gambar aset menggunakan rotasi Cloudinary otomatis
+            [faceUrl, hijabUrl, bajuUrl, sepatuUrl, aksesorisUrl, fullModelUrl] = await Promise.all([
+                uploadToCloudinary(faceImage, activeCloudinaries),
+                uploadToCloudinary(hijabImage, activeCloudinaries),
+                uploadToCloudinary(bajuImage, activeCloudinaries),
+                uploadToCloudinary(sepatuImage, activeCloudinaries),
+                uploadToCloudinary(aksesorisImage, activeCloudinaries),
+                uploadToCloudinary(fullModelImage, activeCloudinaries)
+            ]);
+        }
 
         // 3. Susun instruksi naskah dengan total jumlah klip dinamis berdasarkan lirik
         const systemPrompt = `Anda adalah sutradara video klip profesional. Tugas Anda adalah menganalisis lirik lagu yang diberikan dan membaginya menjadi beberapa adegan storyboard yang berurutan.
