@@ -231,7 +231,7 @@ Respon Anda WAJIB dalam format JSON murni yang valid tanpa tambahan markdown ata
                             prompt: `${scene.video_prompt}, ${defaultCharacter}, ${style}`
                         },
                         name: `Lyrics Shot - Scene ${scene.scene}`,
-                        resolution: "540p"
+                        resolution: "480p"
                     };
 
                     try {
@@ -292,8 +292,13 @@ Respon Anda WAJIB dalam format JSON murni yang valid tanpa tambahan markdown ata
 
                         if (videoRes.ok) {
                             const videoData = await videoRes.json();
+                            console.log(`Leonardo AI API Response:`, JSON.stringify(videoData));
                             finalVideoUrl = videoData.sdGenerationJob?.generationId || videoData.generationId || ""; // Mengambil Generation ID Leonardo
-                            break; 
+                            if (finalVideoUrl) {
+                                break; 
+                            } else {
+                                console.error("Leonardo AI Generation ID is missing in response:", JSON.stringify(videoData));
+                            }
                         } else {
                             const errorText = await videoRes.text();
                             console.error(`Leonardo AI API Error [Status ${videoRes.status}]:`, errorText);
