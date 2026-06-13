@@ -519,7 +519,7 @@
             hours = hours % 12;
             hours = hours ? hours : 12; 
             minutes = minutes < 10 ? '0' + minutes : minutes;
-            return `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()} • ${hours}:${minutes} ${ampm}`;
+            return `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()} â¢ ${hours}:${minutes} ${ampm}`;
         }
 
         window.renderList = function() {
@@ -659,7 +659,7 @@
 
                 for (const item of pendingItems) {
                     try {
-                        const res = await fetch(`/api/check-status?taskId=${item.task_id}&provider=${item.provider}`);
+                        const res = await fetch(`/api/check-status?taskId=${item.task_id}&provider=${item.provider}&_cb=${Date.now()}`);
                         const data = await res.json();
                         
                         if (res.ok && data.status === "complete" && data.video_url) {
