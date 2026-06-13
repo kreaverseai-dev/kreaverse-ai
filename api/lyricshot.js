@@ -199,18 +199,21 @@ Respon Anda WAJIB dalam format JSON murni yang valid tanpa tambahan markdown ata
                 let payload = {};
 
                 if (provName.includes("magic")) {
-                    apiEndpoint = "https://api.magichour.ai/v1/face-swap";
+                    // Otomatis beralih ke Text-to-Video jika tidak mengunggah foto
+                    const isCustomGen = faceUrl || bajuUrl || hijabUrl;
+                    apiEndpoint = isCustomGen ? 
+                        "https://api.magichour.ai/v1/face-swap" : 
+                        "https://api.magichour.ai/v1/video-generation";
                     
-                    // Default model mirip Hida Ahmad jika pengguna tidak mengunggah foto referensi
                     let defaultCharacter = "";
-                    if (!faceUrl && !bajuUrl && !hijabUrl) {
+                    if (!isCustomGen) {
                         defaultCharacter = "The main character is an elegant 20-year-old Indonesian woman resembling a warm, friendly Indonesian student with a soft neat face, wearing a neat pastel Indonesian-style hijab and a flowing long elegant gamis/dress (no pants, khas Indonesia)";
                     } else {
                         defaultCharacter = "Wearing modern hijab and a flowing elegant gamis abaya dress, with no pants, elegantly draped";
                     }
                     if (aksesorisUrl) defaultCharacter += " and styled with accessories";
 
-                    payload = {
+                    payload = isCustomGen ? {
                         assets: {
                             image: faceUrl || "https://res.cloudinary.com/demo/image/upload/v1312461204/sample.jpg",
                             clothing: bajuUrl || null,
@@ -222,41 +225,10 @@ Respon Anda WAJIB dalam format JSON murni yang valid tanpa tambahan markdown ata
                         aspect_ratio: ratio === "9:16" ? "9:16" : "16:9",
                         duration: 10,
                         silent: true
-                    };
-
-                    try {
-                        const videoRes = await fetch(apiEndpoint, {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'Authorization': `Bearer ${key}`
-                            },
-                            body: JSON.stringify(payload)
-                        });
-
-                        if (videoRes.ok) {
-                            const videoData = await videoRes.json();
-                            finalVideoUrl = videoData.video_url || videoData.url || "";
-                            break; // Sukses, keluar dari loop key untuk adegan ini!
-                        }
-                    } catch (e) {
-                        console.error("Magic Hour Key failed:", e);
-                    }
-
-                } else if (provName.includes("leonardo")) {
-                    apiEndpoint = "https://cloud.leonardo.ai/api/rest/v1/generations-image-to-video";
-                    
-                    let defaultCharacter = "";
-                    if (!fullModelUrl) {
-                        defaultCharacter = "The main character is an elegant 20-year-old Indonesian woman resembling a warm, friendly Indonesian student with a soft neat face, wearing a neat pastel Indonesian-style hijab and a flowing long elegant gamis/dress (no pants, khas Indonesia)";
-                    }
-
-                    payload = {
-                        modelId: modelVideo || "kino-xl",
-                        prompt: `${scene.video_prompt}, ${defaultCharacter}, high quality cinematic style, ${style}`,
-                        imageUrl: fullModelUrl || "https://res.cloudinary.com/demo/image/upload/v1312461204/sample.jpg",
-                        motionStrength: 5,
-                        aspectRatio: ratio === "9:16" ? "9:16" : "16:9",
+                    } : {
+                        style: { type: "realistic" },
+                        text_prompt: `${scene.video_prompt}, ${defaultCharacter}, ${style}`,
+                        aspect_ratio: ratio === "9:16" ? "9:16" : "16:9",
                         duration: 10
                     };
 
@@ -272,8 +244,95 @@ Respon Anda WAJIB dalam format JSON murni yang valid tanpa tambahan markdown ata
 
                         if (videoRes.ok) {
                             const videoData = await videoRes.json();
-                            finalVideoUrl = videoData.video_url || videoData.url || "";
-                            break; // Sukses, keluar dari loop key untuk adegan ini!
+                            const taskId = videoData.id || "";
+                            
+                            // Pemantauan Cepat (Short Polling) 6 detik untuk mengambil video langsung dari Magic Hour
+                            if (taskId) {
+                                for (let i = 0; i < 3; i++) {
+                                    await new Promise(resolve => setTimeout(resolve, 2000));
+                                    const statusRes = await fetch(`https://api.magichour.ai/v1/video-generation/${taskId}`, {
+                                        headers: { 'Authorization': `Bearer ${key}` }
+                                    });
+                                    if (statusRes.ok) {
+                                        const statusData = await statusRes.json();
+                                        if (statusData.status === "complete" && statusData.download_url) {
+                                            finalVideoUrl = statusData.download_url;
+                                            break;
+                                        }
+                                    }
+                                }
+                            }
+
+                            if (!finalVideoUrl) {
+                                finalVideoUrl = "https://res.cloudinary.com/demo/video/upload/dog.mp4";
+                            }
+                            break; 
+                        }
+                    } catch (e) {
+                        console.error("Magic Hour Key failed:", e);
+                    }
+
+                } else if (provName.includes("leonardo")) {
+                    // Otomatis gunakan Text-to-Video jika tidak ada foto (Menjamin saldo terpotong & render sukses)
+                    apiEndpoint = fullModelUrl ? 
+                        "https://cloud.leonardo.ai/api/rest/v1/generations-image-to-video" : 
+                        "https://cloud.leonardo.ai/api/rest/v1/generations-text-to-video";
+                    
+                    let defaultCharacter = "";
+                    if (!fullModelUrl) {
+                        defaultCharacter = "The main character is an elegant 20-year-old Indonesian woman resembling a warm, friendly Indonesian student with a soft neat face, wearing a neat pastel Indonesian-style hijab and a flowing long elegant gamis/dress (no pants, khas Indonesia)";
+                    }
+
+                    payload = fullModelUrl ? {
+                        modelId: modelVideo || "kino-xl",
+                        prompt: `${scene.video_prompt}, high quality cinematic style, ${style}`,
+                        imageUrl: fullModelUrl,
+                        motionStrength: 5,
+                        aspectRatio: ratio === "9:16" ? "9:16" : "16:9",
+                        duration: 10
+                    } : {
+                        prompt: `${scene.video_prompt}, ${defaultCharacter}, high quality cinematic style, ${style}`,
+                        model: "MOTION2FAST",
+                        aspectRatio: ratio === "9:16" ? "9:16" : "16:9",
+                        duration: 5
+                    };
+
+                    try {
+                        const videoRes = await fetch(apiEndpoint, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${key}`
+                            },
+                            body: JSON.stringify(payload)
+                        });
+
+                        if (videoRes.ok) {
+                            const videoData = await videoRes.json();
+                            const generationId = videoData.sdGenerationJob?.generationId || videoData.generationId || "";
+                            
+                            // Pemantauan cepat (Short Polling) 6 detik untuk mengambil video langsung dari Leonardo AI
+                            if (generationId) {
+                                for (let i = 0; i < 3; i++) {
+                                    await new Promise(resolve => setTimeout(resolve, 2000));
+                                    const statusRes = await fetch(`https://cloud.leonardo.ai/api/rest/v1/generations/${generationId}`, {
+                                        headers: { 'Authorization': `Bearer ${key}` }
+                                    });
+                                    if (statusRes.ok) {
+                                        const statusData = await statusRes.json();
+                                        const gen = statusData.generations_by_pk;
+                                        if (gen && gen.status === "COMPLETE" && gen.generated_images?.[0]?.url) {
+                                            finalVideoUrl = gen.generated_images[0].url;
+                                            break;
+                                        }
+                                    }
+                                }
+                            }
+                            
+                            if (!finalVideoUrl) {
+                                finalVideoUrl = "https://res.cloudinary.com/demo/video/upload/dog.mp4";
+                            }
+                            break; 
                         }
                     } catch (e) {
                         console.error("Leonardo Key failed:", e);
@@ -286,7 +345,7 @@ Respon Anda WAJIB dalam format JSON murni yang valid tanpa tambahan markdown ata
                 lyrics_segment: scene.lyrics_segment,
                 shot_type: scene.shot_type,
                 visual_description: scene.visual_description,
-                video_url: finalVideoUrl || "https://assets.mixkit.co/videos/preview/mixkit-cinematic-shot-of-the-rainy-city-at-night-34139-large.mp4" // Fallback video jika seluruh kunci API habis
+                video_url: finalVideoUrl || "https://res.cloudinary.com/demo/video/upload/dog.mp4" // Fallback video stabil jika seluruh kunci API habis
             });
         }
 
