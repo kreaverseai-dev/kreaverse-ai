@@ -174,8 +174,15 @@ Respon Anda WAJIB dalam format JSON murni yang valid tanpa tambahan markdown ata
 
                 if (provName.includes("magic")) {
                     apiEndpoint = "https://api.magichour.ai/v1/face-swap";
-                    let clothingInstruction = "Wearing modern hijab and a flowing elegant gamis abaya dress, with no pants, elegantly draped";
-                    if (aksesorisUrl) clothingInstruction += " and styled with accessories";
+                    
+                    // Default model mirip Hida Ahmad jika pengguna tidak mengunggah foto referensi
+                    let defaultCharacter = "";
+                    if (!faceUrl && !bajuUrl && !hijabUrl) {
+                        defaultCharacter = "The main character is an elegant 20-year-old Indonesian woman resembling a warm, friendly Indonesian student with a soft neat face, wearing a neat pastel Indonesian-style hijab and a flowing long elegant gamis/dress (no pants, khas Indonesia)";
+                    } else {
+                        defaultCharacter = "Wearing modern hijab and a flowing elegant gamis abaya dress, with no pants, elegantly draped";
+                    }
+                    if (aksesorisUrl) defaultCharacter += " and styled with accessories";
 
                     payload = {
                         assets: {
@@ -185,7 +192,7 @@ Respon Anda WAJIB dalam format JSON murni yang valid tanpa tambahan markdown ata
                             shoes: sepatuUrl || null,
                             accessories: aksesorisUrl || null
                         },
-                        prompt: `${scene.video_prompt}, ${clothingInstruction}, ${style}`,
+                        prompt: `${scene.video_prompt}, ${defaultCharacter}, ${style}`,
                         aspect_ratio: ratio === "9:16" ? "9:16" : "16:9",
                         duration: 10,
                         silent: true
@@ -212,9 +219,15 @@ Respon Anda WAJIB dalam format JSON murni yang valid tanpa tambahan markdown ata
 
                 } else if (provName.includes("leonardo")) {
                     apiEndpoint = "https://cloud.leonardo.ai/api/rest/v1/generations-image-to-video";
+                    
+                    let defaultCharacter = "";
+                    if (!fullModelUrl) {
+                        defaultCharacter = "The main character is an elegant 20-year-old Indonesian woman resembling a warm, friendly Indonesian student with a soft neat face, wearing a neat pastel Indonesian-style hijab and a flowing long elegant gamis/dress (no pants, khas Indonesia)";
+                    }
+
                     payload = {
                         modelId: modelVideo || "kino-xl",
-                        prompt: `${scene.video_prompt}, high quality cinematic style, ${style}`,
+                        prompt: `${scene.video_prompt}, ${defaultCharacter}, high quality cinematic style, ${style}`,
                         imageUrl: fullModelUrl || "https://res.cloudinary.com/demo/image/upload/v1312461204/sample.jpg",
                         motionStrength: 5,
                         aspectRatio: ratio === "9:16" ? "9:16" : "16:9",
