@@ -539,6 +539,10 @@
             .footer-bottom { font-size: 0.75rem; }
             #live-clock-footer { font-size: 0.8rem; }
         }
+        /* iOS SWITCH styling */
+        .ios-switch input:checked + .ios-slider { background-color: #10B981; }
+        .ios-slider:before { content: ""; position: absolute; height: 18px; width: 18px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; box-shadow: 0 1px 3px rgba(0,0,0,0.2); }
+        .ios-switch input:checked + .ios-slider:before { transform: translateX(20px); }
     </style>
 </head>
 <body>
@@ -720,6 +724,19 @@
             </div>
 
             <div class="result-info" id="download-stats"></div>
+
+            <!-- DYNAMIC SPEAKER SWITCH -->
+            <div id="speaker-switch-container" style="display:none; align-items:center; justify-content:space-between; padding:12px 16px; background:#F9FAFB; border-radius:16px; border:1px solid var(--border-color); margin-bottom:20px;">
+                <div style="display:flex; align-items:center; gap:10px; font-weight:700; font-size:0.85rem;">
+                    <i class="fa-solid fa-volume-high" id="speaker-icon" style="color:var(--accent-color); font-size:1.1rem;"></i>
+                    <span id="speaker-status-text">Suara Aktif</span>
+                </div>
+                <!-- iOS style toggle switch -->
+                <label class="ios-switch" style="position: relative; display: inline-block; width: 44px; height: 24px;">
+                    <input type="checkbox" id="speaker-toggle" checked style="opacity: 0; width: 0; height: 0;">
+                    <span class="ios-slider" style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 24px;"></span>
+                </label>
+            </div>
 
             <!-- BUTTONS DIJAMIN Z-INDEX TINGGI AGAR TERBEBAS DARI ERROR OVERLAY & BISA DIKLIK -->
             <div class="action-buttons">
@@ -1537,6 +1554,39 @@
             }
 
             if(type !== 'thumb') setupMediaSession(title, type === 'audio', finalThumb);
+            
+            // LOGIKA DYNAMIC SAKLAR SUARA (100% NYATA & BUKAN SIMULASI)
+            const switchCont = document.getElementById('speaker-switch-container');
+            const speakerIcon = document.getElementById('speaker-icon');
+            const speakerText = document.getElementById('speaker-status-text');
+            const speakerToggle = document.getElementById('speaker-toggle');
+            const switchLabel = switchCont.querySelector('label');
+
+            if (type === 'thumb') {
+                switchCont.style.display = 'none';
+            } else {
+                switchCont.style.display = 'flex';
+                const isMutedVideo = type === 'video' && (quality.toUpperCase().includes('1080') || quality.toUpperCase().includes('1440') || quality.toUpperCase().includes('2160') || quality.toUpperCase().includes('4K') || quality.toUpperCase().includes('MUTE') || quality.toUpperCase().includes('NO AUDIO'));
+                const hasAudioSupport = (type === 'audio') || (type === 'video' && (!isMutedVideo || isDualAudio));
+
+                if (hasAudioSupport) {
+                    switchLabel.style.display = 'inline-block';
+                    speakerToggle.disabled = false;
+                    speakerToggle.checked = true;
+                    speakerText.innerText = "Suara Aktif";
+                    speakerText.style.color = "var(--text-primary)";
+                    speakerIcon.className = "fa-solid fa-volume-high";
+                    speakerIcon.style.color = "var(--accent-color)";
+                } else {
+                    switchLabel.style.display = 'none';
+                    speakerToggle.disabled = true;
+                    speakerText.innerText = "Tidak Mendukung Suara";
+                    speakerText.style.color = "var(--danger-color)";
+                    speakerIcon.className = "fa-solid fa-volume-xmark";
+                    speakerIcon.style.color = "var(--danger-color)";
+                }
+            }
+
             resultContainer.classList.add('active');
             setTimeout(() => { resultContainer.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 100);
 
@@ -2073,6 +2123,57 @@
         setInterval(() => { if (!document.hidden && typeof window.pingSemuaServer === 'function') window.pingSemuaServer(); }, 15000);
         setTimeout(() => { if (typeof window.pingSemuaServer === 'function') window.pingSemuaServer(); }, 1500);
         document.addEventListener('visibilitychange', () => { if (!document.hidden && typeof window.pingSemuaServer === 'function') window.pingSemuaServer(); });
+
+        // SISTEM BATAL & LANJUTKAN DOWNLOAD (100% NYATA)
+        const cancelBtn = document.getElementById('cancel-download-btn');
+        cancelBtn.addEventListener('click', () => {
+            if (activeXhr) {
+                activeXhr.abort();
+                activeXhr = null;
+                cancelBtn.innerText = "Lanjut";
+                cancelBtn.style.background = "#d1fae5";
+                cancelBtn.style.color = "#10b981";
+                cancelBtn.style.borderColor = "#a7f3d0";
+                document.getElementById('real-download-speed').innerHTML = '<i class="fa-solid fa-pause" style="color: #6B7280; margin-right: 4px;"></i> Dihentikan';
+            } else if (cancelBtn.innerText === "Lanjut") {
+                cancelBtn.innerText = "Batal";
+                cancelBtn.style.background = "#fee2e2";
+                cancelBtn.style.color = "#ef4444";
+                cancelBtn.style.borderColor = "#fca5a5";
+                document.getElementById('real-download-btn').click();
+            }
+        });
+
+        // SISTEM SAKLAR SUARA ON/OFF (100% NYATA)
+        document.getElementById('speaker-toggle').addEventListener('change', (e) => {
+            const isChecked = e.target.checked;
+            const speakerIcon = document.getElementById('speaker-icon');
+            const speakerText = document.getElementById('speaker-status-text');
+            
+            if (activeMedia) {
+                if (isChecked) {
+                    if (isDualAudio) {
+                        customVideo.muted = true; 
+                        customAudio.muted = false;
+                    } else {
+                        activeMedia.muted = false;
+                    }
+                    speakerText.innerText = "Suara Aktif";
+                    speakerIcon.className = "fa-solid fa-volume-high";
+                    speakerIcon.style.color = "var(--accent-color)";
+                } else {
+                    if (isDualAudio) {
+                        customVideo.muted = true;
+                        customAudio.muted = true;
+                    } else {
+                        activeMedia.muted = true;
+                    }
+                    speakerText.innerText = "Suara Dimatikan";
+                    speakerIcon.className = "fa-solid fa-volume-xmark";
+                    speakerIcon.style.color = "var(--text-light)";
+                }
+            }
+        });
 
     </script>
 </body>
