@@ -2186,32 +2186,43 @@ window.deleteAllPlatforms = function() {
 };
 
 window.editEndpointMulti = function(key, name) {
-    const currentPaths = downloaderDataGlobal.endpoints[key].paths || {};
-    const servers = downloaderDataGlobal.baseUrls || {};
-    const inputsConfig = [];
-    
-    for(let srvKey in servers) {
-        if(servers[srvKey] === null) continue;
+        const currentPaths = downloaderDataGlobal.endpoints[key].paths || {};
+        const servers = downloaderDataGlobal.baseUrls || {};
+        const inputsConfig = [];
+        
         inputsConfig.push({
-            id: srvKey,
-            label: `Path untuk ${servers[srvKey].name}`,
-            placeholder: 'Pisahkan dengan Enter untuk multi-path (cadangan)',
-            value: currentPaths[srvKey] || ""
+            id: '_platformName',
+            label: 'Nama Platform / Layanan',
+            placeholder: 'Contoh: YouTube Downloader',
+            value: downloaderDataGlobal.endpoints[key].name || name
         });
-    }
+        
+        for(let srvKey in servers) {
+            if(servers[srvKey] === null) continue;
+            inputsConfig.push({
+                id: srvKey,
+                label: `Path untuk ${servers[srvKey].name}`,
+                placeholder: 'Pisahkan dengan Enter untuk multi-path (cadangan)',
+                value: currentPaths[srvKey] || ""
+            });
+        }
 
-    openMultiInputModal(`Edit Jalur ${name}`, `Tentukan buntut API yang berbeda untuk masing-masing server.`, inputsConfig, async (results) => {
-        try {
-            const dataToUpdate = {};
-            for(let srvKey in results) {
-                dataToUpdate[`endpoints.${key}.paths.${srvKey}`] = results[srvKey];
-            }
-            await updateDoc(doc(db, "settings", "downloader_api"), dataToUpdate);
-            await createLog({ type: 'info', host: 'Admin', request: 'EDIT_PATH', message: `Memperbarui jalur multi-server untuk ${name}` });
-            showToast("Jalur berhasil diperbarui!", "success");
-        } catch(e) { showToast("Gagal menyimpan", "danger"); }
-    });
-};
+        openMultiInputModal(`Edit Platform & Jalur`, `Tentukan nama dan buntut API yang berbeda untuk masing-masing server.`, inputsConfig, async (results) => {
+            try {
+                const dataToUpdate = {};
+                const newName = results['_platformName'] || name;
+                dataToUpdate[`endpoints.${key}.name`] = newName.trim();
+                
+                for(let srvKey in results) {
+                    if(srvKey === '_platformName') continue;
+                    dataToUpdate[`endpoints.${key}.paths.${srvKey}`] = results[srvKey];
+                }
+                await updateDoc(doc(db, "settings", "downloader_api"), dataToUpdate);
+                await createLog({ type: 'info', host: 'Admin', request: 'EDIT_PATH', message: `Memperbarui Platform & Jalur untuk ${newName}` });
+                showToast("Data berhasil diperbarui!", "success");
+            } catch(e) { showToast("Gagal menyimpan", "danger"); }
+        });
+    };
 
 // PERBAIKAN: Logika Cek Semua Status agar menggunakan separator ?url= atau &url=
 window.checkAllEndpoints = async function() {
@@ -2241,19 +2252,29 @@ window.checkAllEndpoints = async function() {
                     badge.innerHTML = `<span class="status-dot orange"></span> Mengecek`;
 
                     try {
-                        // Tempelkan API Key jika server membutuhkannya
-                        if (srv.apiKey) {
-                            const keysList = srv.apiKey.split(/[\n,]+/).map(k => k.trim()).filter(k => k);
-                            const firstKey = keysList[0] || "";
-                            if (firstKey) {
+                        let cleanPath = firstPath;
+                        
+                        // Jalur Cerdas dengan Placeholder {mediaUrl}
+                        if (cleanPath.includes('{mediaUrl}')) {
+                            cleanPath = cleanPath.replace('{mediaUrl}', encodeURIComponent("test"));
+                            if (srv.apiKey) {
                                 const keyParam = srv.apiKeyParam || 'apikey';
-                                const sep = firstPath.includes('?') ? '&' : '?';
-                                firstPath += `${sep}${keyParam}=${firstKey}`;
+                                const sep = cleanPath.includes('?') ? '&' : '?';
+                                cleanPath += `${sep}${keyParam}=${srv.apiKey}`;
                             }
+                        } else {
+                            // Jalur Standar (Bawaan Lama)
+                            if (srv.apiKey) {
+                                const keyParam = srv.apiKeyParam || 'apikey';
+                                const sep = cleanPath.includes('?') ? '&' : '?';
+                                cleanPath += `${sep}${keyParam}=${srv.apiKey}`;
+                            }
+                            const urlParam = srv.urlParam || 'url';
+                            const separator = cleanPath.includes('?') ? `&${urlParam}=` : `?${urlParam}=`;
+                            cleanPath += separator + "test";
                         }
                         
-                        const separator = firstPath.includes('?') ? '&url=' : '?url=';
-                        const fullUrl = srv.url + firstPath + separator + "test"; 
+                        const fullUrl = srv.url + cleanPath;
                         
                         // Gunakan Cloudflare Proxy Anda untuk bypass CORS di Dasbor
                         const proxiedUrl = `https://kreaverse-proxy.kreaverse-ai.workers.dev/?targetUrl=${encodeURIComponent(fullUrl)}`;
