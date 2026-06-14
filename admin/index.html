@@ -2214,36 +2214,43 @@ window.editEndpointMulti = function(key, name) {
 
 // PERBAIKAN: Logika Cek Semua Status agar menggunakan separator ?url= atau &url=
 window.checkAllEndpoints = async function() {
-    if (!downloaderDataGlobal) return;
-    showToast("Mengecek pintu toko ke masing-masing server...", "info");
-    
-    const baseUrls = downloaderDataGlobal.baseUrls || {};
-    const endpoints = downloaderDataGlobal.endpoints || {};
-
-    for (const epKey in endpoints) {
-        if (!endpoints[epKey]) continue; 
-        const epPaths = endpoints[epKey].paths || {};
-        
-        for (const srvKey in baseUrls) {
-            if (!baseUrls[srvKey]) continue; 
+            if (!downloaderDataGlobal) return;
+            showToast("Mengecek pintu toko ke masing-masing server...", "info");
             
-            const pathText = epPaths[srvKey];
-            const badge = document.getElementById(`status-${epKey}-${srvKey}`);
-            
-            if (!badge || !pathText || pathText.trim() === "") continue;
+            const baseUrls = downloaderDataGlobal.baseUrls || {};
+            const endpoints = downloaderDataGlobal.endpoints || {};
 
-            const pathLines = pathText.split('\n').map(p => p.trim()).filter(p => p !== "");
-            const firstPath = pathLines[0];
-
-            badge.className = 'server-status-badge bg-orange';
-            badge.innerHTML = `<span class="status-dot orange"></span> Mengecek`;
-
-            try {
-                // PERBAIKAN: Gunakan separator yang benar
-                const separator = firstPath.includes('?') ? '&url=' : '?url=';
-                const fullUrl = baseUrls[srvKey].url + firstPath + separator + "test"; 
+            for (const epKey in endpoints) {
+                if (!endpoints[epKey]) continue; 
+                const epPaths = endpoints[epKey].paths || {};
                 
-                const response = await fetch(fullUrl, { method: 'GET' });
+                for (const srvKey in baseUrls) {
+                    const srv = baseUrls[srvKey];
+                    if (!srv) continue; 
+                    
+                    const pathText = epPaths[srvKey];
+                    const badge = document.getElementById(`status-${epKey}-${srvKey}`);
+                    
+                    if (!badge || !pathText || pathText.trim() === "") continue;
+
+                    const pathLines = pathText.split('\n').map(p => p.trim()).filter(p => p !== "");
+                    let firstPath = pathLines[0];
+
+                    badge.className = 'server-status-badge bg-orange';
+                    badge.innerHTML = `<span class="status-dot orange"></span> Mengecek`;
+
+                    try {
+                        // Tempelkan API Key jika server membutuhkannya
+                        if (srv.apiKey) {
+                            const keyParam = srv.apiKeyParam || 'apikey';
+                            const sep = firstPath.includes('?') ? '&' : '?';
+                            firstPath += `${sep}${keyParam}=${srv.apiKey}`;
+                        }
+                        
+                        const separator = firstPath.includes('?') ? '&url=' : '?url=';
+                        const fullUrl = srv.url + firstPath + separator + "test"; 
+                        
+                        const response = await fetch(fullUrl, { method: 'GET' });
                 
                 // PERBAIKAN: Jika server membalas dengan JSON (meskipun statusnya 400/500), berarti server HIDUP.
                 const contentType = response.headers.get("content-type");
