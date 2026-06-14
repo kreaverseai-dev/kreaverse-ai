@@ -1,3 +1,5 @@
+ytdl/index.html
+
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -1216,11 +1218,20 @@
             return { links: extracted, title: globalTitle, duration: globalDuration, thumbnail: globalThumbnail };
         }
 
-        async function smartFetch(baseUrl, pathsArray, mediaUrl, serverName) {
+        async function smartFetch(srvObj, pathsArray, mediaUrl) {
             let lastError = null;
+            const baseUrl = srvObj.url;
+            const apiKey = srvObj.apiKey || "";
+            const apiKeyParam = srvObj.apiKeyParam || "apikey";
+            
             for (let path of pathsArray) {
-                const separator = path.includes('?') ? '&url=' : '?url=';
-                const fullUrl = `${baseUrl}${path}${separator}${encodeURIComponent(mediaUrl)}`;
+                let cleanPath = path;
+                if (apiKey) {
+                    const keySep = cleanPath.includes('?') ? '&' : '?';
+                    cleanPath += `${keySep}${apiKeyParam}=${apiKey}`;
+                }
+                const separator = cleanPath.includes('?') ? '&url=' : '?url=';
+                const fullUrl = `${baseUrl}${cleanPath}${separator}${encodeURIComponent(mediaUrl)}`;
                 try {
                     let response;
                     try { response = await fetch(fullUrl); } catch (directErr) {
@@ -1314,7 +1325,7 @@
             }
             pathsToTry = [...new Set(pathsToTry)];
             updateLoaderStatus("Menganalisis Tautan...", `Mengirim permintaan ke ${srvObj.name}...`);
-            const fetchResult = await smartFetch(srvObj.url, pathsToTry, mediaUrl, srvObj.name);
+            const fetchResult = await smartFetch(srvObj, pathsToTry, mediaUrl);
             const data = fetchResult.data;
 
             let title = data.title || (data.data && data.data.title) || (data.result && data.result.title) || "Video";
