@@ -657,6 +657,33 @@
                         </div>
                     </div>
                 </div>
+
+                <div class="panel">
+                    <div class="panel-head">
+                        <div class="panel-title"><i class="fa-solid fa-clock-rotate-left"></i> Riwayat API Key Mati / Habis Saldo</div>
+                        <button class="btn btn-sm btn-danger" onclick="confirmAction('Hapus semua riwayat API Key yang mati?', window.deleteAllDeadApi)">
+                            <i class="fa-solid fa-trash-can-arrow-up"></i> Hapus Semua Riwayat
+                        </button>
+                    </div>
+                    <div class="panel-body" style="padding:0;">
+                        <div class="table-responsive">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th style="width:50px;">No.</th>
+                                        <th>Provider</th>
+                                        <th>API Key</th>
+                                        <th>Status</th>
+                                        <th>Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="apiDeadTable">
+                                    <tr><td colspan="5" style="text-align:center; padding:40px; color:var(--text-sec);">Memuat...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <!-- CLOUDINARY TAB -->
@@ -1712,8 +1739,8 @@ window.deleteAllProviders = function() {
 function setupRealtimeApis() {
     if (unsubApiKeys) { unsubApiKeys(); unsubApiKeys = null; }
     unsubApiKeys = onSnapshot(query(collection(db, "api_keys"), limit(500)), async snapshot => {
-        let html = "", total = 0, countOn = 0, countOff = 0;
-        const toDelete = [], rows = [];
+        let html = "", deadHtml = "", total = 0, countOn = 0, countOff = 0;
+        const rows = [], deadRows = [];
 
         snapshot.forEach(docSnap => {
             const d = docSnap.data();
@@ -1734,7 +1761,7 @@ function setupRealtimeApis() {
                 });
             } else {
                 countOff++;
-                toDelete.push({ id: docSnap.id, provider: d.provider || 'Unknown' });
+                deadRows.push({ id: docSnap.id, provider: d.provider || 'Unknown', key: cleanKey });
             }
         });
 
@@ -1742,22 +1769,25 @@ function setupRealtimeApis() {
         html = rows.map(r => r.html).join('');
         if (!html) html = `<tr><td colspan="5" style="text-align:center; padding:40px; color:var(--text-sec);"><i class="fa-solid fa-folder-open" style="font-size:2rem; display:block; margin-bottom:10px; opacity:0.3;"></i>Tidak ada API Key aktif.</td></tr>`;
 
+        deadRows.forEach((r, index) => {
+            deadHtml += `
+                <tr>
+                    <td style="font-weight:700; color:var(--text-sec);">${index + 1}</td>
+                    <td><span class="badge badge-gray">${r.provider}</span></td>
+                    <td style="font-family:monospace; color:var(--text-sec); font-size:0.85rem; text-decoration:line-through;">${r.key}</td>
+                    <td><span class="badge badge-red"><i class="fa-solid fa-circle-xmark"></i> Saldo Habis</span></td>
+                    <td><button class="btn btn-sm btn-danger" onclick="window.triggerDeleteApi('${r.id}')"><i class="fa-solid fa-trash"></i></button></td>
+                </tr>
+            `;
+        });
+        if (!deadHtml) deadHtml = `<tr><td colspan="5" style="text-align:center; padding:40px; color:var(--text-sec);">Belum ada riwayat API Key yang mati.</td></tr>`;
+
         document.getElementById('apiTable').innerHTML = html;
+        const deadTableEl = document.getElementById('apiDeadTable');
+        if (deadTableEl) deadTableEl.innerHTML = deadHtml;
+
         document.getElementById('valApiTotal').innerText = total; document.getElementById('valApiOn').innerText = countOn; document.getElementById('valApiOff').innerText = countOff;
         const badge = document.getElementById('api-count-badge'); if (badge) badge.innerText = total;
-
-        if (toDelete.length > 0) {
-            try {
-                let batch = writeBatch(db); let count = 0;
-                for (const dead of toDelete) {
-                    batch.delete(doc(db, "api_keys", dead.id)); count++;
-                    if (count % 400 === 0) { await batch.commit(); batch = writeBatch(db); }
-                }
-                if (count % 400 !== 0) await batch.commit();
-                await createLog({ type: 'warning', host: 'System', request: 'AUTO_CLEAN', message: `Membersihkan ${toDelete.length} API Key yang mati/limit secara otomatis` });
-                showToast(`${toDelete.length} API key mati dibersihkan`, "warning");
-            } catch(e) { console.error("Gagal auto-clean:", e); }
-        }
     });
 }
 window.triggerDeleteApi = (id) => confirmAction('Hapus API Key ini permanen?', () => window.delApi(id));
@@ -1792,6 +1822,21 @@ window.deleteAllApi = async () => {
         if(total === 0) { showToast("API sudah kosong", "info"); return; }
         await createLog({ type: 'error', host: 'Admin', request: 'DEL_ALL_KEYS', message: `Menghapus SEMUA API Key (${total} data)` }); showToast(`Semua dihapus! (${total} data)`, "success");
     } catch(e) { showToast("Gagal hapus", "danger"); }
+};
+window.deleteAllDeadApi = async () => {
+    try {
+        let total = 0;
+        while(true) {
+            const snap = await getDocs(query(collection(db, "api_keys"), where("status", "==", "mati"), limit(500)));
+            if(snap.empty) break;
+            let batch = writeBatch(db);
+            snap.forEach(d => { batch.delete(d.ref); total++; });
+            await batch.commit();
+        }
+        if(total === 0) { showToast("Tidak ada riwayat API mati", "info"); return; }
+        await createLog({ type: 'warning', host: 'Admin', request: 'DEL_DEAD_KEYS', message: `Menghapus riwayat API Key mati (${total} data)` });
+        showToast(`Riwayat dibersihkan! (${total} data)`, "success");
+    } catch(e) { showToast("Gagal membersihkan riwayat", "danger"); }
 };
 document.getElementById('btn-healthcheck').onclick = () => window.checkAllApiHealth();
 document.getElementById('btn-deleteallapi').onclick = () => confirmAction('Hapus SEMUA API Key?', () => window.deleteAllApi());
