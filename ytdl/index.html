@@ -582,7 +582,7 @@
                     <input type="text" id="media-url" class="url-input" placeholder="https://youtu.be/..." autocomplete="off">
                 </div>
                 <div class="input-actions">
-                    <button id="paste-btn" title="Tempel Tautan" style="background: #ffffff; border: 1px solid #111827; border-radius: 99px; padding: 6px 14px; font-size: 0.85rem; font-weight: 700; color: #111827; display: flex; align-items: center; gap: 4px; box-shadow: var(--shadow-sm); cursor: pointer;"><i class="fa-solid fa-clapperboard" style="font-size: 0.95rem; color: #111827;"></i><span style="font-size: 0.9rem; font-weight: 900; margin-right: 2px;">+</span>Paste</button>
+                    <button id="paste-btn" title="Tempel Tautan" style="background: #ffffff; border: 1px solid #111827; border-radius: 99px; padding: 6px 14px; font-size: 0.85rem; font-weight: 700; color: #111827; display: flex; align-items: center; gap: 6px; box-shadow: var(--shadow-sm); cursor: pointer;"><i class="fa-solid fa-paste" style="font-size: 0.95rem; color: #111827;"></i>Paste</button>
                 </div>
             </div>
             <button id="download-btn" class="download-btn">
@@ -778,7 +778,7 @@
 
     <!-- FOOTER -->
     <footer class="footer">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 60" style="width:140px; height:32px; margin: 0 auto 20px; display: block; filter: drop-shadow(0 1px 2px rgba(0,0,0,0.1));">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 60" style="width:170px; height:42px; margin: 0 auto 20px; display: block; filter: drop-shadow(0 1px 2px rgba(0,0,0,0.1));">
             <defs>
                 <linearGradient id="kreaGradFooter" x1="0%" y1="0%" x2="100%" y2="100%">
                     <stop offset="0%" stop-color="#D97757" />
@@ -798,12 +798,12 @@
             <g>
                 <path d="M 30,10 Q 30,30 50,30 Q 30,30 30,50 Q 30,30 10,30 Q 30,30 30,10 Z" fill="url(#kreaGradFooter)" />
                 <path d="M 30,17 Q 30,30 43,30 Q 30,30 30,43 Q 30,30 17,30 Q 30,30 30,17 Z" fill="url(#kreaGradFooter)" transform="rotate(45, 30, 30)" opacity="0.85" />
-                <text x="65" y="38" font-family="'Plus Jakarta Sans', sans-serif" font-weight="800" font-size="21" fill="url(#kreaGradFooter)" letter-spacing="-0.5px">Kreaverse<tspan font-weight="500"> AI</tspan></text>
+                <text x="65" y="38" font-family="'Plus Jakarta Sans', sans-serif" font-weight="900" font-size="21" fill="#111827" letter-spacing="-0.5px">Kreaverse<tspan font-weight="500" fill="#D97757"> AI</tspan></text>
             </g>
             <g style="mix-blend-mode: overlay;">
                 <path d="M 30,10 Q 30,30 50,30 Q 30,30 30,50 Q 30,30 10,30 Q 30,30 30,10 Z" fill="url(#shimmerGlowFooter)" />
                 <path d="M 30,17 Q 30,30 43,30 Q 30,30 30,43 Q 30,30 17,30 Q 30,30 30,17 Z" fill="url(#shimmerGlowFooter)" transform="rotate(45, 30, 30)" />
-                <text x="65" y="38" font-family="'Plus Jakarta Sans', sans-serif" font-weight="800" font-size="21" fill="url(#shimmerGlowFooter)" letter-spacing="-0.5px">Kreaverse<tspan font-weight="500"> AI</tspan></text>
+                <text x="65" y="38" font-family="'Plus Jakarta Sans', sans-serif" font-weight="900" font-size="21" fill="url(#shimmerGlowFooter)" letter-spacing="-0.5px">Kreaverse<tspan font-weight="500"> AI</tspan></text>
             </g>
         </svg>
         <div class="footer-links">
@@ -1111,7 +1111,10 @@
                 if(pingEl) { pingEl.innerText = "Menguji..."; pingEl.style.color = "var(--text-light)"; }
                 try {
                     const start = performance.now();
-                    await fetch(srv.url + "?t=" + Date.now(), { method: "GET", mode: "no-cors", cache: "no-store" });
+                    const controller = new AbortController();
+                    const timeoutId = setTimeout(() => controller.abort(), 1500);
+                    await fetch(srv.url + "?t=" + Date.now(), { method: "GET", mode: "no-cors", cache: "no-store", signal: controller.signal });
+                    clearTimeout(timeoutId);
                     const dur = Math.round(performance.now() - start);
                     if(dur < fastestPing) { fastestPing = dur; fastestServerKey = key; }
                     if(pingEl) {
@@ -1364,7 +1367,7 @@
                 if (fillEl) {
                     fillEl.classList.add('indeterminate');
                 }
-                if (speedEl) speedEl.innerHTML = '<i class="fa-solid fa-bolt" style="color: #F59E0B; margin-right: 4px;"></i> Mengirim Permintaan...';
+                if (speedEl) speedEl.innerHTML = '<i class="fa-solid fa-bolt" style="color: #F59E0B; margin-right: 4px;"></i> Menghubungkan...';
                 if (statusIcon) statusIcon.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin" style="color: var(--accent-color);"></i>';
             }
         }
