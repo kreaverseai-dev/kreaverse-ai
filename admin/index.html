@@ -19,8 +19,10 @@
         .hidden { display: none !important; }
 
         /* PULL TO REFRESH */
-        #pull-loader { position: fixed; top: 0; left: 0; width: 100%; text-align: center; padding: 15px; background: var(--surface); box-shadow: 0 4px 15px rgba(0,0,0,0.05); color: var(--text); font-weight: 700; font-size: 0.9rem; transform: translateY(-100%); transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); z-index: 10000; display: flex; align-items: center; justify-content: center; gap: 10px; border-bottom: 1px solid var(--border); }
-        #pull-loader.visible { transform: translateY(0); }
+        #pull-loader { position: fixed; top: -50px; left: 50%; margin-left: -20px; width: 40px; height: 40px; background: var(--surface); box-shadow: 0 2px 10px rgba(0,0,0,0.15); border-radius: 50%; display: flex; align-items: center; justify-content: center; z-index: 10000; transition: transform 0.2s ease; pointer-events: none; }
+        #pull-icon { font-size: 1.1rem; color: var(--text-sec); }
+        .pull-spin #pull-icon { animation: ytSpin 0.8s linear infinite; color: var(--accent); }
+        @keyframes ytSpin { to { transform: rotate(360deg); } }
 
         /* LOADING */
         #loading-screen { position: fixed; inset: 0; background: var(--surface); z-index: 9999999; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 20px; }
@@ -272,7 +274,7 @@
 
 <!-- PULL TO REFRESH LOADER -->
 <div id="pull-loader">
-    <i class="fa-solid fa-rotate-right fa-spin" style="color: var(--accent); font-size: 1.2rem;"></i> Menyegarkan Dasbor...
+    <i class="fa-solid fa-rotate-right" id="pull-icon"></i>
 </div>
 
 <!-- LOADING SCREEN -->
@@ -1232,43 +1234,40 @@ window.nav = id => {
 };
 
 // ============================================================
-// FITUR PULL-TO-REFRESH (DIPERBAIKI)
+// FITUR PULL-TO-REFRESH (STYLE YOUTUBE)
 // ============================================================
-let pStartY = 0;
-let pStartX = 0;
+let pStartY = 0, pStartX = 0, isPulling = false;
 const cw = document.querySelector('.content-wrapper');
 const pullLoader = document.getElementById('pull-loader');
+const pullIcon = document.getElementById('pull-icon');
 if(cw) {
     cw.addEventListener('touchstart', e => {
-        if (cw.scrollTop === 0) {
-            pStartY = e.touches[0].clientY;
-            pStartX = e.touches[0].clientX;
-        }
+        if (cw.scrollTop <= 0) { pStartY = e.touches[0].clientY; pStartX = e.touches[0].clientX; isPulling = true; pullLoader.style.transition = 'none'; pullLoader.classList.remove('pull-spin'); }
     }, {passive: true});
     cw.addEventListener('touchmove', e => {
-        if (cw.scrollTop === 0 && pStartY > 0) {
-            let pCurrentY = e.touches[0].clientY;
-            let pCurrentX = e.touches[0].clientX;
-            let diffY = pCurrentY - pStartY;
-            let diffX = Math.abs(pCurrentX - pStartX);
-            
-            if (diffY > 60 && diffY > diffX * 2) {
-                pullLoader.classList.add('visible');
-            }
-        }
-    }, {passive: true});
+        if (!isPulling) return;
+        let diffY = e.touches[0].clientY - pStartY;
+        let diffX = Math.abs(e.touches[0].clientX - pStartX);
+        if (diffY > 0 && diffY > diffX) {
+            if (e.cancelable) e.preventDefault();
+            let pullDist = Math.min(diffY * 0.4, 120);
+            pullLoader.style.transform = `translateY(${pullDist}px)`;
+            if (pullIcon) pullIcon.style.transform = `rotate(${pullDist * 3}deg)`;
+        } else if (diffY < 0) { isPulling = false; }
+    }, {passive: false});
     cw.addEventListener('touchend', e => {
-        if (cw.scrollTop === 0 && pStartY > 0) {
-            let pEndY = e.changedTouches[0].clientY;
-            let diffY = pEndY - pStartY;
-            if (diffY > 120) { 
-                setTimeout(() => location.reload(), 300);
-            } else {
-                pullLoader.classList.remove('visible');
-            }
+        if (!isPulling) return;
+        isPulling = false;
+        pullLoader.style.transition = 'transform 0.3s ease';
+        let diffY = e.changedTouches[0].clientY - pStartY;
+        if (diffY * 0.4 > 60) {
+            pullLoader.style.transform = `translateY(70px)`;
+            pullLoader.classList.add('pull-spin');
+            setTimeout(() => location.reload(), 800);
+        } else {
+            pullLoader.style.transform = `translateY(0)`;
         }
-        pStartY = 0;
-        pStartX = 0;
+        pStartY = 0; pStartX = 0;
     });
 }
 
