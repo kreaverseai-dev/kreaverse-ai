@@ -874,8 +874,14 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        const isLoggedIn = localStorage.getItem('kreaverse_logged_in') === 'true';
-        const userId = localStorage.getItem('kreaverse_user_id');
+        let isLoggedIn = false;
+        let userId = null;
+        try {
+            isLoggedIn = localStorage.getItem('kreaverse_logged_in') === 'true';
+            userId = localStorage.getItem('kreaverse_user_id');
+        } catch (e) {
+            console.warn("Storage is blocked: ", e);
+        }
 
         window.showIphoneNotif = function(title, desc, iconClass = 'fa-circle-info') {
             const existing = document.getElementById('iphone-island-toast');
@@ -928,7 +934,12 @@
         let isConfigLoaded = true; // Langsung siap digunakan seketika tanpa jeda milidetik!
 
         // DEKLARASI VARIABEL STATUS DAN DOM DIURUTKAN DI PALING ATAS DEMI MENGHINDARI TEMPORAL DEAD ZONE (TDZ)
-        let currentFormat = localStorage.getItem('kreaverse_ytdl_format') || 'video';
+        let currentFormat = 'video';
+        try {
+            currentFormat = localStorage.getItem('kreaverse_ytdl_format') || 'video';
+        } catch (e) {
+            console.warn("Storage is blocked: ", e);
+        }
         let currentServer = 'auto';
         let currentPlatform = 'auto'; 
         let resolvedMediaUrl = ""; 
@@ -993,9 +1004,17 @@
             catch(e) { showIphoneNotif('Akses Gagal', 'Gagal membaca clipboard/salinan.', 'fa-triangle-exclamation'); }
         });
 
-        const savedUrl = localStorage.getItem('kreaverse_ytdl_saved_url');
-        if (savedUrl) urlInput.value = savedUrl;
-        urlInput.addEventListener('input', () => { localStorage.setItem('kreaverse_ytdl_saved_url', urlInput.value); });
+        try {
+            const savedUrl = localStorage.getItem('kreaverse_ytdl_saved_url');
+            if (savedUrl) urlInput.value = savedUrl;
+            urlInput.addEventListener('input', () => { 
+                try {
+                    localStorage.setItem('kreaverse_ytdl_saved_url', urlInput.value); 
+                } catch (e) {}
+            });
+        } catch (e) {
+            console.warn("Storage is blocked: ", e);
+        }
 
         window.openSheet = (id) => document.getElementById(id).classList.add('active');
         window.closeSheet = (id) => document.getElementById(id).classList.remove('active');
@@ -1005,11 +1024,11 @@
         });
 
         // REVISI: PASTIKAN AUTO-RESET MENGHILANGKAN SEMUA ERROR LAMA SAAT GANTI TAB FORMAT
-        window.changeFormat = (format) => {
+        const changeFormat = (format) => {
             if (currentFormat !== format) resetUI(); 
             
             currentFormat = format;
-            localStorage.setItem('kreaverse_ytdl_format', format); 
+            try { localStorage.setItem('kreaverse_ytdl_format', format); } catch (e) {}
             document.querySelectorAll('.format-btn').forEach(btn => btn.classList.remove('active'));
             
             if (format === 'video') {
@@ -1023,6 +1042,7 @@
                 ytWarningDesc.style.display = 'none';
             }
         };
+        window.changeFormat = changeFormat;
         changeFormat(currentFormat);
 
         function updateLiveClock() {
