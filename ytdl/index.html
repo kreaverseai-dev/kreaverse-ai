@@ -690,8 +690,8 @@
                     </div>
                 </div>
                 
-                <video id="custom-video" class="video-element" playsinline preload="metadata" referrerpolicy="no-referrer"></video>
-                <audio id="custom-audio" class="hidden" preload="metadata" referrerpolicy="no-referrer"></audio>
+                <video id="custom-video" class="video-element" playsinline preload="metadata" referrerpolicy="no-referrer" crossorigin="anonymous"></video>
+                <audio id="custom-audio" class="hidden" preload="metadata" referrerpolicy="no-referrer" crossorigin="anonymous"></audio>
                 
                 <!-- REVISI 4: PENEBALAN HITBOX SLIDER & AUTO KONTROL HILANG -->
                 <div class="player-controls" id="player-controls">
@@ -1644,18 +1644,16 @@
             } else if (type === 'video') {
                 isDualAudio = false;
                 const bestAudio = globalScannedOptions.filter(o => o.type === 'audio').sort((a, b) => parseInt(b.quality) - parseInt(a.quality))[0];
-                const isYouTube = url.includes('googlevideo.com') || url.includes('youtube.com') || url.includes('youtu.be');
                 const CLOUDFLARE_WORKER_PROXY = "https://kreaverse-proxy.kreaverse-ai.workers.dev";
 
                 if (bestAudio && bestAudio.url) { 
-                    const isAudioYT = bestAudio.url.includes('googlevideo.com') || bestAudio.url.includes('youtube.com') || bestAudio.url.includes('youtu.be');
-                    customAudio.src = isAudioYT ? bestAudio.url : `${CLOUDFLARE_WORKER_PROXY}/?targetUrl=${encodeURIComponent(bestAudio.url)}`;
+                    customAudio.src = `${CLOUDFLARE_WORKER_PROXY}/?targetUrl=${encodeURIComponent(bestAudio.url)}`;
                     isDualAudio = true; 
                     customVideo.muted = true; 
                 } 
                 else { customVideo.muted = false; }
                 
-                const finalStreamUrl = isYouTube ? url : `${CLOUDFLARE_WORKER_PROXY}/?targetUrl=${encodeURIComponent(url)}`;
+                const finalStreamUrl = `${CLOUDFLARE_WORKER_PROXY}/?targetUrl=${encodeURIComponent(url)}`;
                 activeMedia = customVideo; customVideo.src = finalStreamUrl;
                 mediaWrapper.classList.remove('audio-mode'); customVideo.style.display = "block";
                 document.getElementById('audio-ui').style.display = "none";
@@ -1666,9 +1664,8 @@
                 document.getElementById('real-download-btn').classList.remove('hidden');
 
             } else {
-                const isYouTube = url.includes('googlevideo.com') || url.includes('youtube.com') || url.includes('youtu.be');
                 const CLOUDFLARE_WORKER_PROXY = "https://kreaverse-proxy.kreaverse-ai.workers.dev";
-                const finalStreamUrl = isYouTube ? url : `${CLOUDFLARE_WORKER_PROXY}/?targetUrl=${encodeURIComponent(url)}`;
+                const finalStreamUrl = `${CLOUDFLARE_WORKER_PROXY}/?targetUrl=${encodeURIComponent(url)}`;
 
                 activeMedia = customAudio; customAudio.src = finalStreamUrl; customAudio.muted = false;
                 mediaWrapper.classList.add('audio-mode'); customVideo.style.display = "none";
@@ -2045,9 +2042,9 @@
             
             showIphoneNotif('Mengunduh Berkas...', 'Mengalirkan berkas secara langsung dengan nama premium...', 'fa-cloud-arrow-down');
             
-            // Menggunakan proxy lokal /api/ytdl secara konsisten untuk semua format (Video, Audio, Thumbnail)
-            // Ini akan memicu dialog download asli browser tanpa berpindah halaman atau membuka tab baru
-            const proxyUrl = `/api/ytdl?targetUrl=${encodeURIComponent(resolvedMediaUrl)}&filename=${encodeURIComponent(resolvedFileName)}`;
+            // Menggunakan Cloudflare Worker Proxy premium untuk kestabilan bypass CORS, Range Requests, dan limits
+            const CLOUDFLARE_WORKER_PROXY = "https://kreaverse-proxy.kreaverse-ai.workers.dev";
+            const proxyUrl = `${CLOUDFLARE_WORKER_PROXY}/?targetUrl=${encodeURIComponent(resolvedMediaUrl)}&filename=${encodeURIComponent(resolvedFileName)}`;
             
             setTimeout(() => {
                 const a = document.createElement('a');
