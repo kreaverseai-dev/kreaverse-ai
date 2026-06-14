@@ -1252,7 +1252,18 @@ if(cw) {
             let diffY = pCurrentY - pStartY;
             let diffX = Math.abs(pCurrentX - pStartX);
             
-            if (diffY > 120) {
+            // Angka 180 = harus ditarik lebih jauh, Angka * 4 = tarikan harus lebih tegak lurus
+            if (diffY > 180 && diffY > diffX * 4) {
+                pullLoader.classList.add('visible');
+            }
+        }
+    }, {passive: true});
+    cw.addEventListener('touchend', e => {
+        if (cw.scrollTop === 0 && pStartY > 0) {
+            let pEndY = e.changedTouches[0].clientY;
+            let diffY = pEndY - pStartY;
+            // Angka 250 = harus ditarik sangat dalam baru refresh
+            if (diffY > 250) {
                 pullLoader.classList.add('visible');
             }
         }
