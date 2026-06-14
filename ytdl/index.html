@@ -690,8 +690,8 @@
                     </div>
                 </div>
                 
-                <video id="custom-video" class="video-element" playsinline preload="metadata" referrerpolicy="no-referrer" crossorigin="anonymous"></video>
-                <audio id="custom-audio" class="hidden" preload="metadata" referrerpolicy="no-referrer" crossorigin="anonymous"></audio>
+                <video id="custom-video" class="video-element" playsinline preload="metadata" referrerpolicy="no-referrer"></video>
+                <audio id="custom-audio" class="hidden" preload="metadata" referrerpolicy="no-referrer"></audio>
                 
                 <!-- REVISI 4: PENEBALAN HITBOX SLIDER & AUTO KONTROL HILANG -->
                 <div class="player-controls" id="player-controls">
@@ -1970,6 +1970,25 @@
             });
             media.addEventListener('error', () => {
                 if(media === activeMedia) {
+                    const proxyDomain = "kreaverse-proxy.kreaverse-ai.workers.dev";
+                    if (media.src && media.src.includes(proxyDomain) && window.resolvedMediaUrl) {
+                        console.warn("Proxy streaming failed, falling back to direct original URL...");
+                        const currentTime = media.currentTime;
+                        const wasPlaying = !media.paused;
+                        
+                        media.src = window.resolvedMediaUrl;
+                        media.load();
+                        
+                        media.oncanplay = () => {
+                            media.currentTime = currentTime;
+                            if (wasPlaying) {
+                                media.play().catch(e=>{});
+                            }
+                            media.oncanplay = null;
+                        };
+                        return;
+                    }
+                    
                     bufferingContent.innerHTML = `
                         <i class="fa-solid fa-triangle-exclamation" style="font-size:2.2rem; color:var(--danger-color);"></i>
                         <span style="font-size:0.9rem; text-align:center; padding-top:10px; color:#FFF; font-weight:700; line-height:1.4;">
