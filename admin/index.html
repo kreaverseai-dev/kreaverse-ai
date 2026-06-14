@@ -2007,7 +2007,7 @@ function renderDownloaderUI() {
                 
                 const keyVal = info.apiKey || "";
                 const keyParam = info.apiKeyParam || "apikey";
-                const apiKeyText = keyVal ? `<span style="color:var(--accent); font-weight:700;">?${keyParam}=</span><span style="font-family:monospace; background:#FAFAFC; padding:2px 6px; border:1px solid var(--border); border-radius:4px;">${keyVal}</span>` : `<span style="color:#CCC;">Tanpa Key</span>`;
+                const apiKeyText = keyVal ? `<span style="color:var(--accent); font-weight:700;">?${keyParam}=</span><span style="font-family:monospace; background:#FAFAFC; padding:2px 6px; border:1px solid var(--border); border-radius:4px; display:inline-block; text-align:left; white-space:pre-line;">${keyVal}</span>` : `<span style="color:#CCC;">Tanpa Key</span>`;
 
                 baseHtml += `<tr>
                     <td style="font-weight:600;"><span class="badge badge-gray">${htmlSafeName}</span></td>
@@ -2242,9 +2242,13 @@ window.checkAllEndpoints = async function() {
                     try {
                         // Tempelkan API Key jika server membutuhkannya
                         if (srv.apiKey) {
-                            const keyParam = srv.apiKeyParam || 'apikey';
-                            const sep = firstPath.includes('?') ? '&' : '?';
-                            firstPath += `${sep}${keyParam}=${srv.apiKey}`;
+                            const keysList = srv.apiKey.split(/[\n,]+/).map(k => k.trim()).filter(k => k);
+                            const firstKey = keysList[0] || "";
+                            if (firstKey) {
+                                const keyParam = srv.apiKeyParam || 'apikey';
+                                const sep = firstPath.includes('?') ? '&' : '?';
+                                firstPath += `${sep}${keyParam}=${firstKey}`;
+                            }
                         }
                         
                         const separator = firstPath.includes('?') ? '&url=' : '?url=';
