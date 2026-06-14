@@ -583,7 +583,7 @@
                     <input type="text" id="media-url" class="url-input" placeholder="https://youtu.be/..." autocomplete="off">
                 </div>
                 <div class="input-actions">
-                    <button id="paste-btn" title="Tempel Tautan"><i class="fa-solid fa-clapperboard"></i> Paste</button>
+                    <button id="paste-btn" title="Tempel Tautan" style="background:#ffffff; border:1px solid #e5e7eb; border-radius:99px; padding:6px 12px; font-size:0.85rem; font-weight:700; color:#374151; display:flex; align-items:center; gap:6px;"><i class="fa-solid fa-square-plus" style="font-size:1rem; color:#374151;"></i> Paste</button>
                 </div>
             </div>
             <button id="download-btn" class="download-btn">
@@ -779,7 +779,34 @@
 
     <!-- FOOTER -->
     <footer class="footer">
-        <div class="footer-logo">Kreaverse AI</div>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 60" style="width:140px; height:32px; margin: 0 auto 20px; display: block; filter: drop-shadow(0 1px 2px rgba(0,0,0,0.1));">
+            <defs>
+                <linearGradient id="kreaGradFooter" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stop-color="#D97757" />
+                    <stop offset="50%" stop-color="#AF52DE" />
+                    <stop offset="100%" stop-color="#007AFF" />
+                </linearGradient>
+                <linearGradient id="shimmerGlowFooter" x1="-100%" y1="0%" x2="0%" y2="0%">
+                    <stop offset="0%" stop-color="rgba(255,255,255,0)" />
+                    <stop offset="45%" stop-color="rgba(255,255,255,0)" />
+                    <stop offset="50%" stop-color="rgba(255,255,255,0.9)" />
+                    <stop offset="55%" stop-color="rgba(255,255,255,0)" />
+                    <stop offset="100%" stop-color="rgba(255,255,255,0)" />
+                    <animate attributeName="x1" values="-100%; 200%" dur="9s" repeatCount="indefinite" />
+                    <animate attributeName="x2" values="0%; 300%" dur="9s" repeatCount="indefinite" />
+                </linearGradient>
+            </defs>
+            <g>
+                <path d="M 30,10 Q 30,30 50,30 Q 30,30 30,50 Q 30,30 10,30 Q 30,30 30,10 Z" fill="url(#kreaGradFooter)" />
+                <path d="M 30,17 Q 30,30 43,30 Q 30,30 30,43 Q 30,30 17,30 Q 30,30 30,17 Z" fill="url(#kreaGradFooter)" transform="rotate(45, 30, 30)" opacity="0.85" />
+                <text x="65" y="38" font-family="'Plus Jakarta Sans', sans-serif" font-weight="800" font-size="21" fill="url(#kreaGradFooter)" letter-spacing="-0.5px">Kreaverse<tspan font-weight="500"> AI</tspan></text>
+            </g>
+            <g style="mix-blend-mode: overlay;">
+                <path d="M 30,10 Q 30,30 50,30 Q 30,30 30,50 Q 30,30 10,30 Q 30,30 30,10 Z" fill="url(#shimmerGlowFooter)" />
+                <path d="M 30,17 Q 30,30 43,30 Q 30,30 30,43 Q 30,30 17,30 Q 30,30 30,17 Z" fill="url(#shimmerGlowFooter)" transform="rotate(45, 30, 30)" />
+                <text x="65" y="38" font-family="'Plus Jakarta Sans', sans-serif" font-weight="800" font-size="21" fill="url(#shimmerGlowFooter)" letter-spacing="-0.5px">Kreaverse<tspan font-weight="500"> AI</tspan></text>
+            </g>
+        </svg>
         <div class="footer-links">
             <a href="/">Beranda</a>
             <a href="/chat">Studio Media</a>
@@ -788,7 +815,7 @@
         </div>
         <div class="footer-bottom">
             <p>&copy; 2026 Kreaverse AI. All rights reserved.</p>
-            <p id="live-clock-footer" style="font-family: monospace; color: var(--text-secondary); font-weight:700;"></p>
+            <div id="live-clock-footer" style="font-family: monospace; color: var(--text-secondary); font-weight:700;"></div>
         </div>
     </footer>
 
@@ -993,8 +1020,21 @@
             hours = hours % 12 || 12; 
             minutes = minutes < 10 ? '0' + minutes : minutes;
             seconds = seconds < 10 ? '0' + seconds : seconds;
+            
+            const days = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+            const months = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+            const dayName = days[d.getDay()];
+            const date = d.getDate();
+            const monthName = months[d.getMonth()];
+            const year = d.getFullYear();
+
             const footerEl = document.getElementById('live-clock-footer');
-            if(footerEl) footerEl.innerText = `Waktu Server: ${hours}:${minutes}:${seconds} ${ampm} WIB`;
+            if(footerEl) {
+                footerEl.innerHTML = `
+                    <div>Waktu Server: ${hours}:${minutes}:${seconds} ${ampm} WIB</div>
+                    <div style="font-size: 0.8rem; margin-top: 6px; color: var(--text-light); font-weight: 700;">${dayName}, ${date} ${monthName} ${year}</div>
+                `;
+            }
         }
         setInterval(updateLiveClock, 1000); updateLiveClock();
 
@@ -1340,65 +1380,94 @@
                 } catch(e) { throw new Error("Gagal mengambil rute server. Periksa koneksi."); }
             }
             
-            let targetServerKey = currentServer;
-            if (currentServer === 'auto') {
-                updateLoaderStatus("Mencari Server Tercepat...", "Melakukan ping uji latensi jaringan...");
-                targetServerKey = await pingSemuaServer(); 
-                if (!targetServerKey || !dbConfig.baseUrls[targetServerKey]) targetServerKey = Object.keys(dbConfig.baseUrls)[0]; 
-            }
-            const srvObj = dbConfig.baseUrls[targetServerKey];
-            let pathsToTry = [];
-            if (currentPlatform === 'auto') {
-                for (const key in dbConfig.endpoints) {
-                    const ep = dbConfig.endpoints[key];
-                    let pText = (ep.paths && ep.paths[targetServerKey]) ? ep.paths[targetServerKey] : ep.path;
-                    if (pText) pathsToTry = pathsToTry.concat(pText.split('\n').map(p => p.trim()).filter(p => p !== ""));
-                }
-            } else {
-                const ep = dbConfig.endpoints[currentPlatform];
-                if (ep) {
-                    let pText = (ep.paths && ep.paths[targetServerKey]) ? ep.paths[targetServerKey] : ep.path;
-                    if (pText) pathsToTry = pText.split('\n').map(p => p.trim()).filter(p => p !== "");
-                }
-            }
-            pathsToTry = [...new Set(pathsToTry)];
-            updateLoaderStatus("Menganalisis Tautan...", `Mengirim permintaan ke ${srvObj.name}...`);
-            const fetchResult = await smartFetch(srvObj, pathsToTry, mediaUrl);
-            const data = fetchResult.data;
-
-            let title = data.title || (data.data && data.data.title) || (data.result && data.result.title) || "Video";
-            let duration = data.duration || (data.data && data.data.duration) || (data.result && data.result.duration) || "";
-            if(data.data && Array.isArray(data.data) && data.data[0].meta) { title = data.data[0].meta.title || title; duration = data.data[0].meta.duration || duration; }
-
-            const extractedData = extractMediaLinks(data);
-            if (extractedData.title !== "Media Kreaverse") title = extractedData.title;
-            if (!duration) duration = extractedData.duration;
-
-            if (currentFormat === 'thumb') {
-                let thumbOpts = [];
-                const ytid = getYouTubeId(mediaUrl);
-                if (ytid) {
-                    thumbOpts = [
-                        { url: `https://i.ytimg.com/vi/${ytid}/maxresdefault.jpg`, quality: 'HD MaxRes (Resolusi Tertinggi)', type: 'thumb', ext: 'JPG' },
-                        { url: `https://i.ytimg.com/vi/${ytid}/hqdefault.jpg`, quality: 'HQ (Kualitas Standar)', type: 'thumb', ext: 'JPG' },
-                        { url: `https://i.ytimg.com/vi/${ytid}/mqdefault.jpg`, quality: 'MQ (Kualitas Ringan)', type: 'thumb', ext: 'JPG' }
-                    ];
-                } else if (extractedData.thumbnail) {
-                    thumbOpts.push({ url: extractedData.thumbnail, quality: 'Original (Kualitas Asli)', type: 'thumb', ext: 'JPG' });
-                } else {
-                    throw new Error("Gambar thumbnail/cover tidak ditemukan untuk platform ini.");
-                }
-                return { title: `Thumbnail - ${title}`, duration: "", provider: srvObj.name, options: thumbOpts, thumbnail: thumbOpts[0].url };
-            }
-
-            let mediaList = extractedData.links || [];
-            if (mediaList.length === 0) throw new Error(`Media gagal diambil. Tautan mungkin diprivasi.`);
+            // SUSUN URUTAN SERVER SECARA CERDAS (FALLBACK MULTI-SERVER)
+            let serversToTry = [];
+            const allServerKeys = Object.keys(dbConfig.baseUrls).filter(k => dbConfig.baseUrls[k] !== null);
             
-            globalScannedOptions = mediaList;
-            let filteredList = mediaList.filter(m => m.type === currentFormat);
-            if (filteredList.length === 0) throw new Error(`Format ${currentFormat.toUpperCase()} tidak tersedia untuk tautan ini.`);
+            if (currentServer !== 'auto' && dbConfig.baseUrls[currentServer]) {
+                serversToTry.push(currentServer);
+                allServerKeys.forEach(k => { if (k !== currentServer) serversToTry.push(k); });
+            } else {
+                updateLoaderStatus("Mencari Server Tercepat...", "Melakukan ping uji latensi jaringan...");
+                await pingSemuaServer();
+                const serverPings = allServerKeys.map(key => {
+                    const el = document.getElementById(`ping-${key}`);
+                    const pingText = el ? el.innerText : "";
+                    const ms = parseInt(pingText) || 9999;
+                    return { key, ms };
+                });
+                serverPings.sort((a, b) => a.ms - b.ms);
+                serversToTry = serverPings.map(s => s.key);
+            }
 
-            return { title: `Kreaverse AI - ${title}`, duration: duration, provider: srvObj.name, options: filteredList, thumbnail: extractedData.thumbnail };
+            let lastError = null;
+            // Jalankan perulangan mencoba satu-satu server secara cerdas!
+            for (let srvKey of serversToTry) {
+                const srvObj = dbConfig.baseUrls[srvKey];
+                if (!srvObj) continue;
+
+                let pathsToTry = [];
+                if (currentPlatform === 'auto') {
+                    for (const key in dbConfig.endpoints) {
+                        const ep = dbConfig.endpoints[key];
+                        let pText = (ep.paths && ep.paths[srvKey]) ? ep.paths[srvKey] : ep.path;
+                        if (pText) pathsToTry = pathsToTry.concat(pText.split('\n').map(p => p.trim()).filter(p => p !== ""));
+                    }
+                } else {
+                    const ep = dbConfig.endpoints[currentPlatform];
+                    if (ep) {
+                        let pText = (ep.paths && ep.paths[srvKey]) ? ep.paths[srvKey] : ep.path;
+                        if (pText) pathsToTry = pText.split('\n').map(p => p.trim()).filter(p => p !== "");
+                    }
+                }
+                pathsToTry = [...new Set(pathsToTry)];
+                
+                updateLoaderStatus("Menganalisis Tautan...", `Mengirim permintaan ke ${srvObj.name}...`);
+                
+                try {
+                    const fetchResult = await smartFetch(srvObj, pathsToTry, mediaUrl);
+                    const data = fetchResult.data;
+
+                    let title = data.title || (data.data && data.data.title) || (data.result && data.result.title) || "Video";
+                    let duration = data.duration || (data.data && data.data.duration) || (data.result && data.result.duration) || "";
+                    if(data.data && Array.isArray(data.data) && data.data[0].meta) { title = data.data[0].meta.title || title; duration = data.data[0].meta.duration || duration; }
+
+                    const extractedData = extractMediaLinks(data);
+                    if (extractedData.title !== "Media Kreaverse") title = extractedData.title;
+                    if (!duration) duration = extractedData.duration;
+
+                    if (currentFormat === 'thumb') {
+                        let thumbOpts = [];
+                        const ytid = getYouTubeId(mediaUrl);
+                        if (ytid) {
+                            thumbOpts = [
+                                { url: `https://i.ytimg.com/vi/${ytid}/maxresdefault.jpg`, quality: 'HD MaxRes (Resolusi Tertinggi)', type: 'thumb', ext: 'JPG' },
+                                { url: `https://i.ytimg.com/vi/${ytid}/hqdefault.jpg`, quality: 'HQ (Kualitas Standar)', type: 'thumb', ext: 'JPG' },
+                                { url: `https://i.ytimg.com/vi/${ytid}/mqdefault.jpg`, quality: 'MQ (Kualitas Ringan)', type: 'thumb', ext: 'JPG' }
+                            ];
+                        } else if (extractedData.thumbnail) {
+                            thumbOpts.push({ url: extractedData.thumbnail, quality: 'Original (Kualitas Asli)', type: 'thumb', ext: 'JPG' });
+                        } else {
+                            throw new Error("Gambar thumbnail/cover tidak ditemukan.");
+                        }
+                        return { title: `Thumbnail - ${title}`, duration: "", provider: srvObj.name, options: thumbOpts, thumbnail: thumbOpts[0].url };
+                    }
+
+                    let mediaList = extractedData.links || [];
+                    if (mediaList.length === 0) throw new Error(`Media gagal diambil.`);
+                    
+                    globalScannedOptions = mediaList;
+                    let filteredList = mediaList.filter(m => m.type === currentFormat);
+                    if (filteredList.length === 0) throw new Error(`Format ${currentFormat.toUpperCase()} tidak tersedia.`);
+
+                    return { title: `Kreaverse AI - ${title}`, duration: duration, provider: srvObj.name, options: filteredList, thumbnail: extractedData.thumbnail };
+                } catch (err) {
+                    lastError = err;
+                    console.warn(`Server ${srvObj.name} gagal/limit. Mencoba server cadangan...`);
+                    continue; 
+                }
+            }
+            throw new Error("Semua server Kreaverse AI sedang padat/sibuk. Silakan coba beberapa saat lagi.");
         }
 
         downloadBtn.addEventListener('click', async () => {
