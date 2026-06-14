@@ -741,11 +741,12 @@
                                     <tr>
                                         <th>Nama Server</th>
                                         <th>URL Utama (Base URL)</th>
+                                        <th>API Key (Opsional)</th>
                                         <th style="text-align:right;">Aksi</th>
                                     </tr>
                                 </thead>
                                 <tbody id="dlBaseUrlTable">
-                                    <tr><td colspan="3" style="text-align:center; padding:20px;">
+                                    <tr><td colspan="4" style="text-align:center; padding:20px;">
                                         <div class="loading-spinner sm" style="margin:0 auto 10px;"></div> Memuat data...
                                     </td></tr>
                                 </tbody>
@@ -1989,31 +1990,39 @@ function setupRealtimeDownloader() {
 }
 
 function renderDownloaderUI() {
-    if (!downloaderDataGlobal) return;
-    
-    const baseTbody = document.getElementById('dlBaseUrlTable');
-    let baseHtml = '';
-    
-    const safeBaseUrls = downloaderDataGlobal.baseUrls || {};
-    const serverKeys = Object.keys(safeBaseUrls).filter(k => safeBaseUrls[k] !== null && safeBaseUrls[k] !== undefined);
-    
-    for (const key of serverKeys) {
-        const info = safeBaseUrls[key];
-        if(!info) continue; 
-        
-        baseHtml += `<tr>
-            <td style="font-weight:600;"><span class="badge badge-gray">${info.name || 'Server'}</span></td>
-            <td style="font-family:monospace; color:var(--text-sec);">${info.url || '-'}</td>
-            <td style="text-align:right;">
-                <button class="btn btn-sm btn-info" onclick="window.editBaseUrl('${key}', '${info.name}')"><i class="fa-solid fa-pen"></i></button>
-                <button class="btn btn-sm btn-danger" onclick="window.deleteServer('${key}', '${info.name}')" style="margin-left:5px;"><i class="fa-solid fa-trash"></i></button>
-            </td>
-        </tr>`;
-    }
-    baseTbody.innerHTML = baseHtml || `<tr><td colspan="3" style="text-align:center; padding:20px; color:var(--text-sec);">Belum ada server. Silakan tambah server.</td></tr>`;
+            if (!downloaderDataGlobal) return;
+            
+            const baseTbody = document.getElementById('dlBaseUrlTable');
+            let baseHtml = '';
+            
+            const safeBaseUrls = downloaderDataGlobal.baseUrls || {};
+            const serverKeys = Object.keys(safeBaseUrls).filter(k => safeBaseUrls[k] !== null && safeBaseUrls[k] !== undefined);
+            
+            for (const key of serverKeys) {
+                const info = safeBaseUrls[key];
+                if(!info) continue; 
+                
+                const htmlSafeName = String(info.name || 'Server').replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+                const jsSafeName = String(info.name || 'Server').replace(/\\/g, "\\\\").replace(/'/g, "\\'");
+                
+                const keyVal = info.apiKey || "";
+                const keyParam = info.apiKeyParam || "apikey";
+                const apiKeyText = keyVal ? `<span style="color:var(--accent); font-weight:700;">?${keyParam}=</span><span style="font-family:monospace; background:#FAFAFC; padding:2px 6px; border:1px solid var(--border); border-radius:4px;">${keyVal.slice(0,4)}***${keyVal.slice(-3)}</span>` : `<span style="color:#CCC;">Tanpa Key</span>`;
 
-    const endTbody = document.getElementById('dlEndpointsTable');
-    let endHtml = '';
+                baseHtml += `<tr>
+                    <td style="font-weight:600;"><span class="badge badge-gray">${htmlSafeName}</span></td>
+                    <td style="font-family:monospace; color:var(--text-sec);">${info.url || '-'}</td>
+                    <td>${apiKeyText}</td>
+                    <td style="text-align:right;">
+                        <button class="btn btn-sm btn-info" onclick="window.editBaseUrl('${key}', '${jsSafeName}')"><i class="fa-solid fa-pen"></i></button>
+                        <button class="btn btn-sm btn-danger" onclick="window.deleteServer('${key}', '${jsSafeName}')" style="margin-left:5px;"><i class="fa-solid fa-trash"></i></button>
+                    </td>
+                </tr>`;
+            }
+            baseTbody.innerHTML = baseHtml || `<tr><td colspan="4" style="text-align:center; padding:20px; color:var(--text-sec);">Belum ada server. Silakan tambah server.</td></tr>`;
+
+            const endTbody = document.getElementById('dlEndpointsTable');
+            let endHtml = '';
     
     const safeEndpoints = downloaderDataGlobal.endpoints || {};
     const endpointKeys = Object.keys(safeEndpoints).filter(k => safeEndpoints[k] !== null && safeEndpoints[k] !== undefined);
@@ -2056,40 +2065,58 @@ function renderDownloaderUI() {
 }
 
 window.addServer = function() {
-    const inputs = [
-        { id: 'name', label: 'Nama Server', placeholder: 'Contoh: Server 3 Ryzendart', value: '' },
-        { id: 'url', label: 'Base URL (Harus https://)', placeholder: 'https://', value: 'https://' }
-    ];
-    openMultiInputModal("Tambah Server Baru", "Masukkan detail server penyedia API.", inputs, async (res) => {
-        if(!res.name || !res.url || res.url === 'https://') {
-            showToast("Nama dan URL wajib diisi!", "warning"); return;
-        }
-        const newKey = "server_" + Date.now();
-        try {
-            await setDoc(doc(db, "settings", "downloader_api"), {
-                baseUrls: { [newKey]: { name: res.name.trim(), url: res.url.trim() } }
-            }, { merge: true });
-            await createLog({ type: 'info', host: 'Admin', request: 'ADD_SERVER', message: `Menambah Server baru: ${res.name}` });
-            showToast("Server berhasil ditambahkan!", "success");
-        } catch(e) { 
-            showToast("Gagal menambah server", "danger");
-        }
-    });
-};
+        const inputs = [
+            { id: 'name', label: 'Nama Server', placeholder: 'Contoh: Server Betabotz', value: '' },
+            { id: 'url', label: 'Base URL (Harus https://)', placeholder: 'https://', value: 'https://' },
+            { id: 'apiKey', label: 'API Key (Opsional)', placeholder: 'Kosongkan jika tanpa key', value: '' },
+            { id: 'apiKeyParam', label: 'Nama Parameter API Key (Contoh: apikey)', placeholder: 'Default: apikey', value: 'apikey' }
+        ];
+        openMultiInputModal("Tambah Server Baru", "Masukkan detail server penyedia API.", inputs, async (res) => {
+            if(!res.name || !res.url || res.url === 'https://') {
+                showToast("Nama dan URL wajib diisi!", "warning"); return;
+            }
+            const newKey = "server_" + Date.now();
+            try {
+                await setDoc(doc(db, "settings", "downloader_api"), {
+                    baseUrls: { [newKey]: { 
+                        name: res.name.trim(), 
+                        url: res.url.trim(),
+                        apiKey: res.apiKey.trim(),
+                        apiKeyParam: res.apiKeyParam.trim() || 'apikey'
+                    } }
+                }, { merge: true });
+                await createLog({ type: 'info', host: 'Admin', request: 'ADD_SERVER', message: `Menambah Server baru: ${res.name}` });
+                showToast("Server berhasil ditambahkan!", "success");
+            } catch(e) { 
+                showToast("Gagal menambah server", "danger");
+            }
+        });
+    };
 
-window.editBaseUrl = function(key, name) {
-    const currentUrl = downloaderDataGlobal.baseUrls[key].url;
-    openPromptModal(`Edit ${name}`, `Masukkan alamat domain (Mall) baru. Pastikan diawali dengan https://`, currentUrl, async (newVal) => {
-        if (!newVal || newVal === currentUrl) return;
-        try {
-            const dataToUpdate = {};
-            dataToUpdate[`baseUrls.${key}.url`] = newVal;
-            await updateDoc(doc(db, "settings", "downloader_api"), dataToUpdate);
-            await createLog({ type: 'info', host: 'Admin', request: 'EDIT_SERVER', message: `Mengedit Base URL ${name} menjadi ${newVal}` });
-            showToast("Base URL berhasil diperbarui!", "success");
-        } catch(e) { showToast("Gagal menyimpan", "danger"); }
-    });
-};
+    window.editBaseUrl = function(key, name) {
+        const srv = downloaderDataGlobal.baseUrls[key];
+        const inputs = [
+            { id: 'name', label: 'Nama Server', placeholder: 'Contoh: Server Betabotz', value: srv.name || '' },
+            { id: 'url', label: 'Base URL', placeholder: 'https://', value: srv.url || '' },
+            { id: 'apiKey', label: 'API Key (Opsional)', placeholder: 'Kosongkan jika tanpa key', value: srv.apiKey || '' },
+            { id: 'apiKeyParam', label: 'Nama Parameter API Key (Contoh: apikey)', placeholder: 'apikey', value: srv.apiKeyParam || 'apikey' }
+        ];
+        openMultiInputModal(`Edit ${name}`, "Perbarui konfigurasi detail server Anda.", inputs, async (res) => {
+            if(!res.name || !res.url) {
+                showToast("Nama dan URL wajib diisi!", "warning"); return;
+            }
+            try {
+                const dataToUpdate = {};
+                dataToUpdate[`baseUrls.${key}.name`] = res.name.trim();
+                dataToUpdate[`baseUrls.${key}.url`] = res.url.trim();
+                dataToUpdate[`baseUrls.${key}.apiKey`] = res.apiKey.trim();
+                dataToUpdate[`baseUrls.${key}.apiKeyParam`] = res.apiKeyParam.trim() || 'apikey';
+                await updateDoc(doc(db, "settings", "downloader_api"), dataToUpdate);
+                await createLog({ type: 'info', host: 'Admin', request: 'EDIT_SERVER', message: `Mengedit Server ${name}` });
+                showToast("Konfigurasi server berhasil diperbarui!", "success");
+            } catch(e) { showToast("Gagal menyimpan", "danger"); }
+        });
+    };
 
 window.deleteServer = function(key, name) {
     confirmAction(`Hapus ${name}? Anda juga akan kehilangan jalur yang terhubung dengannya.`, async () => {
