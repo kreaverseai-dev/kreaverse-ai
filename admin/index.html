@@ -2007,7 +2007,7 @@ function renderDownloaderUI() {
                 
                 const keyVal = info.apiKey || "";
                 const keyParam = info.apiKeyParam || "apikey";
-                const apiKeyText = keyVal ? `<span style="color:var(--accent); font-weight:700;">?${keyParam}=</span><span style="font-family:monospace; background:#FAFAFC; padding:2px 6px; border:1px solid var(--border); border-radius:4px;">${keyVal.slice(0,4)}***${keyVal.slice(-3)}</span>` : `<span style="color:#CCC;">Tanpa Key</span>`;
+                const apiKeyText = keyVal ? `<span style="color:var(--accent); font-weight:700;">?${keyParam}=</span><span style="font-family:monospace; background:#FAFAFC; padding:2px 6px; border:1px solid var(--border); border-radius:4px;">${keyVal}</span>` : `<span style="color:#CCC;">Tanpa Key</span>`;
 
                 baseHtml += `<tr>
                     <td style="font-weight:600;"><span class="badge badge-gray">${htmlSafeName}</span></td>
