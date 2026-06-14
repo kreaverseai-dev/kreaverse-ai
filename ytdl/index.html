@@ -37,12 +37,6 @@
         a { text-decoration: none; color: inherit; }
         .hidden { display: none !important; }
 
-        /* PULL TO REFRESH */
-        #pull-loader { position: fixed; top: -50px; left: 50%; margin-left: -20px; width: 40px; height: 40px; background: var(--surface); box-shadow: 0 2px 10px rgba(0,0,0,0.15); border-radius: 50%; display: flex; align-items: center; justify-content: center; z-index: 10000; transition: transform 0.2s ease; pointer-events: none; }
-        #pull-icon { font-size: 1.1rem; color: var(--text-sec); }
-        .pull-spin #pull-icon { animation: ytSpin 0.8s linear infinite; color: var(--accent); }
-        @keyframes ytSpin { to { transform: rotate(360deg); } }
-
         /* NAVBAR */
         .navbar { 
             display: flex; 
@@ -79,32 +73,18 @@
             background-color: #f3f4f6; 
             transform: scale(1.05);
         }
-        /* PULL TO REFRESH */
-        #pull-loader { position: fixed; top: -50px; left: 50%; margin-left: -20px; width: 40px; height: 40px; background: var(--surface); box-shadow: 0 2px 10px rgba(0,0,0,0.15); border-radius: 50%; display: flex; align-items: center; justify-content: center; z-index: 10000; transition: transform 0.2s ease; pointer-events: none; }
-        #pull-icon { font-size: 1.1rem; color: var(--text-sec); }
-        .pull-spin #pull-icon { animation: ytSpin 0.8s linear infinite; color: var(--accent); }
-        @keyframes ytSpin { to { transform: rotate(360deg); } }
-
         .logo-container { 
             display: flex; 
             align-items: center; 
             justify-content: center; 
-            width: 160px; 
-            height: 40px; 
+            width: 170px; 
+            height: 42px; 
             position: absolute; 
             left: 50%; 
-            top: 50%;
-            transform: translate(-50%, -50%); 
+            transform: translateX(-50%); 
             z-index: 5; 
             pointer-events: none; 
         }
-        #pull-icon { font-size: 1.1rem; color: var(--text-sec); }
-        .pull-spin #pull-icon { animation: ytSpin 0.8s linear infinite; color: var(--accent); }
-        @keyframes ytSpin { to { transform: rotate(360deg); } }
-
-        .logo-container { 
-            display: flex; 
-            align-items: center;
         .krea-logo-svg { width: 100%; height: 100%; display: block; }
         .nav-right { width: 32px; } 
 
@@ -513,7 +493,7 @@
 
         /* RESPONSIVE MOBILE */
         @media (max-width: 640px) {
-            .logo-container { width: 160px; height: 40px; } 
+            .logo-container { width: 130px; height: 32px; } 
             .hero-title { font-size: 1.55rem; letter-spacing: -0.5px; line-height: 1.25; }
             .hero-subtitle { font-size: 0.8rem; padding: 0 10px; margin-bottom: 20px; }
             
@@ -522,7 +502,7 @@
             .url-input { padding: 8px 0; width: 100%; font-size: 0.9rem; margin: 0; }
             .url-icon { display: none; }
             .input-actions { margin-right: 0; justify-content: flex-end; gap: 2px; }
-            #paste-btn { padding: 4px 10px; font-size: 0.8rem; background: #ffffff; color: #111827; border: 1px solid #111827; }
+            #paste-btn { padding: 8px 12px; font-size: 0.8rem; background: #eef2f6; color: #374151; }
             .download-btn { width: auto; justify-content: center; padding: 12px 30px; margin: 0 auto !important; }
             
             .settings-pills { padding: 0; gap: 6px; margin-bottom: 10px; }
@@ -566,11 +546,6 @@
 </head>
 <body>
 
-    <!-- PULL TO REFRESH LOADER -->
-    <div id="pull-loader">
-        <i class="fa-solid fa-rotate-right" id="pull-icon"></i>
-    </div>
-
     <nav class="navbar">
         <a href="/" class="back-btn" title="Kembali"><i class="fa-solid fa-chevron-left"></i></a>
         <div class="logo-container">
@@ -600,18 +575,12 @@
 
         <div class="input-container">
             <div class="input-wrapper">
-                <div class="url-input-area">
-                    <div class="url-icon-circle" title="Hapus Tautan">
-                        <i class="fa-solid fa-link" style="font-size: 1.1rem;"></i>
-                    </div>
-                    <input type="text" id="media-url" class="url-input" placeholder="https://youtu.be/..." autocomplete="off">
-                </div>
                 <div class="input-actions">
                     <button id="paste-btn" title="Tempel Tautan" style="background: #ffffff; border: 1px solid #111827; border-radius: 99px; padding: 4px 10px; font-size: 0.8rem; font-weight: 800; color: #111827; display: flex; align-items: center; gap: 4px; box-shadow: var(--shadow-sm); cursor: pointer;"><i class="fa-solid fa-paste" style="font-size: 0.85rem; color: #111827;"></i>Paste</button>
                 </div>
             </div>
             <button id="download-btn" class="download-btn">
-                <span id="btn-text">Unduh Sekarang</span>
+                <span id="btn-text">Download Now</span>
             </button>
         </div>
 
@@ -658,8 +627,36 @@
             <div class="media-player-wrapper" id="media-wrapper">
                 
                 <!-- REVISI 2, 3: WATERMARK DI DALAM VIDEO (Bukan di background) & Fade Animasi -->
-                <div class="input-actions">
-                    <button id="paste-btn" title="Tempel Tautan" style="background: #ffffff; border: 1px solid #111827; border-radius: 99px; padding: 4px 10px; font-size: 0.8rem; font-weight: 800; color: #111827; display: flex; align-items: center; gap: 6px; box-shadow: var(--shadow-sm); cursor: pointer;"><i class="fa-solid fa-paste" style="font-size: 0.85rem; color: #111827;"></i>Paste</button>
+                <div class="player-watermark" id="player-watermark">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 60" style="width:100%; height:100%;">
+                        <defs>
+                            <linearGradient id="kreaGradWM" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" stop-color="#D97757" />
+                                <stop offset="50%" stop-color="#AF52DE" />
+                                <stop offset="100%" stop-color="#007AFF" />
+                            </linearGradient>
+                            <linearGradient id="shimmerGlow" x1="-100%" y1="0%" x2="0%" y2="0%">
+                                <stop offset="0%" stop-color="rgba(255,255,255,0)" />
+                                <stop offset="45%" stop-color="rgba(255,255,255,0)" />
+                                <stop offset="50%" stop-color="rgba(255,255,255,0.9)" />
+                                <stop offset="55%" stop-color="rgba(255,255,255,0)" />
+                                <stop offset="100%" stop-color="rgba(255,255,255,0)" />
+                                <animate attributeName="x1" values="-100%; 200%" dur="7s" repeatCount="indefinite" />
+                                <animate attributeName="x2" values="0%; 300%" dur="7s" repeatCount="indefinite" />
+                            </linearGradient>
+                        </defs>
+                        <g>
+                            <path d="M 30,10 Q 30,30 50,30 Q 30,30 30,50 Q 30,30 10,30 Q 30,30 30,10 Z" fill="url(#kreaGradWM)" />
+                            <path d="M 30,17 Q 30,30 43,30 Q 30,30 30,43 Q 30,30 17,30 Q 30,30 30,17 Z" fill="url(#kreaGradWM)" transform="rotate(45, 30, 30)" opacity="0.85" />
+                            <text x="65" y="38" font-family="'Plus Jakarta Sans', sans-serif" font-weight="900" font-size="21" fill="#ffffff" letter-spacing="-0.5px">Kreaverse<tspan font-weight="500" fill="#D97757"> AI</tspan></text>
+                        </g>
+                        <!-- Shimmer Sweep Menumpang di dalam area isi (Teks/Logo) -->
+                        <g style="mix-blend-mode: overlay;">
+                            <path d="M 30,10 Q 30,30 50,30 Q 30,30 30,50 Q 30,30 10,30 Q 30,30 30,10 Z" fill="url(#shimmerGlow)" />
+                            <path d="M 30,17 Q 30,30 43,30 Q 30,30 30,43 Q 30,30 17,30 Q 30,30 30,17 Z" fill="url(#shimmerGlow)" transform="rotate(45, 30, 30)" />
+                            <text x="65" y="38" font-family="'Plus Jakarta Sans', sans-serif" font-weight="900" font-size="21" fill="url(#shimmerGlow)" letter-spacing="-0.5px">Kreaverse<tspan font-weight="500"> AI</tspan></text>
+                        </g>
+                    </svg>
                 </div>
 
                 <div class="audio-ui-container" id="audio-ui">
@@ -775,7 +772,7 @@
 
     <!-- FOOTER -->
     <footer class="footer">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 60" style="width:160px; height:40px; margin: 0 auto 20px; display: block; filter: drop-shadow(0 1px 2px rgba(0,0,0,0.1));">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 60" style="width:170px; height:42px; margin: 0 auto 20px; display: block; filter: drop-shadow(0 1px 2px rgba(0,0,0,0.1));">
             <defs>
                 <linearGradient id="kreaGradFooter" x1="0%" y1="0%" x2="100%" y2="100%">
                     <stop offset="0%" stop-color="#D97757" />
@@ -800,7 +797,7 @@
             <g style="mix-blend-mode: overlay;">
                 <path d="M 30,10 Q 30,30 50,30 Q 30,30 30,50 Q 30,30 10,30 Q 30,30 30,10 Z" fill="url(#shimmerGlowFooter)" />
                 <path d="M 30,17 Q 30,30 43,30 Q 30,30 30,43 Q 30,30 17,30 Q 30,30 30,17 Z" fill="url(#shimmerGlowFooter)" transform="rotate(45, 30, 30)" />
-                <text x="65" y="38" font-family="'Plus Jakarta Sans', sans-serif" font-weight="900" font-size="21" fill="#shimmerGlowFooter" letter-spacing="-0.5px">Kreaverse<tspan font-weight="500"> AI</tspan></text>
+                <text x="65" y="38" font-family="'Plus Jakarta Sans', sans-serif" font-weight="900" font-size="21" fill="url(#shimmerGlowFooter)" letter-spacing="-0.5px">Kreaverse<tspan font-weight="500"> AI</tspan></text>
             </g>
         </svg>
         <div class="footer-links">
@@ -1628,32 +1625,30 @@
             const speakerIcon = document.getElementById('speaker-icon');
             const speakerText = document.getElementById('speaker-status-text');
             const speakerToggle = document.getElementById('speaker-toggle');
-            const switchLabel = switchCont ? switchCont.querySelector('label') : null;
+            const switchLabel = switchCont.querySelector('label');
 
-            if (switchCont && speakerIcon && speakerText && speakerToggle && switchLabel) {
-                if (type === 'thumb') {
-                    switchCont.style.display = 'none';
+            if (type === 'thumb') {
+                switchCont.style.display = 'none';
+            } else {
+                switchCont.style.display = 'flex';
+                const isMutedVideo = type === 'video' && (quality.toUpperCase().includes('1080') || quality.toUpperCase().includes('1440') || quality.toUpperCase().includes('2160') || quality.toUpperCase().includes('4K') || quality.toUpperCase().includes('MUTE') || quality.toUpperCase().includes('NO AUDIO'));
+                const hasAudioSupport = (type === 'audio') || (type === 'video' && (!isMutedVideo || isDualAudio));
+
+                if (hasAudioSupport) {
+                    switchLabel.style.display = 'inline-block';
+                    speakerToggle.disabled = false;
+                    speakerToggle.checked = true;
+                    speakerText.innerText = "Suara Aktif";
+                    speakerText.style.color = "var(--text-primary)";
+                    speakerIcon.className = "fa-solid fa-volume-high";
+                    speakerIcon.style.color = "var(--accent-color)";
                 } else {
-                    switchCont.style.display = 'flex';
-                    const isMutedVideo = type === 'video' && (quality.toUpperCase().includes('1080') || quality.toUpperCase().includes('1440') || quality.toUpperCase().includes('2160') || quality.toUpperCase().includes('4K') || quality.toUpperCase().includes('MUTE') || quality.toUpperCase().includes('NO AUDIO'));
-                    const hasAudioSupport = (type === 'audio') || (type === 'video' && (!isMutedVideo || isDualAudio));
-
-                    if (hasAudioSupport) {
-                        switchLabel.style.display = 'inline-block';
-                        speakerToggle.disabled = false;
-                        speakerToggle.checked = true;
-                        speakerText.innerText = "Suara Aktif";
-                        speakerText.style.color = "var(--text-primary)";
-                        speakerIcon.className = "fa-solid fa-volume-high";
-                        speakerIcon.style.color = "var(--accent-color)";
-                    } else {
-                        switchLabel.style.display = 'none';
-                        speakerToggle.disabled = true;
-                        speakerText.innerText = "Tidak Mendukung Suara";
-                        speakerText.style.color = "var(--danger-color)";
-                        speakerIcon.className = "fa-solid fa-volume-xmark";
-                        speakerIcon.style.color = "var(--danger-color)";
-                    }
+                    switchLabel.style.display = 'none';
+                    speakerToggle.disabled = true;
+                    speakerText.innerText = "Tidak Mendukung Suara";
+                    speakerText.style.color = "var(--danger-color)";
+                    speakerIcon.className = "fa-solid fa-volume-xmark";
+                    speakerIcon.style.color = "var(--danger-color)";
                 }
             }
 
@@ -2194,61 +2189,56 @@
         setTimeout(() => { if (typeof window.pingSemuaServer === 'function') window.pingSemuaServer(); }, 1500);
         document.addEventListener('visibilitychange', () => { if (!document.hidden && typeof window.pingSemuaServer === 'function') window.pingSemuaServer(); });
 
-        // SISTEM BATAL & LANJUTKAN DOWNLOAD (FAILS-SAFE & NYATA)
+        // SISTEM BATAL & LANJUTKAN DOWNLOAD (100% NYATA)
         const cancelBtn = document.getElementById('cancel-download-btn');
-        if (cancelBtn) {
-            cancelBtn.addEventListener('click', () => {
-                if (activeXhr) {
-                    activeXhr.abort();
-                    activeXhr = null;
-                    cancelBtn.innerText = "Lanjut";
-                    cancelBtn.style.background = "#d1fae5";
-                    cancelBtn.style.color = "#10b981";
-                    cancelBtn.style.borderColor = "#a7f3d0";
-                    document.getElementById('real-download-speed').innerHTML = '<i class="fa-solid fa-pause" style="color: #6B7280; margin-right: 4px;"></i> Dihentikan';
-                } else if (cancelBtn.innerText === "Lanjut") {
-                    cancelBtn.innerText = "Batal";
-                    cancelBtn.style.background = "#fee2e2";
-                    cancelBtn.style.color = "#ef4444";
-                    cancelBtn.style.borderColor = "#fca5a5";
-                    document.getElementById('real-download-btn').click();
-                }
-            });
-        }
+        cancelBtn.addEventListener('click', () => {
+            if (activeXhr) {
+                activeXhr.abort();
+                activeXhr = null;
+                cancelBtn.innerText = "Lanjut";
+                cancelBtn.style.background = "#d1fae5";
+                cancelBtn.style.color = "#10b981";
+                cancelBtn.style.borderColor = "#a7f3d0";
+                document.getElementById('real-download-speed').innerHTML = '<i class="fa-solid fa-pause" style="color: #6B7280; margin-right: 4px;"></i> Dihentikan';
+            } else if (cancelBtn.innerText === "Lanjut") {
+                cancelBtn.innerText = "Batal";
+                cancelBtn.style.background = "#fee2e2";
+                cancelBtn.style.color = "#ef4444";
+                cancelBtn.style.borderColor = "#fca5a5";
+                document.getElementById('real-download-btn').click();
+            }
+        });
 
-        // SISTEM SAKLAR SUARA ON/OFF (FAIL-SAFE & NYATA)
-        const speakerToggle = document.getElementById('speaker-toggle');
-        if (speakerToggle) {
-            speakerToggle.addEventListener('change', (e) => {
-                const isChecked = e.target.checked;
-                const speakerIcon = document.getElementById('speaker-icon');
-                const speakerText = document.getElementById('speaker-status-text');
-                
-                if (activeMedia) {
-                    if (isChecked) {
-                        if (isDualAudio) {
-                            customVideo.muted = true; 
-                            customAudio.muted = false;
-                        } else {
-                            activeMedia.muted = false;
-                        }
-                        speakerText.innerText = "Suara Aktif";
-                        speakerIcon.className = "fa-solid fa-volume-high";
-                        speakerIcon.style.color = "var(--accent-color)";
+        // SISTEM SAKLAR SUARA ON/OFF (100% NYATA)
+        document.getElementById('speaker-toggle').addEventListener('change', (e) => {
+            const isChecked = e.target.checked;
+            const speakerIcon = document.getElementById('speaker-icon');
+            const speakerText = document.getElementById('speaker-status-text');
+            
+            if (activeMedia) {
+                if (isChecked) {
+                    if (isDualAudio) {
+                        customVideo.muted = true; 
+                        customAudio.muted = false;
                     } else {
-                        if (isDualAudio) {
-                            customVideo.muted = true;
-                            customAudio.muted = true;
-                        } else {
-                            activeMedia.muted = true;
-                        }
-                        speakerText.innerText = "Suara Dimatikan";
-                        speakerIcon.className = "fa-solid fa-volume-xmark";
-                        speakerIcon.style.color = "var(--text-light)";
+                        activeMedia.muted = false;
                     }
+                    speakerText.innerText = "Suara Aktif";
+                    speakerIcon.className = "fa-solid fa-volume-high";
+                    speakerIcon.style.color = "var(--accent-color)";
+                } else {
+                    if (isDualAudio) {
+                        customVideo.muted = true;
+                        customAudio.muted = true;
+                    } else {
+                        activeMedia.muted = true;
+                    }
+                    speakerText.innerText = "Suara Dimatikan";
+                    speakerIcon.className = "fa-solid fa-volume-xmark";
+                    speakerIcon.style.color = "var(--text-light)";
                 }
-            });
-        }
+            }
+        });
 
     </script>
 </body>
