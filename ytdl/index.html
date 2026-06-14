@@ -171,22 +171,21 @@
         }
         .url-input-area { display: flex; flex: 1; align-items: center; min-width: 0; }
         .url-icon-circle {
-            width: 32px;
-            height: 32px;
-            background: #f3f4f6;
-            border-radius: 50%;
+            background: transparent !important;
+            color: #9ca3af;
+            margin-right: 8px;
+            flex-shrink: 0;
+            cursor: pointer;
+            transition: color 0.2s ease;
+            width: auto !important;
+            height: auto !important;
+            border-radius: 0 !important;
             display: flex;
             align-items: center;
             justify-content: center;
-            color: #9ca3af;
-            margin-right: 12px;
-            flex-shrink: 0;
-            cursor: pointer; /* Indikator dapat diklik */
-            transition: all 0.2s ease;
         }
         .url-icon-circle:hover {
-            background: #e5e7eb;
-            color: #374151;
+            color: #111827;
         }
         .url-input { 
             flex: 1; 
@@ -577,13 +576,13 @@
         <div class="input-container">
             <div class="input-wrapper">
                 <div class="url-input-area">
-                    <div class="url-icon-circle">
-                        <i class="fa-solid fa-link"></i>
+                    <div class="url-icon-circle" title="Hapus Tautan">
+                        <i class="fa-solid fa-link" style="font-size: 1.1rem;"></i>
                     </div>
                     <input type="text" id="media-url" class="url-input" placeholder="https://youtu.be/..." autocomplete="off">
                 </div>
                 <div class="input-actions">
-                    <button id="paste-btn" title="Tempel Tautan" style="background:#ffffff; border:1px solid #e5e7eb; border-radius:99px; padding:6px 12px; font-size:0.85rem; font-weight:700; color:#374151; display:flex; align-items:center; gap:6px;"><i class="fa-solid fa-square-plus" style="font-size:1rem; color:#374151;"></i> Paste</button>
+                    <button id="paste-btn" title="Tempel Tautan" style="background: #ffffff; border: 1px solid #111827; border-radius: 99px; padding: 6px 14px; font-size: 0.85rem; font-weight: 700; color: #111827; display: flex; align-items: center; gap: 4px; box-shadow: var(--shadow-sm); cursor: pointer;"><i class="fa-solid fa-clapperboard" style="font-size: 0.95rem; color: #111827;"></i><span style="font-size: 0.9rem; font-weight: 900; margin-right: 2px;">+</span>Paste</button>
                 </div>
             </div>
             <button id="download-btn" class="download-btn">
