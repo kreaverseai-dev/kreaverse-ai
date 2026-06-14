@@ -308,7 +308,7 @@
 
         /* EQUALIZER */
         .equalizer-container { display: flex; align-items: flex-end; justify-content: center; gap: 4px; height: 30px; margin-bottom: 10px; }
-        .eq-bar { width: 4px; background: var(--accent-color); border-radius: 2px; animation: eqBounce 0.8s infinite alternate ease-in-out; transform-origin: bottom; }
+        .eq-bar { width: 4px; background: var(--accent-color); border-radius: 2px; animation: eqBounce 0.8s infinite alternate ease-in-out; }
         .eq-bar:nth-child(1) { animation-delay: 0.1s; height: 60%; }
         .eq-bar:nth-child(2) { animation-delay: 0.3s; height: 100%; }
         .eq-bar:nth-child(3) { animation-delay: 0.0s; height: 40%; }
@@ -325,7 +325,6 @@
         .player-watermark { position: absolute; top: 12px; right: 12px; width: 125px; height: 32px; z-index: 10; pointer-events: none; filter: drop-shadow(0 1px 2px rgba(0,0,0,0.4)); overflow: hidden; transition: opacity 0.3s; }
         .media-player-wrapper.audio-mode .player-watermark { top: 15px; right: 20px; display: block; width: 125px; height: 32px;}
         .media-player-wrapper:fullscreen .player-watermark { width: 155px; height: 40px; top: 20px; right: 20px; }
-        .media-player-wrapper:-webkit-full-screen .player-watermark { width: 155px; height: 40px; top: 20px; right: 20px; }
 
         /* CONTROLS */
         .player-controls { position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(to top, rgba(0,0,0,0.9), transparent); padding: 30px 20px 15px; display: flex; align-items: center; gap: 15px; z-index: 10; transition: opacity 0.4s; opacity: 1; }
@@ -419,20 +418,12 @@
         .btn-secondary-action:hover { background: #e5e7eb !important; color: #1F2937 !important; }
 
         .real-dl-progress-box { width: 100%; background: #F3F4F6; border-radius: 12px; padding: 5px; margin-top: 5px; position: relative; border: 1px solid var(--border-color); }
-.real-dl-fill { width: 0%; height: 12px; background: linear-gradient(90deg, #10B981, #34D399); border-radius: 8px; transition: width 0.3s linear; }
-.real-dl-info { display: flex; justify-content: space-between; font-size: 0.8rem; color: var(--text-secondary); margin-top: 6px; padding: 0 6px; font-weight: 700; font-family: monospace; }
-/* CSS duplikasi di bawah ini telah dibersihkan demi merampingkan ukuran berkas */
-/* guna membantu menjaga keterbacaan serta performa rendering halaman */
-/* serta mempertahankan batas baris kode yang konsisten */
-.real-dl-info { display: flex; justify-content: space-between; font-size: 0.8rem; color: var(--text-secondary); margin-top: 6px; padding: 0 6px; font-weight: 700; font-family: monospace; }
-/* CSS duplikasi di bawah ini telah dibersihkan demi merampingkan ukuran berkas */
-/* guna membantu menjaga keterbacaan serta performa rendering halaman */
-/* serta mempertahankan batas baris kode yang konsisten */
-.real-dl-info { display: flex; justify-content: space-between; font-size: 0.8rem; color: var(--text-secondary); margin-top: 6px; padding: 0 6px; font-weight: 700; font-family: monospace; }
-/* CSS duplikasi di bawah ini telah dibersihkan demi merampingkan ukuran berkas */
-/* guna membantu menjaga keterbacaan serta performa rendering halaman */
-/* serta mempertahankan batas baris kode yang konsisten */
-.real-dl-info { display: flex; justify-content: space-between; font-size: 0.8rem; color: var(--text-secondary); margin-top: 6px; padding: 0 6px; font-weight: 700; font-family: monospace; }
+        .real-dl-fill { width: 0%; height: 12px; background: linear-gradient(90deg, #10B981, #34D399); border-radius: 8px; transition: width 0.3s linear; }
+        .real-dl-info { display: flex; justify-content: space-between; font-size: 0.8rem; color: var(--text-secondary); margin-top: 6px; padding: 0 6px; font-weight: 700; font-family: monospace; }
+
+        .real-dl-progress-box { width: 100%; background: #F3F4F6; border-radius: 12px; padding: 5px; margin-top: 5px; position: relative; border: 1px solid var(--border-color); }
+        .real-dl-fill { width: 0%; height: 12px; background: linear-gradient(90deg, #10B981, #34D399); border-radius: 8px; transition: width 0.3s linear; }
+        .real-dl-info { display: flex; justify-content: space-between; font-size: 0.8rem; color: var(--text-secondary); margin-top: 6px; padding: 0 6px; font-weight: 700; font-family: monospace; }
 /* HOW IT WORKS & FEATURES SECTION */
         .section-container { padding: 40px 20px; max-width: 1000px; margin: 0 auto; text-align: center; }
         .section-title { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 1.8rem; font-weight: 900; margin-bottom: 30px; color: var(--text-primary); letter-spacing: -0.5px; }
@@ -874,14 +865,8 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        let isLoggedIn = false;
-        let userId = null;
-        try {
-            isLoggedIn = localStorage.getItem('kreaverse_logged_in') === 'true';
-            userId = localStorage.getItem('kreaverse_user_id');
-        } catch (e) {
-            console.warn("Storage is blocked: ", e);
-        }
+        const isLoggedIn = localStorage.getItem('kreaverse_logged_in') === 'true';
+        const userId = localStorage.getItem('kreaverse_user_id');
 
         window.showIphoneNotif = function(title, desc, iconClass = 'fa-circle-info') {
             const existing = document.getElementById('iphone-island-toast');
@@ -933,252 +918,12 @@
         let dbConfig = DEFAULT_CONFIG;
         let isConfigLoaded = true; // Langsung siap digunakan seketika tanpa jeda milidetik!
 
-        // DEKLARASI VARIABEL STATUS DAN DOM DIURUTKAN DI PALING ATAS DEMI MENGHINDARI TEMPORAL DEAD ZONE (TDZ)
-        let currentFormat = 'video';
-        try {
-            currentFormat = localStorage.getItem('kreaverse_ytdl_format') || 'video';
-        } catch (e) {
-            console.warn("Storage is blocked: ", e);
-        }
-        let currentServer = 'auto';
-        let currentPlatform = 'auto'; 
-        let resolvedMediaUrl = ""; 
-        let resolvedFileName = "";
-        let resolvedFileExt = ""; 
-        let resolvedFileSizeString = ""; 
-        let processTimer = null;
-        let processSeconds = 0;
-        let globalScannedOptions = []; 
-        let isDualAudio = false; 
-        let activeXhr = null; // Menyimpan objek XMLHttpRequest aktif untuk pembatalan
-        
-        let controlsTimeout; // Untuk sistem Hilang/Muncul kontrol Pemutar
-
-        const btnText = document.getElementById('btn-text');
-        const resultContainer = document.getElementById('result-container');
-        const urlInput = document.getElementById('media-url');
-        const downloadBtn = document.getElementById('download-btn');
-        const directDownloadLink = document.getElementById('direct-download-link');
-        const realDownloadBtn = document.getElementById('real-download-btn');
-
-        const customAudio = document.getElementById('custom-audio');
-        const customVideo = document.getElementById('custom-video');
-        const mediaWrapper = document.getElementById('media-wrapper');
-        const audioThumbnail = document.getElementById('audio-thumbnail');
-        const audioTitleDisplay = document.getElementById('audio-title-display');
-        
-        const bufferingSpinner = document.getElementById('buffering-spinner');
-        const bufferingContent = document.getElementById('buffering-content'); 
-        
-        const playPauseBtn = document.getElementById('play-pause-btn');
-        const fullscreenBtn = document.getElementById('fullscreen-btn');
-        const progressFill = document.getElementById('progress-fill');
-        const currentTimeEl = document.getElementById('current-time');
-        const totalTimeEl = document.getElementById('total-time');
-        const playerMenuBtn = document.getElementById('player-menu-btn'); 
-        const playerControlsArea = document.getElementById('player-controls');
-        const ytWarningDesc = document.getElementById('yt-warning-text');
-        let activeMedia = null;
-
         onSnapshot(doc(db, "settings", "downloader_api"), (docSnap) => {
             if (docSnap.exists()) {
                 dbConfig = docSnap.data();
                 isConfigLoaded = true;
                 renderDynamicOptions();
                 window.pingSemuaServer();
-            }
-        });
-
-        // IKON TOMBOL TEMPEL & HAPUS
-        const urlIconCircle = document.querySelector('.url-icon-circle');
-        if (urlIconCircle) {
-            urlIconCircle.addEventListener('click', () => {
-                urlInput.value = ''; urlInput.focus();
-                showIphoneNotif('Kolom Dibersihkan', 'Tautan di dalam kolom telah dihapus.', 'fa-circle-info');
-            });
-        }
-        document.getElementById('paste-btn').addEventListener('click', async () => {
-            try { urlInput.value = await navigator.clipboard.readText(); } 
-            catch(e) { showIphoneNotif('Akses Gagal', 'Gagal membaca clipboard/salinan.', 'fa-triangle-exclamation'); }
-        });
-
-        try {
-            const savedUrl = localStorage.getItem('kreaverse_ytdl_saved_url');
-            if (savedUrl) urlInput.value = savedUrl;
-            urlInput.addEventListener('input', () => { 
-                try {
-                    localStorage.setItem('kreaverse_ytdl_saved_url', urlInput.value); 
-                } catch (e) {}
-            });
-        } catch (e) {
-            console.warn("Storage is blocked: ", e);
-        }
-
-        window.openSheet = (id) => document.getElementById(id).classList.add('active');
-        window.closeSheet = (id) => document.getElementById(id).classList.remove('active');
-        
-        document.querySelectorAll('.bottom-sheet-overlay, .in-player-sheet-overlay').forEach(overlay => {
-            overlay.addEventListener('click', (e) => { if (e.target === overlay) overlay.classList.remove('active'); });
-        });
-
-        // REVISI: PASTIKAN AUTO-RESET MENGHILANGKAN SEMUA ERROR LAMA SAAT GANTI TAB FORMAT
-        const changeFormat = (format) => {
-            if (currentFormat !== format) resetUI(); 
-            
-            currentFormat = format;
-            try { localStorage.setItem('kreaverse_ytdl_format', format); } catch (e) {}
-            document.querySelectorAll('.format-btn').forEach(btn => btn.classList.remove('active'));
-            
-            if (format === 'video') {
-                document.getElementById('seg-video').classList.add('active');
-                ytWarningDesc.style.display = 'block';
-            } else if (format === 'audio') {
-                document.getElementById('seg-audio').classList.add('active');
-                ytWarningDesc.style.display = 'none';
-            } else {
-                document.getElementById('seg-thumb').classList.add('active');
-                ytWarningDesc.style.display = 'none';
-            }
-        };
-        window.changeFormat = changeFormat;
-        changeFormat(currentFormat);
-
-        function updateLiveClock() {
-            const d = new Date();
-            let hours = d.getHours(); let minutes = d.getMinutes(); let seconds = d.getSeconds(); let ampm = hours >= 12 ? 'PM' : 'AM';
-            hours = hours % 12 || 12; 
-            minutes = minutes < 10 ? '0' + minutes : minutes;
-            seconds = seconds < 10 ? '0' + seconds : seconds;
-            
-            const days = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
-            const months = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
-            const dayName = days[d.getDay()];
-            const date = d.getDate();
-            const monthName = months[d.getMonth()];
-            const year = d.getFullYear();
-
-            const footerEl = document.getElementById('live-clock-footer');
-            if(footerEl) {
-                footerEl.innerHTML = `
-                    <div>Waktu Server: ${hours}:${minutes}:${seconds} ${ampm} WIB</div>
-                    <div style="font-size: 0.8rem; margin-top: 6px; color: var(--text-light); font-weight: 700;">${dayName}, ${date} ${monthName} ${year}</div>
-                `;
-            }
-        }
-        setInterval(updateLiveClock, 1000); updateLiveClock();
-
-        function setupMediaSession(title, isAudio, thumbSrc) {
-            if ('mediaSession' in navigator) {
-                const artworkSrc = thumbSrc && !thumbSrc.includes('Claude') ? thumbSrc : 'https://i.postimg.cc/mZdwnfsm/Claude-ai-icon-svg.png';
-                navigator.mediaSession.metadata = new MediaMetadata({
-                    title: title, artist: 'Kreaverse AI Player', album: isAudio ? 'Audio Premium' : 'Video Player',
-                    artwork: [{ src: artworkSrc, sizes: '512x512', type: 'image/png' }]
-                });
-                navigator.mediaSession.setActionHandler('play', () => { if(activeMedia) { activeMedia.play(); updatePlayPauseUI(true); } });
-                navigator.mediaSession.setActionHandler('pause', () => { if(activeMedia) { activeMedia.pause(); updatePlayPauseUI(false); } });
-            }
-        }
-
-        function updatePlayPauseUI(isPlaying) {
-            if (isPlaying) {
-                playPauseBtn.innerHTML = '<i class="fa-solid fa-pause"></i>';
-                if (currentFormat === 'audio') audioThumbnail.classList.add('playing');
-            } else {
-                playPauseBtn.innerHTML = '<i class="fa-solid fa-play" style="margin-left:2px;"></i>';
-                if (currentFormat === 'audio') audioThumbnail.classList.remove('playing');
-            }
-        }
-
-        function renderDynamicOptions() {
-            const serverCont = document.getElementById('server-options-container');
-            let srvHtml = `<button class="sheet-opt-btn ${currentServer === 'auto' ? 'selected' : ''}" onclick="window.selectServer('auto', 'Otomatis (Paling Cepat)')"><span>Otomatis (Paling Cepat)</span><i class="fa-solid fa-check ${currentServer === 'auto' ? '' : 'hidden'}"></i></button>`;
-            for (const [key, srv] of Object.entries(dbConfig.baseUrls || {})) {
-                if(!srv) continue;
-                const isSelected = currentServer === key;
-                srvHtml += `<button class="sheet-opt-btn ${isSelected ? 'selected' : ''}" onclick="window.selectServer('${key}', '${srv.name}')"><div style="display:flex; flex-direction:column; align-items:flex-start;"><span>${srv.name}</span><small id="ping-${key}" style="font-weight:600; margin-top:4px; color:var(--text-light);">Uji ping...</small></div><i class="fa-solid fa-check ${isSelected ? '' : 'hidden'}"></i></button>`;
-            }
-            serverCont.innerHTML = srvHtml;
-
-            const platCont = document.getElementById('platform-options-container');
-            let platHtml = `<button class="sheet-opt-btn ${currentPlatform === 'auto' ? 'selected' : ''}" onclick="window.selectPlatform('auto', 'Otomatis Deteksi Link', 'fa-globe')"><div style="display:flex; gap:10px; align-items:center;"><i class="fa-solid fa-globe"></i> Otomatis Deteksi Link</div><i class="fa-solid fa-check ${currentPlatform === 'auto' ? '' : 'hidden'}"></i></button>`;
-            for (const [key, plat] of Object.entries(dbConfig.endpoints || {})) {
-                if(!plat || key === 'allin' || key === 'auto') continue;
-                const isSelected = currentPlatform === key;
-                let icon = 'fa-solid fa-link';
-                const low = plat.name.toLowerCase();
-                if(low.includes('youtube')||low.includes('yt')) icon = 'fa-brands fa-youtube';
-                else if(low.includes('tiktok')||low.includes('douyin')) icon = 'fa-brands fa-tiktok';
-                else if(low.includes('instagram')||low.includes('ig')) icon = 'fa-brands fa-instagram';
-                else if(low.includes('facebook')||low.includes('fb')) icon = 'fa-brands fa-facebook';
-                else if(low.includes('twitter')||low.includes('x')) icon = 'fa-brands fa-twitter';
-                else if(low.includes('spotify')) icon = 'fa-brands fa-spotify';
-
-                platHtml += `<button class="sheet-opt-btn ${isSelected ? 'selected' : ''}" onclick="window.selectPlatform('${key}', '${plat.name}', '${icon}')"><div style="display:flex; gap:10px; align-items:center;"><i class="${icon}"></i> ${plat.name}</div><i class="fa-solid fa-check ${isSelected ? '' : 'hidden'}"></i></button>`;
-            }
-            platCont.innerHTML = platHtml;
-        }
-
-        window.selectPlatform = (val, text, iconClass) => {
-            currentPlatform = val; document.getElementById('label-platform').innerText = text;
-            const platformPill = document.querySelector('.settings-pills .pill:first-child');
-            if(platformPill) platformPill.querySelector('i').className = iconClass;
-            renderDynamicOptions(); closeSheet('sheet-platform');
-        };
-
-        window.selectServer = (val, text) => { 
-            currentServer = val; document.getElementById('label-server').innerText = text; 
-            renderDynamicOptions(); closeSheet('sheet-server'); window.pingSemuaServer(); 
-        };
-
-        window.pingSemuaServer = async () => { toast.classList.add('show'); }, 50);
-            setTimeout(() => { toast.classList.remove('show'); setTimeout(() => toast.remove(), 400); }, 4000);
-        };
-
-        // Dideklarasikan di scope modul agar dapat dipanggil dengan aman tanpa ReferenceError
-        function getPlatformIconAndColor(url) {
-            const low = url.toLowerCase();
-            if (low.includes('youtube.com') || low.includes('youtu.be') || low.includes('googlevideo.com')) {
-                return { icon: 'fa-brands fa-youtube', color: '#FF0000' };
-            } else if (low.includes('tiktok.com') || low.includes('douyin.com')) {
-                return { icon: 'fa-brands fa-tiktok', color: '#000000' };
-            } else if (low.includes('instagram.com')) {
-                return { icon: 'fa-brands fa-instagram', color: '#E1306C' };
-            } else if (low.includes('facebook.com') || low.includes('fb.watch')) {
-                return { icon: 'fa-brands fa-facebook', color: '#1877F2' };
-            } else if (low.includes('twitter.com') || low.includes('x.com')) {
-                return { icon: 'fa-brands fa-twitter', color: '#1DA1F2' };
-            } else if (low.includes('spotify.com')) {
-                return { icon: 'fa-brands fa-spotify', color: '#1DB954' };
-            }
-            return { icon: 'fa-solid fa-globe', color: 'var(--accent-color)' };
-        }
-        window.getPlatformIconAndColor = getPlatformIconAndColor;
-
-        const DEFAULT_CONFIG = {
-            baseUrls: {
-                siputzx: { name: "Siputzx API", url: "https://api.siputzx.my.id" },
-                atlantic: { name: "Atlantic Server Premium", url: "https://api.atlantic-downloader.xyz" }
-            },
-            endpoints: {
-                allin: { name: "All-in-One Downloader", path: "/api/download" },
-                youtube: { name: "YouTube Downloader", path: "/api/youtube" },
-                tiktok: { name: "TikTok No Watermark", path: "/api/tiktok" },
-                instagram: { name: "Instagram Media", path: "/api/instagram" },
-                facebook: { name: "Facebook Video", path: "/api/facebook" },
-                spotify: { name: "Spotify Music", path: "/api/spotify" }
-            }
-        };
-        let dbConfig = DEFAULT_CONFIG;
-        let isConfigLoaded = true; // Langsung siap digunakan seketika tanpa jeda milidetik!
-
-        onSnapshot(doc(db, "settings", "downloader_api"), (docSnap) => {
-            if (docSnap.exists()) {
-                dbConfig = docSnap.data();
-                isConfigLoaded = true;
-                renderDynamicOptions();
-                if (typeof window.pingSemuaServer === 'function') {
-                    window.pingSemuaServer();
-                }
             }
         });
 
@@ -1402,7 +1147,7 @@
             currentTimeEl.innerText = '0:00'; totalTimeEl.innerText = '0:00';
             clearInterval(processTimer); 
             document.getElementById('progress-container').style.display = 'none';
-            document.getElementById('real-download-progress-container').style.display = 'none';
+            document.getElementById('real-download-progress-container').classList.add('hidden');
             
             if (window.activeObjectUrl) {
                 URL.revokeObjectURL(window.activeObjectUrl);
@@ -1425,9 +1170,9 @@
         }
 
         function getYouTubeId(url) {
-            const regExp = /^.*(?:(?:youtu\.be\/|v\/|vi\/|u\/\w\/|embed\/|shorts\/|live\/)|(?:(?:watch)?\?vi?=|&vi?=))([^#\&\?]*).*/;
+            const regExp = /^.*(youtu\.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
             const match = url.match(regExp);
-            if (match && match[1].length === 11) return match[1];
+            if (match && match[2].length == 11) return match[2];
             return false;
         }
 
@@ -1766,7 +1511,7 @@
                     const sizeStr = sizeFormatted ? `<span style="font-size:0.75rem; color:var(--text-light); margin-top:4px;">Ukuran: ${sizeFormatted}</span>` : '';
                     const extStr = opt.ext ? `<span class="q-badge format">${opt.ext}</span>` : '';
                     const safeTitle = resultData.title.replace(/'/g, "\\'").replace(/"/g, '&quot;');
-                    const safeThumb = resultData.thumbnail ? encodeURIComponent(resultData.thumbnail) : '';
+                    const safeThumb = resultData.thumbnail ? btoa(resultData.thumbnail) : '';
 
                     return `
                         <button class="sheet-opt-btn" onclick="tampilkanHasilFinal('${opt.url}', '${safeTitle}', '${resultData.duration}', '${resultData.provider}', '${opt.type}', '${opt.quality}', '${opt.size}', '${safeThumb}', '${opt.ext}')">
@@ -1811,21 +1556,20 @@
             resolvedFileName = `Kreaverse AI - ${safeTitle}.${finalExt}`;
 
             let decodedThumb = '';
-            try { if(base64Thumb) decodedThumb = decodeURIComponent(base64Thumb); } catch(e){}
+            try { if(base64Thumb) decodedThumb = atob(base64Thumb); } catch(e){}
             const finalThumb = decodedThumb || 'https://i.postimg.cc/mZdwnfsm/Claude-ai-icon-svg.png';
             audioThumbnail.src = finalThumb;
 
-            const escapedCleanTitle = cleanTitle.replace(/[&<>'"]/g, tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag));
             const sizeFormatted = formatBytes(size);
             document.getElementById('download-stats').innerHTML = `
-                <p><strong>Judul:</strong> Kreaverse AI - ${escapedCleanTitle}</p>
+                <p><strong>Judul:</strong> Kreaverse AI - ${cleanTitle}</p>
                 <p><strong>Pilihan Anda:</strong> ${quality} (${type.toUpperCase()}) | ${finalExt.toUpperCase()}</p>
                 <p><strong>Ukuran File ${type === 'audio' ? 'Audio' : (type === 'video' ? 'Video' : 'Media')}:</strong> ${sizeFormatted ? sizeFormatted : 'Asli sesuai server'}</p>
                 ${duration ? `<p><strong>Durasi:</strong> ${duration}</p>` : ''}
                 <p><strong>Waktu Muat:</strong> Selesai dalam ${processSeconds} dtk - ${provider}</p>
                 <p><strong>Power by :</strong> Kreaverse AI &times; VPS</p>
             `;
-            audioTitleDisplay.innerHTML = `<span class="audio-title-inner">${escapedCleanTitle}</span>`;
+            audioTitleDisplay.innerHTML = `<span class="audio-title-inner">${cleanTitle}</span>`;
             
             if (type === 'thumb') {
                 mediaWrapper.classList.remove('audio-mode'); customVideo.style.display = "none";
@@ -2079,7 +1823,7 @@
                 activeMedia.pause(); updatePlayPauseUI(false); 
                 if(isDualAudio) customAudio.pause();
             }
-            showControls();
+            resetControlsTimer();
         });
 
         fullscreenBtn.addEventListener('click', () => {
@@ -2091,7 +1835,7 @@
                 if (document.exitFullscreen) document.exitFullscreen();
                 else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
             }
-            showControls();
+            resetControlsTimer();
         });
 
         document.addEventListener('fullscreenchange', () => {
@@ -2149,16 +1893,16 @@
                     bufferingSpinner.classList.remove('hidden'); 
                     if(isDualAudio) customAudio.pause();
                     
+                    // Menghitung persentase buffering asli dari browser (tanpa simulasi fiktif)
                     let bufferedPercent = 0;
-                    if (media.duration && media.buffered.length > 0) {
+                    if (media.buffered.length > 0) {
                         const bufferedEnd = media.buffered.end(media.buffered.length - 1);
                         bufferedPercent = (bufferedEnd / media.duration) * 100;
                     }
-                    const displayPercent = isNaN(bufferedPercent) ? 0 : Math.floor(bufferedPercent);
                     
                     bufferingContent.innerHTML = `
                         <i class="fa-solid fa-circle-notch fa-spin" style="font-size: 2rem; color: var(--accent-color);"></i>
-                        <span style="font-size:0.85rem; font-weight:600; margin-top:10px; color:#FFF;">Memuat data... (${displayPercent}%)</span>
+                        <span style="font-size:0.85rem; font-weight:600; margin-top:10px; color:#FFF;">Memuat data... (${Math.floor(bufferedPercent)}%)</span>
                     `;
                 }
             });
@@ -2322,14 +2066,7 @@
             function startXhrDownload(url, isFallback = false) {
                 const xhr = new XMLHttpRequest();
                 activeXhr = xhr; // Simpan xhr aktif untuk pembatalan
-                const cBtn = document.getElementById('cancel-download-btn');
-                if (cBtn) {
-                    cBtn.style.display = 'block'; // Tampilkan tombol Batal
-                    cBtn.innerText = "Batal";
-                    cBtn.style.background = "#fee2e2";
-                    cBtn.style.color = "#ef4444";
-                    cBtn.style.borderColor = "#fca5a5";
-                }
+                document.getElementById('cancel-download-btn').style.display = 'block'; // Tampilkan tombol Batal
                 
                 xhr.open('GET', url, true);
                 xhr.responseType = 'blob';
