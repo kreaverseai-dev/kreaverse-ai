@@ -325,6 +325,7 @@
         .player-watermark { position: absolute; top: 12px; right: 12px; width: 125px; height: 32px; z-index: 10; pointer-events: none; filter: drop-shadow(0 1px 2px rgba(0,0,0,0.4)); overflow: hidden; transition: opacity 0.3s; }
         .media-player-wrapper.audio-mode .player-watermark { top: 15px; right: 20px; display: block; width: 125px; height: 32px;}
         .media-player-wrapper:fullscreen .player-watermark { width: 155px; height: 40px; top: 20px; right: 20px; }
+        .media-player-wrapper:-webkit-full-screen .player-watermark { width: 155px; height: 40px; top: 20px; right: 20px; }
 
         /* CONTROLS */
         .player-controls { position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(to top, rgba(0,0,0,0.9), transparent); padding: 30px 20px 15px; display: flex; align-items: center; gap: 15px; z-index: 10; transition: opacity 0.4s; opacity: 1; }
