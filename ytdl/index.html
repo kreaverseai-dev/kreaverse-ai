@@ -627,36 +627,8 @@
             <div class="media-player-wrapper" id="media-wrapper">
                 
                 <!-- REVISI 2, 3: WATERMARK DI DALAM VIDEO (Bukan di background) & Fade Animasi -->
-                <div class="player-watermark" id="player-watermark">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 60" style="width:100%; height:100%;">
-                        <defs>
-                            <linearGradient id="kreaGradWM" x1="0%" y1="0%" x2="100%" y2="100%">
-                                <stop offset="0%" stop-color="#D97757" />
-                                <stop offset="50%" stop-color="#AF52DE" />
-                                <stop offset="100%" stop-color="#007AFF" />
-                            </linearGradient>
-                            <linearGradient id="shimmerGlow" x1="-100%" y1="0%" x2="0%" y2="0%">
-                                <stop offset="0%" stop-color="rgba(255,255,255,0)" />
-                                <stop offset="45%" stop-color="rgba(255,255,255,0)" />
-                                <stop offset="50%" stop-color="rgba(255,255,255,0.9)" />
-                                <stop offset="55%" stop-color="rgba(255,255,255,0)" />
-                                <stop offset="100%" stop-color="rgba(255,255,255,0)" />
-                                <animate attributeName="x1" values="-100%; 200%" dur="7s" repeatCount="indefinite" />
-                                <animate attributeName="x2" values="0%; 300%" dur="7s" repeatCount="indefinite" />
-                            </linearGradient>
-                        </defs>
-                        <g>
-                            <path d="M 30,10 Q 30,30 50,30 Q 30,30 30,50 Q 30,30 10,30 Q 30,30 30,10 Z" fill="url(#kreaGradWM)" />
-                            <path d="M 30,17 Q 30,30 43,30 Q 30,30 30,43 Q 30,30 17,30 Q 30,30 30,17 Z" fill="url(#kreaGradWM)" transform="rotate(45, 30, 30)" opacity="0.85" />
-                            <text x="65" y="38" font-family="'Plus Jakarta Sans', sans-serif" font-weight="900" font-size="21" fill="#ffffff" letter-spacing="-0.5px">Kreaverse<tspan font-weight="500" fill="#D97757"> AI</tspan></text>
-                        </g>
-                        <!-- Shimmer Sweep Menumpang di dalam area isi (Teks/Logo) -->
-                        <g style="mix-blend-mode: overlay;">
-                            <path d="M 30,10 Q 30,30 50,30 Q 30,30 30,50 Q 30,30 10,30 Q 30,30 30,10 Z" fill="url(#shimmerGlow)" />
-                            <path d="M 30,17 Q 30,30 43,30 Q 30,30 30,43 Q 30,30 17,30 Q 30,30 30,17 Z" fill="url(#shimmerGlow)" transform="rotate(45, 30, 30)" />
-                            <text x="65" y="38" font-family="'Plus Jakarta Sans', sans-serif" font-weight="900" font-size="21" fill="url(#shimmerGlow)" letter-spacing="-0.5px">Kreaverse<tspan font-weight="500"> AI</tspan></text>
-                        </g>
-                    </svg>
+                <div class="input-actions">
+                    <button id="paste-btn" title="Tempel Tautan" style="background: #ffffff; border: 1px solid #111827; border-radius: 99px; padding: 4px 10px; font-size: 0.8rem; font-weight: 800; color: #111827; display: flex; align-items: center; gap: 6px; box-shadow: var(--shadow-sm); cursor: pointer;"><i class="fa-solid fa-paste" style="font-size: 0.85rem; color: #111827;"></i>Paste</button>
                 </div>
 
                 <div class="audio-ui-container" id="audio-ui">
@@ -772,7 +744,7 @@
 
     <!-- FOOTER -->
     <footer class="footer">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 60" style="width:170px; height:42px; margin: 0 auto 20px; display: block; filter: drop-shadow(0 1px 2px rgba(0,0,0,0.1));">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 60" style="width:180px; height:45px; margin: 0 auto 20px; display: block; filter: drop-shadow(0 1px 2px rgba(0,0,0,0.1));">
             <defs>
                 <linearGradient id="kreaGradFooter" x1="0%" y1="0%" x2="100%" y2="100%">
                     <stop offset="0%" stop-color="#D97757" />
@@ -797,7 +769,7 @@
             <g style="mix-blend-mode: overlay;">
                 <path d="M 30,10 Q 30,30 50,30 Q 30,30 30,50 Q 30,30 10,30 Q 30,30 30,10 Z" fill="url(#shimmerGlowFooter)" />
                 <path d="M 30,17 Q 30,30 43,30 Q 30,30 30,43 Q 30,30 17,30 Q 30,30 30,17 Z" fill="url(#shimmerGlowFooter)" transform="rotate(45, 30, 30)" />
-                <text x="65" y="38" font-family="'Plus Jakarta Sans', sans-serif" font-weight="900" font-size="21" fill="url(#shimmerGlowFooter)" letter-spacing="-0.5px">Kreaverse<tspan font-weight="500"> AI</tspan></text>
+                <text x="65" y="38" font-family="'Plus Jakarta Sans', sans-serif" font-weight="900" font-size="21" fill="#shimmerGlowFooter" letter-spacing="-0.5px">Kreaverse<tspan font-weight="500"> AI</tspan></text>
             </g>
         </svg>
         <div class="footer-links">
