@@ -308,7 +308,7 @@
 
         /* EQUALIZER */
         .equalizer-container { display: flex; align-items: flex-end; justify-content: center; gap: 4px; height: 30px; margin-bottom: 10px; }
-        .eq-bar { width: 4px; background: var(--accent-color); border-radius: 2px; animation: eqBounce 0.8s infinite alternate ease-in-out; }
+        .eq-bar { width: 4px; background: var(--accent-color); border-radius: 2px; animation: eqBounce 0.8s infinite alternate ease-in-out; transform-origin: bottom; }
         .eq-bar:nth-child(1) { animation-delay: 0.1s; height: 60%; }
         .eq-bar:nth-child(2) { animation-delay: 0.3s; height: 100%; }
         .eq-bar:nth-child(3) { animation-delay: 0.0s; height: 40%; }
@@ -1796,16 +1796,17 @@
             const finalThumb = decodedThumb || 'https://i.postimg.cc/mZdwnfsm/Claude-ai-icon-svg.png';
             audioThumbnail.src = finalThumb;
 
+            const escapedCleanTitle = cleanTitle.replace(/[&<>'"]/g, tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag));
             const sizeFormatted = formatBytes(size);
             document.getElementById('download-stats').innerHTML = `
-                <p><strong>Judul:</strong> Kreaverse AI - ${cleanTitle}</p>
+                <p><strong>Judul:</strong> Kreaverse AI - ${escapedCleanTitle}</p>
                 <p><strong>Pilihan Anda:</strong> ${quality} (${type.toUpperCase()}) | ${finalExt.toUpperCase()}</p>
                 <p><strong>Ukuran File ${type === 'audio' ? 'Audio' : (type === 'video' ? 'Video' : 'Media')}:</strong> ${sizeFormatted ? sizeFormatted : 'Asli sesuai server'}</p>
                 ${duration ? `<p><strong>Durasi:</strong> ${duration}</p>` : ''}
                 <p><strong>Waktu Muat:</strong> Selesai dalam ${processSeconds} dtk - ${provider}</p>
                 <p><strong>Power by :</strong> Kreaverse AI &times; VPS</p>
             `;
-            audioTitleDisplay.innerHTML = `<span class="audio-title-inner">${cleanTitle}</span>`;
+            audioTitleDisplay.innerHTML = `<span class="audio-title-inner">${escapedCleanTitle}</span>`;
             
             if (type === 'thumb') {
                 mediaWrapper.classList.remove('audio-mode'); customVideo.style.display = "none";
