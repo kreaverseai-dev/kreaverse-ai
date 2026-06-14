@@ -1406,9 +1406,9 @@
         }
 
         function getYouTubeId(url) {
-            const regExp = /^.*(youtu\.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+            const regExp = /^.*(?:(?:youtu\.be\/|v\/|vi\/|u\/\w\/|embed\/|shorts\/|live\/)|(?:(?:watch)?\?vi?=|&vi?=))([^#\&\?]*).*/;
             const match = url.match(regExp);
-            if (match && match[2].length == 11) return match[2];
+            if (match && match[1].length === 11) return match[1];
             return false;
         }
 
@@ -1747,7 +1747,7 @@
                     const sizeStr = sizeFormatted ? `<span style="font-size:0.75rem; color:var(--text-light); margin-top:4px;">Ukuran: ${sizeFormatted}</span>` : '';
                     const extStr = opt.ext ? `<span class="q-badge format">${opt.ext}</span>` : '';
                     const safeTitle = resultData.title.replace(/'/g, "\\'").replace(/"/g, '&quot;');
-                    const safeThumb = resultData.thumbnail ? btoa(resultData.thumbnail) : '';
+                    const safeThumb = resultData.thumbnail ? encodeURIComponent(resultData.thumbnail) : '';
 
                     return `
                         <button class="sheet-opt-btn" onclick="tampilkanHasilFinal('${opt.url}', '${safeTitle}', '${resultData.duration}', '${resultData.provider}', '${opt.type}', '${opt.quality}', '${opt.size}', '${safeThumb}', '${opt.ext}')">
@@ -1792,7 +1792,7 @@
             resolvedFileName = `Kreaverse AI - ${safeTitle}.${finalExt}`;
 
             let decodedThumb = '';
-            try { if(base64Thumb) decodedThumb = atob(base64Thumb); } catch(e){}
+            try { if(base64Thumb) decodedThumb = decodeURIComponent(base64Thumb); } catch(e){}
             const finalThumb = decodedThumb || 'https://i.postimg.cc/mZdwnfsm/Claude-ai-icon-svg.png';
             audioThumbnail.src = finalThumb;
 
