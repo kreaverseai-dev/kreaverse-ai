@@ -1172,7 +1172,7 @@ import {
 import {
     getFirestore, collection, setDoc, addDoc, getDocs, doc,
     deleteDoc, writeBatch, updateDoc, query, orderBy, limit,
-    getDoc, onSnapshot, where, deleteField
+    getDoc, onSnapshot, where, deleteField, startAfter
 } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 import {
     getDatabase, ref, set, onValue
@@ -1400,6 +1400,7 @@ window.openPromptModal = function(title, desc, defaultVal, cb) {
 
 window.closePromptModal = () => {
     document.getElementById('prompt-modal').classList.remove('visible');
+    document.getElementById('prompt-input').value = '';
     promptCb = null;
 };
 
@@ -1568,7 +1569,9 @@ function setupRealtimeLogs() {
             const host = log.host || 'System';
             const req = log.request || '-';
             
-            let detailsHtml = log.details ? `<div class="vercel-log-json">${log.details}</div>` : '';
+            const safeMsg = String(log.message || '-').replace(/</g, "&lt;").replace(/>/g, "&gt;");
+            const safeDetails = log.details ? String(log.details).replace(/</g, "&lt;").replace(/>/g, "&gt;") : '';
+            let detailsHtml = safeDetails ? `<div class="vercel-log-json">${safeDetails}</div>` : '';
             let copyBtn = log.details ? `<button class="btn btn-sm" style="background:#EAEAEA; padding:4px 8px; font-size:0.7rem; margin-top:4px; align-self:flex-start;" onclick="navigator.clipboard.writeText(decodeURIComponent('${encodeURIComponent(log.details)}')); window.showToast('Log disalin!', 'success');"><i class="fa-solid fa-copy"></i> Copy Log</button>` : '';
 
             html += `
@@ -1579,7 +1582,7 @@ function setupRealtimeLogs() {
                     <span class="vercel-log-req">${req}</span>
                     <span class="vercel-log-time">${time}</span>
                 </div>
-                <div class="vercel-log-msg">${log.message || '-'}</div>
+                <div class="vercel-log-msg">${safeMsg}</div>
                 ${detailsHtml}
                 ${copyBtn}
             </div>`;
@@ -1589,7 +1592,7 @@ function setupRealtimeLogs() {
         if (dashLog) dashLog.innerHTML = html.split('</div></div>').slice(0, 5).join('</div></div>') + '</div>' || `<div style="padding:20px; text-align:center; color:#999;">Belum ada log.</div>`;
     });
 }
-window.deleteAllLogs = async () => { try { const snap = await getDocs(collection(db, "system_logs")); const batch = writeBatch(db); snap.forEach(d => batch.delete(d.ref)); await batch.commit(); showToast("Log dibersihkan!", "success"); } catch(e) {} };
+window.deleteAllLogs = async () => { try { let total = 0; while(true) { const snap = await getDocs(query(collection(db, "system_logs"), limit(500))); if(snap.empty) break; let batch = writeBatch(db); snap.forEach(d => { batch.delete(d.ref); total++; }); await batch.commit(); } showToast(`Log dibersihkan! (${total} data)`, "success"); } catch(e) { showToast("Gagal membersihkan log", "danger"); } };
 
 // ============================================================
 // MODUL DYNAMIC API PROVIDERS (DIPERBAIKI)
@@ -1709,7 +1712,7 @@ window.deleteAllProviders = function() {
 // ============================================================
 function setupRealtimeApis() {
     if (unsubApiKeys) { unsubApiKeys(); unsubApiKeys = null; }
-    unsubApiKeys = onSnapshot(collection(db, "api_keys"), async snapshot => {
+    unsubApiKeys = onSnapshot(query(collection(db, "api_keys"), limit(500)), async snapshot => {
         let html = "", total = 0, countOn = 0, countOff = 0;
         const toDelete = [], rows = [];
 
@@ -1745,10 +1748,16 @@ function setupRealtimeApis() {
         const badge = document.getElementById('api-count-badge'); if (badge) badge.innerText = total;
 
         if (toDelete.length > 0) {
-            for (const dead of toDelete) {
-                try { await deleteDoc(doc(db, "api_keys", dead.id)); await createLog({ type: 'warning', host: 'System', request: 'AUTO_CLEAN', message: `API Key ${dead.provider} dihapus otomatis (mati/limit)` }); } catch(e) {}
-            }
-            showToast(`${toDelete.length} API key mati dibersihkan`, "warning");
+            try {
+                let batch = writeBatch(db); let count = 0;
+                for (const dead of toDelete) {
+                    batch.delete(doc(db, "api_keys", dead.id)); count++;
+                    if (count % 400 === 0) { await batch.commit(); batch = writeBatch(db); }
+                }
+                if (count % 400 !== 0) await batch.commit();
+                await createLog({ type: 'warning', host: 'System', request: 'AUTO_CLEAN', message: `Membersihkan ${toDelete.length} API Key yang mati/limit secara otomatis` });
+                showToast(`${toDelete.length} API key mati dibersihkan`, "warning");
+            } catch(e) { console.error("Gagal auto-clean:", e); }
         }
     });
 }
@@ -1757,22 +1766,32 @@ window.delApi = async function(id) { try { await deleteDoc(doc(db, "api_keys", i
 window.checkAllApiHealth = async () => {
     showToast("Mengecek API key...", "info");
     try {
-        const snapshot = await getDocs(collection(db, "api_keys"));
-        let dead = 0; const batch = writeBatch(db);
-        snapshot.forEach(docSnap => {
-            const keyVal = docSnap.data().key || "";
-            if (keyVal.length < 5 || keyVal.trim() === "") { batch.update(doc(db, "api_keys", docSnap.id), { status: "mati" }); dead++; }
-        });
-        if (dead > 0) { await batch.commit(); await createLog({ type: 'error', host: 'System', request: 'HEALTH_CHECK', message: `${dead} API key invalid dinonaktifkan` }); showToast(`${dead} key mati`, "warning"); } 
+        let dead = 0; let lastDoc = null;
+        while(true) {
+            let q = query(collection(db, "api_keys"), orderBy("createdAt"), limit(500));
+            if (lastDoc) q = query(collection(db, "api_keys"), orderBy("createdAt"), startAfter(lastDoc), limit(500));
+            const snapshot = await getDocs(q);
+            if (snapshot.empty) break;
+            let batch = writeBatch(db); let hasUpdate = false;
+            for (const docSnap of snapshot.docs) {
+                const keyVal = docSnap.data().key || "";
+                if (keyVal.length < 5 || keyVal.trim() === "") { 
+                    batch.update(doc(db, "api_keys", docSnap.id), { status: "mati" }); 
+                    dead++; hasUpdate = true;
+                }
+            }
+            if (hasUpdate) await batch.commit();
+            lastDoc = snapshot.docs[snapshot.docs.length - 1];
+        }
+        if (dead > 0) { await createLog({ type: 'error', host: 'System', request: 'HEALTH_CHECK', message: `${dead} API key invalid dinonaktifkan` }); showToast(`${dead} key mati`, "warning"); } 
         else { showToast("All keys valid", "success"); }
     } catch(e) { showToast("Gagal health check", "danger"); }
 };
 window.deleteAllApi = async () => {
     try {
-        const snap = await getDocs(collection(db, "api_keys"));
-        if (snap.empty) { showToast("API sudah kosong", "info"); return; }
-        const batch = writeBatch(db); snap.forEach(d => batch.delete(d.ref)); await batch.commit();
-        await createLog({ type: 'error', host: 'Admin', request: 'DEL_ALL_KEYS', message: "Menghapus SEMUA API Key" }); showToast("Semua dihapus!", "success");
+        let total = 0; while(true) { const snap = await getDocs(query(collection(db, "api_keys"), limit(500))); if(snap.empty) break; let batch = writeBatch(db); snap.forEach(d => { batch.delete(d.ref); total++; }); await batch.commit(); }
+        if(total === 0) { showToast("API sudah kosong", "info"); return; }
+        await createLog({ type: 'error', host: 'Admin', request: 'DEL_ALL_KEYS', message: `Menghapus SEMUA API Key (${total} data)` }); showToast(`Semua dihapus! (${total} data)`, "success");
     } catch(e) { showToast("Gagal hapus", "danger"); }
 };
 document.getElementById('btn-healthcheck').onclick = () => window.checkAllApiHealth();
@@ -1786,9 +1805,13 @@ document.getElementById('formApi').addEventListener('submit', async e => {
     
     const btn = e.target.querySelector('button[type="submit"]'); btn.disabled = true; btn.innerHTML = `<div class="loading-spinner sm"></div> Menyimpan...`;
     try {
-        const batch = writeBatch(db);
-        keys.forEach(key => { const r = doc(collection(db, "api_keys")); batch.set(r, { key, provider, priority, status: "aktif", createdAt: Date.now() }); });
-        await batch.commit(); await createLog({ type: 'success', host: 'Admin', request: 'INJECT_KEYS', message: `Menyuntikkan ${keys.length} kunci ${provider}` });
+        let batch = writeBatch(db); let count = 0;
+        for (const key of keys) {
+            const r = doc(collection(db, "api_keys")); batch.set(r, { key, provider, priority, status: "aktif", createdAt: Date.now() });
+            count++; if (count % 400 === 0) { await batch.commit(); batch = writeBatch(db); }
+        }
+        if (count % 400 !== 0) await batch.commit();
+        await createLog({ type: 'success', host: 'Admin', request: 'INJECT_KEYS', message: `Menyuntikkan ${keys.length} kunci ${provider}` });
         document.getElementById('aKeys').value = ''; showToast(`${keys.length} kunci tersimpan!`, "success");
     } catch(err) { showToast("Gagal menyimpan", "danger"); } finally { btn.disabled = false; btn.innerHTML = `<i class="fa-solid fa-cloud-arrow-up"></i> Simpan ke Database API`; }
 });
@@ -1860,9 +1883,9 @@ window.deleteAllCloudinary = function() {
     confirmAction("Hapus SEMUA akun Cloudinary?", async () => {
         try {
             const snap = await getDocs(collection(db, "cloudinary_accounts"));
-            const batch = writeBatch(db);
-            snap.forEach(d => batch.delete(d.ref));
-            await batch.commit();
+            let batch = writeBatch(db); let count = 0;
+            for (const d of snap.docs) { batch.delete(d.ref); count++; if (count % 400 === 0) { await batch.commit(); batch = writeBatch(db); } }
+            if (count % 400 !== 0) await batch.commit();
             showToast("Semua akun dihapus!", "success");
         } catch(e) { showToast("Gagal menghapus", "danger"); }
     });
@@ -2013,7 +2036,12 @@ window.deleteServer = function(key, name) {
     confirmAction(`Hapus ${name}? Anda juga akan kehilangan jalur yang terhubung dengannya.`, async () => {
         try {
             const dataToUpdate = {};
-            dataToUpdate[`baseUrls.${key}`] = deleteField(); 
+            dataToUpdate[`baseUrls.${key}`] = deleteField();
+            if (downloaderDataGlobal && downloaderDataGlobal.endpoints) {
+                for (const epKey in downloaderDataGlobal.endpoints) {
+                    dataToUpdate[`endpoints.${epKey}.paths.${key}`] = deleteField();
+                }
+            }
             await updateDoc(doc(db, "settings", "downloader_api"), dataToUpdate);
             await createLog({ type: 'warning', host: 'Admin', request: 'DEL_SERVER', message: `Menghapus server: ${name}` });
             showToast("Server dihapus permanen!", "success");
@@ -2175,7 +2203,8 @@ function setupRealtimeMonitor() {
             const time = new Date(d.timestamp).toLocaleTimeString('id-ID');
             let icon = 'fa-file';
             if(d.type === 'image') icon = 'fa-image'; else if(d.type === 'video') icon = 'fa-video'; else if(d.type === 'audio') icon = 'fa-music';
-            html += `<div class="monitor-item"><div class="monitor-header"><span style="font-weight:700; color:var(--accent);"><i class="fa-solid ${icon}"></i> ${d.email || 'Anonim'}</span><span style="color:var(--text-sec); font-size:0.75rem;">${time}</span></div><div class="monitor-prompt">${d.prompt || 'Tidak ada prompt (Upload/Direct)'}</div></div>`;
+            const safePrompt = String(d.prompt || 'Tidak ada prompt (Upload/Direct)').replace(/</g, "&lt;").replace(/>/g, "&gt;");
+        html += `<div class="monitor-item"><div class="monitor-header"><span style="font-weight:700; color:var(--accent);"><i class="fa-solid ${icon}"></i> ${d.email || 'Anonim'}</span><span style="color:var(--text-sec); font-size:0.75rem;">${time}</span></div><div class="monitor-prompt">${safePrompt}</div></div>`;
         });
         if (!html) html = `<div style="text-align:center; padding:40px; color:var(--text-sec);">Belum ada aktivitas generate.</div>`;
         document.getElementById('monitorContainer').innerHTML = html;
@@ -2216,7 +2245,7 @@ document.getElementById('formUser').addEventListener('submit', async e => {
     e.preventDefault();
     const nama = document.getElementById('uName').value.trim(); const email = document.getElementById('uEmail').value;
     const tier = document.getElementById('uTier').value; const quota = parseInt(document.getElementById('uQuota').value) || 0;
-    const expiryVal = document.getElementById('uExpiry').value; const expiryTs = expiryVal ? new Date(expiryVal).getTime() : null;
+    const expiryVal = document.getElementById('uExpiry').value; const expiryTs = expiryVal ? new Date(expiryVal + "T23:59:59").getTime() : null;
 
     if (!nama) { showToast("Nama klien tidak boleh kosong!", "warning"); return; }
     const btn = e.target.querySelector('button[type="submit"]'); const originalText = btn.innerHTML;
@@ -2263,7 +2292,9 @@ function renderUserTableInternal() {
         const genLabel = quota > 0 ? `${genCount}/${quota}` : `${genCount}`;
         const dateStringFormatted = formatClientDate(u.createdAt);
 
-        html += `<tr><td style="font-weight:700;">${u.nama || "-"}</td><td style="color:var(--text-sec); font-size:0.85rem;">${u.email || "-"}</td><td>${tierBadge}</td><td style="font-size:0.8rem; color:var(--text-sec); font-weight:500;">${dateStringFormatted}</td><td>${statusBadge}</td><td style="font-weight:700; text-align:center;"><span class="badge ${genCount > 0 ? 'badge-blue' : 'badge-gray'}">${genLabel}</span></td><td><div style="display:flex; gap:6px; flex-wrap:wrap;"><button class="btn btn-sm btn-info" onclick="window.openUserModal('${u.id}')"><i class="fa-solid fa-pen-to-square"></i></button>${!isBlocked ? `<button class="btn btn-sm btn-warning" onclick="window.triggerBlockUser('${u.id}', '${u.nama}')"><i class="fa-solid fa-ban"></i></button>` : `<button class="btn btn-sm btn-success" onclick="window.triggerUnblockUser('${u.id}', '${u.nama}')"><i class="fa-solid fa-lock-open"></i></button>`}<button class="btn btn-sm btn-warning" onclick="window.triggerForceLogout('${u.id}', '${u.nama}')"><i class="fa-solid fa-right-from-bracket"></i></button><button class="btn btn-sm btn-danger" onclick="window.triggerDeleteUser('${u.id}', '${u.nama}')"><i class="fa-solid fa-trash"></i></button></div></td></tr>`;
+        const htmlSafeNama = String(u.nama || "-").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+        const jsSafeNama = String(u.nama || "-").replace(/\\/g, "\\\\").replace(/'/g, "\\'");
+        html += `<tr><td style="font-weight:700;">${htmlSafeNama}</td><td style="color:var(--text-sec); font-size:0.85rem;">${u.email || "-"}</td><td>${tierBadge}</td><td style="font-size:0.8rem; color:var(--text-sec); font-weight:500;">${dateStringFormatted}</td><td>${statusBadge}</td><td style="font-weight:700; text-align:center;"><span class="badge ${genCount > 0 ? 'badge-blue' : 'badge-gray'}">${genLabel}</span></td><td><div style="display:flex; gap:6px; flex-wrap:wrap;"><button class="btn btn-sm btn-info" onclick="window.openUserModal('${u.id}')"><i class="fa-solid fa-pen-to-square"></i></button>${!isBlocked ? `<button class="btn btn-sm btn-warning" onclick="window.triggerBlockUser('${u.id}', '${jsSafeNama}')"><i class="fa-solid fa-ban"></i></button>` : `<button class="btn btn-sm btn-success" onclick="window.triggerUnblockUser('${u.id}', '${jsSafeNama}')"><i class="fa-solid fa-lock-open"></i></button>`}<button class="btn btn-sm btn-warning" onclick="window.triggerForceLogout('${u.id}', '${jsSafeNama}')"><i class="fa-solid fa-right-from-bracket"></i></button><button class="btn btn-sm btn-danger" onclick="window.triggerDeleteUser('${u.id}', '${jsSafeNama}')"><i class="fa-solid fa-trash"></i></button></div></td></tr>`;
     });
     if (!html) html = `<tr><td colspan="7" style="text-align:center; padding:40px; color:var(--text-sec);"><i class="fa-solid fa-users-slash" style="font-size:2rem; display:block; margin-bottom:10px; opacity:0.3;"></i>Belum ada klien terdaftar.</td></tr>`;
     document.getElementById('userTable').innerHTML = html;
@@ -2275,7 +2306,8 @@ function setupRealtimeUsers() {
     if (unsubUsers) { unsubUsers(); unsubUsers = null; }
     const presenceRef = ref(rtdb, "presence");
     onValue(presenceRef, snap => { onlineGlobalMap = snap.val() || {}; renderUserTableInternal(); });
-    unsubUsers = onSnapshot(collection(db, "users"), snapshot => {
+    const q = query(collection(db, "users"), orderBy("createdAt", "desc"), limit(300));
+    unsubUsers = onSnapshot(q, snapshot => {
         rawUsersDataGlobal = [];
         snapshot.forEach(docSnap => { rawUsersDataGlobal.push({ id: docSnap.id, ...docSnap.data() }); });
         renderUserTableInternal(); setupRealtimeFeedback();
@@ -2296,14 +2328,16 @@ window.openUserModal = async (userId) => {
         const u = docSnap.data();
         const expiryDateStr = u.expiry ? new Date(u.expiry).toISOString().split('T')[0] : '';
         const isMax = u.tier === 'max_lifetime' || u.tier === 'max';
-        content.innerHTML = `<div style="display:grid; gap:16px;"><div><label>Nama Klien</label><input type="text" id="edit-nama" value="${u.nama || ''}"></div><div><label>Email</label><input type="email" value="${u.email || ''}" readonly style="cursor:not-allowed;"></div><div><label>Paket Layanan</label><div class="custom-select-trigger" id="edit-tier-trigger" onclick="openCustomSelect('edit-tier')"><span id="edit-tier-label">${u.tier==='max_lifetime'||u.tier==='max'?'Max (Lifetime)':u.tier==='max_monthly'?'Max (Bulanan)':u.tier==='pro'?'Pro (Bulanan)':'Basic (Bulanan)'}</span><i class="fa-solid fa-chevron-down"></i></div><input type="hidden" id="edit-tier" value="${u.tier || 'basic'}"></div><div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;"><div><label>Kuota Harian</label><input type="number" id="edit-quota" value="${u.dailyQuota || 0}" min="0"></div><div><label>Reset Counter</label><button class="btn btn-sm btn-warning" style="width:100%;" onclick="window.resetGenerateCount('${userId}', '${u.nama}')"><i class="fa-solid fa-rotate-left"></i> Reset ke 0</button></div></div><div id="edit-expiry-container" style="display: ${isMax ? 'none' : 'block'};"><label>Tanggal Expired</label><input type="date" id="edit-expiry" value="${expiryDateStr}"></div><div style="display:flex; gap:10px; margin-top:10px;"><button class="btn btn-primary" style="flex:1;" onclick="window.saveUserEdit('${userId}', '${u.nama}')"><i class="fa-solid fa-floppy-disk"></i> Simpan</button><button class="btn" onclick="closeUserModal()" style="background:#EAEAEA; flex:1;">Batal</button></div></div>`;
+        const htmlSafeNama = String(u.nama || '').replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+        const jsSafeNama = String(u.nama || '').replace(/\\/g, "\\\\").replace(/'/g, "\\'");
+        content.innerHTML = `<div style="display:grid; gap:16px;"><div><label>Nama Klien</label><input type="text" id="edit-nama" value="${htmlSafeNama}"></div><div><label>Email</label><input type="email" value="${u.email || ''}" readonly style="cursor:not-allowed;"></div><div><label>Paket Layanan</label><div class="custom-select-trigger" id="edit-tier-trigger" onclick="openCustomSelect('edit-tier')"><span id="edit-tier-label">${u.tier==='max_lifetime'||u.tier==='max'?'Max (Lifetime)':u.tier==='max_monthly'?'Max (Bulanan)':u.tier==='pro'?'Pro (Bulanan)':'Basic (Bulanan)'}</span><i class="fa-solid fa-chevron-down"></i></div><input type="hidden" id="edit-tier" value="${u.tier || 'basic'}"></div><div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;"><div><label>Kuota Harian</label><input type="number" id="edit-quota" value="${u.dailyQuota || 0}" min="0"></div><div><label>Reset Counter</label><button class="btn btn-sm btn-warning" style="width:100%;" onclick="window.resetGenerateCount('${userId}', '${jsSafeNama}')"><i class="fa-solid fa-rotate-left"></i> Reset ke 0</button></div></div><div id="edit-expiry-container" style="display: ${isMax ? 'none' : 'block'};"><label>Tanggal Expired</label><input type="date" id="edit-expiry" value="${expiryDateStr}"></div><div style="display:flex; gap:10px; margin-top:10px;"><button class="btn btn-primary" style="flex:1;" onclick="window.saveUserEdit('${userId}', '${jsSafeNama}')"><i class="fa-solid fa-floppy-disk"></i> Simpan</button><button class="btn" onclick="closeUserModal()" style="background:#EAEAEA; flex:1;">Batal</button></div></div>`;
         window.CUSTOM_SELECT_OPTIONS['edit-tier'] = window.CUSTOM_SELECT_OPTIONS['uTier'];
     } catch(e) {}
 };
 window.saveUserEdit = async (userId, oldName) => {
     const nama = document.getElementById('edit-nama').value.trim(); const tier = document.getElementById('edit-tier').value;
     const quota = parseInt(document.getElementById('edit-quota').value) || 0; const expiryVal = document.getElementById('edit-expiry') ? document.getElementById('edit-expiry').value : '';
-    const expiryTs = (expiryVal && tier !== 'max_lifetime' && tier !== 'max') ? new Date(expiryVal).getTime() : null;
+    const expiryTs = (expiryVal && tier !== 'max_lifetime' && tier !== 'max') ? new Date(expiryVal + "T23:59:59").getTime() : null;
     if (!nama) { showToast("Nama tidak boleh kosong!", "warning"); return; }
     try { await updateDoc(doc(db, "users", userId), { nama, tier, dailyQuota: quota, expiry: expiryTs }); await createLog({ type: 'info', host: 'Admin', request: 'EDIT_USER', message: `Mengedit klien: ${oldName} -> paket ${tier}` }); closeUserModal(); showToast("Data klien diperbarui!", "success"); } catch(e) { showToast("Gagal menyimpan", "danger"); }
 };
@@ -2312,7 +2346,7 @@ window.blockUser = async (id, nama) => { try { await updateDoc(doc(db, "users", 
 window.unblockUser = async (id, nama) => { try { await updateDoc(doc(db, "users", id), { blockedUntil: null }); showToast("Blokir dibuka!", "success"); } catch(e) {} };
 window.forceLogout = async (id, nama) => { try { await updateDoc(doc(db, "users", id), { forceLogout: Date.now() }); await set(ref(rtdb, `presence/${id}`), { state: "offline", last_seen: Date.now() }); showToast("Dipaksa logout!", "warning"); } catch(e) {} };
 window.delUser = async (id, nama) => { try { await deleteDoc(doc(db, "users", id)); await set(ref(rtdb, `presence/${id}`), null); showToast("Berhasil dihapus!", "success"); } catch(e) {} };
-window.deleteAllUsers = async () => { try { const snap = await getDocs(collection(db, "users")); if (snap.empty) return; const batch = writeBatch(db); snap.forEach(d => batch.delete(d.ref)); await batch.commit(); await set(ref(rtdb, "presence"), null); showToast("Semua klien dihapus!", "success"); } catch(e) {} };
+window.deleteAllUsers = async () => { try { let total = 0; while(true) { const snap = await getDocs(query(collection(db, "users"), limit(500))); if(snap.empty) break; let batch = writeBatch(db); snap.forEach(d => { batch.delete(d.ref); total++; }); await batch.commit(); } await set(ref(rtdb, "presence"), null); showToast(`Semua klien dihapus! (${total} data)`, "success"); } catch(e) { showToast("Gagal menghapus", "danger"); } };
 document.getElementById('btn-deleteallusers').onclick = () => confirmAction('Hapus SEMUA klien?', () => window.deleteAllUsers());
 
 // ============================================================
@@ -2350,12 +2384,21 @@ document.getElementById('formPromo').addEventListener('submit', async e => {
         const updatedAt = Date.now();
         await setDoc(doc(db, "settings", "announcement"), { status, type, message: text, updatedAt: updatedAt }); 
         if (status === "aktif") {
-            const usersSnap = await getDocs(collection(db, "users"));
-            if (!usersSnap.empty) {
-                const batch = writeBatch(db);
-                usersSnap.forEach(userDoc => { batch.set(doc(db, "users", userDoc.id, "notifications", `announcement_${updatedAt}`), { message: text, type: type, timestamp: updatedAt, isRead: false }); });
-                await batch.commit(); await createLog({ type: 'info', host: 'Admin', request: 'BROADCAST', message: `Menyiarkan pengumuman massal ke ${usersSnap.size} klien.` });
+            let lastDoc = null; let totalSent = 0;
+            while(true) {
+                let q = query(collection(db, "users"), orderBy("createdAt"), limit(500));
+                if (lastDoc) q = query(collection(db, "users"), orderBy("createdAt"), startAfter(lastDoc), limit(500));
+                const usersSnap = await getDocs(q);
+                if (usersSnap.empty) break;
+                let batch = writeBatch(db);
+                for (const userDoc of usersSnap.docs) {
+                    batch.set(doc(db, "users", userDoc.id, "notifications", `announcement_${updatedAt}`), { message: text, type: type, timestamp: updatedAt, isRead: false });
+                    totalSent++;
+                }
+                await batch.commit();
+                lastDoc = usersSnap.docs[usersSnap.docs.length - 1];
             }
+            if (totalSent > 0) await createLog({ type: 'info', host: 'Admin', request: 'BROADCAST', message: `Menyiarkan pengumuman massal ke ${totalSent} klien.` });
         }
         showToast("Pengumuman berhasil disiarkan!", "success"); 
     } catch(err) { showToast("Gagal menyiarkan", "danger"); } finally { btn.disabled = false; btn.innerHTML = `<i class="fa-solid fa-satellite-dish"></i> Siarkan Pemberitahuan`; }
@@ -2367,7 +2410,7 @@ document.getElementById('formPromo').addEventListener('submit', async e => {
 let activeFeedbackId = null;
 function setupRealtimeFeedback() {
     if (unsubFeedbacks) { unsubFeedbacks(); unsubFeedbacks = null; }
-    unsubFeedbacks = onSnapshot(query(collection(db, "feedbacks"), orderBy("timestamp", "desc")), snapshot => {
+    unsubFeedbacks = onSnapshot(query(collection(db, "feedbacks"), orderBy("timestamp", "desc"), limit(150)), snapshot => {
         let chatHtml = ""; let feedbackList = [];
         snapshot.forEach(docSnap => { feedbackList.push({ id: docSnap.id, ...docSnap.data() }); });
         const readList = JSON.parse(localStorage.getItem('kreaverse_read_feedbacks')) || [];
@@ -2393,7 +2436,8 @@ function setupRealtimeFeedback() {
             let avatarHtml = `<div class="wa-avatar">${senderName.charAt(0).toUpperCase()}</div>`;
             if (photoUrl) avatarHtml = `<div class="wa-avatar"><img src="${photoUrl}" alt="Avatar"></div>`;
 
-            chatHtml += `<div class="wa-chat-item ${fb.id === activeFeedbackId ? 'active' : ''}" onclick="window.selectFeedback('${fb.id}')">${avatarHtml}<div class="wa-chat-info"><div class="wa-chat-name-row"><span class="wa-chat-name">${senderName}</span>${tierBadge}</div><div class="wa-chat-last-msg">${fb.message || ""}</div></div><div class="wa-chat-meta"><span class="wa-chat-time" style="${isUnread ? 'color:#25D366; font-weight:700;' : ''}">${displayTime}</span>${isUnread ? '<span class="wa-unread-dot"></span>' : ''}</div></div>`;
+            const safeMsgList = String(fb.message || "").replace(/</g, "&lt;").replace(/>/g, "&gt;"); const safeSenderList = String(senderName).replace(/</g, "&lt;").replace(/>/g, "&gt;");
+            chatHtml += `<div class="wa-chat-item ${fb.id === activeFeedbackId ? 'active' : ''}" onclick="window.selectFeedback('${fb.id}')">${avatarHtml}<div class="wa-chat-info"><div class="wa-chat-name-row"><span class="wa-chat-name">${safeSenderList}</span>${tierBadge}</div><div class="wa-chat-last-msg">${safeMsgList}</div></div><div class="wa-chat-meta"><span class="wa-chat-time" style="${isUnread ? 'color:#25D366; font-weight:700;' : ''}">${displayTime}</span>${isUnread ? '<span class="wa-unread-dot"></span>' : ''}</div></div>`;
         });
         document.getElementById('waChatList').innerHTML = chatHtml;
         if (activeFeedbackId) { const currentSelected = feedbackList.find(f => f.id === activeFeedbackId); if (currentSelected) renderConversation(currentSelected); else renderEmptyConversation(); } else { renderEmptyConversation(); }
@@ -2417,11 +2461,12 @@ function renderConversation(fb) {
     let avatarHtml = `<div class="wa-avatar" style="width:40px;height:40px;">${senderName.charAt(0).toUpperCase()}</div>`;
     if (photoUrl) avatarHtml = `<div class="wa-avatar" style="width:40px;height:40px;"><img src="${photoUrl}" alt="Avatar"></div>`;
 
-    document.getElementById('waMainChat').innerHTML = `<div class="wa-chat-header"><div style="display:flex; align-items:center; gap:12px;"><button class="wa-back-btn" onclick="window.closeWaConversation()"><i class="fa-solid fa-arrow-left"></i></button>${avatarHtml}<div><div style="font-weight:700;font-size:0.95rem; display:flex; align-items:center; gap:4px;">${senderName} ${tierBadge}</div><div style="font-size:0.75rem;color:var(--text-sec);">${fb.email||'-'}</div></div></div><button class="btn btn-sm btn-danger" onclick="window.triggerDeleteFeedback('${fb.id}')"><i class="fa-solid fa-trash-can"></i> Hapus</button></div><div class="wa-chat-scroll"><div class="wa-bubble-container"><div class="wa-bubble"><div class="wa-bubble-sender"><span>${senderName}</span></div><div class="wa-bubble-text">${fb.message||""}</div>${fb.screenshot ? `<img src="${fb.screenshot}" class="wa-screenshot" onclick="window.zoomScreenshot('${fb.screenshot}')">` : ''}<div class="wa-bubble-time">${timeFormatted}</div></div></div></div>`;
+    const safeMsgConv = String(fb.message || "").replace(/</g, "&lt;").replace(/>/g, "&gt;"); const safeSenderConv = String(senderName).replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    document.getElementById('waMainChat').innerHTML = `<div class="wa-chat-header"><div style="display:flex; align-items:center; gap:12px;"><button class="wa-back-btn" onclick="window.closeWaConversation()"><i class="fa-solid fa-arrow-left"></i></button>${avatarHtml}<div><div style="font-weight:700;font-size:0.95rem; display:flex; align-items:center; gap:4px;">${safeSenderConv} ${tierBadge}</div><div style="font-size:0.75rem;color:var(--text-sec);">${fb.email||'-'}</div></div></div><button class="btn btn-sm btn-danger" onclick="window.triggerDeleteFeedback('${fb.id}')"><i class="fa-solid fa-trash-can"></i> Hapus</button></div><div class="wa-chat-scroll"><div class="wa-bubble-container"><div class="wa-bubble"><div class="wa-bubble-sender"><span>${safeSenderConv}</span></div><div class="wa-bubble-text">${safeMsgConv}</div>${fb.screenshot ? `<img src="${fb.screenshot}" class="wa-screenshot" onclick="window.zoomScreenshot('${fb.screenshot}')">` : ''}<div class="wa-bubble-time">${timeFormatted}</div></div></div></div>`;
 }
 function renderEmptyConversation() { document.getElementById('waMainChat').innerHTML = `<div class="wa-empty-state"><i class="fa-solid fa-comments wa-empty-icon"></i><h3>Kreative Feedback Hub</h3><p>Pilih pesan untuk dibaca.</p></div>`; }
 window.triggerDeleteFeedback = (id) => confirmAction('Hapus chat ini?', () => { deleteDoc(doc(db, "feedbacks", id)); activeFeedbackId = null; document.getElementById('waContainer').classList.remove('conversation-open'); showToast("Dihapus!", "success"); });
-window.deleteAllFeedback = async () => { try { const snap = await getDocs(collection(db, "feedbacks")); const batch = writeBatch(db); snap.forEach(d => batch.delete(d.ref)); await batch.commit(); localStorage.removeItem('kreaverse_read_feedbacks'); showToast("Semua dikosongkan!", "success"); } catch(err) {} };
+window.deleteAllFeedback = async () => { try { let total = 0; while(true) { const snap = await getDocs(query(collection(db, "feedbacks"), limit(500))); if(snap.empty) break; let batch = writeBatch(db); snap.forEach(d => { batch.delete(d.ref); total++; }); await batch.commit(); } localStorage.removeItem('kreaverse_read_feedbacks'); showToast(`Semua dikosongkan! (${total} data)`, "success"); } catch(err) { showToast("Gagal mengosongkan", "danger"); } };
 document.getElementById('btn-deleteallfeedback').onclick = () => confirmAction('Hapus SELURUH riwayat masukan?', () => window.deleteAllFeedback());
 window.zoomScreenshot = function(url) { const z = document.createElement('div'); z.style = "position:fixed;inset:0;background:rgba(0,0,0,0.9);z-index:99999999;display:flex;align-items:center;justify-content:center;cursor:pointer;"; z.innerHTML = `<img src="${url}" style="max-width:90%;max-height:90%;object-fit:contain;border-radius:12px;">`; z.onclick = () => z.remove(); document.body.appendChild(z); };
 
@@ -2435,13 +2480,15 @@ window.loadGallery = async () => {
         let html = "", count = 0;
         snap.forEach(docSnap => {
             const d = docSnap.data(); count++;
-            html += `<div style="background:#fff; padding:16px; border-radius:12px; border:1px solid var(--border);"><div style="display:flex; align-items:center; gap:12px;"><div style="width:44px; height:44px; border-radius:10px; background:rgba(217,119,87,0.1); color:var(--accent); display:flex; align-items:center; justify-content:center; font-size:1.3rem;"><i class="fa-solid fa-image"></i></div><div style="flex:1; min-width:0;"><div style="font-weight:700; font-size:0.85rem;">MEDIA</div><div style="color:var(--text-sec); font-size:0.75rem;">${d.email || '-'}</div></div><a href="${d.url||'#'}" target="_blank" class="btn btn-sm"><i class="fa-solid fa-arrow-up-right-from-square"></i></a></div></div>`;
+            const safeEmail = String(d.email || '-').replace(/</g, "&lt;").replace(/>/g, "&gt;");
+            const safeUrl = String(d.url || '#').replace(/"/g, "&quot;");
+            html += `<div style="background:#fff; padding:16px; border-radius:12px; border:1px solid var(--border);"><div style="display:flex; align-items:center; gap:12px;"><div style="width:44px; height:44px; border-radius:10px; background:rgba(217,119,87,0.1); color:var(--accent); display:flex; align-items:center; justify-content:center; font-size:1.3rem;"><i class="fa-solid fa-image"></i></div><div style="flex:1; min-width:0;"><div style="font-weight:700; font-size:0.85rem;">MEDIA</div><div style="color:var(--text-sec); font-size:0.75rem;">${safeEmail}</div></div><a href="${safeUrl}" target="_blank" class="btn btn-sm"><i class="fa-solid fa-arrow-up-right-from-square"></i></a></div></div>`;
         });
         if (!html) html = `<div style="text-align:center; padding:50px; color:var(--text-sec);">Kosong.</div>`;
         c.style.display = "grid"; c.style.gridTemplateColumns = "repeat(auto-fill, minmax(280px, 1fr))"; c.style.gap = "15px"; c.innerHTML = html; document.getElementById('valGallery').innerText = count;
     } catch(e) {}
 };
-window.deleteAllGallery = async () => { try { const snap = await getDocs(collection(db, "render_gallery")); const batch = writeBatch(db); snap.forEach(d => batch.delete(d.ref)); await batch.commit(); showToast("Berkas dikosongkan!", "success"); loadGallery(); } catch(e) {} };
+window.deleteAllGallery = async () => { try { let total = 0; while(true) { const snap = await getDocs(query(collection(db, "render_gallery"), limit(500))); if(snap.empty) break; let batch = writeBatch(db); snap.forEach(d => { batch.delete(d.ref); total++; }); await batch.commit(); } showToast(`Berkas dikosongkan! (${total} data)`, "success"); loadGallery(); } catch(e) { showToast("Gagal mengosongkan berkas", "danger"); } };
 
 // ============================================================
 // MODUL SERVER HUGGING FACE (KONTROL & MONITOR)
