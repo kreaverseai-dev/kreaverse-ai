@@ -1338,9 +1338,9 @@ function selectOptionValue(value, label) {
     const triggerLabel = document.getElementById(activeSelectId + '-trigger');
     if (triggerLabel) { const labelText = triggerLabel.querySelector('span'); if (labelText) labelText.innerText = label; }
     
-    if (activeSelectId === 'uTier') {
-        const expiryContainer = document.getElementById('expiry-row-container');
-        if (value === 'max_lifetime') { expiryContainer.style.display = 'none'; document.getElementById('uExpiry').value = ""; } 
+    if (activeSelectId === 'uTier' || activeSelectId === 'edit-tier') {
+        const expiryContainer = document.getElementById(activeSelectId === 'uTier' ? 'expiry-row-container' : 'edit-expiry-container');
+        if (value === 'max_lifetime' || value === 'max') { expiryContainer.style.display = 'none'; document.getElementById(activeSelectId === 'uTier' ? 'uExpiry' : 'edit-expiry').value = ""; } 
         else { expiryContainer.style.display = 'block'; }
     }
     if (activeSelectId === 'promoStatus' || activeSelectId === 'promoType') { updatePromoPreview(); }
@@ -2191,7 +2191,7 @@ function formatClientDate(ts) {
     const months = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
     const hour = d.getHours();
     let period = "pagi"; if (hour >= 11 && hour < 15) period = "siang"; else if (hour >= 15 && hour < 18) period = "sore"; else if (hour >= 18 || hour < 4) period = "malam";
-    return `${d.getDate()} ${months[d.getMonth()]} jam ${hour}, ${d.getFullYear()}`;
+        return `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}, jam ${hour.toString().padStart(2,'0')}:00 ${period}`;
 }
 
 window.setClientSort = function(order) {
