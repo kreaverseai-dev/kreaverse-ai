@@ -881,6 +881,63 @@
             setTimeout(() => { toast.classList.remove('show'); setTimeout(() => toast.remove(), 400); }, 4000);
         };
 
+        window.downloadKreaverseMedia = async function(originalUrl, originalTitle, fileExtension) {
+            if (!originalUrl) return;
+            const proxyBase = "https://kreaverse-proxy.kreaverse-ai.workers.dev/";
+            const finalUrl = `${proxyBase}?targetUrl=${encodeURIComponent(originalUrl)}`;
+            const safeTitle = originalTitle.replace(/[\\/:*?"<>|]/g, '').trim() || "Media";
+            const ext = fileExtension.startsWith('.') ? fileExtension : '.' + fileExtension;
+            const finalFileName = `Kreaverse AI - ${safeTitle}${ext}`;
+            
+            try {
+                if (typeof window.showIphoneNotif === 'function') {
+                    window.showIphoneNotif('Mengunduh...', 'Sedang memproses unduhan via server proxy...', 'fa-circle-notch fa-spin');
+                }
+                const response = await fetch(finalUrl);
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                const blob = await response.blob();
+                const blobUrl = URL.createObjectURL(blob);
+                
+                const a = document.createElement('a');
+                a.href = blobUrl;
+                a.download = finalFileName;
+                a.style.display = 'none';
+                document.body.appendChild(a);
+                a.click();
+                
+                document.body.removeChild(a);
+                URL.revokeObjectURL(blobUrl);
+                
+                if (typeof window.showIphoneNotif === 'function') {
+                    window.showIphoneNotif('Selesai', 'File berhasil disimpan di HP Anda.', 'fa-circle-check');
+                }
+            } catch (error) {
+                console.error("Gagal mendownload media:", error);
+                if (typeof window.showIphoneNotif === 'function') {
+                    window.showIphoneNotif('Download Gagal', error.message, 'fa-triangle-exclamation');
+                }
+            }
+        };
+
+        window.getProxiedUrl = function(originalUrl) {
+            if (!originalUrl) return '';
+            const proxyBase = "https://kreaverse-proxy.kreaverse-ai.workers.dev/";
+            return `${proxyBase}?targetUrl=${encodeURIComponent(originalUrl)}`;
+        };
+
+        window.setProxiedImage = function(imgElement, originalUrl) {
+            if (imgElement && originalUrl) {
+                imgElement.src = window.getProxiedUrl(originalUrl);
+            }
+        };
+
+        window.setProxiedMediaStream = function(mediaElement, originalUrl) {
+            if (mediaElement && originalUrl) {
+                mediaElement.src = window.getProxiedUrl(originalUrl);
+                mediaElement.load();
+            }
+        };
+
         // Dideklarasikan di scope modul agar dapat dipanggil dengan aman tanpa ReferenceError
         function getPlatformIconAndColor(url) {
             const low = url.toLowerCase();
