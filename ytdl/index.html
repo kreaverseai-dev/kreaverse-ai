@@ -1221,6 +1221,7 @@
             const baseUrl = srvObj.url;
             const rawApiKey = srvObj.apiKey || "";
             const apiKeyParam = srvObj.apiKeyParam || "apikey";
+            const urlParam = srvObj.urlParam || "url";
             
             // Pisahkan kunci jika admin memasukkan lebih dari satu (dipisah koma atau enter)
             const apiKeys = rawApiKey.split(/[\n,]+/).map(k => k.trim()).filter(k => k);
@@ -1229,12 +1230,25 @@
             for (let path of pathsArray) {
                 for (let apiKey of apiKeys) {
                     let cleanPath = path;
-                    if (apiKey) {
-                        const keySep = cleanPath.includes('?') ? '&' : '?';
-                        cleanPath += `${keySep}${apiKeyParam}=${apiKey}`;
+                    
+                    // PENYEMPURNAAN CERDAS: Jika path mengandung {mediaUrl}, langsung ganti!
+                    let fullUrl = "";
+                    if (cleanPath.includes('{mediaUrl}')) {
+                        cleanPath = cleanPath.replace('{mediaUrl}', encodeURIComponent(mediaUrl));
+                        if (apiKey) {
+                            const keySep = cleanPath.includes('?') ? '&' : '?';
+                            cleanPath += `${keySep}${apiKeyParam}=${apiKey}`;
+                        }
+                        fullUrl = `${baseUrl}${cleanPath}`;
+                    } else {
+                        // Jalur Standar Bawaan Lama
+                        if (apiKey) {
+                            const keySep = cleanPath.includes('?') ? '&' : '?';
+                            cleanPath += `${keySep}${apiKeyParam}=${apiKey}`;
+                        }
+                        const separator = cleanPath.includes('?') ? `&${urlParam}=` : `?${urlParam}=`;
+                        fullUrl = `${baseUrl}${cleanPath}${separator}${encodeURIComponent(mediaUrl)}`;
                     }
-                    const separator = cleanPath.includes('?') ? '&url=' : '?url=';
-                    const fullUrl = `${baseUrl}${cleanPath}${separator}${encodeURIComponent(mediaUrl)}`;
                     try {
                         let response;
                         try { response = await fetch(fullUrl); } catch (directErr) {
