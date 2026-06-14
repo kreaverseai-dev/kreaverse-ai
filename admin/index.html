@@ -2250,7 +2250,10 @@ window.checkAllEndpoints = async function() {
                         const separator = firstPath.includes('?') ? '&url=' : '?url=';
                         const fullUrl = srv.url + firstPath + separator + "test"; 
                         
-                        const response = await fetch(fullUrl, { method: 'GET' });
+                        // Gunakan Cloudflare Proxy Anda untuk bypass CORS di Dasbor
+                        const proxiedUrl = `https://kreaverse-proxy.kreaverse-ai.workers.dev/?targetUrl=${encodeURIComponent(fullUrl)}`;
+                        
+                        const response = await fetch(proxiedUrl, { method: 'GET' });
                 
                 // PERBAIKAN: Jika server membalas dengan JSON (meskipun statusnya 400/500), berarti server HIDUP.
                 const contentType = response.headers.get("content-type");
