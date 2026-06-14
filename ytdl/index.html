@@ -1383,7 +1383,7 @@
             currentTimeEl.innerText = '0:00'; totalTimeEl.innerText = '0:00';
             clearInterval(processTimer); 
             document.getElementById('progress-container').style.display = 'none';
-            document.getElementById('real-download-progress-container').classList.add('hidden');
+            document.getElementById('real-download-progress-container').style.display = 'none';
             
             if (window.activeObjectUrl) {
                 URL.revokeObjectURL(window.activeObjectUrl);
@@ -2129,16 +2129,16 @@
                     bufferingSpinner.classList.remove('hidden'); 
                     if(isDualAudio) customAudio.pause();
                     
-                    // Menghitung persentase buffering asli dari browser (tanpa simulasi fiktif)
                     let bufferedPercent = 0;
-                    if (media.buffered.length > 0) {
+                    if (media.duration && media.buffered.length > 0) {
                         const bufferedEnd = media.buffered.end(media.buffered.length - 1);
                         bufferedPercent = (bufferedEnd / media.duration) * 100;
                     }
+                    const displayPercent = isNaN(bufferedPercent) ? 0 : Math.floor(bufferedPercent);
                     
                     bufferingContent.innerHTML = `
                         <i class="fa-solid fa-circle-notch fa-spin" style="font-size: 2rem; color: var(--accent-color);"></i>
-                        <span style="font-size:0.85rem; font-weight:600; margin-top:10px; color:#FFF;">Memuat data... (${Math.floor(bufferedPercent)}%)</span>
+                        <span style="font-size:0.85rem; font-weight:600; margin-top:10px; color:#FFF;">Memuat data... (${displayPercent}%)</span>
                     `;
                 }
             });
