@@ -288,13 +288,13 @@
         .result-section.active { display: block; }
         .result-card { background: var(--surface-color); border-radius: 24px; padding: 20px; box-shadow: var(--shadow-xl); border: 1px solid var(--border-color); }
         
-        .media-player-wrapper { position: relative; width: 100%; border-radius: 16px; overflow: hidden; background: #000; margin-bottom: 20px; display: flex; align-items: center; justify-content: center; aspect-ratio: 16/9; z-index: 1; }
+        .media-player-wrapper { position: relative; width: 100%; border-radius: 16px; overflow: hidden; background: #000; margin-bottom: 20px; display: flex; align-items: center; justify-content: center; aspect-ratio: 16/9; z-index: 1; max-height: 75vh; }
         .media-player-wrapper.audio-mode { background: linear-gradient(135deg, #1E1B4B, #4338CA); aspect-ratio: auto; padding: 60px 20px 20px; flex-direction: column; }
         .media-player-wrapper:fullscreen { width: 100vw; height: 100vh; border-radius: 0; }
         .media-player-wrapper:-webkit-full-screen { width: 100vw; height: 100vh; border-radius: 0; }
         
         .video-container { position: relative; display: flex; align-items: center; justify-content: center; max-width: 100%; max-height: 100%; width: 100%; height: 100%; }
-        .video-element { width: 100%; height: 100%; object-fit: cover; display: block; }
+        .video-element { width: 100%; height: 100%; object-fit: contain; display: block; }
         
         /* AUDIO UI */
         .audio-ui-container { display: none; flex-direction: column; align-items: center; gap: 15px; width: 100%; }
@@ -1165,6 +1165,7 @@
             document.getElementById('player-controls').style.display = "flex";
             document.getElementById('player-watermark').style.display = "block";
             mediaWrapper.classList.remove('audio-mode');
+            mediaWrapper.style.aspectRatio = '';
             globalScannedOptions = [];
         }
 
@@ -1581,6 +1582,7 @@
                 document.getElementById('thumb-preview').style.display = "flex";
                 document.getElementById('thumb-image').src = url;
                 activeMedia = null;
+                mediaWrapper.style.aspectRatio = '';
                 
             } else if (type === 'video') {
                 isDualAudio = false;
@@ -1619,6 +1621,7 @@
                 document.getElementById('player-controls').style.display = "flex";
                 document.getElementById('player-watermark').style.display = "block";
                 document.getElementById('real-download-btn').classList.remove('hidden');
+                mediaWrapper.style.aspectRatio = '';
             }
 
             if(type !== 'thumb') setupMediaSession(title, type === 'audio', finalThumb);
@@ -1768,8 +1771,8 @@
                 actW = wRect.width; actH = actW / vRatio;
             }
             
-            const offX = (wRect.width - actW) / 2;
-            const offY = (wRect.height - actH) / 2;
+            const offX = Math.max(0, (wRect.width - actW) / 2);
+            const offY = Math.max(0, (wRect.height - actH) / 2);
             
             // Menggeser logo watermark sedikit ke kanan agar tidak mentok tapi meminimalisir ruang kosong
             wm.style.right = (offX + 4) + 'px';
@@ -1870,6 +1873,11 @@
             media.addEventListener('loadedmetadata', () => {
                 if(media !== activeMedia) return;
                 totalTimeEl.innerText = formatTime(media.duration);
+                if (media === customVideo && customVideo.videoWidth && customVideo.videoHeight) {
+                    mediaWrapper.style.aspectRatio = `${customVideo.videoWidth} / ${customVideo.videoHeight}`;
+                } else {
+                    mediaWrapper.style.aspectRatio = '';
+                }
                 setTimeout(adjustVideoWatermark, 100);
             });
             media.addEventListener('ended', () => {
