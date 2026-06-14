@@ -1252,10 +1252,7 @@ if(cw) {
             let diffY = pCurrentY - pStartY;
             let diffX = Math.abs(pCurrentX - pStartX);
             
-            // Ubah 120 menjadi 200
-if (diffY > 200) { 
-    setTimeout(() => location.reload(), 300);
-}
+            if (diffY > 120) {
                 pullLoader.classList.add('visible');
             }
         }
