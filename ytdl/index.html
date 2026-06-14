@@ -2167,56 +2167,61 @@
         setTimeout(() => { if (typeof window.pingSemuaServer === 'function') window.pingSemuaServer(); }, 1500);
         document.addEventListener('visibilitychange', () => { if (!document.hidden && typeof window.pingSemuaServer === 'function') window.pingSemuaServer(); });
 
-        // SISTEM BATAL & LANJUTKAN DOWNLOAD (100% NYATA)
+        // SISTEM BATAL & LANJUTKAN DOWNLOAD (FAILS-SAFE & NYATA)
         const cancelBtn = document.getElementById('cancel-download-btn');
-        cancelBtn.addEventListener('click', () => {
-            if (activeXhr) {
-                activeXhr.abort();
-                activeXhr = null;
-                cancelBtn.innerText = "Lanjut";
-                cancelBtn.style.background = "#d1fae5";
-                cancelBtn.style.color = "#10b981";
-                cancelBtn.style.borderColor = "#a7f3d0";
-                document.getElementById('real-download-speed').innerHTML = '<i class="fa-solid fa-pause" style="color: #6B7280; margin-right: 4px;"></i> Dihentikan';
-            } else if (cancelBtn.innerText === "Lanjut") {
-                cancelBtn.innerText = "Batal";
-                cancelBtn.style.background = "#fee2e2";
-                cancelBtn.style.color = "#ef4444";
-                cancelBtn.style.borderColor = "#fca5a5";
-                document.getElementById('real-download-btn').click();
-            }
-        });
-
-        // SISTEM SAKLAR SUARA ON/OFF (100% NYATA)
-        document.getElementById('speaker-toggle').addEventListener('change', (e) => {
-            const isChecked = e.target.checked;
-            const speakerIcon = document.getElementById('speaker-icon');
-            const speakerText = document.getElementById('speaker-status-text');
-            
-            if (activeMedia) {
-                if (isChecked) {
-                    if (isDualAudio) {
-                        customVideo.muted = true; 
-                        customAudio.muted = false;
-                    } else {
-                        activeMedia.muted = false;
-                    }
-                    speakerText.innerText = "Suara Aktif";
-                    speakerIcon.className = "fa-solid fa-volume-high";
-                    speakerIcon.style.color = "var(--accent-color)";
-                } else {
-                    if (isDualAudio) {
-                        customVideo.muted = true;
-                        customAudio.muted = true;
-                    } else {
-                        activeMedia.muted = true;
-                    }
-                    speakerText.innerText = "Suara Dimatikan";
-                    speakerIcon.className = "fa-solid fa-volume-xmark";
-                    speakerIcon.style.color = "var(--text-light)";
+        if (cancelBtn) {
+            cancelBtn.addEventListener('click', () => {
+                if (activeXhr) {
+                    activeXhr.abort();
+                    activeXhr = null;
+                    cancelBtn.innerText = "Lanjut";
+                    cancelBtn.style.background = "#d1fae5";
+                    cancelBtn.style.color = "#10b981";
+                    cancelBtn.style.borderColor = "#a7f3d0";
+                    document.getElementById('real-download-speed').innerHTML = '<i class="fa-solid fa-pause" style="color: #6B7280; margin-right: 4px;"></i> Dihentikan';
+                } else if (cancelBtn.innerText === "Lanjut") {
+                    cancelBtn.innerText = "Batal";
+                    cancelBtn.style.background = "#fee2e2";
+                    cancelBtn.style.color = "#ef4444";
+                    cancelBtn.style.borderColor = "#fca5a5";
+                    document.getElementById('real-download-btn').click();
                 }
-            }
-        });
+            });
+        }
+
+        // SISTEM SAKLAR SUARA ON/OFF (FAIL-SAFE & NYATA)
+        const speakerToggle = document.getElementById('speaker-toggle');
+        if (speakerToggle) {
+            speakerToggle.addEventListener('change', (e) => {
+                const isChecked = e.target.checked;
+                const speakerIcon = document.getElementById('speaker-icon');
+                const speakerText = document.getElementById('speaker-status-text');
+                
+                if (activeMedia) {
+                    if (isChecked) {
+                        if (isDualAudio) {
+                            customVideo.muted = true; 
+                            customAudio.muted = false;
+                        } else {
+                            activeMedia.muted = false;
+                        }
+                        speakerText.innerText = "Suara Aktif";
+                        speakerIcon.className = "fa-solid fa-volume-high";
+                        speakerIcon.style.color = "var(--accent-color)";
+                    } else {
+                        if (isDualAudio) {
+                            customVideo.muted = true;
+                            customAudio.muted = true;
+                        } else {
+                            activeMedia.muted = true;
+                        }
+                        speakerText.innerText = "Suara Dimatikan";
+                        speakerIcon.className = "fa-solid fa-volume-xmark";
+                        speakerIcon.style.color = "var(--text-light)";
+                    }
+                }
+            });
+        }
 
     </script>
 </body>
