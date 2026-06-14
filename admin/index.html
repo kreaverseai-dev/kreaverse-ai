@@ -2338,7 +2338,7 @@ function updatePromoPreview() {
     if (!text) { preview.innerText = "Preview pengumuman akan tampil di sini..."; preview.style.background = "#F4F5F7"; preview.style.color = "var(--text-sec)"; return; }
     const colors = { info: ['rgba(0,122,255,0.1)', 'var(--info)'], promo: ['rgba(52,199,89,0.1)', 'var(--success)'], gangguan: ['rgba(255,59,48,0.1)', 'var(--danger)'], update: ['rgba(175,82,222,0.1)', '#AF52DE'] };
     
-    const icons = { info: 'ÃÂÃÂ°ÃÂÃÂÃÂÃÂÃÂÃÂ¡', promo: 'ÃÂÃÂ°ÃÂÃÂÃÂÃÂÃÂÃÂ', gangguan: 'ÃÂÃÂ¢ÃÂÃÂÃÂÃÂ ÃÂÃÂ¯ÃÂÃÂ¸ÃÂÃÂ', update: 'ÃÂÃÂ¢ÃÂÃÂÃÂÃÂ¨' };
+    const icons = { info: '💡', promo: '🎉', gangguan: '⚠️', update: '✨' };
     
     preview.style.background = colors[type][0]; preview.style.color = colors[type][1];    
     preview.innerHTML = `${icons[type]} ${text} ${status === 'nonaktif' ? '<span style="opacity:0.5;">(Tersembunyi)</span>' : ''}`;
@@ -2411,7 +2411,7 @@ function renderConversation(fb) {
     const senderName = matchedClient ? matchedClient.nama : (fb.name || fb.email || "Anonim");
     const photoUrl = matchedClient ? matchedClient.photo : null;
     const clientTier = matchedClient ? matchedClient.tier : "free";
-    const d = new Date(fb.timestamp); const timeFormatted = `${d.getDate()}/${d.getMonth()+1}/${d.getFullYear()} ÃÂÃÂ¢ÃÂÃÂÃÂÃÂ¢ ${d.getHours().toString().padStart(2,'0')}:${d.getMinutes().toString().padStart(2,'0')}`;
+    const d = new Date(fb.timestamp); const timeFormatted = `${d.getDate()}/${d.getMonth()+1}/${d.getFullYear()} const d = new Date(fb.timestamp); const timeFormatted = `${d.getDate()}/${d.getMonth()+1}/${d.getFullYear()} • ${d.getHours().toString().padStart(2,'0')}:${d.getMinutes().toString().padStart(2,'0')}`; ${d.getHours().toString().padStart(2,'0')}:${d.getMinutes().toString().padStart(2,'0')}`;
     let tierBadge = "";
     if (clientTier === "max_lifetime" || clientTier === "max") tierBadge = `<span class="badge tier-max" style="font-size:0.7rem; padding:2px 6px; margin-left:4px;"><i class="fa-solid fa-crown"></i> Max</span>`; else if (clientTier === "pro") tierBadge = `<span class="badge tier-pro" style="font-size:0.7rem; padding:2px 6px; margin-left:4px;"><i class="fa-solid fa-gem"></i> Pro</span>`; else if (clientTier === "basic") tierBadge = `<span class="badge tier-basic" style="font-size:0.7rem; padding:2px 6px; margin-left:4px;"><i class="fa-solid fa-star"></i> Basic</span>`;
     let avatarHtml = `<div class="wa-avatar" style="width:40px;height:40px;">${senderName.charAt(0).toUpperCase()}</div>`;
