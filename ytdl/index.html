@@ -1385,8 +1385,8 @@
             const allServerKeys = Object.keys(dbConfig.baseUrls).filter(k => dbConfig.baseUrls[k] !== null);
             
             if (currentServer !== 'auto' && dbConfig.baseUrls[currentServer]) {
+                // Hanya mencoba server yang dipilih secara manual tanpa memasukkan server cadangan
                 serversToTry.push(currentServer);
-                allServerKeys.forEach(k => { if (k !== currentServer) serversToTry.push(k); });
             } else {
                 updateLoaderStatus("Mencari Server Tercepat...", "Melakukan ping uji latensi jaringan...");
                 await pingSemuaServer();
