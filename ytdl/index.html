@@ -1219,31 +1219,40 @@
         async function smartFetch(srvObj, pathsArray, mediaUrl) {
             let lastError = null;
             const baseUrl = srvObj.url;
-            const apiKey = srvObj.apiKey || "";
+            const rawApiKey = srvObj.apiKey || "";
             const apiKeyParam = srvObj.apiKeyParam || "apikey";
             
+            // Pisahkan kunci jika admin memasukkan lebih dari satu (dipisah koma atau enter)
+            const apiKeys = rawApiKey.split(/[\n,]+/).map(k => k.trim()).filter(k => k);
+            if (apiKeys.length === 0) apiKeys.push("");
+
             for (let path of pathsArray) {
-                let cleanPath = path;
-                if (apiKey) {
-                    const keySep = cleanPath.includes('?') ? '&' : '?';
-                    cleanPath += `${keySep}${apiKeyParam}=${apiKey}`;
+                for (let apiKey of apiKeys) {
+                    let cleanPath = path;
+                    if (apiKey) {
+                        const keySep = cleanPath.includes('?') ? '&' : '?';
+                        cleanPath += `${keySep}${apiKeyParam}=${apiKey}`;
+                    }
+                    const separator = cleanPath.includes('?') ? '&url=' : '?url=';
+                    const fullUrl = `${baseUrl}${cleanPath}${separator}${encodeURIComponent(mediaUrl)}`;
+                    try {
+                        let response;
+                        try { response = await fetch(fullUrl); } catch (directErr) {
+                            const proxyUrl = "/api/ytdl?targetUrl=" + encodeURIComponent(fullUrl);
+                            response = await fetch(proxyUrl);
+                        }
+                        if (response.headers.get("content-type")?.includes("application/json")) {
+                            const data = await response.json();
+                            if (data.status === false || data.error || data.message || data.msg) { 
+                                lastError = new Error(data.message || data.msg || data.error); 
+                                continue; // Kunci ini gagal/limit, otomatis lanjut ke kunci berikutnya!
+                            }
+                            return { data, usedPath: path };
+                        }
+                        if (!response.ok) { lastError = new Error(`HTTP Error ${response.status}`); continue; }
+                        return { data: await response.json(), usedPath: path };
+                    } catch (err) { lastError = err; continue; }
                 }
-                const separator = cleanPath.includes('?') ? '&url=' : '?url=';
-                const fullUrl = `${baseUrl}${cleanPath}${separator}${encodeURIComponent(mediaUrl)}`;
-                try {
-                    let response;
-                    try { response = await fetch(fullUrl); } catch (directErr) {
-                        const proxyUrl = "/api/ytdl?targetUrl=" + encodeURIComponent(fullUrl);
-                        response = await fetch(proxyUrl);
-                    }
-                    if (response.headers.get("content-type")?.includes("application/json")) {
-                        const data = await response.json();
-                        if (data.status === false || data.error || data.message || data.msg) { lastError = new Error(data.message || data.msg || data.error); continue; }
-                        return { data, usedPath: path };
-                    }
-                    if (!response.ok) { lastError = new Error(`HTTP Error ${response.status}`); continue; }
-                    return { data: await response.json(), usedPath: path };
-                } catch (err) { lastError = err; continue; }
             }
             throw lastError || new Error(`Tautan tidak dapat diakses atau fitur terproteksi penyedia.`);
         }
