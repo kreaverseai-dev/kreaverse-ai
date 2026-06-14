@@ -1791,7 +1791,22 @@ function setupRealtimeApis() {
     });
 }
 window.triggerDeleteApi = (id) => confirmAction('Hapus API Key ini permanen?', () => window.delApi(id));
-window.delApi = async function(id) { try { await deleteDoc(doc(db, "api_keys", id)); await createLog({ type: 'warning', host: 'Admin', request: 'DEL_API_KEY', message: "Menghapus 1 API Key" }); showToast("Berhasil dihapus!", "success"); } catch(e) { showToast("Gagal menghapus", "danger"); } };
+window.delApi = async function(id) { 
+    try { 
+        // Ubah status menjadi mati, bukan langsung dihapus
+        await updateDoc(doc(db, "api_keys", id), { status: "mati" }); 
+        await createLog({ type: 'warning', host: 'Admin', request: 'KILL_API_KEY', message: "Memindahkan 1 API Key ke Riwayat Mati" }); 
+        showToast("Dipindahkan ke riwayat!", "success"); 
+    } catch(e) { 
+        // Jika gagal update (misal karena data sudah tidak ada), coba hapus
+        try {
+            await deleteDoc(doc(db, "api_keys", id));
+            showToast("Berhasil dihapus permanen!", "success");
+        } catch(err) {
+            showToast("Gagal memproses", "danger"); 
+        }
+    } 
+};
 window.checkAllApiHealth = async () => {
     showToast("Mengecek API key...", "info");
     try {
