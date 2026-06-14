@@ -857,8 +857,22 @@
         </div>
     </div>
 <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-        import { getFirestore, doc, onSnapshot, collection, addDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+        let initializeApp, getFirestore, doc, onSnapshot, collection, addDoc, getDoc;
+        let isFirebaseLoaded = false;
+        try {
+            const firebaseAppMod = await import("https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js");
+            const firebaseStoreMod = await import("https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js");
+            initializeApp = firebaseAppMod.initializeApp;
+            getFirestore = firebaseStoreMod.getFirestore;
+            doc = firebaseStoreMod.doc;
+            onSnapshot = firebaseStoreMod.onSnapshot;
+            collection = firebaseStoreMod.collection;
+            addDoc = firebaseStoreMod.addDoc;
+            getDoc = firebaseStoreMod.getDoc;
+            isFirebaseLoaded = true;
+        } catch (error) {
+            console.warn("Gagal memuat modul Firebase database dari gstatic CDN (kemungkinan diblokir AdBlocker / jaringan):", error);
+        }
 
         // FIREBASE SETUP
         const firebaseConfig = {
@@ -871,8 +885,17 @@
             appId: "1:1048550433011:web:0cf2e4074b20fe09909786",
             measurementId: "G-CJHMKKYQ4C"
         };
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
+        
+        let app, db;
+        if (isFirebaseLoaded) {
+            try {
+                app = initializeApp(firebaseConfig);
+                db = getFirestore(app);
+            } catch (e) {
+                console.warn("Gagal inisialisasi Firebase database:", e);
+                isFirebaseLoaded = false;
+            }
+        }
 
         let isLoggedIn = false;
         let userId = null;
@@ -980,16 +1003,27 @@
         const ytWarningDesc = document.getElementById('yt-warning-text');
         let activeMedia = null;
 
-        onSnapshot(doc(db, "settings", "downloader_api"), (docSnap) => {
-            if (docSnap.exists()) {
-                dbConfig = docSnap.data();
-                isConfigLoaded = true;
-                renderDynamicOptions();
-                if (typeof window.pingSemuaServer === 'function') {
-                    window.pingSemuaServer();
+        if (isFirebaseLoaded && db) {
+            onSnapshot(doc(db, "settings", "downloader_api"), (docSnap) => {
+                if (docSnap.exists()) {
+                    dbConfig = docSnap.data();
+                    isConfigLoaded = true;
+                    renderDynamicOptions();
+                    if (typeof window.pingSemuaServer === 'function') {
+                        window.pingSemuaServer();
+                    }
                 }
-            }
-        });
+            });
+        } else {
+            setTimeout(() => {
+                renderDynamicOptions();
+                const pingPillText = document.getElementById('ping-status-text');
+                if (pingPillText) {
+                    pingPillText.innerText = "Offline (Lokal)";
+                    pingPillText.style.color = 'var(--danger-color)';
+                }
+            }, 500);
+        }
 
         // IKON TOMBOL TEMPEL & HAPUS
         const urlIconCircle = document.querySelector('.url-icon-circle');
@@ -1630,11 +1664,16 @@
         async function processDownload(mediaUrl) {
             updateLoaderStatus("Mempersiapkan Rute API...", "Menghubungkan ke database Kreaverse AI...");
             if (!isConfigLoaded || !dbConfig.baseUrls || Object.keys(dbConfig.baseUrls).length === 0) {
-                try {
-                    const docSnap = await getDoc(doc(db, "settings", "downloader_api"));
-                    if (docSnap.exists()) { dbConfig = docSnap.data(); isConfigLoaded = true; renderDynamicOptions(); }
-                    else { throw new Error("Sistem belum siap."); }
-                } catch(e) { throw new Error("Gagal mengambil rute server. Periksa koneksi."); }
+                if (isFirebaseLoaded && db) {
+                    try {
+                        const docSnap = await getDoc(doc(db, "settings", "downloader_api"));
+                        if (docSnap.exists()) { dbConfig = docSnap.data(); isConfigLoaded = true; renderDynamicOptions(); }
+                        else { throw new Error("Sistem belum siap."); }
+                    } catch(e) { throw new Error("Gagal mengambil rute server. Periksa koneksi."); }
+                } else {
+                    dbConfig = DEFAULT_CONFIG;
+                    isConfigLoaded = true;
+                }
             }
             
             // SUSUN URUTAN SERVER SECARA CERDAS (FALLBACK MULTI-SERVER)
@@ -1919,7 +1958,7 @@
             resultContainer.classList.add('active');
             setTimeout(() => { resultContainer.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 100);
 
-            if(isLoggedIn && userId) {
+            if(isLoggedIn && userId && isFirebaseLoaded && db) {
                 addDoc(collection(db, "users", userId, "downloads"), { url: urlInput.value.trim(), fileName: title, provider: provider, type: type, ext: finalExt.toUpperCase(), directUrl: url, size: size||"", thumbnail: finalThumb, timestamp: Date.now() })
                 .then(()=>console.log("Riwayat Disimpan"))
                 .catch(e=>console.log(e));
