@@ -77,11 +77,11 @@
             display: flex; 
             align-items: center; 
             justify-content: center; 
-            width: 140px; 
-            height: 32px; 
+            width: 170px; 
+            height: 42px; 
             position: absolute; 
             left: 50%; 
-            transform: translateX(-46%); /* Penyelarasan visual (optical center) agar presisi di tengah layar */
+            transform: translateX(-50%); 
             z-index: 5; 
             pointer-events: none; 
         }
@@ -575,14 +575,8 @@
 
         <div class="input-container">
             <div class="input-wrapper">
-                <div class="url-input-area">
-                    <div class="url-icon-circle" title="Hapus Tautan">
-                        <i class="fa-solid fa-link" style="font-size: 1.1rem;"></i>
-                    </div>
-                    <input type="text" id="media-url" class="url-input" placeholder="https://youtu.be/..." autocomplete="off">
-                </div>
                 <div class="input-actions">
-                    <button id="paste-btn" title="Tempel Tautan" style="background: #ffffff; border: 1px solid #111827; border-radius: 99px; padding: 6px 14px; font-size: 0.85rem; font-weight: 700; color: #111827; display: flex; align-items: center; gap: 6px; box-shadow: var(--shadow-sm); cursor: pointer;"><i class="fa-solid fa-paste" style="font-size: 0.95rem; color: #111827;"></i>Paste</button>
+                    <button id="paste-btn" title="Tempel Tautan" style="background: #ffffff; border: 1px solid #111827; border-radius: 99px; padding: 4px 10px; font-size: 0.8rem; font-weight: 800; color: #111827; display: flex; align-items: center; gap: 4px; box-shadow: var(--shadow-sm); cursor: pointer;"><i class="fa-solid fa-paste" style="font-size: 0.85rem; color: #111827;"></i>Paste</button>
                 </div>
             </div>
             <button id="download-btn" class="download-btn">
@@ -654,13 +648,13 @@
                         <g>
                             <path d="M 30,10 Q 30,30 50,30 Q 30,30 30,50 Q 30,30 10,30 Q 30,30 30,10 Z" fill="url(#kreaGradWM)" />
                             <path d="M 30,17 Q 30,30 43,30 Q 30,30 30,43 Q 30,30 17,30 Q 30,30 30,17 Z" fill="url(#kreaGradWM)" transform="rotate(45, 30, 30)" opacity="0.85" />
-                            <text x="65" y="38" font-family="'Plus Jakarta Sans', sans-serif" font-weight="800" font-size="21" fill="url(#kreaGradWM)" letter-spacing="-0.5px">Kreaverse<tspan font-weight="500"> AI</tspan></text>
+                            <text x="65" y="38" font-family="'Plus Jakarta Sans', sans-serif" font-weight="900" font-size="21" fill="#ffffff" letter-spacing="-0.5px">Kreaverse<tspan font-weight="500" fill="#D97757"> AI</tspan></text>
                         </g>
                         <!-- Shimmer Sweep Menumpang di dalam area isi (Teks/Logo) -->
                         <g style="mix-blend-mode: overlay;">
                             <path d="M 30,10 Q 30,30 50,30 Q 30,30 30,50 Q 30,30 10,30 Q 30,30 30,10 Z" fill="url(#shimmerGlow)" />
                             <path d="M 30,17 Q 30,30 43,30 Q 30,30 30,43 Q 30,30 17,30 Q 30,30 30,17 Z" fill="url(#shimmerGlow)" transform="rotate(45, 30, 30)" />
-                            <text x="65" y="38" font-family="'Plus Jakarta Sans', sans-serif" font-weight="800" font-size="21" fill="url(#shimmerGlow)" letter-spacing="-0.5px">Kreaverse<tspan font-weight="500"> AI</tspan></text>
+                            <text x="65" y="38" font-family="'Plus Jakarta Sans', sans-serif" font-weight="900" font-size="21" fill="url(#shimmerGlow)" letter-spacing="-0.5px">Kreaverse<tspan font-weight="500"> AI</tspan></text>
                         </g>
                     </svg>
                 </div>
@@ -1774,8 +1768,8 @@
             const offX = (wRect.width - actW) / 2;
             const offY = (wRect.height - actH) / 2;
             
-            // Menggeser logo watermark sedikit ke kanan agar tidak mentok tapi meminimalisir ruang kosong
-            wm.style.right = (offX + 4) + 'px';
+            // Menyelaraskan margin watermark video agar presisi dan tidak mentok ke pinggir
+            wm.style.right = (offX + 15) + 'px';
             wm.style.top = (offY + 15) + 'px';
         }
 
