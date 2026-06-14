@@ -1929,6 +1929,11 @@
                 totalTimeEl.innerText = formatTime(media.duration);
                 if (media === customVideo && customVideo.videoWidth && customVideo.videoHeight) {
                     mediaWrapper.style.aspectRatio = `${customVideo.videoWidth} / ${customVideo.videoHeight}`;
+                    if (customVideo.videoWidth > customVideo.videoHeight) {
+                        customVideo.style.objectFit = 'cover';
+                    } else {
+                        customVideo.style.objectFit = 'contain';
+                    }
                 } else {
                     mediaWrapper.style.aspectRatio = '';
                 }
