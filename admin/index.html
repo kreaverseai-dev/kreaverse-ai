@@ -2930,9 +2930,16 @@ window.deleteCustomDomain = async function(id, domain) {
     });
 };
 
+let tempMailInitialized = false;
 function setupRealtimeTempMail() {
+    if (tempMailInitialized) {
+        window.pingAllTempMailServers(); // Segarkan ping tanpa menduplikasi listener
+        return;
+    }
+    tempMailInitialized = true;
+
     try {
-        // Monitor domain kustom dengan pengaman error (CATCH) agar tidak merusak loading
+        // Monitor domain kustom dengan pengaman error (CATCH)
         onSnapshot(collection(db, "temp_email_domains"), snapshot => {
             const tbody = document.getElementById('customDomainsTable');
             if (!tbody) return;
@@ -2955,7 +2962,7 @@ function setupRealtimeTempMail() {
             console.log("Firestore Domains Access Blocked or Non-existent:", err);
         });
         
-        // Monitor log masuk dengan pengaman error (CATCH) agar tidak merusak loading
+        // Monitor log masuk dengan pengaman error (CATCH)
         const q = query(collection(db, "temp_email_logs"), orderBy("timestamp", "desc"), limit(30));
         onSnapshot(q, snapshot => {
             const tbody = document.getElementById('tempMailMonitorTable');
