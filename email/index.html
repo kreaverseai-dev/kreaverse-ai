@@ -617,24 +617,12 @@
 
         .watermark {
             text-align: center;
-            font-size: 0.75rem;
+            font-size: 0.7rem;
             color: var(--text-secondary);
-            opacity: 0.35;
-            padding-bottom: 16px;
-            font-weight: 500;
+            opacity: 0.3;
+            padding-bottom: 12px;
+            font-weight: 600;
             letter-spacing: 1px;
-        }
-
-        /* Custom Select Dropdown Premium Override */
-        .provider-select {
-            appearance: none !important;
-            -webkit-appearance: none !important;
-            -moz-appearance: none !important;
-            background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236B7280' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E") !important;
-            background-repeat: no-repeat !important;
-            background-position: right 14px center !important;
-            background-size: 16px !important;
-            padding-right: 40px !important;
         }
     </style>
 </head>
@@ -768,57 +756,49 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script type="module">
+    <script>
         // ==========================================
-        // FIREBASE IMPORTS
+        // 4. PATH WEBSITE CONFIGURATION
         // ==========================================
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-        import {
-            getFirestore, collection, addDoc, getDocs, doc, getDoc, onSnapshot, query, orderBy, limit
-        } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
-
-        // ==========================================
-        // FIREBASE CONFIG
-        // ==========================================
-        const firebaseConfig = {
-            apiKey: "AIzaSyAO8JV4jkJmbHChYvjUCS7wqfVbKr94tHM",
-            authDomain: "kreaverse-ai0107.firebaseapp.com",
-            databaseURL: "https://kreaverse-ai0107-default-rtdb.asia-southeast1.firebasedatabase.app",
-            projectId: "kreaverse-ai0107",
-            storageBucket: "kreaverse-ai0107.firebasestorage.app",
-            messagingSenderId: "1048550433011",
-            appId: "1:1048550433011:web:0cf2e4074b20fe09909786",
-            measurementId: "G-CJHMKKYQ4C"
-        };
-
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-
         const CONFIG = {
-            basePath: '/email/' // Sesuaikan dengan folder url path website Anda
+            basePath: '/email/' // Sesuaikan dengan folder url path website Anda (misal '/' atau '/email/')
         };
 
         document.addEventListener('DOMContentLoaded', async () => {
             const emailAddressInput = document.getElementById('email-address');
-            const copyBtn = document.getElementById('copy-btn');
-            const refreshBtn = document.getElementById('refresh-btn');
+            const displayEmailText = document.getElementById('display-email-text');
+            const inboxEmailSub = document.getElementById('inbox-email-sub');
             const inboxContainer = document.getElementById('inbox-container');
             const providerSelect = document.getElementById('provider-select');
+            const domainSelect = document.getElementById('domain-select');
+            const customUsernameInput = document.getElementById('custom-username');
             const themeToggle = document.getElementById('theme-toggle');
+            
+            // Buttons
+            const btnCopyMain = document.getElementById('btn-copy-main');
+            const btnNewMain = document.getElementById('btn-new-main');
+            const btnSaveCustom = document.getElementById('btn-save-custom');
+            const inboxRefreshBtn = document.getElementById('inbox-refresh-btn');
+            const qrBtn = document.getElementById('qr-btn');
+            const inboxBadge = document.getElementById('inbox-badge');
 
+            let currentProvider = 'mail.tm';
             let currentToken = '';
             let currentAccountId = '';
             let currentEmail = '';
-            let currentUsername = ''; 
-            let currentDomain = '';   
+            let currentUsername = ''; // Khusus 1secmail
+            let currentDomain = '';   // Khusus 1secmail
             
             let seenMessageIds = new Set();
             let serviceWorkerReg = null;
             let pollInterval = null;
 
-            // Cache data Firestore
-            let fbServers = {};   // id -> serverData
-            let fbDomains = [];   // list of domains
+            // List domain cadangan 1secmail jika pemanggilan API terkena CORS blokir
+            const fallback1SecMailDomains = [
+                '1secmail.com', '1secmail.org', '1secmail.net', 
+                'wwjmp.com', 'boxim.online', 'boun.cr', 
+                'iksby.com', 'khp7.com', 'wuuvo.com', 'vju9.com'
+            ];
 
             // --- 1. Pengaturan Dark & Light Mode ---
             const themeIcon = themeToggle.querySelector('i');
@@ -842,7 +822,23 @@
                 }
             }
 
-            // --- 2. Registrasi Service Worker ---
+            // --- 2. Navigasi Tab System ---
+            const navItems = document.querySelectorAll('.nav-item');
+            const tabPanels = document.querySelectorAll('.tab-panel');
+
+            navItems.forEach(item => {
+                item.addEventListener('click', () => {
+                    const targetTab = item.getAttribute('data-tab');
+                    
+                    navItems.forEach(nav => nav.classList.remove('active'));
+                    tabPanels.forEach(panel => panel.classList.remove('active'));
+                    
+                    item.classList.add('active');
+                    document.getElementById(`tab-${targetTab}`).classList.add('active');
+                });
+            });
+
+            // --- 3. Registrasi Service Worker ---
             if ('serviceWorker' in navigator && 'Notification' in window) {
                 try {
                     serviceWorkerReg = await navigator.serviceWorker.register('sw.js');
@@ -855,72 +851,101 @@
                 }
             }
 
-            // --- 3. Memuat Setelan Secara Dinamis dari Firebase ---
-            function loadFirebaseConfigurations() {
-                // Tarik database Server
-                onSnapshot(collection(db, "temp_email_providers"), snapshot => {
-                    fbServers = {};
-                    snapshot.forEach(docSnap => {
-                        fbServers[docSnap.id] = { id: docSnap.id, ...docSnap.data() };
-                    });
-                    renderDropdownOptions();
-                });
+            // --- 4. Membuat Nada Pemberitahuan Premium (Synthesizer Chime) ---
+            const playChime = () => {
+                try {
+                    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                    if (!audioContext) return;
 
-                // Tarik database Domain
-                onSnapshot(collection(db, "temp_email_domains"), snapshot => {
-                    fbDomains = [];
-                    snapshot.forEach(docSnap => {
-                        fbDomains.push({ id: docSnap.id, ...docSnap.data() });
-                    });
-                    renderDropdownOptions();
-                });
-            }
+                    const playBeep = (freq, duration, delay) => {
+                        setTimeout(() => {
+                            const osc = audioContext.createOscillator();
+                            const gain = audioContext.createGain();
+                            osc.connect(gain);
+                            gain.connect(audioContext.destination);
+                            osc.type = 'sine';
+                            osc.frequency.setValueAtTime(freq, audioContext.currentTime);
+                            gain.gain.setValueAtTime(0.08, audioContext.currentTime);
+                            osc.start();
+                            gain.gain.exponentialRampToValueAtTime(0.0001, audioContext.currentTime + duration);
+                            osc.stop(audioContext.currentTime + duration);
+                        }, delay);
+                    };
 
-            function renderDropdownOptions() {
-                if (fbDomains.length === 0) {
-                    providerSelect.innerHTML = `<option value="">Tidak ada domain aktif</option>`;
-                    return;
+                    playBeep(587.33, 0.15, 0);   // Nada D5
+                    playBeep(880.00, 0.25, 120); // Nada A5
+                } catch (e) {
+                    console.log('Audio tidak diizinkan oleh kebijakan browser.');
                 }
-                
-                providerSelect.innerHTML = '';
-                fbDomains.forEach(d => {
-                    const matchedSrv = fbServers[d.server];
-                    const serverLabel = matchedSrv ? matchedSrv.name : "Server Umum";
+            };
+
+            // --- 5. Memuat Domain Dinamis Berdasarkan Provider Terpilih ---
+            async function loadDomainsForProvider(provider) {
+                domainSelect.innerHTML = '<option>Memuat daftar domain...</option>';
+                try {
+                    let domains = [];
+                    if (provider === 'mail.tm' || provider === 'mail.gw') {
+                        const apiBase = provider === 'mail.tm' ? 'https://api.mail.tm' : 'https://api.mail.gw';
+                        const domainRes = await fetch(`${apiBase}/domains`);
+                        const domainData = await domainRes.json();
+                        domains = domainData['hydra:member'].map(d => d.domain);
+                    } else if (provider === '1secmail') {
+                        try {
+                            const domainRes = await fetch('https://www.1secmail.com/api/v1/?action=getDomainList');
+                            if (!domainRes.ok) throw new Error('CORS or Network Error');
+                            domains = await domainRes.json();
+                        } catch (corsErr) {
+                            console.warn("CORS Error di 1secmail, memuat domain cadangan...");
+                            domains = fallback1SecMailDomains;
+                        }
+                    }
                     
-                    const opt = document.createElement('option');
-                    opt.value = d.id; // Gunakan ID domain sebagai value penanda
-                    opt.textContent = `${d.domain} (${serverLabel})`;
-                    providerSelect.appendChild(opt);
-                });
-
-                // Jalankan inisiasi email pertama kali jika belum disetup
-                if (!currentEmail && fbDomains.length > 0) {
-                    setupEmail();
+                    domainSelect.innerHTML = '';
+                    domains.forEach(d => {
+                        const opt = document.createElement('option');
+                        opt.value = d;
+                        opt.textContent = `@${d}`;
+                        domainSelect.appendChild(opt);
+                    });
+                } catch (err) {
+                    console.error("Gagal mengambil domain server:", err);
+                    domainSelect.innerHTML = '<option>Gagal memuat domain</option>';
                 }
             }
 
-            // --- 4. Setup Akun Email (Membaca Driver Dinamis) ---
-            async function setupEmail() {
-                const selectedDomainId = providerSelect.value;
-                if (!selectedDomainId) {
-                    emailAddressInput.value = 'Belum ada domain kustom aktif...';
+            // --- 6. Setup Akun Email (Mendukung Multi-Provider, Kustomisasi, & Persistence) ---
+            async function setupEmail(customUser = null, customDom = null) {
+                // Gunakan sesi tersimpan jika ada (Mencegah layar "menghubungkan" selama 2 menit setiap reload)
+                const savedProvider = localStorage.getItem('temp_email_provider');
+                const savedEmail = localStorage.getItem('temp_email_address');
+                const savedToken = localStorage.getItem('temp_email_token');
+                const savedAccountId = localStorage.getItem('temp_email_account_id');
+                const savedUsername = localStorage.getItem('temp_email_username');
+                const savedDomain = localStorage.getItem('temp_email_domain');
+
+                if (!customUser && savedEmail && savedProvider === currentProvider) {
+                    currentEmail = savedEmail;
+                    currentToken = savedToken || '';
+                    currentAccountId = savedAccountId || '';
+                    currentUsername = savedUsername || '';
+                    currentDomain = savedDomain || '';
+                    
+                    emailAddressInput.value = currentEmail;
+                    displayEmailText.textContent = currentEmail;
+                    inboxEmailSub.textContent = currentEmail;
+
+                    fetchMessages();
+                    pollInterval = setInterval(fetchMessages, 5000); // Polling instan setiap 5 detik
                     return;
                 }
 
-                const domainObj = fbDomains.find(d => d.id === selectedDomainId);
-                if (!domainObj) return;
-
-                const serverObj = fbServers[domainObj.server];
-                if (!serverObj) {
-                    emailAddressInput.value = 'Mencari jalur server...';
-                    return;
-                }
-
-                emailAddressInput.value = 'Menghubungkan ke server...';
+                displayEmailText.textContent = 'Menghubungkan...';
+                inboxEmailSub.textContent = 'Menghubungkan...';
+                
                 inboxContainer.innerHTML = `
                     <div class="empty-state">
                         <i class="fa-solid fa-spinner fa-spin"></i><br>
-                        Menyiapkan email baru dari server...
+                        Menyiapkan email baru dari provider...
                     </div>
                 `;
 
@@ -928,25 +953,41 @@
                 currentAccountId = '';
                 currentEmail = '';
                 currentUsername = '';
-                currentDomain = domainObj.domain;
+                currentDomain = '';
                 seenMessageIds.clear();
 
                 if (pollInterval) clearInterval(pollInterval);
 
                 try {
-                    const apiBase = serverObj.url;
-                    const randomString = Math.random().toString(36).substring(2, 8);
-                    currentUsername = `kreaverse-ai-${randomString}`;
-                    const address = `${currentUsername}@${currentDomain}`;
-                    const password = `KreaversePass!${currentUsername}`;
+                    let finalDomain = customDom;
+                    let finalUsername = customUser;
 
-                    // Eksekusi Driver Tipe A (Hydra / JWT)
-                    if (serverObj.driver === 'type_a') {
+                    if (currentProvider === 'mail.tm' || currentProvider === 'mail.gw') {
+                        const apiBase = currentProvider === 'mail.tm' ? 'https://api.mail.tm' : 'https://api.mail.gw';
+
+                        if (!finalDomain) {
+                            const domainRes = await fetch(`${apiBase}/domains`);
+                            const domainData = await domainRes.json();
+                            finalDomain = domainData['hydra:member'][0].domain;
+                        }
+
+                        if (!finalUsername) {
+                            finalUsername = 'kreaverse-ai-' + Math.random().toString(36).substring(2, 8);
+                        }
+
+                        const address = `${finalUsername}@${finalDomain}`;
+                        const password = `KreaversePass!${finalUsername}`;
+
                         const accountRes = await fetch(`${apiBase}/accounts`, {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({ address, password })
                         });
+                        
+                        if (!accountRes.ok) {
+                            throw new Error("Nama email sudah terpakai atau format salah.");
+                        }
+
                         const accountData = await accountRes.json();
                         currentAccountId = accountData.id;
 
@@ -959,45 +1000,76 @@
                         currentToken = tokenData.token;
                         currentEmail = address;
 
-                    // Eksekusi Driver Tipe B & C (Direct / Parameter / API Key)
-                    } else {
-                        currentEmail = address;
+                        // Simpan Sesi
+                        localStorage.setItem('temp_email_provider', currentProvider);
+                        localStorage.setItem('temp_email_address', currentEmail);
+                        localStorage.setItem('temp_email_token', currentToken);
+                        localStorage.setItem('temp_email_account_id', currentAccountId);
+
+                    } else if (currentProvider === '1secmail') {
+                        if (!finalDomain) {
+                            finalDomain = fallback1SecMailDomains[0];
+                        }
+
+                        if (!finalUsername) {
+                            finalUsername = 'kreaverse-ai-' + Math.random().toString(36).substring(2, 8);
+                        }
+
+                        currentUsername = finalUsername;
+                        currentDomain = finalDomain;
+                        currentEmail = `${currentUsername}@${finalDomain}`;
+
+                        // Simpan Sesi
+                        localStorage.setItem('temp_email_provider', currentProvider);
+                        localStorage.setItem('temp_email_address', currentEmail);
+                        localStorage.setItem('temp_email_username', currentUsername);
+                        localStorage.setItem('temp_email_domain', currentDomain);
                     }
 
-                    // Tampilkan di UI
+                    // Sinkronisasi data ke input legacy dan UI
                     emailAddressInput.value = currentEmail;
+                    displayEmailText.textContent = currentEmail;
+                    inboxEmailSub.textContent = currentEmail;
 
-                    // Mulai polling pesan secara berkala
+                    // Berikan notifikasi jika pembuatan custom sukses
+                    if (customUser) {
+                        Swal.fire({
+                            title: 'Email Diperbarui',
+                            text: `Berhasil membuat alamat email khusus: ${currentEmail}`,
+                            icon: 'success',
+                            confirmButtonColor: '#059669',
+                            background: document.documentElement.getAttribute('data-theme') === 'dark' ? '#151F32' : '#FFF',
+                            color: document.documentElement.getAttribute('data-theme') === 'dark' ? '#F8FAFC' : '#0F172A'
+                        });
+                        // Kembali ke tab utama otomatis
+                        document.querySelector('[data-tab="address"]').click();
+                    }
+
                     fetchMessages();
-                    pollInterval = setInterval(fetchMessages, 6000); 
+                    pollInterval = setInterval(fetchMessages, 5000); // Polling instan setiap 5 detik
 
                 } catch (error) {
-                    console.error("Gagal mendaftarkan email:", error);
-                    emailAddressInput.value = 'Jalur koneksi sibuk. Silakan coba lagi.';
+                    console.error("Gagal setup email provider:", error);
+                    Swal.fire({
+                        title: 'Registrasi Gagal',
+                        text: error.message || 'Gagal terhubung ke provider email. Silakan ganti nama email atau provider lain.',
+                        icon: 'error',
+                        confirmButtonColor: '#059669',
+                        background: document.documentElement.getAttribute('data-theme') === 'dark' ? '#151F32' : '#FFF',
+                        color: document.documentElement.getAttribute('data-theme') === 'dark' ? '#F8FAFC' : '#0F172A'
+                    });
+                    displayEmailText.textContent = 'Gagal memuat alamat email.';
                 }
             }
 
-            // --- 5. Ambil Pesan Masuk (Membaca Driver Dinamis) ---
+            // --- 7. Ambil Pesan Masuk (Polling) ---
             async function fetchMessages() {
-                const selectedDomainId = providerSelect.value;
-                const domainObj = fbDomains.find(d => d.id === selectedDomainId);
-                if (!domainObj) return;
-
-                const serverObj = fbServers[domainObj.server];
-                if (!serverObj || !currentEmail) return;
-
                 try {
                     let messages = [];
-                    const apiBase = serverObj.url;
 
-                    const headers = {};
-                    if (serverObj.driver === 'type_c' && serverObj.headerName) {
-                        headers[serverObj.headerName] = serverObj.headerValue;
-                    }
-
-                    // Parsing Driver Tipe A
-                    if (serverObj.driver === 'type_a') {
+                    if (currentProvider === 'mail.tm' || currentProvider === 'mail.gw') {
                         if (!currentToken) return;
+                        const apiBase = currentProvider === 'mail.tm' ? 'https://api.mail.tm' : 'https://api.mail.gw';
                         const res = await fetch(`${apiBase}/messages`, {
                             headers: { 'Authorization': `Bearer ${currentToken}` }
                         });
@@ -1008,32 +1080,53 @@
                             id: msg.id,
                             from: msg.from.address,
                             subject: msg.subject,
-                            snippet: msg.intro || 'Ketuk untuk membaca isi email.'
+                            snippet: msg.intro || 'Ketuk untuk melihat seluruh isi pesan.',
+                            hasAttachment: msg.hasAttachments || false
                         }));
 
-                    // Parsing Driver Tipe B & C
-                    } else {
-                        const res = await fetch(`https://kreaverse-proxy.kreaverse-ai.workers.dev/?targetUrl=${encodeURIComponent(`${apiBase}/api/v1/?action=getMessages&login=${currentUsername}&domain=${currentDomain}`)}`, { headers });
+                        checkForNewMessages(rawMsgs.map(m => ({
+                            id: m.id,
+                            from: m.from.address,
+                            subject: m.subject
+                        })));
+
+                    } else if (currentProvider === '1secmail') {
+                        if (!currentUsername || !currentDomain) return;
+                        const res = await fetch(`https://www.1secmail.com/api/v1/?action=getMessages&login=${currentUsername}&domain=${currentDomain}`);
                         const rawMsgs = await res.json();
 
                         messages = rawMsgs.map(msg => ({
                             id: msg.id,
                             from: msg.from,
                             subject: msg.subject,
-                            snippet: `Pesan baru diterima pada ${msg.date}. Ketuk untuk membaca detail.`
+                            snippet: `Pesan masuk dari ${msg.from}. Ketuk untuk membaca isi surat.`,
+                            hasAttachment: false
                         }));
+
+                        checkForNewMessages(rawMsgs.map(m => ({
+                            id: m.id,
+                            from: m.from,
+                            subject: m.subject
+                        })));
                     }
 
-                    checkForNewMessages(messages);
                     renderMessages(messages);
 
                 } catch (error) {
-                    console.error('Gagal mengambil pesan:', error);
+                    console.error('Gagal memuat surat masuk:', error);
                 }
             }
 
-            // --- 6. Render Inbox ke UI ---
+            // --- 8. Render Kotak Masuk ke UI (Gambar 3) ---
             function renderMessages(messages) {
+                // Update badge merah navigasi bawah secara realtime
+                if (messages.length > 0) {
+                    inboxBadge.textContent = messages.length;
+                    inboxBadge.style.display = 'flex';
+                } else {
+                    inboxBadge.style.display = 'none';
+                }
+
                 if (messages.length === 0) {
                     inboxContainer.innerHTML = `
                         <div class="empty-state">
@@ -1045,26 +1138,42 @@
                 }
 
                 inboxContainer.innerHTML = '';
-                messages.forEach(msg => {
+                messages.forEach((msg, idx) => {
                     const div = document.createElement('div');
                     div.className = 'email-item';
+                    
+                    // Deteksi timestamp real-time sederhana
+                    const fakeTime = new Date();
+                    fakeTime.setMinutes(fakeTime.getMinutes() - idx * 2);
+                    const timeString = fakeTime.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+
                     div.innerHTML = `
-                        <div class="email-sender">${msg.from}</div>
-                        <div class="email-subject">${msg.subject}</div>
-                        <div class="email-snippet">${msg.snippet}</div>
+                        <div class="email-item-header">
+                            <div class="email-item-sender-row">
+                                <span class="status-dot"></span>
+                                <span class="email-item-sender">${msg.from}</span>
+                            </div>
+                            <span class="email-item-time">${timeString}</span>
+                        </div>
+                        <div class="email-item-subject">${msg.subject}</div>
+                        <div class="email-item-snippet-row">
+                            <span class="email-item-snippet">${msg.snippet}</span>
+                            ${msg.hasAttachment ? '<i class="fa-solid fa-paperclip email-item-attachment"></i>' : ''}
+                        </div>
                     `;
                     div.addEventListener('click', () => showEmailDetail(msg.id));
                     inboxContainer.appendChild(div);
                 });
             }
 
-            // --- 7. Deteksi Pesan Baru, Push Notifikasi, & Kirim Log ke Dashboard Admin ---
+            // --- 9. Deteksi Surat Baru & Kirim Push Notifikasi + Audio Chime ---
             function checkForNewMessages(messages) {
-                messages.forEach(async msg => {
+                let hasNew = false;
+                messages.forEach(msg => {
                     if (!seenMessageIds.has(msg.id)) {
                         seenMessageIds.add(msg.id);
+                        hasNew = true;
                         
-                        // 1. Kirim push notifikasi browser
                         if (Notification.permission === 'granted' && serviceWorkerReg) {
                             serviceWorkerReg.showNotification('Pesan Baru: Kreaverse Email', {
                                 body: `Dari: ${msg.from}\nSubjek: ${msg.subject}`,
@@ -1072,51 +1181,31 @@
                                 vibrate: [200, 100, 200]
                             });
                         }
-
-                        // 2. Kirim LOG email masuk secara otomatis ke Firebase (Menghidupkan Live Monitor Dashboard)
-                        try {
-                            await addDoc(collection(db, "temp_email_logs"), {
-                                email: currentEmail,
-                                from: msg.from,
-                                subject: msg.subject,
-                                snippet: msg.snippet || 'Ketuk untuk membaca detail.',
-                                timestamp: Date.now()
-                            });
-                        } catch (err) {
-                            console.error("Gagal mengirim log ke Dashboard:", err);
-                        }
                     }
                 });
+
+                if (hasNew) {
+                    playChime(); // Mainkan bel suara premium jika ada email masuk
+                }
             }
 
-            // --- 8. Tampilkan Detail Pesan (SweetAlert) ---
+            // --- 10. Desain Pop-Up Membaca Pesan Premium (Gambar 2) ---
             async function showEmailDetail(msgId) {
-                const selectedDomainId = providerSelect.value;
-                const domainObj = fbDomains.find(d => d.id === selectedDomainId);
-                if (!domainObj) return;
-
-                const serverObj = fbServers[domainObj.server];
-                if (!serverObj) return;
-
                 Swal.fire({
                     title: 'Memuat pesan...',
                     allowOutsideClick: false,
                     didOpen: () => Swal.showLoading(),
-                    background: document.documentElement.getAttribute('data-theme') === 'dark' ? '#242424' : '#FFF',
+                    background: document.documentElement.getAttribute('data-theme') === 'dark' ? '#151F32' : '#FFF',
                 });
 
                 try {
                     let subject = '';
                     let fromText = '';
                     let bodyHtml = '';
-                    const apiBase = serverObj.url;
+                    let attachments = [];
 
-                    const headers = {};
-                    if (serverObj.driver === 'type_c' && serverObj.headerName) {
-                        headers[serverObj.headerName] = serverObj.headerValue;
-                    }
-
-                    if (serverObj.driver === 'type_a') {
+                    if (currentProvider === 'mail.tm' || currentProvider === 'mail.gw') {
+                        const apiBase = currentProvider === 'mail.tm' ? 'https://api.mail.tm' : 'https://api.mail.gw';
                         const res = await fetch(`${apiBase}/messages/${msgId}`, {
                             headers: { 'Authorization': `Bearer ${currentToken}` }
                         });
@@ -1124,54 +1213,168 @@
                         subject = data.subject;
                         fromText = data.from.address;
                         bodyHtml = data.html ? data.html[0] : (data.text || 'Tidak ada isi pesan.');
+                        attachments = data.attachments || [];
 
-                    } else {
-                        const res = await fetch(`https://kreaverse-proxy.kreaverse-ai.workers.dev/?targetUrl=${encodeURIComponent(`${apiBase}/api/v1/?action=readMessage&login=${currentUsername}&domain=${currentDomain}&id=${msgId}`)}`, { headers });
+                    } else if (currentProvider === '1secmail') {
+                        const res = await fetch(`https://www.1secmail.com/api/v1/?action=readMessage&login=${currentUsername}&domain=${currentDomain}&id=${msgId}`);
                         const data = await res.json();
                         subject = data.subject;
                         fromText = data.from;
                         bodyHtml = data.htmlBody ? data.htmlBody : (data.textBody || 'Tidak ada isi pesan.');
+                        attachments = data.attachments || [];
                     }
 
-                    Swal.fire({
-                        title: subject,
-                        html: `<div style="text-align: left; font-size: 14px; margin-top: 10px; border-top: 1px solid #E5E5E5; padding-top: 10px; max-height: 400px; overflow-y: auto;">
-                                <b>Dari:</b> ${fromText}<br><br>
-                                ${bodyHtml}
-                               </div>`,
-                        width: '600px',
-                        confirmButtonColor: '#059669',
-                        confirmButtonText: 'Tutup',
-                        background: document.documentElement.getAttribute('data-theme') === 'dark' ? '#242424' : '#FFF',
-                        color: document.documentElement.getAttribute('data-theme') === 'dark' ? '#E5E5E5' : '#1F1F1F'
+                    const initials = fromText.slice(0, 2).toUpperCase();
+                    const formattedDate = new Date().toLocaleDateString('id-ID', {
+                        day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit'
                     });
+
+                    // Modifikasi tampilan menyerupai Gambar 2
+                    let attachmentHtml = '';
+                    if (attachments.length > 0) {
+                        attachmentHtml = `
+                            <div style="margin-top:16px; padding-top:12px; border-top:1px solid var(--border-color); font-size: 0.85rem;">
+                                <b>Lampiran Dokumen:</b>
+                                <div style="display:flex; flex-direction:column; gap:6px; margin-top:8px;">
+                                    ${attachments.map(att => `
+                                        <div style="display:flex; justify-content:space-between; align-items:center; background:var(--hover-bg); padding:10px; border-radius:8px; border:1px solid var(--border-color);">
+                                            <span><i class="fa-regular fa-file-lines"></i> ${att.filename || att.name} (${att.size ? (att.size / 1024).toFixed(1) + ' KB' : 'Dokumen'})</span>
+                                            <a href="#" style="color:var(--accent-color); font-weight:700; text-decoration:none;">UNDUH</a>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            </div>
+                        `;
+                    }
+
+                    const viewContent = `
+                        <div class="swal-email-view">
+                            <div class="email-view-header">
+                                <div class="email-avatar">${initials}</div>
+                                <div class="email-meta-sender">
+                                    <span class="sender-name">${fromText.split('@')[0]}</span>
+                                    <span class="sender-address">&lt;${fromText}&gt;</span>
+                                </div>
+                            </div>
+                            <div class="email-view-details">
+                                <div class="detail-row"><span class="detail-label">Tanggal:</span> <span>${formattedDate}</span></div>
+                                <div class="detail-row"><span class="detail-label">Perihal:</span> <span style="font-weight:600; color:var(--text-primary);">${subject}</span></div>
+                            </div>
+                            <div class="email-view-body">
+                                ${bodyHtml}
+                            </div>
+                            ${attachmentHtml}
+                        </div>
+                    `;
+
+                    Swal.fire({
+                        html: viewContent,
+                        width: '560px',
+                        confirmButtonColor: '#059669',
+                        confirmButtonText: 'TUTUP',
+                        background: document.documentElement.getAttribute('data-theme') === 'dark' ? '#151F32' : '#FFF',
+                        color: document.documentElement.getAttribute('data-theme') === 'dark' ? '#F8FAFC' : '#0F172A'
+                    });
+
                 } catch (error) {
-                    Swal.fire('Error', 'Gagal memuat detail pesan.', 'error');
+                    Swal.fire({
+                        title: 'Error',
+                        text: 'Gagal memuat detail pesan.',
+                        icon: 'error',
+                        confirmButtonColor: '#059669'
+                    });
                 }
             }
 
-            // --- 9. Event Listeners ---
-            copyBtn.addEventListener('click', () => {
-                if (!emailAddressInput.value || emailAddressInput.value.includes('...')) return;
-                navigator.clipboard.writeText(emailAddressInput.value);
-                copyBtn.innerHTML = '<i class="fa-solid fa-check"></i>';
-                setTimeout(() => copyBtn.innerHTML = '<i class="fa-regular fa-copy"></i>', 2000);
+            // --- 11. Handler Tombol Salin, Buat Baru, & QR Code ---
+            btnCopyMain.addEventListener('click', () => {
+                if (!currentEmail || currentEmail.includes('...')) return;
+                navigator.clipboard.writeText(currentEmail);
+                btnCopyMain.innerHTML = '<i class="fa-solid fa-check"></i> BERHASIL DISALIN';
+                setTimeout(() => btnCopyMain.innerHTML = '<i class="fa-regular fa-copy"></i> SALIN ALAMAT', 2000);
             });
 
-            refreshBtn.addEventListener('click', () => {
-                refreshBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Memperbarui...';
-                fetchMessages().then(() => {
-                    setTimeout(() => refreshBtn.innerHTML = '<i class="fa-solid fa-rotate-right"></i> Perbarui Kotak Masuk', 1000);
+            btnNewMain.addEventListener('click', () => {
+                Swal.fire({
+                    title: 'Buat Alamat Baru?',
+                    text: "Sesi email aktif akan dihapus permanen dan diganti alamat baru.",
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonColor: '#059669',
+                    cancelButtonColor: '#64748B',
+                    confirmButtonText: 'Ya, Buat Baru',
+                    cancelButtonText: 'Batal',
+                    background: document.documentElement.getAttribute('data-theme') === 'dark' ? '#151F32' : '#FFF',
+                    color: document.documentElement.getAttribute('data-theme') === 'dark' ? '#F8FAFC' : '#0F172A'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        localStorage.clear(); // Hapus sesi lama
+                        setupEmail();
+                    }
                 });
             });
 
-            // Ganti domain secara dinamis
-            providerSelect.addEventListener('change', () => {
-                setupEmail();
+            qrBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                if (!currentEmail || currentEmail.includes('...')) return;
+                const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(currentEmail)}`;
+                Swal.fire({
+                    title: 'Scan QR Alamat Anda',
+                    html: `
+                        <div style="text-align: center; padding: 10px;">
+                            <img src="${qrUrl}" alt="QR Code" style="max-width: 100%; border: 1px solid var(--border-color); border-radius: 12px; padding: 8px; background: white;" />
+                            <p style="margin-top: 12px; font-size: 0.9rem; color: var(--text-secondary); word-break: break-all;"><b>${currentEmail}</b></p>
+                        </div>
+                    `,
+                    confirmButtonText: 'Tutup',
+                    confirmButtonColor: '#059669',
+                    background: document.documentElement.getAttribute('data-theme') === 'dark' ? '#151F32' : '#FFF',
+                    color: document.documentElement.getAttribute('data-theme') === 'dark' ? '#F8FAFC' : '#0F172A'
+                });
             });
 
-            // Jalankan inisiasi sinkronisasi Firebase
-            loadFirebaseConfigurations();
+            inboxRefreshBtn.addEventListener('click', () => {
+                inboxRefreshBtn.innerHTML = '<i class="fa-solid fa-arrows-rotate fa-spin"></i>';
+                fetchMessages().then(() => {
+                    setTimeout(() => {
+                        inboxRefreshBtn.innerHTML = '<i class="fa-solid fa-arrows-rotate"></i>';
+                    }, 800);
+                });
+            });
+
+            // Ganti provider & muat ulang domain list
+            providerSelect.addEventListener('change', async (e) => {
+                currentProvider = e.target.value;
+                await loadDomainsForProvider(currentProvider);
+            });
+
+            // Daftarkan Custom Username & Domain pilihan (Gambar 1)
+            btnSaveCustom.addEventListener('click', () => {
+                const user = customUsernameInput.value.trim().toLowerCase();
+                const dom = domainSelect.value;
+                if (!user) {
+                    Swal.fire({
+                        title: 'Data Kurang Lengkap',
+                        text: 'Silakan ketik nama depan email terlebih dahulu.',
+                        icon: 'warning',
+                        confirmButtonColor: '#059669',
+                        background: document.documentElement.getAttribute('data-theme') === 'dark' ? '#151F32' : '#FFF',
+                        color: document.documentElement.getAttribute('data-theme') === 'dark' ? '#F8FAFC' : '#0F172A'
+                    });
+                    return;
+                }
+                localStorage.clear(); // Bersihkan sesi agar mendaftar alamat custom baru
+                setupEmail(user, dom);
+            });
+
+            // Eksekusi Setup Awal
+            const storedProvider = localStorage.getItem('temp_email_provider');
+            if (storedProvider) {
+                currentProvider = storedProvider;
+                providerSelect.value = currentProvider;
+            }
+            await loadDomainsForProvider(currentProvider);
+            setupEmail();
         });
     </script>
 </body>
