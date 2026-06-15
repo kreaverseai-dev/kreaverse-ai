@@ -765,12 +765,13 @@
                                 <span id="real-download-text">0% (0.0 MB / -- MB)</span>
                             </div>
                         </div>
-                        <!-- Ikon Status Putar & Tombol Batal di sebelah kanan -->
+                        <!-- Ikon Status Putar, Tombol Batal & Tombol Hapus di sebelah kanan -->
                         <div style="font-size: 1rem; color: var(--text-light); flex-shrink: 0; display: flex; flex-direction: column; align-items: center; gap: 6px;">
                             <div id="real-download-status-icon">
                                 <i class="fa-solid fa-circle-notch fa-spin" style="color: var(--accent-color);"></i>
                             </div>
                             <button id="cancel-download-btn" style="background: #fee2e2; color: #ef4444; border: 1px solid #fca5a5; border-radius: 99px; padding: 4px 10px; font-size: 0.65rem; font-weight: 800; cursor: pointer; display: none; transition: all 0.2s;">Batal</button>
+                            <button id="clear-download-btn" style="background: #f3f4f6; color: #4b5563; border: 1px solid #d1d5db; border-radius: 99px; padding: 4px 10px; font-size: 0.65rem; font-weight: 800; cursor: pointer; transition: all 0.2s;"><i class="fa-solid fa-trash-can"></i> Hapus</button>
                         </div>
                     </div>
                 </div>
@@ -999,6 +1000,17 @@
         let isDualAudio = false; 
         let activeXhr = null; // Menyimpan objek XMLHttpRequest aktif untuk pembatalan
         
+        // GLOBAL STATE FOR PROGRESSIVE PARTIAL RESUME DOWNLOADS
+        let downloadState = {
+            chunks: [],
+            bytesLoaded: 0,
+            totalBytes: 0,
+            isPaused: false,
+            reader: null,
+            startTime: 0,
+            url: ""
+        };
+        
         let controlsTimeout; // Untuk sistem Hilang/Muncul kontrol Pemutar
 
         const btnText = document.getElementById('btn-text');
@@ -1226,6 +1238,16 @@
             mediaWrapper.classList.remove('audio-mode');
             mediaWrapper.style.aspectRatio = '';
             globalScannedOptions = [];
+            
+            downloadState = {
+                chunks: [],
+                bytesLoaded: 0,
+                totalBytes: 0,
+                isPaused: false,
+                reader: null,
+                startTime: 0,
+                url: ""
+            };
         }
 
         function getYouTubeId(url) {
@@ -2100,10 +2122,143 @@
         });
 
         // REAL SERVER KREAVERSE BLOB DL (Sistem Progress 100% Nyata Lewat Jaringan - Tanpa Simulasi)
+        async function performStreamDownload() {
+            const fill = document.getElementById('real-download-fill');
+            const speedEl = document.getElementById('real-download-speed');
+            const textEl = document.getElementById('real-download-text');
+            const statusIcon = document.getElementById('real-download-status-icon');
+            const cancelBtn = document.getElementById('cancel-download-btn');
+
+            cancelBtn.style.display = 'block';
+            cancelBtn.innerText = "Batal";
+            cancelBtn.style.background = "#fee2e2";
+            cancelBtn.style.color = "#ef4444";
+            cancelBtn.style.borderColor = "#fca5a5";
+
+            downloadState.isPaused = false;
+            // Menghitung estimasi sisa waktu pemutaran data secara dinamis
+            downloadState.startTime = Date.now() - (downloadState.bytesLoaded > 0 ? 5000 : 0);
+
+            const headers = new Headers();
+            if (downloadState.bytesLoaded > 0) {
+                headers.set('Range', `bytes=${downloadState.bytesLoaded}-`);
+            }
+
+            try {
+                statusIcon.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin" style="color:var(--accent-color);"></i>';
+                
+                const response = await fetch(downloadState.url, { headers });
+                if (!response.ok && response.status !== 206) {
+                    throw new Error(`Server error ${response.status}`);
+                }
+
+                if (downloadState.totalBytes === 0) {
+                    const cr = response.headers.get('content-range');
+                    if (cr && cr.includes('/')) {
+                        downloadState.totalBytes = parseInt(cr.split('/').pop());
+                    }
+                    if (!downloadState.totalBytes) {
+                        const cl = response.headers.get('content-length');
+                        downloadState.totalBytes = cl ? parseInt(cl) : 0;
+                    }
+                }
+
+                const reader = response.body.getReader();
+                downloadState.reader = reader;
+
+                let lastUpdated = Date.now();
+
+                while (true) {
+                    if (downloadState.isPaused) {
+                        await reader.cancel();
+                        break;
+                    }
+
+                    const { done, value } = await reader.read();
+                    if (done) break;
+
+                    downloadState.chunks.push(value);
+                    downloadState.bytesLoaded += value.length;
+
+                    const now = Date.now();
+                    if (now - lastUpdated > 150) {
+                        const percent = downloadState.totalBytes > 0 
+                            ? Math.min(100, Math.round((downloadState.bytesLoaded / downloadState.totalBytes) * 100))
+                            : 70;
+                        
+                        fill.style.width = percent + '%';
+                        
+                        const elapsed = (now - downloadState.startTime) / 1000;
+                        const speed = elapsed > 0 ? downloadState.bytesLoaded / elapsed : 0;
+                        
+                        let speedText = "";
+                        if (speed >= 1024 * 1024) {
+                            speedText = `${(speed / (1024 * 1024)).toFixed(1)} MB/s`;
+                        } else {
+                            speedText = `${(speed / 1024).toFixed(0)} KB/s`;
+                        }
+
+                        const loadedMB = (downloadState.bytesLoaded / (1024 * 1024)).toFixed(1);
+                        const totalMB = downloadState.totalBytes > 0 
+                            ? (downloadState.totalBytes / (1024 * 1024)).toFixed(1)
+                            : '--';
+
+                        speedEl.innerHTML = `<i class="fa-solid fa-bolt" style="color:#F59E0B; margin-right:4px;"></i> ${speedText}`;
+                        textEl.innerText = `${percent}% (${loadedMB} MB / ${totalMB} MB)`;
+                        lastUpdated = now;
+                    }
+                }
+
+                if (!downloadState.isPaused) {
+                    let mimeType = 'application/octet-stream';
+                    const extLower = (resolvedFileExt || '').toLowerCase();
+                    if (extLower === 'mp3') mimeType = 'audio/mpeg';
+                    else if (extLower === 'mp4') mimeType = 'video/mp4';
+                    else if (extLower === 'm4a') mimeType = 'audio/mp4';
+                    else if (extLower === 'webm') mimeType = 'video/webm';
+                    else if (extLower === 'jpg' || extLower === 'jpeg') mimeType = 'image/jpeg';
+                    else if (extLower === 'png') mimeType = 'image/png';
+
+                    const finalBlob = new Blob(downloadState.chunks, { type: mimeType });
+                    
+                    if (window.activeObjectUrl) {
+                        URL.revokeObjectURL(window.activeObjectUrl);
+                    }
+                    const objUrl = URL.createObjectURL(finalBlob);
+                    window.activeObjectUrl = objUrl;
+
+                    const a = document.createElement('a');
+                    a.href = objUrl; 
+                    a.download = resolvedFileName;
+                    a.target = '_blank';
+                    document.body.appendChild(a); 
+                    a.click(); 
+                    document.body.removeChild(a);
+
+                    fill.style.width = '100%';
+                    speedEl.innerHTML = '<i class="fa-solid fa-check" style="color:var(--success-color); margin-right:4px;"></i> Selesai';
+                    textEl.innerText = '100% Berhasil Disimpan';
+                    statusIcon.innerHTML = '<i class="fa-solid fa-circle-check" style="color:var(--success-color);"></i>';
+                    cancelBtn.style.display = 'none';
+
+                    showIphoneNotif('Unduhan Selesai', 'File telah sukses tersimpan di HP Anda.', 'fa-server');
+                }
+            } catch (err) {
+                if (!downloadState.isPaused) {
+                    console.error(err);
+                    speedEl.innerText = 'Gagal, beralih ke rute alternatif...';
+                    setTimeout(() => {
+                        const container = document.getElementById('real-download-progress-container');
+                        container.style.display = 'none';
+                        window.location.href = downloadState.url; 
+                    }, 1500);
+                }
+            }
+        }
+
         realDownloadBtn.addEventListener('click', () => {
             if (!resolvedMediaUrl) return;
             
-            // Sembunyikan progress bar di atas
             document.getElementById('progress-container').style.display = 'none';
 
             const container = document.getElementById('real-download-progress-container');
@@ -2114,7 +2269,6 @@
             const statusIcon = document.getElementById('real-download-status-icon');
             const iconWrapper = document.getElementById('real-download-platform-icon');
             
-            // Deteksi platform dinamis untuk logo asli berwarna secara aman
             const platInfo = getPlatformIconAndColor(urlInput.value || resolvedMediaUrl);
             iconWrapper.innerHTML = `<i class="${platInfo.icon}" style="color: ${platInfo.color}; transition: all 0.3s;"></i>`;
             
@@ -2122,165 +2276,27 @@
             container.style.setProperty('display', 'block', 'important');
             container.classList.add('active');
             fill.style.width = '0%'; 
-            fill.style.transition = 'width 0.1s linear'; // Menghilangkan delay transisi agar progress tidak bergetar/jitter
+            fill.style.transition = 'width 0.1s linear';
             speedEl.innerHTML = '<i class="fa-solid fa-bolt" style="color:#F59E0B; margin-right:4px;"></i> Menghubungkan...';
             textEl.innerText = '0% (0.0 MB / -- MB)';
             titleEl.innerText = resolvedFileName;
             statusIcon.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin" style="color:var(--accent-color);"></i>';
             
-            // RUTE PROXY LOKAL UTAMA /api/ytdl (Anti-CORS & Mendukung Nama Premium)
             const mainProxyUrl = `/api/ytdl?targetUrl=${encodeURIComponent(resolvedMediaUrl)}&filename=${encodeURIComponent(resolvedFileName)}`;
-            
-            const fetchUrl = mainProxyUrl; // Mengalirkan unduhan melalui proxy agar XHR client-side berhasil tanpa CORS Block
-            // Sertakan Cache-Buster dinamis untuk mengabaikan cache lokal/CDN dan memaksa download jaringan asli
+            const fetchUrl = mainProxyUrl;
             const finalUrl = `${fetchUrl}${fetchUrl.includes('?') ? '&' : '?'}_cb=${Date.now()}`;
             
-            // Gunakan Cloudflare worker sebagai fallback cadangan jika rute lokal mengalami kendala
-            const CLOUDFLARE_WORKER_PROXY = "https://kreaverse-proxy.kreaverse-ai.workers.dev";
-            const fallbackProxyUrl = `${CLOUDFLARE_WORKER_PROXY}/?targetUrl=${encodeURIComponent(resolvedMediaUrl)}&filename=${encodeURIComponent(resolvedFileName)}&_cb=${Date.now()}`;
+            downloadState = {
+                chunks: [],
+                bytesLoaded: 0,
+                totalBytes: 0,
+                isPaused: false,
+                reader: null,
+                startTime: Date.now(),
+                url: finalUrl
+            };
 
-            let startTime = Date.now();
-
-            // Parser ukuran total berkas secara real-time dari hasil pemindaian asli
-            let totalBytesFallback = 0;
-            if (resolvedFileSizeString) {
-                const sizeStr = resolvedFileSizeString.toLowerCase().trim();
-                const num = parseFloat(sizeStr);
-                if (!isNaN(num)) {
-                    if (sizeStr.includes('gb') || sizeStr.includes('g')) {
-                        totalBytesFallback = num * 1024 * 1024 * 1024;
-                    } else if (sizeStr.includes('mb') || sizeStr.includes('m')) {
-                        totalBytesFallback = num * 1024 * 1024;
-                    } else if (sizeStr.includes('kb') || sizeStr.includes('k')) {
-                        totalBytesFallback = num * 1024;
-                    } else {
-                        totalBytesFallback = num;
-                    }
-                }
-            }
-
-            function startXhrDownload(url, isFallback = false) {
-                const xhr = new XMLHttpRequest();
-                activeXhr = xhr; // Simpan xhr aktif untuk pembatalan
-                document.getElementById('cancel-download-btn').style.display = 'block'; // Tampilkan tombol Batal
-                
-                xhr.open('GET', url, true);
-                xhr.responseType = 'blob';
-
-                xhr.onprogress = (event) => {
-                    let total = event.total;
-                    let lengthComputable = event.lengthComputable;
-                    
-                    if (!lengthComputable || total === 0) {
-                        if (totalBytesFallback > 0) {
-                            total = totalBytesFallback;
-                            lengthComputable = true;
-                        }
-                    }
-
-                    if (lengthComputable && total > 0) {
-                        const loaded = event.loaded;
-                        const percent = Math.min(100, Math.round((loaded / total) * 100));
-                        
-                        fill.style.width = percent + '%';
-                        
-                        const elapsed = (Date.now() - startTime) / 1000;
-                        const speed = elapsed > 0 ? loaded / elapsed : 0;
-                        const speedMB = (speed / (1024 * 1024)).toFixed(1);
-                        const loadedMB = (loaded / (1024 * 1024)).toFixed(1);
-                        const totalMB = (total / (1024 * 1024)).toFixed(1);
-                        
-                        speedEl.innerHTML = `<i class="fa-solid fa-bolt" style="color:#F59E0B; margin-right:4px;"></i> ${speedMB} MB/s`;
-                        textEl.innerText = `${percent}% (${loadedMB} MB / ${totalMB} MB)`;
-                    } else {
-                        const loaded = event.loaded;
-                        const loadedMB = (loaded / (1024 * 1024)).toFixed(1);
-                        const elapsed = (Date.now() - startTime) / 1000;
-                        const speed = elapsed > 0 ? loaded / elapsed : 0;
-                        const speedMB = (speed / (1024 * 1024)).toFixed(1);
-                        
-                        fill.style.width = '70%'; 
-                        speedEl.innerHTML = `<i class="fa-solid fa-bolt" style="color:#F59E0B; margin-right:4px;"></i> ${speedMB} MB/s`;
-                        textEl.innerText = `Mengunduh... (${loadedMB} MB)`;
-                    }
-                };
-
-                xhr.onload = () => {
-                    document.getElementById('cancel-download-btn').style.display = 'none'; // Sembunyikan tombol Batal
-                    activeXhr = null;
-                    
-                    if (xhr.status === 200) {
-                        const blob = xhr.response;
-                        
-                        let mimeType = 'application/octet-stream';
-                        const extLower = (resolvedFileExt || '').toLowerCase();
-                        if (extLower === 'mp3') mimeType = 'audio/mpeg';
-                        else if (extLower === 'mp4') mimeType = 'video/mp4';
-                        else if (extLower === 'm4a') mimeType = 'audio/mp4';
-                        else if (extLower === 'webm') mimeType = 'video/webm';
-                        else if (extLower === 'jpg' || extLower === 'jpeg') mimeType = 'image/jpeg';
-                        else if (extLower === 'png') mimeType = 'image/png';
-
-                        const cleanBlob = new Blob([blob], { type: mimeType });
-                        
-                        if (window.activeObjectUrl) {
-                            URL.revokeObjectURL(window.activeObjectUrl);
-                        }
-                        
-                        const objUrl = URL.createObjectURL(cleanBlob);
-                        window.activeObjectUrl = objUrl;
-                        
-                        const a = document.createElement('a');
-                        a.href = objUrl; 
-                        a.download = resolvedFileName;
-                        a.target = '_blank';
-                        document.body.appendChild(a); 
-                        a.click(); 
-                        document.body.removeChild(a);
-
-                        fill.style.width = '100%';
-                        speedEl.innerHTML = '<i class="fa-solid fa-check" style="color:var(--success-color); margin-right:4px;"></i> Selesai';
-                        textEl.innerText = '100% Berhasil Disimpan';
-                        statusIcon.innerHTML = '<i class="fa-solid fa-circle-check" style="color:var(--success-color);"></i>';
-                        
-                        // Selesai progress bar tetap berada di layar (tidak hilang otomatis sampai cari link baru)
-                        showIphoneNotif('Unduhan Selesai', 'File telah sukses tersimpan di HP Anda.', 'fa-server');
-                    } else {
-                        if (!isFallback) {
-                            console.warn("Main proxy returned non-200 status, trying fallback proxy...");
-                            startXhrDownload(fallbackProxyUrl, true);
-                        } else {
-                            handleDownloadError();
-                        }
-                    }
-                };
-
-                xhr.onerror = () => {
-                    document.getElementById('cancel-download-btn').style.display = 'none'; // Sembunyikan tombol Batal
-                    activeXhr = null;
-                    
-                    if (!isFallback) {
-                        console.warn("Main proxy request failed, trying fallback proxy...");
-                        startXhrDownload(fallbackProxyUrl, true);
-                    } else {
-                        handleDownloadError();
-                    }
-                };
-
-                xhr.send();
-            }
-
-            function handleDownloadError() {
-                speedEl.innerText = 'Beralih ke rute alternatif...';
-                setTimeout(() => {
-                    container.style.display = 'none';
-                    container.classList.remove('active');
-                    window.location.href = mainProxyUrl; 
-                }, 1500);
-            }
-
-            // Memulai download lewat jalur tercepat secara nyata
-            startXhrDownload(finalUrl, false);
+            performStreamDownload();
         });
 
         document.addEventListener('keydown', (e) => {
@@ -2291,29 +2307,42 @@
 
         document.getElementById('reset-btn').addEventListener('click', () => { urlInput.value = ""; urlInput.dispatchEvent(new Event('input')); resetUI(); urlInput.focus(); });
 
-        // Auto-ping cerdas (15s) otomatis dijeda di latar belakang saat tab tidak aktif
         setInterval(() => { if (!document.hidden && typeof window.pingSemuaServer === 'function') window.pingSemuaServer(); }, 15000);
         setTimeout(() => { if (typeof window.pingSemuaServer === 'function') window.pingSemuaServer(); }, 1500);
         document.addEventListener('visibilitychange', () => { if (!document.hidden && typeof window.pingSemuaServer === 'function') window.pingSemuaServer(); });
 
-        // SISTEM BATAL & LANJUTKAN DOWNLOAD (100% NYATA)
+        // SISTEM BATAL & LANJUTKAN DOWNLOAD (100% NYATA DENGAN RANGE RESUME)
         const cancelBtn = document.getElementById('cancel-download-btn');
         cancelBtn.addEventListener('click', () => {
-            if (activeXhr) {
-                activeXhr.abort();
-                activeXhr = null;
+            const statusIcon = document.getElementById('real-download-status-icon');
+            if (downloadState.reader && !downloadState.isPaused) {
+                downloadState.isPaused = true;
                 cancelBtn.innerText = "Lanjut";
                 cancelBtn.style.background = "#d1fae5";
                 cancelBtn.style.color = "#10b981";
                 cancelBtn.style.borderColor = "#a7f3d0";
                 document.getElementById('real-download-speed').innerHTML = '<i class="fa-solid fa-pause" style="color: #6B7280; margin-right: 4px;"></i> Dihentikan';
+                statusIcon.innerHTML = '<i class="fa-solid fa-pause" style="color: #6b7280;"></i>';
             } else if (cancelBtn.innerText === "Lanjut") {
                 cancelBtn.innerText = "Batal";
                 cancelBtn.style.background = "#fee2e2";
                 cancelBtn.style.color = "#ef4444";
                 cancelBtn.style.borderColor = "#fca5a5";
-                document.getElementById('real-download-btn').click();
+                performStreamDownload();
             }
+        });
+
+        // SISTEM MANUAL HAPUS STATUS DOWNLOAD
+        const clearBtn = document.getElementById('clear-download-btn');
+        clearBtn.addEventListener('click', () => {
+            if (downloadState.reader) {
+                downloadState.isPaused = true;
+                downloadState.reader.cancel().catch(e => {});
+            }
+            downloadState = { chunks: [], bytesLoaded: 0, totalBytes: 0, isPaused: false, reader: null, startTime: 0, url: "" };
+            const container = document.getElementById('real-download-progress-container');
+            container.style.display = 'none';
+            container.classList.remove('active');
         });
 
         // SISTEM SAKLAR SUARA ON/OFF (100% NYATA)
