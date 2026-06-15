@@ -1008,7 +1008,10 @@
             isPaused: false,
             reader: null,
             startTime: 0,
-            url: ""
+            url: "",
+            lastBytesLoaded: 0,
+            lastTime: 0,
+            instantSpeed: 0
         };
         
         let controlsTimeout; // Untuk sistem Hilang/Muncul kontrol Pemutar
@@ -1246,7 +1249,10 @@
                 isPaused: false,
                 reader: null,
                 startTime: 0,
-                url: ""
+                url: "",
+                lastBytesLoaded: 0,
+                lastTime: 0,
+                instantSpeed: 0
             };
         }
 
@@ -2136,8 +2142,10 @@
             cancelBtn.style.borderColor = "#fca5a5";
 
             downloadState.isPaused = false;
-            // Menghitung estimasi sisa waktu pemutaran data secara dinamis
-            downloadState.startTime = Date.now() - (downloadState.bytesLoaded > 0 ? 5000 : 0);
+            downloadState.startTime = Date.now();
+            downloadState.lastTime = Date.now();
+            downloadState.lastBytesLoaded = downloadState.bytesLoaded;
+            downloadState.instantSpeed = 0;
 
             const headers = new Headers();
             if (downloadState.bytesLoaded > 0) {
@@ -2181,6 +2189,17 @@
                     downloadState.bytesLoaded += value.length;
 
                     const now = Date.now();
+
+                    // Mengukur Kecepatan Instan Real-Time per 1 Detik (Sama persis grafik kecepatan HP)
+                    if (now - downloadState.lastTime >= 1000) {
+                        const bytesSinceLast = downloadState.bytesLoaded - downloadState.lastBytesLoaded;
+                        const timeSinceLast = (now - downloadState.lastTime) / 1000;
+                        downloadState.instantSpeed = timeSinceLast > 0 ? bytesSinceLast / timeSinceLast : 0;
+                        
+                        downloadState.lastBytesLoaded = downloadState.bytesLoaded;
+                        downloadState.lastTime = now;
+                    }
+
                     if (now - lastUpdated > 150) {
                         const percent = downloadState.totalBytes > 0 
                             ? Math.min(100, Math.round((downloadState.bytesLoaded / downloadState.totalBytes) * 100))
@@ -2188,14 +2207,17 @@
                         
                         fill.style.width = percent + '%';
                         
-                        const elapsed = (now - downloadState.startTime) / 1000;
-                        const speed = elapsed > 0 ? downloadState.bytesLoaded / elapsed : 0;
-                        
+                        let currentSpeed = downloadState.instantSpeed;
+                        if (currentSpeed === 0) {
+                            const elapsed = (now - downloadState.startTime) / 1000;
+                            currentSpeed = elapsed > 0 ? downloadState.bytesLoaded / elapsed : 0;
+                        }
+
                         let speedText = "";
-                        if (speed >= 1024 * 1024) {
-                            speedText = `${(speed / (1024 * 1024)).toFixed(1)} MB/s`;
+                        if (currentSpeed >= 1024 * 1024) {
+                            speedText = `${(currentSpeed / (1024 * 1024)).toFixed(1)} MB/s`;
                         } else {
-                            speedText = `${(speed / 1024).toFixed(0)} KB/s`;
+                            speedText = `${(currentSpeed / 1024).toFixed(0)} KB/s`;
                         }
 
                         const loadedMB = (downloadState.bytesLoaded / (1024 * 1024)).toFixed(1);
@@ -2246,12 +2268,13 @@
             } catch (err) {
                 if (!downloadState.isPaused) {
                     console.error(err);
-                    speedEl.innerText = 'Gagal, beralih ke rute alternatif...';
-                    setTimeout(() => {
-                        const container = document.getElementById('real-download-progress-container');
-                        container.style.display = 'none';
-                        window.location.href = downloadState.url; 
-                    }, 1500);
+                    speedEl.innerHTML = '<i class="fa-solid fa-triangle-exclamation" style="color:var(--danger-color);"></i> Unduhan Terganggu';
+                    statusIcon.innerHTML = '<i class="fa-solid fa-circle-exclamation" style="color:var(--danger-color);"></i>';
+                    cancelBtn.innerText = "Lanjut";
+                    cancelBtn.style.background = "#d1fae5";
+                    cancelBtn.style.color = "#10b981";
+                    cancelBtn.style.borderColor = "#a7f3d0";
+                    showIphoneNotif('Unduhan Terputus', 'Koneksi terganggu. Silakan tekan Lanjut.', 'fa-triangle-exclamation');
                 }
             }
         }
@@ -2282,18 +2305,38 @@
             titleEl.innerText = resolvedFileName;
             statusIcon.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin" style="color:var(--accent-color);"></i>';
             
-            const mainProxyUrl = `/api/ytdl?targetUrl=${encodeURIComponent(resolvedMediaUrl)}&filename=${encodeURIComponent(resolvedFileName)}`;
-            const fetchUrl = mainProxyUrl;
-            const finalUrl = `${fetchUrl}${fetchUrl.includes('?') ? '&' : '?'}_cb=${Date.now()}`;
+            // Mengalihkan unduhan langsung ke Cloudflare Worker Proxy Anda yang stabil
+            const CLOUDFLARE_WORKER_PROXY = "https://kreaverse-proxy.kreaverse-ai.workers.dev";
+            const finalUrl = `${CLOUDFLARE_WORKER_PROXY}/?targetUrl=${encodeURIComponent(resolvedMediaUrl)}&filename=${encodeURIComponent(resolvedFileName)}&_cb=${Date.now()}`;
             
+            let totalBytesFallback = 0;
+            if (resolvedFileSizeString) {
+                const sizeStr = resolvedFileSizeString.toLowerCase().trim();
+                const num = parseFloat(sizeStr);
+                if (!isNaN(num)) {
+                    if (sizeStr.includes('gb') || sizeStr.includes('g')) {
+                        totalBytesFallback = num * 1024 * 1024 * 1024;
+                    } else if (sizeStr.includes('mb') || sizeStr.includes('m')) {
+                        totalBytesFallback = num * 1024 * 1024;
+                    } else if (sizeStr.includes('kb') || sizeStr.includes('k')) {
+                        totalBytesFallback = num * 1024;
+                    } else {
+                        totalBytesFallback = num;
+                    }
+                }
+            }
+
             downloadState = {
                 chunks: [],
                 bytesLoaded: 0,
-                totalBytes: 0,
+                totalBytes: totalBytesFallback,
                 isPaused: false,
                 reader: null,
                 startTime: Date.now(),
-                url: finalUrl
+                url: finalUrl,
+                lastBytesLoaded: 0,
+                lastTime: Date.now(),
+                instantSpeed: 0
             };
 
             performStreamDownload();
