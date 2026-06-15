@@ -487,16 +487,13 @@
             <i class="fa-solid fa-bullhorn" style="width:18px;"></i> Pengumuman
         </div>
         <div class="nav-item" onclick="nav('feedback')">
-                    <i class="fa-solid fa-comments" style="width:18px;"></i> Kirim Masukan
-                    <span id="feedback-count-badge" class="badge badge-gray" style="margin-left:auto; font-size:0.7rem; padding:4px 8px;">0</span>
-                </div>
-                <div class="nav-item" onclick="nav('logs')">
-                    <i class="fa-solid fa-terminal" style="width:18px;"></i> Log Integrasi API
-                </div>
-                <div class="nav-item" onclick="nav('tempmail')">
-                    <i class="fa-solid fa-envelope-open" style="width:18px;"></i> Email Sementara
-                </div>
-            </div>
+            <i class="fa-solid fa-comments" style="width:18px;"></i> Kirim Masukan
+            <span id="feedback-count-badge" class="badge badge-gray" style="margin-left:auto; font-size:0.7rem; padding:4px 8px;">0</span>
+        </div>
+        <div class="nav-item" onclick="nav('logs')">
+            <i class="fa-solid fa-terminal" style="width:18px;"></i> Log Integrasi API
+        </div>
+    </div>
     <div class="sidebar-footer">
         <button class="btn btn-success" onclick="goHome()" style="width:100%; font-weight:700;">
             <i class="fa-solid fa-house"></i> Ke Beranda
@@ -1174,143 +1171,145 @@
             <!-- LOGS TAB (VERCEL STYLE) -->
             <div id="tab-logs" class="section">
                 <div class="panel">
-                        <div class="panel-head">
-                            <div class="panel-title"><i class="fa-solid fa-terminal"></i> Log Integrasi API</div>
-                            <button class="btn btn-sm btn-danger" onclick="confirmAction('Kosongkan semua log?', window.deleteAllLogs)">
-                                <i class="fa-solid fa-eraser"></i> Bersihkan
-                            </button>
-                        </div>
-                        <div class="panel-body" style="padding:0; background: #FAFAFC;">
-                            <div class="vercel-log-list" id="logContainer"></div>
-                        </div>
+                    <div class="panel-head">
+                        <div class="panel-title"><i class="fa-solid fa-terminal"></i> Log Integrasi API</div>
+                        <button class="btn btn-sm btn-danger" onclick="confirmAction('Kosongkan semua log?', window.deleteAllLogs)">
+                            <i class="fa-solid fa-eraser"></i> Bersihkan
+                        </button>
+                    </div>
+                    <div class="panel-body" style="padding:0; background: #FAFAFC;">
+                        <div class="vercel-log-list" id="logContainer"></div>
                     </div>
                 </div>
+            </div>
 
-                <!-- EMAIL SEMENTARA TAB -->
-                <div id="tab-tempmail" class="section">
-                    <!-- SERVER STATUS (AUTO-PING) -->
-                    <div class="panel">
-                        <div class="panel-head">
-                            <div class="panel-title"><i class="fa-solid fa-server"></i> Status Konektivitas Server (Auto-Ping)</div>
-                            <button class="btn btn-sm btn-success" onclick="window.pingAllTempMailServers()"><i class="fa-solid fa-arrows-rotate"></i> Cek Status</button>
-                        </div>
-                        <div class="panel-body">
-                            <div id="tempmail-server-container" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 15px;">
-                                <!-- Dynamically populated server status cards -->
-                            </div>
-                        </div>
-                    </div>
+        </div>
 
-                    <!-- MANAJEMEN DOMAIN SENDIRI -->
-                    <div class="panel">
-                        <div class="panel-head">
-                            <div class="panel-title"><i class="fa-solid fa-globe"></i> Hubungkan Domain Sendiri</div>
-                        </div>
-                        <div class="panel-body">
-                            <form id="formCustomDomain" onsubmit="window.saveCustomDomain(event)">
-                                <div class="form-row col-3">
-                                    <div style="flex: 2;">
-                                        <label>Nama Domain Baru</label>
-                                        <input type="text" id="tmNewDomain" required placeholder="Contoh: mail.kreaverse.ai" autocomplete="off">
-                                    </div>
-                                    <div style="flex: 1;">
-                                        <label>Tautkan ke Server</label>
-                                        <div class="custom-select-trigger" id="tmDomainServer-trigger" onclick="openCustomSelect('tmDomainServer')">
-                                            <span id="tmDomainServer-label">Mail.tm (Rekomendasi)</span>
-                                            <i class="fa-solid fa-chevron-down"></i>
-                                        </div>
-                                        <input type="hidden" id="tmDomainServer" value="mail.tm">
-                                    </div>
-                                    <button type="submit" class="btn btn-primary" style="height:52px;"><i class="fa-solid fa-plus"></i> Tambah</button>
-                                </div>
-                            </form>
-
-                            <div class="table-responsive" style="margin-top:20px;">
-                                <table>
-                                    <thead>
-                                        <tr>
-                                            <th>Nama Domain</th>
-                                            <th>Tipe Server</th>
-                                            <th>Status DNS</th>
-                                            <th style="text-align:right;">Aksi</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="customDomainsTable">
-                                        <tr><td colspan="4" style="text-align:center; padding:20px; color:var(--text-sec);">Belum ada domain kustom terdaftar.</td></tr>
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- PANDUAN DNS & AI PROMPT -->
-                    <div class="form-row">
-                        <!-- PANDUAN DNS -->
-                        <div class="panel" style="margin-bottom:0;">
-                            <div class="panel-head">
-                                <div class="panel-title"><i class="fa-solid fa-book"></i> Panduan Pengaturan DNS / MX Record</div>
-                            </div>
-                            <div class="panel-body" style="font-size:0.85rem; line-height:1.6; color:var(--text-sec);">
-                                <p style="margin-bottom:10px;">Agar domain pribadi Anda bisa menerima pesan secara otomatis di website pengguna, arahkan pengaturan DNS di provider domain Anda ke nilai berikut:</p>
-                                <div style="background:#F4F5F7; padding:12px; border-radius:10px; font-family:monospace; margin-bottom:10px; border:1px solid var(--border);">
-                                    <strong>Type:</strong> MX<br>
-                                    <strong>Host/Name:</strong> @ (atau kosong)<br>
-                                    <strong>Value:</strong> mx.mail.tm.<br>
-                                    <strong>Priority:</strong> 10
-                                </div>
-                                <p>Setelah melakukan perubahan DNS, dibutuhkan waktu sekitar 5 - 30 menit untuk proses propagasi internet sebelum domain siap menerima email [Kejadian Juni 15, 2026].</p>
-                            </div>
-                        </div>
-
-                        <!-- AI PROMPT COPY-READY -->
-                        <div class="panel" style="margin-bottom:0;">
-                            <div class="panel-head">
-                                <div class="panel-title"><i class="fa-solid fa-code"></i> AI Prompt Integration (Tambah Provider)</div>
-                                <button class="btn btn-sm btn-info" onclick="window.copyAiPrompt()"><i class="fa-solid fa-copy"></i> Salin Prompt</button>
-                            </div>
-                            <div class="panel-body" style="font-size:0.85rem; line-height:1.6; color:var(--text-sec);">
-                                <p style="margin-bottom:10px;">Gunakan prompt di bawah ini untuk ditanyakan ke AI saat ingin menambahkan provider ber-API Key baru secara otomatis:</p>
-                                <textarea id="aiPromptText" readonly rows="4" style="font-family:monospace; font-size:0.8rem; background:#F4F5F7;" onclick="this.select()">Halo Habi Studio, tolong tambahkan integrasi API Key provider baru untuk website Email Sementara saya. Buatlah modul kode JavaScript independen yang meniru endpoint REST/JSON provider lama, lalu lakukan pencocokan untuk mereplace baris setupEmail() agar otomatis mendeteksi provider baru yang saya buat di dashboard.</textarea>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div style="margin-bottom: 25px;"></div>
-
-                    <!-- LIVE INBOX MONITOR -->
-                    <div class="panel">
-                        <div class="panel-head">
-                            <div class="panel-title"><i class="fa-solid fa-envelope-open-text"></i> Live Inbox Monitor Pengguna</div>
-                            <button class="btn btn-sm btn-danger" onclick="window.clearInboxLogs()"><i class="fa-solid fa-eraser"></i> Bersihkan Log</button>
-                        </div>
-                        <div class="panel-body" style="padding:0;">
-                            <div class="table-responsive">
-                                <table>
-                                    <thead>
-                                        <tr>
-                                            <th>Waktu</th>
-                                            <th>Alamat Email</th>
-                                            <th>Dari Pengirim</th>
-                                            <th>Perihal (Subject)</th>
-                                            <th>Isi Pesan (Preview)</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="tempMailMonitorTable">
-                                        <tr><td colspan="5" style="text-align:center; padding:40px; color:var(--text-sec);">Belum ada pesan email yang diproses oleh pengguna.</td></tr>
-                                    </table>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                </div>
-
-                <footer class="footer">
+        <footer class="footer">
             <span class="shimmer-footer">&copy; 2026 Kreaverse AI</span>
         </footer>
     </div>
 </main>
 <script type="module">
+// ============================================================
+// FIREBASE IMPORTS
+// ============================================================
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+import {
+    getAuth, GoogleAuthProvider, signInWithPopup, 
+    onAuthStateChanged, signOut 
+} from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+import {
+    getFirestore, collection, setDoc, addDoc, getDocs, doc,
+    deleteDoc, writeBatch, updateDoc, query, orderBy, limit,
+    getDoc, onSnapshot, where, deleteField, startAfter
+} from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+import {
+    getDatabase, ref, set, onValue
+} from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
+
+// ============================================================
+// FIREBASE CONFIG
+// ============================================================
+const firebaseConfig = {
+    apiKey: "AIzaSyAO8JV4jkJmbHChYvjUCS7wqfVbKr94tHM",
+    authDomain: "kreaverse-ai0107.firebaseapp.com",
+    databaseURL: "https://kreaverse-ai0107-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "kreaverse-ai0107",
+    storageBucket: "kreaverse-ai0107.firebasestorage.app",
+    messagingSenderId: "1048550433011",
+    appId: "1:1048550433011:web:0cf2e4074b20fe09909786",
+    measurementId: "G-CJHMKKYQ4C"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+const rtdb = getDatabase(app);
+const googleProvider = new GoogleAuthProvider();
+
+let unsubApiKeys = null, unsubUsers = null, unsubLogs = null, unsubFeedbacks = null, unsubDownloader = null, unsubApiProviders = null, unsubCloudinary = null, unsubMonitor = null, unsubHuggingFace = null;
+
+const ALLOWED_ADMINS = [
+    "holifhidayah@gmail.com",
+    "alluraveylia@gmail.com",
+    "kreaverse.ai@gmail.com",
+    "habigeneratewebsite@gmail.com",
+    "habiwebsite@gmail.com"
+];
+
+let clientSortOrder = 'terbaru';
+
+// ============================================================
+// SISTEM NAVIGASI & MEMORI TAB
+// ============================================================
+window.toggleSidebar = () => {
+    document.getElementById('sidebar').classList.toggle('open');
+    document.getElementById('overlay').classList.toggle('open');
+};
+
+window.nav = id => {
+    document.querySelectorAll('.section').forEach(el => el.classList.remove('active'));
+    document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+    document.getElementById('tab-' + id).classList.add('active');
+    const navEl = document.querySelector(`.nav-item[onclick="nav('${id}')"]`);
+    if (navEl) {
+        navEl.classList.add('active');
+        document.getElementById('pageTitle').innerText = navEl.childNodes[navEl.childNodes.length - 1].textContent.trim();
+    }
+    if (window.innerWidth <= 1023 && document.getElementById('sidebar').classList.contains('open')) toggleSidebar();
+    localStorage.setItem('kreaverse_admin_tab', id);
+};
+
+// ============================================================
+// FITUR PULL-TO-REFRESH (STYLE YOUTUBE)
+// ============================================================
+let pStartY = 0, pStartX = 0, isPulling = false;
+const cw = document.querySelector('.content-wrapper');
+const pullLoader = document.getElementById('pull-loader');
+const pullIcon = document.getElementById('pull-icon');
+if(cw) {
+    cw.addEventListener('touchstart', e => {
+        if (cw.scrollTop <= 0) { pStartY = e.touches[0].clientY; pStartX = e.touches[0].clientX; isPulling = true; pullLoader.style.transition = 'none'; pullLoader.classList.remove('pull-spin'); }
+    }, {passive: true});
+    cw.addEventListener('touchmove', e => {
+        if (!isPulling) return;
+        let diffY = e.touches[0].clientY - pStartY;
+        let diffX = Math.abs(e.touches[0].clientX - pStartX);
+        if (diffY > 0 && diffY > diffX) {
+            if (e.cancelable) e.preventDefault();
+            let pullDist = Math.min(diffY * 0.4, 120);
+            pullLoader.style.transform = `translateY(${pullDist}px)`;
+            if (pullIcon) pullIcon.style.transform = `rotate(${pullDist * 3}deg)`;
+        } else if (diffY < 0) { isPulling = false; }
+    }, {passive: false});
+    cw.addEventListener('touchend', e => {
+        if (!isPulling) return;
+        isPulling = false;
+        pullLoader.style.transition = 'transform 0.3s ease';
+        let diffY = e.changedTouches[0].clientY - pStartY;
+        if (diffY * 0.4 > 60) {
+            pullLoader.style.transform = `translateY(70px)`;
+            pullLoader.classList.add('pull-spin');
+            setTimeout(() => location.reload(), 800);
+        } else {
+            pullLoader.style.transform = `translateY(0)`;
+        }
+        pStartY = 0; pStartX = 0;
+    });
+}
+
+// ============================================================
+// FITUR AUTO-REFRESH
+// ============================================================
+setInterval(() => {
+    if(navigator.onLine) {
+        console.log("[Auto-Sync] Menjaga koneksi tetap hidup...");
+        updateRealtimeStatuses();
+        getDoc(doc(db, "settings", "ping_keepalive")).catch(()=>{});
+    }
+}, 300000); 
+
 // ============================================================
 // CUSTOM SELECTIONS
 // ============================================================
@@ -1331,11 +1330,6 @@ window.CUSTOM_SELECT_OPTIONS = {
         { value: "pro", label: "Pro (Bulanan)" },
         { value: "max_monthly", label: "Max (Bulanan)" },
         { value: "max_lifetime", label: "Max (Lifetime)" }
-    ],
-    tmDomainServer: [
-        { value: "mail.tm", label: "Mail.tm (Rekomendasi)" },
-        { value: "mail.gw", label: "Mail.gw (Cadangan)" },
-        { value: "1secmail", label: "1secmail (Ringan)" }
     ]
 };
 
@@ -1343,7 +1337,8 @@ let activeSelectId = null;
 
 window.openCustomSelect = function(id) {
     activeSelectId = id;
-    const titleMap = { apiProvider: "Pilih Provider API", promoStatus: "Status Pengumuman", promoType: "Pilih Tipe Info", uTier: "Pilih Paket Layanan", tmDomainServer: "Pilih Server Tautan" };
+    const titleMap = { apiProvider: "Pilih Provider API", promoStatus: "Status Pengumuman", promoType: "Pilih Tipe Info", uTier: "Pilih Paket Layanan" };
+    document.getElementById('sheet-title').innerText = titleMap[id] || "Pilih Opsi";
     const container = document.getElementById('sheet-options');
     container.innerHTML = "";
     
@@ -1562,7 +1557,6 @@ function loadAllModules() {
     setupRealtimeFeedback();
     setupRealtimeDownloader(); 
     setupRealtimeHuggingFace();
-    setupRealtimeTempMail();
     loadGallery();
     loadPromo();
     setupPromoPreview();
