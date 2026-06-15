@@ -418,6 +418,12 @@
             text-transform: uppercase;
         }
 
+        /* Premium Styled Select Dropdown (Hapus style kaku bawaan browser) */
+        .select-wrapper {
+            position: relative;
+            width: 100%;
+        }
+
         .form-control {
             width: 100%;
             padding: 14px 16px;
@@ -429,6 +435,14 @@
             font-size: 0.95rem;
             font-weight: 500;
             outline: none;
+            appearance: none;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2364748B' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 16px center;
+            background-size: 16px;
+            padding-right: 42px;
         }
 
         .form-control:focus {
@@ -487,18 +501,23 @@
             position: relative;
         }
 
-        /* Inbox Badge Counter */
+        /* Inbox Badge Counter (Gambar 3) - Desain Lencana Merah */
         .nav-badge {
             position: absolute;
-            top: -4px;
-            right: -8px;
-            background-color: #EF4444;
+            top: -6px;
+            right: -10px;
+            background-color: #EF4444; /* Merah Menyala */
             color: white;
-            font-size: 0.65rem;
-            padding: 2px 6px;
-            border-radius: 10px;
+            font-size: 0.7rem;
             font-weight: 700;
+            min-width: 18px;
+            height: 18px;
+            border-radius: 50%;
             display: none;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid var(--surface-color);
+            box-shadow: 0 2px 4px rgba(239, 68, 68, 0.3);
         }
 
         /* ==========================================
@@ -774,6 +793,13 @@
             let serviceWorkerReg = null;
             let pollInterval = null;
 
+            // List domain cadangan 1secmail jika pemanggilan API terkena CORS blokir
+            const fallback1SecMailDomains = [
+                '1secmail.com', '1secmail.org', '1secmail.net', 
+                'wwjmp.com', 'boxim.online', 'boun.cr', 
+                'iksby.com', 'khp7.com', 'wuuvo.com', 'vju9.com'
+            ];
+
             // --- 1. Pengaturan Dark & Light Mode ---
             const themeIcon = themeToggle.querySelector('i');
             const savedTheme = localStorage.getItem('theme') || 'light';
@@ -825,7 +851,35 @@
                 }
             }
 
-            // --- 4. Memuat Domain Dinamis Berdasarkan Provider Terpilih ---
+            // --- 4. Membuat Nada Pemberitahuan Premium (Synthesizer Chime) ---
+            const playChime = () => {
+                try {
+                    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                    if (!audioContext) return;
+
+                    const playBeep = (freq, duration, delay) => {
+                        setTimeout(() => {
+                            const osc = audioContext.createOscillator();
+                            const gain = audioContext.createGain();
+                            osc.connect(gain);
+                            gain.connect(audioContext.destination);
+                            osc.type = 'sine';
+                            osc.frequency.setValueAtTime(freq, audioContext.currentTime);
+                            gain.gain.setValueAtTime(0.08, audioContext.currentTime);
+                            osc.start();
+                            gain.gain.exponentialRampToValueAtTime(0.0001, audioContext.currentTime + duration);
+                            osc.stop(audioContext.currentTime + duration);
+                        }, delay);
+                    };
+
+                    playBeep(587.33, 0.15, 0);   // Nada D5
+                    playBeep(880.00, 0.25, 120); // Nada A5
+                } catch (e) {
+                    console.log('Audio tidak diizinkan oleh kebijakan browser.');
+                }
+            };
+
+            // --- 5. Memuat Domain Dinamis Berdasarkan Provider Terpilih ---
             async function loadDomainsForProvider(provider) {
                 domainSelect.innerHTML = '<option>Memuat daftar domain...</option>';
                 try {
@@ -836,8 +890,14 @@
                         const domainData = await domainRes.json();
                         domains = domainData['hydra:member'].map(d => d.domain);
                     } else if (provider === '1secmail') {
-                        const domainRes = await fetch('https://www.1secmail.com/api/v1/?action=getDomainList');
-                        domains = await domainRes.json();
+                        try {
+                            const domainRes = await fetch('https://www.1secmail.com/api/v1/?action=getDomainList');
+                            if (!domainRes.ok) throw new Error('CORS or Network Error');
+                            domains = await domainRes.json();
+                        } catch (corsErr) {
+                            console.warn("CORS Error di 1secmail, memuat domain cadangan...");
+                            domains = fallback1SecMailDomains;
+                        }
                     }
                     
                     domainSelect.innerHTML = '';
@@ -853,8 +913,32 @@
                 }
             }
 
-            // --- 5. Setup Akun Email (Mendukung Multi-Provider & Kustomisasi) ---
+            // --- 6. Setup Akun Email (Mendukung Multi-Provider, Kustomisasi, & Persistence) ---
             async function setupEmail(customUser = null, customDom = null) {
+                // Gunakan sesi tersimpan jika ada (Mencegah layar "menghubungkan" selama 2 menit setiap reload)
+                const savedProvider = localStorage.getItem('temp_email_provider');
+                const savedEmail = localStorage.getItem('temp_email_address');
+                const savedToken = localStorage.getItem('temp_email_token');
+                const savedAccountId = localStorage.getItem('temp_email_account_id');
+                const savedUsername = localStorage.getItem('temp_email_username');
+                const savedDomain = localStorage.getItem('temp_email_domain');
+
+                if (!customUser && savedEmail && savedProvider === currentProvider) {
+                    currentEmail = savedEmail;
+                    currentToken = savedToken || '';
+                    currentAccountId = savedAccountId || '';
+                    currentUsername = savedUsername || '';
+                    currentDomain = savedDomain || '';
+                    
+                    emailAddressInput.value = currentEmail;
+                    displayEmailText.textContent = currentEmail;
+                    inboxEmailSub.textContent = currentEmail;
+
+                    fetchMessages();
+                    pollInterval = setInterval(fetchMessages, 5000); // Polling instan setiap 5 detik
+                    return;
+                }
+
                 displayEmailText.textContent = 'Menghubungkan...';
                 inboxEmailSub.textContent = 'Menghubungkan...';
                 
@@ -916,11 +1000,15 @@
                         currentToken = tokenData.token;
                         currentEmail = address;
 
+                        // Simpan Sesi
+                        localStorage.setItem('temp_email_provider', currentProvider);
+                        localStorage.setItem('temp_email_address', currentEmail);
+                        localStorage.setItem('temp_email_token', currentToken);
+                        localStorage.setItem('temp_email_account_id', currentAccountId);
+
                     } else if (currentProvider === '1secmail') {
                         if (!finalDomain) {
-                            const domainRes = await fetch('https://www.1secmail.com/api/v1/?action=getDomainList');
-                            const domains = await domainRes.json();
-                            finalDomain = domains[0];
+                            finalDomain = fallback1SecMailDomains[0];
                         }
 
                         if (!finalUsername) {
@@ -930,6 +1018,12 @@
                         currentUsername = finalUsername;
                         currentDomain = finalDomain;
                         currentEmail = `${currentUsername}@${finalDomain}`;
+
+                        // Simpan Sesi
+                        localStorage.setItem('temp_email_provider', currentProvider);
+                        localStorage.setItem('temp_email_address', currentEmail);
+                        localStorage.setItem('temp_email_username', currentUsername);
+                        localStorage.setItem('temp_email_domain', currentDomain);
                     }
 
                     // Sinkronisasi data ke input legacy dan UI
@@ -952,7 +1046,7 @@
                     }
 
                     fetchMessages();
-                    pollInterval = setInterval(fetchMessages, 7000);
+                    pollInterval = setInterval(fetchMessages, 5000); // Polling instan setiap 5 detik
 
                 } catch (error) {
                     console.error("Gagal setup email provider:", error);
@@ -968,7 +1062,7 @@
                 }
             }
 
-            // --- 6. Ambil Pesan Masuk (Polling) ---
+            // --- 7. Ambil Pesan Masuk (Polling) ---
             async function fetchMessages() {
                 try {
                     let messages = [];
@@ -1023,12 +1117,12 @@
                 }
             }
 
-            // --- 7. Render Kotak Masuk ke UI (Gambar 3) ---
+            // --- 8. Render Kotak Masuk ke UI (Gambar 3) ---
             function renderMessages(messages) {
-                // Update badge navigasi bawah
+                // Update badge merah navigasi bawah secara realtime
                 if (messages.length > 0) {
                     inboxBadge.textContent = messages.length;
-                    inboxBadge.style.display = 'block';
+                    inboxBadge.style.display = 'flex';
                 } else {
                     inboxBadge.style.display = 'none';
                 }
@@ -1072,11 +1166,13 @@
                 });
             }
 
-            // --- 8. Deteksi Surat Baru & Kirim Push Notifikasi ---
+            // --- 9. Deteksi Surat Baru & Kirim Push Notifikasi + Audio Chime ---
             function checkForNewMessages(messages) {
+                let hasNew = false;
                 messages.forEach(msg => {
                     if (!seenMessageIds.has(msg.id)) {
                         seenMessageIds.add(msg.id);
+                        hasNew = true;
                         
                         if (Notification.permission === 'granted' && serviceWorkerReg) {
                             serviceWorkerReg.showNotification('Pesan Baru: Kreaverse Email', {
@@ -1087,9 +1183,13 @@
                         }
                     }
                 });
+
+                if (hasNew) {
+                    playChime(); // Mainkan bel suara premium jika ada email masuk
+                }
             }
 
-            // --- 9. Desain Pop-Up Membaca Pesan Premium (Gambar 2) ---
+            // --- 10. Desain Pop-Up Membaca Pesan Premium (Gambar 2) ---
             async function showEmailDetail(msgId) {
                 Swal.fire({
                     title: 'Memuat pesan...',
@@ -1186,7 +1286,7 @@
                 }
             }
 
-            // --- 10. Handler Tombol Salin, Buat Baru, & QR Code ---
+            // --- 11. Handler Tombol Salin, Buat Baru, & QR Code ---
             btnCopyMain.addEventListener('click', () => {
                 if (!currentEmail || currentEmail.includes('...')) return;
                 navigator.clipboard.writeText(currentEmail);
@@ -1197,7 +1297,7 @@
             btnNewMain.addEventListener('click', () => {
                 Swal.fire({
                     title: 'Buat Alamat Baru?',
-                    text: "Alamat email saat ini akan dihapus dan diganti dengan yang baru.",
+                    text: "Sesi email aktif akan dihapus permanen dan diganti alamat baru.",
                     icon: 'question',
                     showCancelButton: true,
                     confirmButtonColor: '#059669',
@@ -1208,6 +1308,7 @@
                     color: document.documentElement.getAttribute('data-theme') === 'dark' ? '#F8FAFC' : '#0F172A'
                 }).then((result) => {
                     if (result.isConfirmed) {
+                        localStorage.clear(); // Hapus sesi lama
                         setupEmail();
                     }
                 });
@@ -1262,10 +1363,16 @@
                     });
                     return;
                 }
+                localStorage.clear(); // Bersihkan sesi agar mendaftar alamat custom baru
                 setupEmail(user, dom);
             });
 
             // Eksekusi Setup Awal
+            const storedProvider = localStorage.getItem('temp_email_provider');
+            if (storedProvider) {
+                currentProvider = storedProvider;
+                providerSelect.value = currentProvider;
+            }
             await loadDomainsForProvider(currentProvider);
             setupEmail();
         });
