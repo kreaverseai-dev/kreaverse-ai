@@ -608,7 +608,8 @@
                     const isAudio = item.type === 'audio';
                     const isThumb = item.type === 'thumb' || item.type === 'thumbnail';
                     
-                    let iconClass = isAudio ? 'fa-music' : (isThumb ? 'fa-image' : 'fa-video');
+                    // MEMPERBAIKI KETIDAKHADIRAN AWALAN 'fa-solid' PADA KELAS IKON DEFAULT AGAR TIDAK MUNCUL KOTAK KOSONG [X]
+                    let iconClass = isAudio ? 'fa-solid fa-music' : (isThumb ? 'fa-solid fa-image' : 'fa-solid fa-video');
                     let bgClass = isAudio ? 'audio' : (isThumb ? 'image' : 'video');
                     let iconStyle = '';
                     
@@ -651,6 +652,95 @@
                         </div>
                     `;
                 } else {
+                    // RENDER ITEM AI GENERATE (DIPERBAIKI UNTUK PROSES SEPARASI TIPE DAN METADATA)
+                    const isImage = item.type === 'image';
+                    const isAudio = item.type === 'audio';
+                    const isVideo = item.type === 'video';
+                    
+                    const iconClass = isImage ? 'fa-image' : (isAudio ? 'fa-music' : 'fa-video');
+                    const bgClass = isImage ? 'image' : (isAudio ? 'audio' : 'video');
+                    
+                    // Deteksi jika item berasal dari LyricShot AI
+                    const isLyricShot = item.tool === "LyricShot AI";
+                    const title = isLyricShot ? `LyricShot AI - "${item.lyrics_segment || 'Klip Video'}"` : (item.prompt ? item.prompt.substring(0, 50) + '...' : 'Media AI Generate');
+                    
+                    let statusLabel = '';
+                    let actionButtons = '';
+                    
+                    if (isLyricShot && item.status === "pending") {
+                        statusLabel = `<span style="font-size:0.75rem; color:#F59E0B; font-weight:700; display:flex; align-items:center; gap:6px;"><i class="fa-solid fa-circle-notch fa-spin"></i> Rendering (Cek 30d)</span>`;
+                        actionButtons = `
+                            <button class="action-btn play" style="background:#F3F4F6; color:var(--text-light); cursor:not-allowed;" disabled><i class="fa-solid fa-circle-notch fa-spin"></i></button>
+                            <button class="action-btn dl" style="background:#F3F4F6; color:var(--text-light); cursor:not-allowed;" disabled><i class="fa-solid fa-hourglass-start"></i></button>
+                            <button class="action-btn del" onclick="deleteFile('${item.id}', 'gen')" title="Hapus"><i class="fa-solid fa-trash"></i></button>
+                        `;
+                    } else if (isLyricShot && item.status === "failed") {
+                        statusLabel = `<span style="font-size:0.75rem; color:var(--danger-color); font-weight:700;"><i class="fa-solid fa-circle-xmark"></i> Gagal</span>`;
+                        actionButtons = `
+                            <button class="action-btn play" style="background:#FEE2E2; color:var(--danger-color); cursor:not-allowed;" disabled><i class="fa-solid fa-triangle-exclamation"></i></button>
+                            <button class="action-btn del" onclick="deleteFile('${item.id}', 'gen')" title="Hapus"><i class="fa-solid fa-trash"></i></button>
+                        `;
+                    } else {
+                        actionButtons = `
+                            ${isImage ? 
+                                `<button class="action-btn play" onclick="window.open('${item.url}', '_blank')" title="Lihat"><i class="fa-solid fa-eye"></i></button>` : 
+                                `<button class="action-btn play" onclick="openPlayer('${item.url}', '${title.replace(/'/g, "\\'")}', '${item.type}', '')" title="Putar"><i class="fa-solid fa-play"></i></button>`
+                            }
+                            <button class="action-btn dl" onclick="downloadFile('${item.url}', 'Kreaverse_AI_Generate')" title="Unduh"><i class="fa-solid fa-download"></i></button>
+                            <button class="action-btn del" onclick="deleteFile('${item.id}', 'gen')" title="Hapus"><i class="fa-solid fa-trash"></i></button>
+                        `;
+                    }
+
+                    const toolBadge = isLyricShot ? `<span class="meta-badge" style="background:#EEF2FF; color:#6366F1; font-weight:800;"><i class="fa-solid fa-clapperboard"></i> LyricShot AI</span>` : '';
+                    const providerBadge = isLyricShot ? `<span class="meta-badge provider">${item.provider || 'Leonardo AI'}</span>` : '';
+                    const modelBadge = isLyricShot ? `<span class="meta-badge" style="background:#E0E7FF; color:#4F46E5; font-weight:700;">${item.model || 'default'}</span>` : '';
+
+                    html += `
+                        <div class="berkas-item">
+                            <div class="item-number">${num}.</div>
+                            <div class="item-icon ${bgClass}"><i class="fa-solid ${iconClass}"></i></div>
+                            <div class="item-info">
+                                <div class="item-title" title="${isLyricShot ? (item.prompt || 'Adegan') : (item.prompt || 'Media')}">${title}</div>
+                                <div class="item-meta">
+                                    <span>${dateStr}</span>
+                                    <span class="meta-badge">${item.type.toUpperCase()}</span>
+                                    ${toolBadge}
+                                    ${providerBadge}
+                                    ${modelBadge}
+                                    ${statusLabel}
+                                </div>
+                            </div>
+                            <div class="item-actions">
+                                ${actionButtons}
+                            </div>
+                        </div>
+                    `;
+                }
+            });
+
+            container.innerHTML = html;
+            
+            // RENDERING PAGINATION BUTTONS (10 FILE PER TAB)
+            if (totalPages > 1) {
+                let pagHtml = '';
+                // Prev
+                pagHtml += `<button onclick="changePage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''} style="background:${currentPage === 1 ? '#F3F4F6' : '#FFFFFF'}; color:${currentPage === 1 ? '#9CA3AF' : '#111827'}; border:1px solid var(--border-color); padding:8px 12px; border-radius:12px; font-weight:700; cursor:${currentPage === 1 ? 'not-allowed' : 'pointer'}; transition:var(--transition); font-size:0.85rem;"><i class="fa-solid fa-chevron-left"></i></button>`;
+                
+                for (let i = 1; i <= totalPages; i++) {
+                    const isActive = currentPage === i;
+                    pagHtml += `<button onclick="changePage(${i})" style="background:${isActive ? 'var(--accent-color)' : '#FFFFFF'}; color:${isActive ? '#FFFFFF' : 'var(--text-secondary)'}; border:1px solid ${isActive ? 'var(--accent-color)' : 'var(--border-color)'}; padding:8px 14px; border-radius:12px; font-weight:700; cursor:pointer; transition:var(--transition); font-size:0.85rem; box-shadow:${isActive ? '0 4px 10px rgba(99, 102, 241, 0.2)' : 'var(--shadow-sm)'};">${i}</button>`;
+                }
+                
+                // Next
+                pagHtml += `<button onclick="changePage(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''} style="background:${currentPage === totalPages ? '#F3F4F6' : '#FFFFFF'}; color:${currentPage === totalPages ? '#9CA3AF' : '#111827'}; border:1px solid var(--border-color); padding:8px 12px; border-radius:12px; font-weight:700; cursor:${currentPage === totalPages ? 'not-allowed' : 'pointer'}; transition:var(--transition); font-size:0.85rem;"><i class="fa-solid fa-chevron-right"></i></button>`;
+                
+                paginationContainer.innerHTML = pagHtml;
+                paginationContainer.style.display = 'flex';
+            } else {
+                paginationContainer.innerHTML = '';
+                paginationContainer.style.display = 'none';
+            }
+        };
                     // RENDER ITEM AI GENERATE (DIPERBAIKI UNTUK PROSES SEPARASI TIPE DAN METADATA)
                     const isImage = item.type === 'image';
                     const isAudio = item.type === 'audio';
