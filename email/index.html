@@ -8,34 +8,36 @@
     <!-- External Resources (Font, Icons, SweetAlert) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
     
     <style>
         /* ==========================================
-           1. CSS VARIABLE (LIGHT & DARK MODE)
+           1. CSS VARIABLE (MODERN EMERALD THEME)
            ========================================== */
         :root {
-            --bg-color: #F9FAFB;
+            --bg-color: #F8FAFC;
             --surface-color: #FFFFFF;
-            --border-color: #E5E7EB;
-            --accent-color: #D97757;
-            --text-primary: #111827;
-            --text-secondary: #6B7280;
-            --hover-bg: #F3F4F6;
-            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+            --border-color: #E2E8F0;
+            --accent-color: #059669; /* Teal/Emerald dari Gambar 3 & 4 */
+            --accent-hover: #047857;
+            --text-primary: #0F172A;
+            --text-secondary: #64748B;
+            --hover-bg: #F1F5F9;
+            --shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -4px rgba(0, 0, 0, 0.05);
         }
 
         [data-theme="dark"] {
-            --bg-color: #121212;
-            --surface-color: #1E1E1E;
-            --border-color: #2D2D2D;
-            --accent-color: #E28766;
-            --text-primary: #F3F4F6;
-            --text-secondary: #9CA3AF;
-            --hover-bg: #2A2A2A;
-            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5), 0 2px 4px -1px rgba(0, 0, 0, 0.3);
+            --bg-color: #0B0F19;
+            --surface-color: #151F32;
+            --border-color: #1E293B;
+            --accent-color: #10B981;
+            --accent-hover: #34D399;
+            --text-primary: #F8FAFC;
+            --text-secondary: #94A3B8;
+            --hover-bg: #1E293B;
+            --shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -4px rgba(0, 0, 0, 0.3);
         }
 
         /* ==========================================
@@ -55,6 +57,20 @@
             min-height: 100vh;
             display: flex;
             flex-direction: column;
+            align-items: center;
+        }
+
+        /* Responsive Mobile Container Shell */
+        .app-shell {
+            width: 100%;
+            max-width: 600px;
+            background-color: var(--surface-color);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            box-shadow: var(--shadow);
+            position: relative;
+            padding-bottom: 80px; /* Space for bottom nav */
         }
 
         /* Navbar Styling */
@@ -62,10 +78,9 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 16px 24px;
+            padding: 16px 20px;
             background-color: var(--surface-color);
             border-bottom: 1px solid var(--border-color);
-            box-shadow: var(--shadow);
         }
 
         .back-btn {
@@ -96,8 +111,9 @@
         }
 
         .logo-text {
-            font-weight: 600;
-            font-size: 1.1rem;
+            font-weight: 700;
+            font-size: 1.15rem;
+            letter-spacing: -0.5px;
         }
 
         .theme-btn {
@@ -118,138 +134,170 @@
             background-color: var(--hover-bg);
         }
 
-        /* Container & Hero */
+        /* Main Content Panel Container */
         .container {
-            max-width: 600px;
-            width: 100%;
-            margin: 0 auto;
-            padding: 32px 16px;
+            padding: 24px 20px;
             flex: 1;
-        }
-
-        .hero {
-            text-align: center;
-            margin-bottom: 32px;
-        }
-
-        .hero h1 {
-            font-size: 2.2rem;
-            font-weight: 600;
-            margin-bottom: 12px;
-        }
-
-        .hero p {
-            color: var(--text-secondary);
-            font-size: 1rem;
-            line-height: 1.5;
         }
 
         /* ==========================================
-           3. STYLING TEMP EMAIL CARD
+           3. TAB PANEL STYLING & NAVIGATION
            ========================================== */
-        .email-card {
+        .tab-panel {
+            display: none;
+            flex-direction: column;
+            animation: fadeIn 0.3s ease-in-out;
+        }
+
+        .tab-panel.active {
+            display: flex;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Common Page Typography */
+        .page-title {
+            font-size: 1.6rem;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            margin-bottom: 6px;
+        }
+
+        .page-subtitle {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            line-height: 1.5;
+            margin-bottom: 24px;
+        }
+
+        /* ==========================================
+           4. TAB PANEL: ALAMAT EMAIL (Gambar 4)
+           ========================================== */
+        .email-mock-card {
+            background: linear-gradient(135deg, var(--hover-bg) 0%, var(--surface-color) 100%);
+            border: 2px solid var(--border-color);
+            border-radius: 20px;
+            padding: 32px 20px;
+            text-align: center;
+            position: relative;
+            margin-bottom: 24px;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
+        }
+
+        .card-envelope-icon {
+            font-size: 3.5rem;
+            color: var(--accent-color);
+            margin-bottom: 16px;
+        }
+
+        .email-address-wrapper {
             background-color: var(--surface-color);
             border: 1px solid var(--border-color);
-            border-radius: 16px;
-            padding: 24px;
-            margin-bottom: 32px;
+            border-radius: 12px;
+            padding: 16px 48px 16px 16px;
+            font-size: 1.15rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            position: relative;
+            word-break: break-all;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             box-shadow: var(--shadow);
         }
 
-        /* Dropdown Provider Styling */
-        .provider-select-container {
-            margin-bottom: 16px;
-        }
-
-        .provider-select-container label {
-            font-size: 0.8rem;
-            font-weight: 600;
-            margin-bottom: 6px;
-            display: block;
+        .qr-icon-btn {
+            position: absolute;
+            right: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
             color: var(--text-secondary);
-            letter-spacing: 0.5px;
-        }
-
-        .provider-select {
-            width: 100%;
-            padding: 14px;
-            border-radius: 12px;
-            border: 1px solid var(--border-color);
-            background-color: var(--bg-color);
-            color: var(--text-primary);
-            font-family: 'Inter', sans-serif;
-            font-weight: 600;
-            font-size: 0.95rem;
-            outline: none;
+            font-size: 1.3rem;
             cursor: pointer;
-        }
-
-        .email-display {
-            display: flex;
-            gap: 12px;
-            margin-bottom: 16px;
-        }
-
-        .email-display input {
-            flex: 1;
-            padding: 16px;
-            border: 1px dashed var(--accent-color);
-            border-radius: 12px;
-            background-color: var(--bg-color);
-            color: var(--text-primary);
-            font-family: 'Inter', sans-serif;
-            font-size: 1.1rem;
-            font-weight: 600;
-            text-align: center;
-            outline: none;
-        }
-
-        .icon-btn {
-            background-color: var(--hover-bg);
-            color: var(--text-primary);
-            border: 1px solid var(--border-color);
-            border-radius: 12px;
-            width: 56px;
-            cursor: pointer;
-            transition: all 0.2s;
-            font-size: 1.2rem;
             display: flex;
             align-items: center;
             justify-content: center;
         }
 
-        .icon-btn:hover, .icon-btn:active {
-            background-color: var(--accent-color);
-            color: #FFF;
-            border-color: var(--accent-color);
+        .qr-icon-btn:hover {
+            color: var(--accent-color);
         }
 
-        .primary-btn {
+        /* Action Buttons */
+        .action-btn {
             width: 100%;
-            padding: 14px;
-            background-color: var(--text-primary);
-            color: var(--bg-color);
-            border: none;
-            border-radius: 12px;
+            padding: 16px;
             font-family: 'Inter', sans-serif;
             font-size: 1rem;
             font-weight: 600;
+            border-radius: 12px;
+            border: none;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 8px;
-            transition: transform 0.1s, opacity 0.2s;
+            gap: 10px;
+            margin-bottom: 12px;
+            transition: all 0.15s ease;
         }
 
-        .primary-btn:active { transform: scale(0.98); }
-        .primary-btn:hover { opacity: 0.9; }
+        .action-btn:active {
+            transform: scale(0.98);
+        }
 
-        /* Inbox Section & List */
-        .inbox-section h2 {
-            font-size: 1.2rem;
-            margin-bottom: 16px;
-            font-weight: 600;
+        .primary-btn {
+            background-color: var(--accent-color);
+            color: #FFF;
+        }
+
+        .primary-btn:hover {
+            background-color: var(--accent-hover);
+        }
+
+        .outline-btn {
+            background-color: var(--surface-color);
+            border: 2px solid var(--border-color);
+            color: var(--text-primary);
+        }
+
+        .outline-btn:hover {
+            background-color: var(--hover-bg);
+            border-color: var(--text-secondary);
+        }
+
+        /* ==========================================
+           5. TAB PANEL: KOTAK MASUK (Gambar 3)
+           ========================================== */
+        .inbox-header-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 8px;
+        }
+
+        .inbox-refresh-btn {
+            background-color: var(--hover-bg);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+
+        .inbox-refresh-btn:hover {
+            background-color: var(--accent-color);
+            color: white;
+            border-color: var(--accent-color);
         }
 
         .inbox-container {
@@ -260,27 +308,32 @@
 
         .empty-state {
             text-align: center;
-            padding: 40px 20px;
+            padding: 48px 20px;
             color: var(--text-secondary);
-            border: 1px dashed var(--border-color);
-            border-radius: 12px;
+            border: 2px dashed var(--border-color);
+            border-radius: 16px;
             font-size: 0.95rem;
         }
 
         .empty-state i {
-            font-size: 2.2rem;
+            font-size: 2.5rem;
             margin-bottom: 12px;
-            opacity: 0.5;
             color: var(--accent-color);
+            opacity: 0.8;
         }
 
+        /* Email Item (Gambar 3) */
         .email-item {
             background-color: var(--surface-color);
             border: 1px solid var(--border-color);
-            border-radius: 12px;
+            border-radius: 16px;
             padding: 16px;
             cursor: pointer;
-            transition: border-color 0.2s, box-shadow 0.2s, transform 0.15s;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.01);
+            transition: all 0.2s;
         }
 
         .email-item:hover {
@@ -289,104 +342,399 @@
             transform: translateY(-2px);
         }
 
-        .email-sender {
-            font-weight: 600;
-            font-size: 0.9rem;
-            margin-bottom: 4px;
+        .email-item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .email-item-sender-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: var(--accent-color);
+        }
+
+        .email-item-sender {
+            font-weight: 700;
+            font-size: 0.85rem;
             color: var(--accent-color);
         }
 
-        .email-subject {
-            font-weight: 600;
-            font-size: 1.05rem;
-            margin-bottom: 8px;
+        .email-item-time {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
         }
 
-        .email-snippet {
+        .email-item-subject {
+            font-weight: 600;
+            font-size: 1rem;
+            color: var(--text-primary);
+            margin: 4px 0;
+        }
+
+        .email-item-snippet-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .email-item-snippet {
             color: var(--text-secondary);
             font-size: 0.85rem;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
+            flex: 1;
+        }
+
+        .email-item-attachment {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        /* ==========================================
+           6. TAB PANEL: UBAH EMAIL (Gambar 1)
+           ========================================== */
+        .form-group {
+            margin-bottom: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .form-group label {
+            font-size: 0.75rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 14px 16px;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            font-family: 'Inter', sans-serif;
+            font-size: 0.95rem;
+            font-weight: 500;
+            outline: none;
+        }
+
+        .form-control:focus {
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.15);
+        }
+
+        .success-btn {
+            background-color: var(--accent-color);
+            color: white;
+            margin-top: 10px;
+        }
+
+        .success-btn:hover {
+            background-color: var(--accent-hover);
+        }
+
+        /* ==========================================
+           7. BOTTOM NAVIGATION BAR (Gambar 3)
+           ========================================== */
+        .bottom-nav {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 68px;
+            background-color: var(--surface-color);
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            z-index: 100;
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.75rem;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            height: 100%;
+            gap: 5px;
+        }
+
+        .nav-item.active {
+            color: var(--accent-color);
+        }
+
+        .nav-item i {
+            font-size: 1.25rem;
+            position: relative;
+        }
+
+        /* Inbox Badge Counter */
+        .nav-badge {
+            position: absolute;
+            top: -4px;
+            right: -8px;
+            background-color: #EF4444;
+            color: white;
+            font-size: 0.65rem;
+            padding: 2px 6px;
+            border-radius: 10px;
+            font-weight: 700;
+            display: none;
+        }
+
+        /* ==========================================
+           8. SWEETALERT DETAIL EMAIL STYLE (Gambar 2)
+           ========================================== */
+        .swal-email-view {
+            text-align: left;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .email-view-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding-bottom: 14px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .email-avatar {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background-color: var(--accent-color);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1.1rem;
+        }
+
+        .email-meta-sender {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sender-name {
+            font-weight: 700;
+            color: var(--text-primary);
+            font-size: 0.95rem;
+        }
+
+        .sender-address {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+
+        .email-view-details {
+            padding: 12px 0;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .detail-row {
+            display: flex;
+        }
+
+        .detail-label {
+            font-weight: 600;
+            color: var(--text-primary);
+            width: 70px;
+            flex-shrink: 0;
+        }
+
+        .email-view-body {
+            padding: 16px 0;
+            max-height: 350px;
+            overflow-y: auto;
+            font-size: 0.95rem;
+            line-height: 1.6;
+            color: var(--text-primary);
+        }
+
+        .email-view-body a {
+            color: var(--accent-color);
+        }
+
+        .email-view-body img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
         }
 
         /* Footer & Watermark */
         footer {
             text-align: center;
-            padding: 24px;
-            font-size: 0.85rem;
+            padding: 16px;
+            font-size: 0.8rem;
             color: var(--text-secondary);
             border-top: 1px solid var(--border-color);
-            margin-top: 40px;
+            margin-top: auto;
         }
 
         .watermark {
             text-align: center;
-            font-size: 0.75rem;
+            font-size: 0.7rem;
             color: var(--text-secondary);
-            opacity: 0.35;
-            padding-bottom: 16px;
-            font-weight: 500;
+            opacity: 0.3;
+            padding-bottom: 12px;
+            font-weight: 600;
             letter-spacing: 1px;
         }
     </style>
 </head>
 <body>
-    <nav class="navbar">
-        <a href="/" class="back-btn"><i class="fa-solid fa-arrow-left"></i></a>
-        <div class="logo-container">
-            <i class="fa-solid fa-envelope logo-icon"></i>
-            <span class="logo-text">Temp Email</span>
-        </div>
-        <button id="theme-toggle" class="theme-btn" aria-label="Toggle Theme">
-            <i class="fa-solid fa-moon"></i>
-        </button>
-    </nav>
-
-    <main class="container">
-        <header class="hero">
-            <h1>Kotak Masuk Instan.</h1>
-            <p>Email otomatis dibuat untuk Anda. Aman dari spam, cocok untuk OTP & Verifikasi.</p>
-        </header>
-
-        <div class="email-card">
-            <!-- Dropdown Multi-Provider Pilihan -->
-            <div class="provider-select-container">
-                <label for="provider-select">PILIH PROVIDER LAYANAN</label>
-                <select id="provider-select" class="provider-select">
-                    <option value="mail.tm">Mail.tm (Rekomendasi - Domain Ter-update)</option>
-                    <option value="mail.gw">Mail.gw (Cadangan - Sangat Stabil)</option>
-                    <option value="1secmail">1secmail (Ringan & Tanpa Token)</option>
-                </select>
+    <div class="app-shell">
+        <nav class="navbar">
+            <a href="/" class="back-btn"><i class="fa-solid fa-arrow-left"></i></a>
+            <div class="logo-container">
+                <i class="fa-solid fa-envelope logo-icon"></i>
+                <span class="logo-text">Temp Email</span>
             </div>
-            
-            <div class="email-display">
-                <input type="text" id="email-address" readonly placeholder="Menghubungkan ke server...">
-                <button id="copy-btn" class="icon-btn" aria-label="Copy Email">
-                    <i class="fa-regular fa-copy"></i>
+            <button id="theme-toggle" class="theme-btn" aria-label="Toggle Theme">
+                <i class="fa-solid fa-moon"></i>
+            </button>
+        </nav>
+
+        <main class="container">
+            <!-- input placeholder legacy support -->
+            <input type="text" id="email-address" readonly style="display:none;">
+
+            <!-- ==========================================
+                 TAB PANEL: ALAMAT EMAIL
+                 ========================================== -->
+            <div id="tab-address" class="tab-panel active">
+                <header class="hero">
+                    <h1 class="page-title">Alamat Email Sementara</h1>
+                    <p class="page-subtitle">Cepat dan Mudah. Amankan privasi Anda dari spam secara instan.</p>
+                </header>
+
+                <div class="email-mock-card">
+                    <div class="card-envelope-icon">
+                        <i class="fa-solid fa-envelope-open-text"></i>
+                    </div>
+                    <div class="email-address-wrapper">
+                        <span id="display-email-text">Menghubungkan...</span>
+                        <button id="qr-btn" class="qr-icon-btn" title="Lihat QR Code">
+                            <i class="fa-solid fa-qrcode"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <button id="btn-copy-main" class="action-btn outline-btn">
+                    <i class="fa-regular fa-copy"></i> SALIN ALAMAT
+                </button>
+                <button id="btn-new-main" class="action-btn primary-btn">
+                    <i class="fa-solid fa-plus"></i> BUAT BARU
                 </button>
             </div>
-            <button id="refresh-btn" class="primary-btn">
-                <i class="fa-solid fa-rotate-right"></i> Perbarui Kotak Masuk
-            </button>
-        </div>
 
-        <div class="inbox-section">
-            <h2>Pesan Masuk</h2>
-            <div id="inbox-container" class="inbox-container">
-                <div class="empty-state">
-                    <i class="fa-solid fa-inbox"></i><br>
-                    Menunggu pesan masuk...
+            <!-- ==========================================
+                 TAB PANEL: KOTAK MASUK
+                 ========================================== -->
+            <div id="tab-inbox" class="tab-panel">
+                <div class="inbox-header-row">
+                    <div>
+                        <h1 class="page-title">Kotak Masuk</h1>
+                        <p id="inbox-email-sub" class="page-subtitle" style="margin-bottom:0; word-break:break-all;">...</p>
+                    </div>
+                    <button id="inbox-refresh-btn" class="inbox-refresh-btn" title="Refresh">
+                        <i class="fa-solid fa-arrows-rotate"></i>
+                    </button>
+                </div>
+                
+                <div style="margin-bottom: 20px;"></div>
+
+                <div id="inbox-container" class="inbox-container">
+                    <div class="empty-state">
+                        <i class="fa-solid fa-inbox"></i><br>
+                        Menunggu pesan masuk...
+                    </div>
                 </div>
             </div>
-        </div>
-    </main>
 
-    <footer>
-        <p>&copy; 2026 Kreaverse AI. All rights reserved.</p>
-    </footer>
+            <!-- ==========================================
+                 TAB PANEL: UBAH EMAIL
+                 ========================================== -->
+            <div id="tab-change" class="tab-panel">
+                <h1 class="page-title">Buat Alamat Baru</h1>
+                <p class="page-subtitle">Kustomisasi alamat email khusus sesuai keinginan Anda secara premium.</p>
 
-    <div id="watermark" class="watermark">Kreaverse AI</div>
+                <div class="form-group">
+                    <label>Pilih Provider Layanan</label>
+                    <select id="provider-select" class="form-control">
+                        <option value="mail.tm">Mail.tm (Rekomendasi - Ter-update)</option>
+                        <option value="mail.gw">Mail.gw (Cadangan - Stabil)</option>
+                        <option value="1secmail">1secmail (Ringan & Cepat)</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Nama Depan Email (Custom)</label>
+                    <input type="text" id="custom-username" class="form-control" placeholder="Contoh: userbaru">
+                </div>
+
+                <div class="form-group">
+                    <label>Pilih Domain Tersedia</label>
+                    <select id="domain-select" class="form-control">
+                        <!-- Dynamic domains -->
+                    </select>
+                </div>
+
+                <button id="btn-save-custom" class="action-btn success-btn">
+                    SIMPAN
+                </button>
+            </div>
+        </main>
+
+        <!-- Dynamic Bottom Navigation Bar -->
+        <nav class="bottom-nav">
+            <div class="nav-item active" data-tab="address">
+                <i class="fa-solid fa-envelope"></i>
+                <span>Alamat Email</span>
+            </div>
+            <div class="nav-item" data-tab="inbox">
+                <i class="fa-solid fa-inbox">
+                    <span id="inbox-badge" class="nav-badge">0</span>
+                </i>
+                <span>Kotak Masuk</span>
+            </div>
+            <div class="nav-item" data-tab="change">
+                <i class="fa-solid fa-pen-to-square"></i>
+                <span>Ubah Email</span>
+            </div>
+        </nav>
+
+        <footer>
+            <p>&copy; 2026 Kreaverse AI. All rights reserved.</p>
+        </footer>
+
+        <div id="watermark" class="watermark">Kreaverse AI</div>
+    </div>
 
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
@@ -399,11 +747,21 @@
 
         document.addEventListener('DOMContentLoaded', async () => {
             const emailAddressInput = document.getElementById('email-address');
-            const copyBtn = document.getElementById('copy-btn');
-            const refreshBtn = document.getElementById('refresh-btn');
+            const displayEmailText = document.getElementById('display-email-text');
+            const inboxEmailSub = document.getElementById('inbox-email-sub');
             const inboxContainer = document.getElementById('inbox-container');
             const providerSelect = document.getElementById('provider-select');
+            const domainSelect = document.getElementById('domain-select');
+            const customUsernameInput = document.getElementById('custom-username');
             const themeToggle = document.getElementById('theme-toggle');
+            
+            // Buttons
+            const btnCopyMain = document.getElementById('btn-copy-main');
+            const btnNewMain = document.getElementById('btn-new-main');
+            const btnSaveCustom = document.getElementById('btn-save-custom');
+            const inboxRefreshBtn = document.getElementById('inbox-refresh-btn');
+            const qrBtn = document.getElementById('qr-btn');
+            const inboxBadge = document.getElementById('inbox-badge');
 
             let currentProvider = 'mail.tm';
             let currentToken = '';
@@ -438,7 +796,23 @@
                 }
             }
 
-            // --- 2. Registrasi Service Worker ---
+            // --- 2. Navigasi Tab System ---
+            const navItems = document.querySelectorAll('.nav-item');
+            const tabPanels = document.querySelectorAll('.tab-panel');
+
+            navItems.forEach(item => {
+                item.addEventListener('click', () => {
+                    const targetTab = item.getAttribute('data-tab');
+                    
+                    navItems.forEach(nav => nav.classList.remove('active'));
+                    tabPanels.forEach(panel => panel.classList.remove('active'));
+                    
+                    item.classList.add('active');
+                    document.getElementById(`tab-${targetTab}`).classList.add('active');
+                });
+            });
+
+            // --- 3. Registrasi Service Worker ---
             if ('serviceWorker' in navigator && 'Notification' in window) {
                 try {
                     serviceWorkerReg = await navigator.serviceWorker.register('sw.js');
@@ -451,9 +825,39 @@
                 }
             }
 
-            // --- 3. Setup Akun Email (Mendukung Multi-Provider) ---
-            async function setupEmail() {
-                emailAddressInput.value = 'Menghubungkan ke server...';
+            // --- 4. Memuat Domain Dinamis Berdasarkan Provider Terpilih ---
+            async function loadDomainsForProvider(provider) {
+                domainSelect.innerHTML = '<option>Memuat daftar domain...</option>';
+                try {
+                    let domains = [];
+                    if (provider === 'mail.tm' || provider === 'mail.gw') {
+                        const apiBase = provider === 'mail.tm' ? 'https://api.mail.tm' : 'https://api.mail.gw';
+                        const domainRes = await fetch(`${apiBase}/domains`);
+                        const domainData = await domainRes.json();
+                        domains = domainData['hydra:member'].map(d => d.domain);
+                    } else if (provider === '1secmail') {
+                        const domainRes = await fetch('https://www.1secmail.com/api/v1/?action=getDomainList');
+                        domains = await domainRes.json();
+                    }
+                    
+                    domainSelect.innerHTML = '';
+                    domains.forEach(d => {
+                        const opt = document.createElement('option');
+                        opt.value = d;
+                        opt.textContent = `@${d}`;
+                        domainSelect.appendChild(opt);
+                    });
+                } catch (err) {
+                    console.error("Gagal mengambil domain server:", err);
+                    domainSelect.innerHTML = '<option>Gagal memuat domain</option>';
+                }
+            }
+
+            // --- 5. Setup Akun Email (Mendukung Multi-Provider & Kustomisasi) ---
+            async function setupEmail(customUser = null, customDom = null) {
+                displayEmailText.textContent = 'Menghubungkan...';
+                inboxEmailSub.textContent = 'Menghubungkan...';
+                
                 inboxContainer.innerHTML = `
                     <div class="empty-state">
                         <i class="fa-solid fa-spinner fa-spin"></i><br>
@@ -461,7 +865,6 @@
                     </div>
                 `;
 
-                // Reset variable state
                 currentToken = '';
                 currentAccountId = '';
                 currentEmail = '';
@@ -472,29 +875,38 @@
                 if (pollInterval) clearInterval(pollInterval);
 
                 try {
+                    let finalDomain = customDom;
+                    let finalUsername = customUser;
+
                     if (currentProvider === 'mail.tm' || currentProvider === 'mail.gw') {
                         const apiBase = currentProvider === 'mail.tm' ? 'https://api.mail.tm' : 'https://api.mail.gw';
 
-                        // Ambil domain aktif
-                        const domainRes = await fetch(`${apiBase}/domains`);
-                        const domainData = await domainRes.json();
-                        const domain = domainData['hydra:member'][0].domain;
+                        if (!finalDomain) {
+                            const domainRes = await fetch(`${apiBase}/domains`);
+                            const domainData = await domainRes.json();
+                            finalDomain = domainData['hydra:member'][0].domain;
+                        }
 
-                        // Generate kredensial
-                        const randomString = Math.random().toString(36).substring(2, 8);
-                        const address = `kreaverse-ai-${randomString}@${domain}`;
-                        const password = `KreaversePass!${randomString}`;
+                        if (!finalUsername) {
+                            finalUsername = 'kreaverse-ai-' + Math.random().toString(36).substring(2, 8);
+                        }
 
-                        // Buat Akun
+                        const address = `${finalUsername}@${finalDomain}`;
+                        const password = `KreaversePass!${finalUsername}`;
+
                         const accountRes = await fetch(`${apiBase}/accounts`, {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({ address, password })
                         });
+                        
+                        if (!accountRes.ok) {
+                            throw new Error("Nama email sudah terpakai atau format salah.");
+                        }
+
                         const accountData = await accountRes.json();
                         currentAccountId = accountData.id;
 
-                        // Ambil Token JWT
                         const tokenRes = await fetch(`${apiBase}/token`, {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
@@ -505,38 +917,58 @@
                         currentEmail = address;
 
                     } else if (currentProvider === '1secmail') {
-                        // Ambil domain aktif dari 1secmail
-                        const domainRes = await fetch('https://www.1secmail.com/api/v1/?action=getDomainList');
-                        const domains = await domainRes.json();
-                        const domain = domains[0]; // Ambil domain utama yang aktif
+                        if (!finalDomain) {
+                            const domainRes = await fetch('https://www.1secmail.com/api/v1/?action=getDomainList');
+                            const domains = await domainRes.json();
+                            finalDomain = domains[0];
+                        }
 
-                        const randomString = Math.random().toString(36).substring(2, 8);
-                        currentUsername = `kreaverse-ai-${randomString}`;
-                        currentDomain = domain;
-                        currentEmail = `${currentUsername}@${domain}`;
+                        if (!finalUsername) {
+                            finalUsername = 'kreaverse-ai-' + Math.random().toString(36).substring(2, 8);
+                        }
+
+                        currentUsername = finalUsername;
+                        currentDomain = finalDomain;
+                        currentEmail = `${currentUsername}@${finalDomain}`;
                     }
 
-                    // Tampilkan di UI
+                    // Sinkronisasi data ke input legacy dan UI
                     emailAddressInput.value = currentEmail;
+                    displayEmailText.textContent = currentEmail;
+                    inboxEmailSub.textContent = currentEmail;
 
-                    // Mulai polling pesan secara berkala
+                    // Berikan notifikasi jika pembuatan custom sukses
+                    if (customUser) {
+                        Swal.fire({
+                            title: 'Email Diperbarui',
+                            text: `Berhasil membuat alamat email khusus: ${currentEmail}`,
+                            icon: 'success',
+                            confirmButtonColor: '#059669',
+                            background: document.documentElement.getAttribute('data-theme') === 'dark' ? '#151F32' : '#FFF',
+                            color: document.documentElement.getAttribute('data-theme') === 'dark' ? '#F8FAFC' : '#0F172A'
+                        });
+                        // Kembali ke tab utama otomatis
+                        document.querySelector('[data-tab="address"]').click();
+                    }
+
                     fetchMessages();
-                    pollInterval = setInterval(fetchMessages, 7000); // Cek setiap 7 detik
+                    pollInterval = setInterval(fetchMessages, 7000);
 
                 } catch (error) {
                     console.error("Gagal setup email provider:", error);
                     Swal.fire({
-                        title: 'Koneksi Gagal',
-                        text: 'Gagal terhubung ke provider email. Silakan ganti provider lain.',
+                        title: 'Registrasi Gagal',
+                        text: error.message || 'Gagal terhubung ke provider email. Silakan ganti nama email atau provider lain.',
                         icon: 'error',
-                        confirmButtonColor: '#D97757',
-                        background: document.documentElement.getAttribute('data-theme') === 'dark' ? '#242424' : '#FFF',
-                        color: document.documentElement.getAttribute('data-theme') === 'dark' ? '#E5E5E5' : '#1F1F1F'
+                        confirmButtonColor: '#059669',
+                        background: document.documentElement.getAttribute('data-theme') === 'dark' ? '#151F32' : '#FFF',
+                        color: document.documentElement.getAttribute('data-theme') === 'dark' ? '#F8FAFC' : '#0F172A'
                     });
+                    displayEmailText.textContent = 'Gagal memuat alamat email.';
                 }
             }
 
-            // --- 4. Ambil Pesan Masuk (Polling) ---
+            // --- 6. Ambil Pesan Masuk (Polling) ---
             async function fetchMessages() {
                 try {
                     let messages = [];
@@ -550,12 +982,12 @@
                         const data = await res.json();
                         const rawMsgs = data['hydra:member'] || [];
 
-                        // Menyamakan format data
                         messages = rawMsgs.map(msg => ({
                             id: msg.id,
                             from: msg.from.address,
                             subject: msg.subject,
-                            snippet: msg.intro || 'Ketuk untuk membaca isi email.'
+                            snippet: msg.intro || 'Ketuk untuk melihat seluruh isi pesan.',
+                            hasAttachment: msg.hasAttachments || false
                         }));
 
                         checkForNewMessages(rawMsgs.map(m => ({
@@ -573,7 +1005,8 @@
                             id: msg.id,
                             from: msg.from,
                             subject: msg.subject,
-                            snippet: `Pesan baru diterima pada ${msg.date}. Ketuk untuk membaca detail.`
+                            snippet: `Pesan masuk dari ${msg.from}. Ketuk untuk membaca isi surat.`,
+                            hasAttachment: false
                         }));
 
                         checkForNewMessages(rawMsgs.map(m => ({
@@ -586,12 +1019,20 @@
                     renderMessages(messages);
 
                 } catch (error) {
-                    console.error('Gagal mengambil pesan:', error);
+                    console.error('Gagal memuat surat masuk:', error);
                 }
             }
 
-            // --- 5. Render Inbox ke UI ---
+            // --- 7. Render Kotak Masuk ke UI (Gambar 3) ---
             function renderMessages(messages) {
+                // Update badge navigasi bawah
+                if (messages.length > 0) {
+                    inboxBadge.textContent = messages.length;
+                    inboxBadge.style.display = 'block';
+                } else {
+                    inboxBadge.style.display = 'none';
+                }
+
                 if (messages.length === 0) {
                     inboxContainer.innerHTML = `
                         <div class="empty-state">
@@ -603,20 +1044,35 @@
                 }
 
                 inboxContainer.innerHTML = '';
-                messages.forEach(msg => {
+                messages.forEach((msg, idx) => {
                     const div = document.createElement('div');
                     div.className = 'email-item';
+                    
+                    // Deteksi timestamp real-time sederhana
+                    const fakeTime = new Date();
+                    fakeTime.setMinutes(fakeTime.getMinutes() - idx * 2);
+                    const timeString = fakeTime.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+
                     div.innerHTML = `
-                        <div class="email-sender">${msg.from}</div>
-                        <div class="email-subject">${msg.subject}</div>
-                        <div class="email-snippet">${msg.snippet}</div>
+                        <div class="email-item-header">
+                            <div class="email-item-sender-row">
+                                <span class="status-dot"></span>
+                                <span class="email-item-sender">${msg.from}</span>
+                            </div>
+                            <span class="email-item-time">${timeString}</span>
+                        </div>
+                        <div class="email-item-subject">${msg.subject}</div>
+                        <div class="email-item-snippet-row">
+                            <span class="email-item-snippet">${msg.snippet}</span>
+                            ${msg.hasAttachment ? '<i class="fa-solid fa-paperclip email-item-attachment"></i>' : ''}
+                        </div>
                     `;
                     div.addEventListener('click', () => showEmailDetail(msg.id));
                     inboxContainer.appendChild(div);
                 });
             }
 
-            // --- 6. Deteksi Pesan Baru & Kirim Push Notifikasi ---
+            // --- 8. Deteksi Surat Baru & Kirim Push Notifikasi ---
             function checkForNewMessages(messages) {
                 messages.forEach(msg => {
                     if (!seenMessageIds.has(msg.id)) {
@@ -633,19 +1089,20 @@
                 });
             }
 
-            // --- 7. Tampilkan Detail Pesan (SweetAlert) ---
+            // --- 9. Desain Pop-Up Membaca Pesan Premium (Gambar 2) ---
             async function showEmailDetail(msgId) {
                 Swal.fire({
                     title: 'Memuat pesan...',
                     allowOutsideClick: false,
                     didOpen: () => Swal.showLoading(),
-                    background: document.documentElement.getAttribute('data-theme') === 'dark' ? '#242424' : '#FFF',
+                    background: document.documentElement.getAttribute('data-theme') === 'dark' ? '#151F32' : '#FFF',
                 });
 
                 try {
                     let subject = '';
                     let fromText = '';
                     let bodyHtml = '';
+                    let attachments = [];
 
                     if (currentProvider === 'mail.tm' || currentProvider === 'mail.gw') {
                         const apiBase = currentProvider === 'mail.tm' ? 'https://api.mail.tm' : 'https://api.mail.gw';
@@ -656,6 +1113,7 @@
                         subject = data.subject;
                         fromText = data.from.address;
                         bodyHtml = data.html ? data.html[0] : (data.text || 'Tidak ada isi pesan.');
+                        attachments = data.attachments || [];
 
                     } else if (currentProvider === '1secmail') {
                         const res = await fetch(`https://www.1secmail.com/api/v1/?action=readMessage&login=${currentUsername}&domain=${currentDomain}&id=${msgId}`);
@@ -663,47 +1121,152 @@
                         subject = data.subject;
                         fromText = data.from;
                         bodyHtml = data.htmlBody ? data.htmlBody : (data.textBody || 'Tidak ada isi pesan.');
+                        attachments = data.attachments || [];
                     }
 
-                    Swal.fire({
-                        title: subject,
-                        html: `<div style="text-align: left; font-size: 14px; margin-top: 10px; border-top: 1px solid #E5E5E5; padding-top: 10px; max-height: 400px; overflow-y: auto;">
-                                <b>Dari:</b> ${fromText}<br><br>
-                                ${bodyHtml}
-                               </div>`,
-                        width: '600px',
-                        confirmButtonColor: '#D97757',
-                        confirmButtonText: 'Tutup',
-                        background: document.documentElement.getAttribute('data-theme') === 'dark' ? '#242424' : '#FFF',
-                        color: document.documentElement.getAttribute('data-theme') === 'dark' ? '#E5E5E5' : '#1F1F1F'
+                    const initials = fromText.slice(0, 2).toUpperCase();
+                    const formattedDate = new Date().toLocaleDateString('id-ID', {
+                        day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit'
                     });
+
+                    // Modifikasi tampilan menyerupai Gambar 2
+                    let attachmentHtml = '';
+                    if (attachments.length > 0) {
+                        attachmentHtml = `
+                            <div style="margin-top:16px; padding-top:12px; border-top:1px solid var(--border-color); font-size: 0.85rem;">
+                                <b>Lampiran Dokumen:</b>
+                                <div style="display:flex; flex-direction:column; gap:6px; margin-top:8px;">
+                                    ${attachments.map(att => `
+                                        <div style="display:flex; justify-content:space-between; align-items:center; background:var(--hover-bg); padding:10px; border-radius:8px; border:1px solid var(--border-color);">
+                                            <span><i class="fa-regular fa-file-lines"></i> ${att.filename || att.name} (${att.size ? (att.size / 1024).toFixed(1) + ' KB' : 'Dokumen'})</span>
+                                            <a href="#" style="color:var(--accent-color); font-weight:700; text-decoration:none;">UNDUH</a>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            </div>
+                        `;
+                    }
+
+                    const viewContent = `
+                        <div class="swal-email-view">
+                            <div class="email-view-header">
+                                <div class="email-avatar">${initials}</div>
+                                <div class="email-meta-sender">
+                                    <span class="sender-name">${fromText.split('@')[0]}</span>
+                                    <span class="sender-address">&lt;${fromText}&gt;</span>
+                                </div>
+                            </div>
+                            <div class="email-view-details">
+                                <div class="detail-row"><span class="detail-label">Tanggal:</span> <span>${formattedDate}</span></div>
+                                <div class="detail-row"><span class="detail-label">Perihal:</span> <span style="font-weight:600; color:var(--text-primary);">${subject}</span></div>
+                            </div>
+                            <div class="email-view-body">
+                                ${bodyHtml}
+                            </div>
+                            ${attachmentHtml}
+                        </div>
+                    `;
+
+                    Swal.fire({
+                        html: viewContent,
+                        width: '560px',
+                        confirmButtonColor: '#059669',
+                        confirmButtonText: 'TUTUP',
+                        background: document.documentElement.getAttribute('data-theme') === 'dark' ? '#151F32' : '#FFF',
+                        color: document.documentElement.getAttribute('data-theme') === 'dark' ? '#F8FAFC' : '#0F172A'
+                    });
+
                 } catch (error) {
-                    Swal.fire('Error', 'Gagal memuat detail pesan.', 'error');
+                    Swal.fire({
+                        title: 'Error',
+                        text: 'Gagal memuat detail pesan.',
+                        icon: 'error',
+                        confirmButtonColor: '#059669'
+                    });
                 }
             }
 
-            // --- 8. Event Listeners ---
-            copyBtn.addEventListener('click', () => {
-                if (!emailAddressInput.value || emailAddressInput.value.includes('...')) return;
-                navigator.clipboard.writeText(emailAddressInput.value);
-                copyBtn.innerHTML = '<i class="fa-solid fa-check"></i>';
-                setTimeout(() => copyBtn.innerHTML = '<i class="fa-regular fa-copy"></i>', 2000);
+            // --- 10. Handler Tombol Salin, Buat Baru, & QR Code ---
+            btnCopyMain.addEventListener('click', () => {
+                if (!currentEmail || currentEmail.includes('...')) return;
+                navigator.clipboard.writeText(currentEmail);
+                btnCopyMain.innerHTML = '<i class="fa-solid fa-check"></i> BERHASIL DISALIN';
+                setTimeout(() => btnCopyMain.innerHTML = '<i class="fa-regular fa-copy"></i> SALIN ALAMAT', 2000);
             });
 
-            refreshBtn.addEventListener('click', () => {
-                refreshBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Memperbarui...';
-                fetchMessages().then(() => {
-                    setTimeout(() => refreshBtn.innerHTML = '<i class="fa-solid fa-rotate-right"></i> Perbarui Kotak Masuk', 1000);
+            btnNewMain.addEventListener('click', () => {
+                Swal.fire({
+                    title: 'Buat Alamat Baru?',
+                    text: "Alamat email saat ini akan dihapus dan diganti dengan yang baru.",
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonColor: '#059669',
+                    cancelButtonColor: '#64748B',
+                    confirmButtonText: 'Ya, Buat Baru',
+                    cancelButtonText: 'Batal',
+                    background: document.documentElement.getAttribute('data-theme') === 'dark' ? '#151F32' : '#FFF',
+                    color: document.documentElement.getAttribute('data-theme') === 'dark' ? '#F8FAFC' : '#0F172A'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        setupEmail();
+                    }
                 });
             });
 
-            // Ganti provider secara real-time
-            providerSelect.addEventListener('change', (e) => {
-                currentProvider = e.target.value;
-                setupEmail();
+            qrBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                if (!currentEmail || currentEmail.includes('...')) return;
+                const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(currentEmail)}`;
+                Swal.fire({
+                    title: 'Scan QR Alamat Anda',
+                    html: `
+                        <div style="text-align: center; padding: 10px;">
+                            <img src="${qrUrl}" alt="QR Code" style="max-width: 100%; border: 1px solid var(--border-color); border-radius: 12px; padding: 8px; background: white;" />
+                            <p style="margin-top: 12px; font-size: 0.9rem; color: var(--text-secondary); word-break: break-all;"><b>${currentEmail}</b></p>
+                        </div>
+                    `,
+                    confirmButtonText: 'Tutup',
+                    confirmButtonColor: '#059669',
+                    background: document.documentElement.getAttribute('data-theme') === 'dark' ? '#151F32' : '#FFF',
+                    color: document.documentElement.getAttribute('data-theme') === 'dark' ? '#F8FAFC' : '#0F172A'
+                });
             });
 
-            // Eksekusi awal
+            inboxRefreshBtn.addEventListener('click', () => {
+                inboxRefreshBtn.innerHTML = '<i class="fa-solid fa-arrows-rotate fa-spin"></i>';
+                fetchMessages().then(() => {
+                    setTimeout(() => {
+                        inboxRefreshBtn.innerHTML = '<i class="fa-solid fa-arrows-rotate"></i>';
+                    }, 800);
+                });
+            });
+
+            // Ganti provider & muat ulang domain list
+            providerSelect.addEventListener('change', async (e) => {
+                currentProvider = e.target.value;
+                await loadDomainsForProvider(currentProvider);
+            });
+
+            // Daftarkan Custom Username & Domain pilihan (Gambar 1)
+            btnSaveCustom.addEventListener('click', () => {
+                const user = customUsernameInput.value.trim().toLowerCase();
+                const dom = domainSelect.value;
+                if (!user) {
+                    Swal.fire({
+                        title: 'Data Kurang Lengkap',
+                        text: 'Silakan ketik nama depan email terlebih dahulu.',
+                        icon: 'warning',
+                        confirmButtonColor: '#059669',
+                        background: document.documentElement.getAttribute('data-theme') === 'dark' ? '#151F32' : '#FFF',
+                        color: document.documentElement.getAttribute('data-theme') === 'dark' ? '#F8FAFC' : '#0F172A'
+                    });
+                    return;
+                }
+                setupEmail(user, dom);
+            });
+
+            // Eksekusi Setup Awal
+            await loadDomainsForProvider(currentProvider);
             setupEmail();
         });
     </script>
