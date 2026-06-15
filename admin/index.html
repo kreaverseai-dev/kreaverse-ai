@@ -1584,7 +1584,6 @@ function loadAllModules() {
     setupRealtimeFeedback();
     setupRealtimeDownloader(); 
     setupRealtimeHuggingFace();
-    setupRealtimeTempMail();
     loadGallery();
     loadPromo();
     setupPromoPreview();
@@ -2849,54 +2848,144 @@ window.closeHfHelpModal = (e) => {
 };
 
 // ============================================================
-// MODUL EMAIL SEMENTARA (MINIMALIS & AMAN DARI CRASH)
+// MODUL EMAIL SEMENTARA (DYNAMIC SETUP & FIREBASE INTEG)
 // ============================================================
-window.pingAllTempMailServers = function() {
-    const servers = [
-        { id: 'mail_tm', name: 'Mail.tm (Rekomendasi)', url: 'https://api.mail.tm/domains' },
-        { id: 'mail_gw', name: 'Mail.gw (Cadangan)', url: 'https://api.mail.gw/domains' },
-        { id: '1secmail', name: '1secmail (Kilat)', url: 'https://www.1secmail.com/api/v1/?action=getDomainList' }
-    ];
-    
+window.pingAllTempMailServers = async function() {
     const container = document.getElementById('tempmail-server-container');
     if (!container) return;
-    container.innerHTML = '';
+    container.innerHTML = `<div style="grid-column: span 3; text-align:center; padding:20px; color:var(--text-sec);"><div class="loading-spinner sm" style="margin:0 auto 10px;"></div> Sedang memanggil status seluruh server...</div>`;
     
-    servers.forEach(s => {
-        const card = document.createElement('div');
-        card.className = 'card';
-        card.style.cursor = 'default';
-        card.innerHTML = `
-            <div style="display:flex; justify-content:space-between; align-items:center;">
-                <span style="font-weight:700; font-size:0.9rem;">${s.name}</span>
-                <span id="ping-status-${s.id}" class="badge badge-gray"><span class="status-dot orange"></span> Menghubungkan...</span>
-            </div>
-            <div style="font-size:0.75rem; color:var(--text-sec); margin-top:8px; font-family:monospace;">${s.url}</div>
-        `;
-        container.appendChild(card);
+    try {
+        const snap = await getDocs(collection(db, "temp_email_providers"));
+        if (snap.empty) {
+            container.innerHTML = `<div style="grid-column: span 3; text-align:center; padding:20px; color:var(--text-sec);">Tidak ada server untuk di-ping.</div>`;
+            return;
+        }
         
-        setTimeout(async () => {
-            const statusBadge = document.getElementById(`ping-status-${s.id}`);
-            if (!statusBadge) return;
-            try {
-                const controller = new AbortController();
-                const idTimeout = setTimeout(() => controller.abort(), 5000);
-                const proxiedUrl = `https://kreaverse-proxy.kreaverse-ai.workers.dev/?targetUrl=${encodeURIComponent(s.url)}`;
-                const res = await fetch(proxiedUrl, { signal: controller.signal });
-                clearTimeout(idTimeout);
-                
-                if (res.ok) {
-                    statusBadge.className = 'badge badge-green';
-                    statusBadge.innerHTML = `<span class="status-dot green"></span> ONLINE`;
-                } else {
+        container.innerHTML = '';
+        snap.forEach(docSnap => {
+            const s = docSnap.data();
+            const card = document.createElement('div');
+            card.className = 'card';
+            card.style.cursor = 'default';
+            
+            // Tentukan jalur verifikasi ping dinamis berdasarkan jenis Driver
+            let testUrl = s.url;
+            if (s.driver === 'type_a') testUrl += '/domains';
+            else if (s.driver === 'type_b') testUrl += '/api/v1/?action=getDomainList';
+
+            card.innerHTML = `
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <span style="font-weight:700; font-size:0.9rem;">${s.name}</span>
+                    <span id="ping-status-${docSnap.id}" class="badge badge-gray"><span class="status-dot orange"></span> Menghubungkan...</span>
+                </div>
+                <div style="font-size:0.75rem; color:var(--text-sec); margin-top:8px; font-family:monospace; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${s.url}</div>
+            `;
+            container.appendChild(card);
+            
+            setTimeout(async () => {
+                const statusBadge = document.getElementById(`ping-status-${docSnap.id}`);
+                if (!statusBadge) return;
+                try {
+                    const controller = new AbortController();
+                    const idTimeout = setTimeout(() => controller.abort(), 6000);
+                    
+                    const proxiedUrl = `https://kreaverse-proxy.kreaverse-ai.workers.dev/?targetUrl=${encodeURIComponent(testUrl)}`;
+                    
+                    const headers = {};
+                    if (s.driver === 'type_c' && s.headerName) {
+                        headers[s.headerName] = s.headerValue;
+                    }
+                    
+                    const res = await fetch(proxiedUrl, { signal: controller.signal, headers });
+                    clearTimeout(idTimeout);
+                    
+                    if (res.ok) {
+                        statusBadge.className = 'badge badge-green';
+                        statusBadge.innerHTML = `<span class="status-dot green"></span> ONLINE`;
+                    } else {
+                        statusBadge.className = 'badge badge-red';
+                        statusBadge.innerHTML = `<span class="status-dot red"></span> OFFLINE (${res.status})`;
+                    }
+                } catch (err) {
                     statusBadge.className = 'badge badge-red';
                     statusBadge.innerHTML = `<span class="status-dot red"></span> OFFLINE`;
                 }
-            } catch (err) {
-                statusBadge.className = 'badge badge-red';
-                statusBadge.innerHTML = `<span class="status-dot red"></span> OFFLINE`;
-            }
-        }, 100);
+            }, 50);
+        });
+    } catch (err) {
+        container.innerHTML = `<div style="grid-column: span 3; text-align:center; padding:20px; color:var(--danger);">Gagal memuat status server.</div>`;
+    }
+};
+
+window.saveTempMailServer = async function(e) {
+    e.preventDefault();
+    const name = document.getElementById('tmServerName').value.trim();
+    const url = document.getElementById('tmServerUrl').value.trim().replace(/\/$/, "");
+    const driver = document.getElementById('tmServerDriver').value;
+    const headerName = document.getElementById('tmServerHeaderName').value.trim();
+    const headerValue = document.getElementById('tmServerHeaderValue').value.trim();
+    
+    if(!name || !url) {
+        showToast("Nama dan URL Server wajib diisi!", "warning");
+        return;
+    }
+    
+    const btn = e.target.querySelector('button[type="submit"]');
+    btn.disabled = true;
+    btn.innerHTML = `<div class="loading-spinner sm"></div> Menyimpan...`;
+    
+    try {
+        await addDoc(collection(db, "temp_email_providers"), {
+            name,
+            url,
+            driver,
+            headerName: driver === 'type_c' ? headerName : '',
+            headerValue: driver === 'type_c' ? headerValue : '',
+            status: 'aktif',
+            createdAt: Date.now()
+        });
+        
+        await createLog({ type: 'info', host: 'Admin', request: 'ADD_TM_SERVER', message: `Mendaftarkan server email baru: ${name}` });
+        showToast(`Server ${name} berhasil didaftarkan!`, "success");
+        
+        document.getElementById('formTempMailServer').reset();
+        document.getElementById('tmServerDriver').value = 'type_a';
+        document.getElementById('tmServerDriver-label').innerText = 'Tipe A (Hydra / JWT Token)';
+        document.getElementById('tm-header-name-wrapper').style.display = 'none';
+        document.getElementById('tm-header-value-wrapper').style.display = 'none';
+    } catch (err) {
+        showToast("Gagal menyimpan server", "danger");
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = `<i class="fa-solid fa-cloud-arrow-up"></i> Simpan Server ke Database`;
+    }
+};
+
+window.deleteTempMailServer = function(id, name) {
+    confirmAction(`Hapus server "${name}"? Seluruh domain kustom yang terhubung dengannya akan kehilangan tautannya.`, async () => {
+        try {
+            await deleteDoc(doc(db, "temp_email_providers", id));
+            await createLog({ type: 'warning', host: 'Admin', request: 'DEL_TM_SERVER', message: `Menghapus server email: ${name}` });
+            showToast(`Server ${name} dihapus!`, "success");
+        } catch (err) {
+            showToast("Gagal menghapus server", "danger");
+        }
+    });
+};
+
+window.deleteAllTempMailServers = function() {
+    confirmAction("Yakin ingin menghapus seluruh server dari database?", async () => {
+        try {
+            const snap = await getDocs(collection(db, "temp_email_providers"));
+            let batch = writeBatch(db);
+            snap.forEach(d => { batch.delete(d.ref); });
+            await batch.commit();
+            await createLog({ type: 'error', host: 'Admin', request: 'DEL_ALL_TM_SERVERS', message: `Menghapus seluruh database server email.` });
+            showToast("Seluruh database server dibersihkan!", "success");
+        } catch (err) {
+            showToast("Gagal membersihkan database", "danger");
+        }
     });
 };
 
@@ -2904,7 +2993,15 @@ window.saveCustomDomain = async function(e) {
     e.preventDefault();
     const domain = document.getElementById('tmNewDomain').value.trim().toLowerCase();
     const server = document.getElementById('tmDomainServer').value;
-    if(!domain) return;
+    
+    if(!domain) {
+        showToast("Isi nama domain terlebih dahulu!", "warning");
+        return;
+    }
+    if(!server) {
+        showToast("Daftarkan minimal 1 server terlebih dahulu sebelum menautkan domain!", "warning");
+        return;
+    }
     
     try {
         await addDoc(collection(db, "temp_email_domains"), {
@@ -2930,66 +3027,144 @@ window.deleteCustomDomain = async function(id, domain) {
     });
 };
 
-let tempMailInitialized = false;
-function setupRealtimeTempMail() {
-    if (tempMailInitialized) {
-        window.pingAllTempMailServers(); // Segarkan ping tanpa menduplikasi listener
-        return;
+window.toggleTempMailGuide = function() {
+    const body = document.getElementById('tmGuideBody');
+    const chevron = document.getElementById('tm-guide-chevron');
+    if (body.style.display === "none") {
+        body.style.display = "block";
+        chevron.style.transform = "rotate(180deg)";
+    } else {
+        body.style.display = "none";
+        chevron.style.transform = "rotate(0deg)";
     }
-    tempMailInitialized = true;
+};
 
+async function setupRealtimeTempMail() {
+    // 1. Jalankan Sistem Auto-Seeding jika database server kosong saat pertamakali dibuka (Gambar 11)
     try {
-        // Monitor domain kustom dengan pengaman error (CATCH)
-        onSnapshot(collection(db, "temp_email_domains"), snapshot => {
-            const tbody = document.getElementById('customDomainsTable');
-            if (!tbody) return;
-            let html = '';
-            snapshot.forEach(docSnap => {
-                const d = docSnap.data();
-                html += `
-                    <tr>
-                        <td style="font-weight:700;">${d.domain}</td>
-                        <td><span class="badge badge-blue">${d.server || 'mail.tm'}</span></td>
-                        <td><span class="badge badge-green"><span class="status-dot green"></span> Aktif</span></td>
-                        <td style="text-align:right;">
-                            <button class="btn btn-sm btn-danger" onclick="window.deleteCustomDomain('${docSnap.id}', '${d.domain}')"><i class="fa-solid fa-trash"></i></button>
-                        </td>
-                    </tr>
-                `;
+        const providersSnap = await getDocs(collection(db, "temp_email_providers"));
+        if (providersSnap.empty) {
+            const defaults = [
+                { name: "Server Premium Emerald", url: "https://api.mail.tm", driver: "type_a", headerName: "", headerValue: "", status: "aktif", createdAt: Date.now() },
+                { name: "Server Cadangan Platinum", url: "https://api.mail.gw", driver: "type_a", headerName: "", headerValue: "", status: "aktif", createdAt: Date.now() - 1000 },
+                { name: "Server Kilat Sapphire", url: "https://www.1secmail.com", driver: "type_b", headerName: "", headerValue: "", status: "aktif", createdAt: Date.now() - 2000 }
+            ];
+            let batch = writeBatch(db);
+            defaults.forEach(d => {
+                batch.set(doc(collection(db, "temp_email_providers")), d);
             });
-            tbody.innerHTML = html || `<tr><td colspan="4" style="text-align:center; padding:20px; color:var(--text-sec);">Belum ada domain kustom terdaftar.</td></tr>`;
-        }, err => {
-            console.log("Firestore Domains Access Blocked or Non-existent:", err);
-        });
-        
-        // Monitor log masuk dengan pengaman error (CATCH)
-        const q = query(collection(db, "temp_email_logs"), orderBy("timestamp", "desc"), limit(30));
-        onSnapshot(q, snapshot => {
-            const tbody = document.getElementById('tempMailMonitorTable');
-            if (!tbody) return;
-            let html = '';
-            snapshot.forEach(docSnap => {
-                const d = docSnap.data();
-                const dTime = new Date(d.timestamp).toLocaleTimeString('id-ID');
-                html += `
-                    <tr>
-                        <td style="color:var(--text-sec); font-size:0.8rem; font-family:monospace;">${dTime}</td>
-                        <td style="font-weight:700; color:var(--accent);">${d.email}</td>
-                        <td style="font-weight:600;">${d.from}</td>
-                        <td style="font-weight:700;">${d.subject}</td>
-                        <td style="color:var(--text-sec); font-size:0.85rem; max-width:250px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${d.snippet}">${d.snippet}</td>
-                    </tr>
-                `;
-            });
-            tbody.innerHTML = html || `<tr><td colspan="5" style="text-align:center; padding:40px; color:var(--text-sec);">Belum ada pesan email yang diproses oleh pengguna.</td></tr>`;
-        }, err => {
-            console.log("Firestore Logs Access Blocked or Non-existent:", err);
-        });
-        
-        window.pingAllTempMailServers();
+            await batch.commit();
+            await createLog({ type: 'info', host: 'System', request: 'SEED_SERVERS', message: "Menginisiasi 3 server bawaan gratis ke database" });
+        }
     } catch (err) {
-        console.warn("Gagal setup real-time temp mail module:", err);
+        console.error("Gagal menjalankan inisiasi server:", err);
     }
+
+    // 2. Monitor real-time konfigurasi server email
+    onSnapshot(collection(db, "temp_email_providers"), snapshot => {
+        const tbody = document.getElementById('tempMailServersTable');
+        const domainServerSelect = document.getElementById('tmDomainServer');
+        if (!tbody) return;
+        
+        let html = '';
+        const serverOptions = [];
+        let selectedServerValue = domainServerSelect ? domainServerSelect.value : '';
+        
+        snapshot.forEach(docSnap => {
+            const d = docSnap.data();
+            const isTypeC = d.driver === 'type_c';
+            const authInfo = isTypeC ? `<span style="font-family:monospace; background:#FAFAFC; padding:2px 6px; border:1px solid var(--border); border-radius:4px; font-size:0.75rem;">${d.headerName || 'Key'}: ***</span>` : '<span style="color:#CCC;">Tanpa Key</span>';
+            
+            const driverLabels = { type_a: "Tipe A (Hydra/JWT)", type_b: "Tipe B (1secmail)", type_c: "Tipe C (API-Key)" };
+            const driverLabel = driverLabels[d.driver] || d.driver;
+            
+            html += `
+                <tr>
+                    <td style="font-weight:700;"><span class="badge badge-gray">${d.name}</span></td>
+                    <td style="font-family:monospace; color:var(--text-sec); font-size:0.85rem;">${d.url}</td>
+                    <td><span class="badge badge-blue">${driverLabel}</span></td>
+                    <td>${authInfo}</td>
+                    <td style="text-align:right;">
+                        <button class="btn btn-sm btn-danger" onclick="window.deleteTempMailServer('${docSnap.id}', '${d.name}')"><i class="fa-solid fa-trash"></i></button>
+                    </td>
+                </tr>
+            `;
+            
+            serverOptions.push({ value: docSnap.id, label: d.name });
+        });
+        
+        tbody.innerHTML = html || `<tr><td colspan="5" style="text-align:center; padding:20px; color:var(--text-sec);">Belum ada server terdaftar.</td></tr>`;
+        
+        // Perbarui opsi menu tautan domain di form custom domain secara dinamis
+        window.CUSTOM_SELECT_OPTIONS.tmDomainServer = serverOptions;
+        
+        if (domainServerSelect && serverOptions.length > 0) {
+            const exists = serverOptions.some(opt => opt.value === selectedServerValue);
+            if (!exists) {
+                selectedServerValue = serverOptions[0].value;
+                document.getElementById('tmDomainServer-label').innerText = serverOptions[0].label;
+            } else {
+                const matched = serverOptions.find(opt => opt.value === selectedServerValue);
+                document.getElementById('tmDomainServer-label').innerText = matched.label;
+            }
+            domainServerSelect.value = selectedServerValue;
+        } else if (domainServerSelect) {
+            document.getElementById('tmDomainServer-label').innerText = "Belum ada server";
+            domainServerSelect.value = "";
+        }
+    });
+
+    // 3. Monitor real-time custom domains
+    onSnapshot(collection(db, "temp_email_domains"), snapshot => {
+        const tbody = document.getElementById('customDomainsTable');
+        if (!tbody) return;
+        let html = '';
+        snapshot.forEach(docSnap => {
+            const d = docSnap.data();
+            
+            // Cari nama server tautan secara dinamis dari config cache
+            const servers = window.CUSTOM_SELECT_OPTIONS.tmDomainServer || [];
+            const matchedSrv = servers.find(s => s.value === d.server);
+            const serverName = matchedSrv ? matchedSrv.label : "Server Terputus";
+
+            html += `
+                <tr>
+                    <td style="font-weight:700;">${d.domain}</td>
+                    <td><span class="badge badge-blue">${serverName}</span></td>
+                    <td><span class="badge badge-green"><span class="status-dot green"></span> Aktif</span></td>
+                    <td style="text-align:right;">
+                        <button class="btn btn-sm btn-danger" onclick="window.deleteCustomDomain('${docSnap.id}', '${d.domain}')"><i class="fa-solid fa-trash"></i></button>
+                    </td>
+                </tr>
+            `;
+        });
+        tbody.innerHTML = html || `<tr><td colspan="4" style="text-align:center; padding:20px; color:var(--text-sec);">Belum ada domain kustom terdaftar.</td></tr>`;
+    });
+    
+    // 4. Monitor real-time logs email masuk pengguna
+    const q = query(collection(db, "temp_email_logs"), orderBy("timestamp", "desc"), limit(30));
+    onSnapshot(q, snapshot => {
+        const tbody = document.getElementById('tempMailMonitorTable');
+        if (!tbody) return;
+        let html = '';
+        snapshot.forEach(docSnap => {
+            const d = docSnap.data();
+            const dTime = new Date(d.timestamp).toLocaleTimeString('id-ID');
+            html += `
+                <tr>
+                    <td style="color:var(--text-sec); font-size:0.8rem; font-family:monospace;">${dTime}</td>
+                    <td style="font-weight:700; color:var(--accent);">${d.email}</td>
+                    <td style="font-weight:600;">${d.from}</td>
+                    <td style="font-weight:700;">${d.subject}</td>
+                    <td style="color:var(--text-sec); font-size:0.85rem; max-width:250px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${d.snippet}">${d.snippet}</td>
+                </tr>
+            `;
+        });
+        tbody.innerHTML = html || `<tr><td colspan="5" style="text-align:center; padding:40px; color:var(--text-sec);">Belum ada pesan email yang diproses oleh pengguna.</td></tr>`;
+    });
+    
+    // Auto run pings on first load
+    window.pingAllTempMailServers();
 }
 
 window.clearInboxLogs = async () => {
@@ -3017,6 +3192,13 @@ window.copyAiPrompt = () => {
     navigator.clipboard.writeText(promptArea.value);
     showToast("Prompt AI disalin ke clipboard!", "success");
 };
+
+// Daftarkan listener otentikasi mandiri (Sangat aman & modular)
+onAuthStateChanged(auth, user => {
+    if (user && ALLOWED_ADMINS.includes(user.email)) {
+        setupRealtimeTempMail();
+    }
+});
 
 </script>
 </body>
