@@ -1346,6 +1346,14 @@
             for (let path of pathsArray) {
                 for (let apiKey of apiKeys) {
                     let cleanPath = path;
+                    try {
+                        const fmt = localStorage.getItem('kreaverse_ytdl_format');
+                        if (fmt === 'audio' && cleanPath.includes('type=video')) {
+                            cleanPath = cleanPath.replace('type=video', 'type=audio').replace(/quality=[^&]*/g, '').replace(/&&+/g, '&').replace(/\?&/g, '?').replace(/[&?]+$/g, '');
+                        } else if (fmt === 'video' && cleanPath.includes('type=audio')) {
+                            cleanPath = cleanPath.replace('type=audio', 'type=video');
+                        }
+                    } catch (e) {}
                     
                     // PENYEMPURNAAN CERDAS: Jika path mengandung {mediaUrl}, langsung ganti!
                     let fullUrl = "";
