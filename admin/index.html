@@ -1186,13 +1186,14 @@
                     </div>
                 </div>
 
-                <!-- EMAIL SEMENTARA TAB -->
+                <!-- EMAIL SEMENTARA TAB (VERSION 2.0 ADVANCED DYNAMIC PANELS) -->
                 <div id="tab-tempmail" class="section">
-                    <!-- SERVER STATUS (AUTO-PING) -->
+                    
+                    <!-- 1. STATUS SERVER (AUTO-PING) -->
                     <div class="panel">
                         <div class="panel-head">
-                            <div class="panel-title"><i class="fa-solid fa-server"></i> Status Konektivitas Server (Auto-Ping)</div>
-                            <button class="btn btn-sm btn-success" onclick="window.pingAllTempMailServers()"><i class="fa-solid fa-arrows-rotate"></i> Cek Status</button>
+                            <div class="panel-title"><i class="fa-solid fa-server"></i> Status Konektivitas Server (Auto-Ping Asli)</div>
+                            <button class="btn btn-sm btn-success" onclick="window.pingAllTempMailServers()"><i class="fa-solid fa-arrows-rotate"></i> Cek Status Sekarang</button>
                         </div>
                         <div class="panel-body">
                             <div id="tempmail-server-container" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 15px;">
@@ -1201,10 +1202,78 @@
                         </div>
                     </div>
 
-                    <!-- MANAJEMEN DOMAIN SENDIRI -->
+                    <!-- 2. FORM REGISTRASI / TAMBAH SERVER PROVIDER (NO-CODE ENGINE) -->
                     <div class="panel">
                         <div class="panel-head">
-                            <div class="panel-title"><i class="fa-solid fa-globe"></i> Hubungkan Domain Sendiri</div>
+                            <div class="panel-title"><i class="fa-solid fa-plug"></i> Registrasi Server Mail Baru (Sistem Driver)</div>
+                        </div>
+                        <div class="panel-body">
+                            <form id="formTempMailServer" onsubmit="window.saveTempMailServer(event)">
+                                <div class="form-row">
+                                    <div>
+                                        <label>Nama Server (Penyamaran / White-Label)</label>
+                                        <input type="text" id="tmServerName" required placeholder="Contoh: Server Premium Emerald" autocomplete="off">
+                                    </div>
+                                    <div>
+                                        <label>Base URL Server API</label>
+                                        <input type="url" id="tmServerUrl" required placeholder="Contoh: https://api.mail.tm" autocomplete="off">
+                                    </div>
+                                </div>
+                                <div class="form-row">
+                                    <div>
+                                        <label>Pilih Tipe Driver (Mesin API)</label>
+                                        <div class="custom-select-trigger" id="tmServerDriver-trigger" onclick="openCustomSelect('tmServerDriver')">
+                                            <span id="tmServerDriver-label">Tipe A (Hydra / JWT Token)</span>
+                                            <i class="fa-solid fa-chevron-down"></i>
+                                        </div>
+                                        <input type="hidden" id="tmServerDriver" value="type_a">
+                                    </div>
+                                    <div id="tm-header-name-wrapper" style="display: none;">
+                                        <label>Nama Header Otentikasi (Header Key)</label>
+                                        <input type="text" id="tmServerHeaderName" placeholder="Contoh: X-RapidAPI-Key atau Authorization">
+                                    </div>
+                                </div>
+                                <div class="form-row" id="tm-header-value-wrapper" style="display: none; grid-template-columns: 1fr;">
+                                    <div>
+                                        <label>Nilai Kunci API (Header Value / API Key)</label>
+                                        <input type="text" id="tmServerHeaderValue" placeholder="Contoh: sk-proj-xxxxxxxx atau rapidkey-xxxxx">
+                                    </div>
+                                </div>
+                                <button type="submit" class="btn btn-primary" style="width: 100%;"><i class="fa-solid fa-cloud-arrow-up"></i> Simpan Server ke Database</button>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- 3. DATABASE SERVER TERDAFTAR -->
+                    <div class="panel">
+                        <div class="panel-head">
+                            <div class="panel-title"><i class="fa-solid fa-database"></i> Database Server Mail</div>
+                            <button class="btn btn-sm btn-danger" onclick="window.deleteAllTempMailServers()"><i class="fa-solid fa-trash-can"></i> Hapus Semua Server</button>
+                        </div>
+                        <div class="panel-body" style="padding: 0;">
+                            <div class="table-responsive">
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>Nama Server (White-Label)</th>
+                                            <th>Base URL</th>
+                                            <th>Tipe Driver</th>
+                                            <th>Otentikasi / API Key</th>
+                                            <th style="text-align: right;">Aksi</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="tempMailServersTable">
+                                        <tr><td colspan="5" style="text-align:center; padding:20px; color:var(--text-sec);">Memuat data server...</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 4. HUBUNGKAN DOMAIN SENDIRI (DYNAMICALLY LINKED) -->
+                    <div class="panel">
+                        <div class="panel-head">
+                            <div class="panel-title"><i class="fa-solid fa-globe"></i> Hubungkan Domain ke Server Pilihan</div>
                         </div>
                         <div class="panel-body">
                             <form id="formCustomDomain" onsubmit="window.saveCustomDomain(event)">
@@ -1216,10 +1285,10 @@
                                     <div style="flex: 1;">
                                         <label>Tautkan ke Server</label>
                                         <div class="custom-select-trigger" id="tmDomainServer-trigger" onclick="openCustomSelect('tmDomainServer')">
-                                            <span id="tmDomainServer-label">Mail.tm (Rekomendasi)</span>
+                                            <span id="tmDomainServer-label">Memuat server...</span>
                                             <i class="fa-solid fa-chevron-down"></i>
                                         </div>
-                                        <input type="hidden" id="tmDomainServer" value="mail.tm">
+                                        <input type="hidden" id="tmDomainServer" value="">
                                     </div>
                                     <button type="submit" class="btn btn-primary" style="height:52px;"><i class="fa-solid fa-plus"></i> Tambah</button>
                                 </div>
@@ -1230,7 +1299,7 @@
                                     <thead>
                                         <tr>
                                             <th>Nama Domain</th>
-                                            <th>Tipe Server</th>
+                                            <th>Taut Server</th>
                                             <th>Status DNS</th>
                                             <th style="text-align:right;">Aksi</th>
                                         </tr>
@@ -1243,25 +1312,47 @@
                         </div>
                     </div>
 
-                    <!-- PANDUAN DNS & AI PROMPT -->
-                    <div class="form-row">
-                        <!-- PANDUAN DNS -->
-                        <div class="panel" style="margin-bottom:0;">
-                            <div class="panel-head">
-                                <div class="panel-title"><i class="fa-solid fa-book"></i> Panduan Pengaturan DNS / MX Record</div>
-                            </div>
-                            <div class="panel-body" style="font-size:0.85rem; line-height:1.6; color:var(--text-sec);">
-                                <p style="margin-bottom:10px;">Agar domain pribadi Anda bisa menerima pesan secara otomatis di website pengguna, arahkan pengaturan DNS di provider domain Anda ke nilai berikut:</p>
-                                <div style="background:#F4F5F7; padding:12px; border-radius:10px; font-family:monospace; margin-bottom:10px; border:1px solid var(--border);">
+                    <!-- 5. PANDUAN DOKUMENTASI (TUTORIAL LENGKAP) -->
+                    <div class="panel">
+                        <div class="panel-head" onclick="window.toggleTempMailGuide()" style="cursor: pointer;">
+                            <div class="panel-title"><i class="fa-solid fa-book"></i> Panduan & Dokumentasi Penyetelan Server & DNS (PENTING)</div>
+                            <i class="fa-solid fa-chevron-down" id="tm-guide-chevron" style="transition: transform 0.3s;"></i>
+                        </div>
+                        <div class="panel-body" id="tmGuideBody" style="display: none; line-height: 1.6; font-size: 0.9rem; padding: 25px;">
+                            <div style="margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px solid var(--border);">
+                                <strong style="color: var(--accent); font-size: 1rem;"><i class="fa-solid fa-earth-americas"></i> 1. Pengaturan DNS / MX Record untuk Domain Pribadi</strong>
+                                <p style="color: var(--text-sec); font-size: 0.85rem; margin-top: 5px;">
+                                    Every time Anda menghubungkan domain pribadi, Anda wajib mengonfigurasi DNS di registrar domain Anda (Niagahoster, Cloudflare, dll) agar server bisa merutekan surat masuk secara otomatis [Paste June 15, 2026 - 10:34AM]. Silakan atur nilai berikut:
+                                </p>
+                                <div style="background: #F4F5F7; padding: 12px 18px; border-radius: 10px; font-family: monospace; font-size: 0.85rem; margin-top: 10px; border: 1px solid var(--border);">
                                     <strong>Type:</strong> MX<br>
-                                    <strong>Host/Name:</strong> @ (atau kosong)<br>
-                                    <strong>Value:</strong> mx.mail.tm.<br>
+                                    <strong>Host / Name:</strong> @ (atau biarkan kosong)<br>
+                                    <strong>Value / Target:</strong> mx.mail.tm. (Jika dilarikan ke Mail.tm)<br>
                                     <strong>Priority:</strong> 10
                                 </div>
-                                <p>Setelah melakukan perubahan DNS, dibutuhkan waktu sekitar 5 - 30 menit untuk proses propagasi internet sebelum domain siap menerima email [Kejadian Juni 15, 2026].</p>
+                            </div>
+                            <div style="margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px solid var(--border);">
+                                <strong style="color: var(--info); font-size: 1rem;"><i class="fa-solid fa-cube"></i> 2. Penjelasan Pemilihan Tipe Driver (Mesin API)</strong>
+                                <div style="margin-top: 10px; display: flex; flex-direction: column; gap: 12px; padding-left: 10px; font-size: 0.85rem; color: var(--text-sec);">
+                                    <div>
+                                        <strong style="color: var(--text);">• Tipe A (Hydra / JWT Token)</strong>
+                                        <p style="margin-top: 2px;">Gunakan tipe ini untuk provider seperti <strong>Mail.tm</strong> atau <strong>Mail.gw</strong> yang mewajibkan pendaftaran kredensial user untuk meng-generate token otorisasi secara aman [Paste June 15, 2026 - 10:34AM].</p>
+                                    </div>
+                                    <div>
+                                        <strong style="color: var(--text);">• Tipe B (Parameter Query)</strong>
+                                        <p style="margin-top: 2px;">Gunakan tipe ini untuk provider ringan seperti <strong>1secmail</strong> yang mengizinkan penarikan data langsung melalui query parameter tanpa butuh login [Paste June 15, 2026 - 10:34AM].</p>
+                                    </div>
+                                    <div>
+                                        <strong style="color: var(--text);">• Tipe C (API-Key Headers)</strong>
+                                        <p style="margin-top: 2px;">Gunakan tipe ini jika Anda berlangganan API email premium di RapidAPI yang membutuhkan pengiriman kunci akses melalui Headers [Kejadian Juni 15, 2026].</p>
+                                    </div>
+                                </div>
                             </div>
                         </div>
+                    </div>
 
+                    <!-- 6. AI PROMPT & INBOX MONITOR -->
+                    <div class="form-row">
                         <!-- AI PROMPT COPY-READY -->
                         <div class="panel" style="margin-bottom:0;">
                             <div class="panel-head">
