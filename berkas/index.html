@@ -718,6 +718,27 @@
             });
 
             container.innerHTML = html;
+            
+            // RENDERING PAGINATION BUTTONS (10 FILE PER TAB)
+            if (totalPages > 1) {
+                let pagHtml = '';
+                // Prev
+                pagHtml += `<button onclick="changePage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''} style="background:${currentPage === 1 ? '#F3F4F6' : '#FFFFFF'}; color:${currentPage === 1 ? '#9CA3AF' : '#111827'}; border:1px solid var(--border-color); padding:8px 12px; border-radius:12px; font-weight:700; cursor:${currentPage === 1 ? 'not-allowed' : 'pointer'}; transition:var(--transition); font-size:0.85rem;"><i class="fa-solid fa-chevron-left"></i></button>`;
+                
+                for (let i = 1; i <= totalPages; i++) {
+                    const isActive = currentPage === i;
+                    pagHtml += `<button onclick="changePage(${i})" style="background:${isActive ? 'var(--accent-color)' : '#FFFFFF'}; color:${isActive ? '#FFFFFF' : 'var(--text-secondary)'}; border:1px solid ${isActive ? 'var(--accent-color)' : 'var(--border-color)'}; padding:8px 14px; border-radius:12px; font-weight:700; cursor:pointer; transition:var(--transition); font-size:0.85rem; box-shadow:${isActive ? '0 4px 10px rgba(99, 102, 241, 0.2)' : 'var(--shadow-sm)'};">${i}</button>`;
+                }
+                
+                // Next
+                pagHtml += `<button onclick="changePage(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''} style="background:${currentPage === totalPages ? '#F3F4F6' : '#FFFFFF'}; color:${currentPage === totalPages ? '#9CA3AF' : '#111827'}; border:1px solid var(--border-color); padding:8px 12px; border-radius:12px; font-weight:700; cursor:${currentPage === totalPages ? 'not-allowed' : 'pointer'}; transition:var(--transition); font-size:0.85rem;"><i class="fa-solid fa-chevron-right"></i></button>`;
+                
+                paginationContainer.innerHTML = pagHtml;
+                paginationContainer.style.display = 'flex';
+            } else {
+                paginationContainer.innerHTML = '';
+                paginationContainer.style.display = 'none';
+            }
         };
 
         // SISTEM AUTO-CHECK STATUS GENERATE LATAR BELAKANG (SETIAP 30 DETIK)
