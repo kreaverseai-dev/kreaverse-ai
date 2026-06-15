@@ -779,6 +779,73 @@
         </div>
     </section>
 
+    <!-- FAQ SECTION -->
+    <section class="section-container" style="max-width: 650px; margin: 40px auto; text-align: left; padding: 0 20px;">
+        <h2 style="font-family: 'Plus Jakarta Sans', sans-serif; font-size: 1.3rem; font-weight: 900; margin-bottom: 20px; text-align: center; color: var(--text-primary);">Tanya Jawab Kreaverse AI</h2>
+        <div style="display: flex; flex-direction: column; gap: 12px;">
+            <!-- FAQ 1 -->
+            <div class="faq-item" style="background: var(--surface-color); border: 1px solid var(--border-color); border-radius: 16px; overflow: hidden; transition: var(--transition); box-shadow: var(--shadow-sm);">
+                <button onclick="toggleFaq(this)" style="width: 100%; display: flex; justify-content: space-between; align-items: center; padding: 18px 20px; background: none; border: none; text-align: left; font-family: 'Plus Jakarta Sans', sans-serif; font-size: 0.9rem; font-weight: 800; color: var(--text-primary); cursor: pointer; outline: none; gap: 15px;">
+                    <span>Apa tujuan dari platform Kreaverse AI Downloader?</span>
+                    <i class="fa-solid fa-chevron-down" style="font-size: 0.8rem; color: var(--text-light); transition: transform 0.3s ease;"></i>
+                </button>
+                <div class="faq-content" style="max-height: 0; overflow: hidden; transition: max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1); background: #fcfcfd;">
+                    <p style="padding: 0 20px 18px; font-size: 0.8rem; color: var(--text-secondary); line-height: 1.6; font-weight: 500;">
+                        Tujuan utama dari <a href="https://kreaverse-ai.biz.id" style="color: var(--accent-color); font-weight: 700; text-decoration: none;">Kreaverse AI</a> adalah memberikan layanan unduhan premium secara instan untuk menyimpan berkas media video, audio, dan thumbnail tanpa watermark melalui server VPS pribadi kami yang andal.
+                    </p>
+                </div>
+            </div>
+            <!-- FAQ 2 -->
+            <div class="faq-item" style="background: var(--surface-color); border: 1px solid var(--border-color); border-radius: 16px; overflow: hidden; transition: var(--transition); box-shadow: var(--shadow-sm);">
+                <button onclick="toggleFaq(this)" style="width: 100%; display: flex; justify-content: space-between; align-items: center; padding: 18px 20px; background: none; border: none; text-align: left; font-family: 'Plus Jakarta Sans', sans-serif; font-size: 0.9rem; font-weight: 800; color: var(--text-primary); cursor: pointer; outline: none; gap: 15px;">
+                    <span>Apakah alat pengunduh Kreaverse AI ini berbayar?</span>
+                    <i class="fa-solid fa-chevron-down" style="font-size: 0.8rem; color: var(--text-light); transition: transform 0.3s ease;"></i>
+                </button>
+                <div class="faq-content" style="max-height: 0; overflow: hidden; transition: max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1); background: #fcfcfd;">
+                    <p style="padding: 0 20px 18px; font-size: 0.8rem; color: var(--text-secondary); line-height: 1.6; font-weight: 500;">
+                        Tidak, alat pengunduh <a href="https://kreaverse-ai.biz.id" style="color: var(--accent-color); font-weight: 700; text-decoration: none;">Kreaverse AI</a> sepenuhnya gratis tanpa biaya tersembunyi. Pengguna yang sudah masuk/login dapat menikmati akses pengunduhan tanpa batas kuota harian dan bebas watermark.
+                    </p>
+                </div>
+            </div>
+            <!-- FAQ 3 -->
+            <div class="faq-item" style="background: var(--surface-color); border: 1px solid var(--border-color); border-radius: 16px; overflow: hidden; transition: var(--transition); box-shadow: var(--shadow-sm);">
+                <button onclick="toggleFaq(this)" style="width: 100%; display: flex; justify-content: space-between; align-items: center; padding: 18px 20px; background: none; border: none; text-align: left; font-family: 'Plus Jakarta Sans', sans-serif; font-size: 0.9rem; font-weight: 800; color: var(--text-primary); cursor: pointer; outline: none; gap: 15px;">
+                    <span>Platform dan format apa saja yang didukung oleh Kreaverse AI?</span>
+                    <i class="fa-solid fa-chevron-down" style="font-size: 0.8rem; color: var(--text-light); transition: transform 0.3s ease;"></i>
+                </button>
+                <div class="faq-content" style="max-height: 0; overflow: hidden; transition: max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1); background: #fcfcfd;">
+                    <p style="padding: 0 20px 18px; font-size: 0.8rem; color: var(--text-secondary); line-height: 1.6; font-weight: 500;">
+                        Platform <a href="https://kreaverse-ai.biz.id" style="color: var(--accent-color); font-weight: 700; text-decoration: none;">Kreaverse AI</a> mendukung pengunduhan dari YouTube, TikTok, Facebook, Instagram, dan Twitter. Anda dapat mengunduh media dalam format video (MP4), audio kualitas tinggi (MP3), serta gambar thumbnail secara langsung melalui server VPS kami.
+                    </p>
+                </div>
+            </div>
+        </div>
+        <script>
+            function toggleFaq(btn) {
+                const item = btn.parentElement;
+                const content = item.querySelector('.faq-content');
+                const icon = btn.querySelector('i');
+                const isOpen = item.classList.contains('faq-open');
+                
+                document.querySelectorAll('.faq-item').forEach(el => {
+                    el.classList.remove('faq-open');
+                    el.querySelector('.faq-content').style.maxHeight = '0';
+                    el.querySelector('i').style.transform = 'rotate(0deg)';
+                    el.style.borderColor = 'var(--border-color)';
+                    el.style.boxShadow = 'var(--shadow-sm)';
+                });
+
+                if (!isOpen) {
+                    item.classList.add('faq-open');
+                    content.style.maxHeight = content.scrollHeight + 'px';
+                    icon.style.transform = 'rotate(180deg)';
+                    item.style.borderColor = 'var(--accent-color)';
+                    item.style.boxShadow = 'var(--shadow-md)';
+                }
+            }
+        </script>
+    </section>
+
     <!-- FOOTER -->
     <footer class="footer">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="10 0 190 60" style="width:140px; height:32px; margin: 0 auto 20px; display: block; filter: drop-shadow(0 1px 2px rgba(0,0,0,0.1));">
