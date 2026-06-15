@@ -1367,9 +1367,17 @@
                     }
                     try {
                         let response;
-                        try { response = await fetch(fullUrl); } catch (directErr) {
+                        try {
+                            const controller = new AbortController();
+                            const tId = setTimeout(() => controller.abort(), 6000);
+                            response = await fetch(fullUrl, { signal: controller.signal });
+                            clearTimeout(tId);
+                        } catch (directErr) {
                             const proxyUrl = "/api/ytdl?targetUrl=" + encodeURIComponent(fullUrl);
-                            response = await fetch(proxyUrl);
+                            const controller = new AbortController();
+                            const tId = setTimeout(() => controller.abort(), 8000);
+                            response = await fetch(proxyUrl, { signal: controller.signal });
+                            clearTimeout(tId);
                         }
                         if (response.headers.get("content-type")?.includes("application/json")) {
                             const data = await response.json();
