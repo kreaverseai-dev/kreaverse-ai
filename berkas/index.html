@@ -451,7 +451,7 @@
             } else if (low.includes('facebook.com') || low.includes('fb.watch')) {
                 return { icon: 'fa-brands fa-facebook', color: '#1877F2', bg: 'rgba(24, 119, 242, 0.1)' };
             } else if (low.includes('twitter.com') || low.includes('x.com')) {
-                return { icon: 'fa-brands fa-x-twitter', color: '#000000', bg: 'rgba(0, 0, 0, 0.05)' };
+                return { icon: 'fa-brands fa-twitter', color: '#1DA1F2', bg: 'rgba(29, 161, 242, 0.1)' };
             } else if (low.includes('spotify.com')) {
                 return { icon: 'fa-brands fa-spotify', color: '#1DB954', bg: 'rgba(29, 185, 84, 0.1)' };
             }
@@ -507,6 +507,233 @@
             document.getElementById('sort-label').innerText = sortType === 'newest' ? 'Terbaru' : 'Terlama';
             closeSortSheet();
             renderList();
+        };
+
+        // AMBIL DATA DOWNLOADER DARI FIREBASE
+        if (isLoggedIn && userId) {
+            const qDl = query(collection(db, "users", userId, "downloads"), orderBy("timestamp", "desc"));
+            onSnapshot(qDl, (snapshot) => {
+                dlData = [];
+                snapshot.forEach((doc) => {
+                    dlData.push({ id: doc.id, ...doc.data() });
+                });
+                if (currentMainTab === 'dl') renderList();
+            });
+
+            // AMBIL DATA AI GENERATE DARI FIREBASE
+            const userEmail = localStorage.getItem('kreaverse_user_email');
+            if (userEmail) {
+                const qGen = query(collection(db, "render_gallery"), orderBy("timestamp", "desc"));
+                onSnapshot(qGen, (snapshot) => {
+                    genData = [];
+                    snapshot.forEach((doc) => {
+                        const data = doc.data();
+                        if (data.email === userEmail) {
+                            genData.push({ id: doc.id, ...data });
+                        }
+                    });
+                    if (currentMainTab === 'gen') renderList();
+                });
+            }
+        }
+
+        // FUNGSI FORMAT TANGGAL DENGAN BULLET TITIK BENAR
+        function formatDate(ts) {
+            const d = new Date(ts);
+            const months = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
+            let hours = d.getHours();
+            let minutes = d.getMinutes();
+            let ampm = hours >= 12 ? 'PM' : 'AM';
+            hours = hours % 12;
+            hours = hours ? hours : 12; 
+            minutes = minutes < 10 ? '0' + minutes : minutes;
+            return `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()} • ${hours}:${minutes} ${ampm}`;
+        }
+
+        window.renderList = function() {
+            const container = document.getElementById('berkas-list-container');
+            const paginationContainer = document.getElementById('pagination-container');
+            let dataToRender = currentMainTab === 'dl' ? [...dlData] : [...genData];
+
+            // Terapkan Filter (All, Video, Audio, Thumbnail/Image)
+            if (currentFilter !== 'all') {
+                if (currentFilter === 'thumb') {
+                    dataToRender = dataToRender.filter(item => item.type === 'thumb' || item.type === 'thumbnail' || item.type === 'image');
+                } else {
+                    dataToRender = dataToRender.filter(item => item.type === currentFilter);
+                }
+            }
+
+            // Terapkan Sorting
+            if (currentSort === 'oldest') {
+                dataToRender.reverse();
+            }
+
+            const totalItems = dataToRender.length;
+            document.getElementById('total-files-text').innerText = `Total: ${totalItems} File`;
+
+            if (totalItems === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fa-regular fa-folder-open"></i>
+                        <h3>Belum ada berkas</h3>
+                        <p style="margin-top:8px; font-size:0.9rem;">File yang Anda ${currentMainTab === 'dl' ? 'unduh' : 'generate'} akan muncul di sini secara permanen.</p>
+                    </div>
+                `;
+                paginationContainer.innerHTML = '';
+                return;
+            }
+
+            // CONFIG ESTIMASI HALAMAN (10 FILE PER TAB)
+            const totalPages = Math.ceil(totalItems / itemsPerPage);
+            if (currentPage > totalPages) currentPage = totalPages || 1;
+            
+            const startIndex = (currentPage - 1) * itemsPerPage;
+            const endIndex = startIndex + itemsPerPage;
+            const paginatedData = dataToRender.slice(startIndex, endIndex);
+
+            let html = '';
+            paginatedData.forEach((item, index) => {
+                const num = startIndex + index + 1;
+                const dateStr = formatDate(item.timestamp);
+                
+                if (currentMainTab === 'dl') {
+                    // RENDER ITEM DOWNLOADER DENGAN FITUR LOGO PLATFORM BERWARNA NYATA & THUMBNAIL
+                    const isAudio = item.type === 'audio';
+                    const isThumb = item.type === 'thumb' || item.type === 'thumbnail';
+                    
+                    // MEMPERBAIKI KETIDAKHADIRAN AWALAN 'fa-solid' PADA KELAS IKON DEFAULT AGAR TIDAK MUNCUL KOTAK KOSONG [X]
+                    let iconClass = isAudio ? 'fa-solid fa-music' : (isThumb ? 'fa-solid fa-image' : 'fa-solid fa-video');
+                    let bgClass = isAudio ? 'audio' : (isThumb ? 'image' : 'video');
+                    let iconStyle = '';
+                    
+                    // Deteksi platform sosial media & terapkan visual brand asli (Vivid Color)
+                    const plat = getPlatformStyle(item.directUrl || item.url);
+                    if (plat) {
+                        iconClass = plat.icon;
+                        iconStyle = `color: ${plat.color} !important; background-color: ${plat.bg} !important;`;
+                    }
+                    
+                    const sizeBadge = item.size ? `<span class="meta-badge">${item.size}</span>` : '';
+                    const safeThumb = item.thumbnail ? btoa(item.thumbnail) : '';
+                    
+                    // Aksi putar: Jika thumbnail, langsung buka tab baru untuk melihat gambar. Jika audio/video, jalankan pemutar native
+                    const playAction = isThumb ? 
+                        `window.open('${item.directUrl}', '_blank')` : 
+                        `openPlayer('${item.directUrl}', '${item.fileName.replace(/'/g, "\\'")}', '${item.type}', '${safeThumb}')`;
+                    
+                    const playIcon = isThumb ? 'fa-eye' : 'fa-play';
+                    const playTitle = isThumb ? 'Lihat Gambar' : 'Putar';
+                    
+                    html += `
+                        <div class="berkas-item">
+                            <div class="item-number">${num}.</div>
+                            <div class="item-icon ${bgClass}" style="${iconStyle}"><i class="${iconClass}"></i></div>
+                            <div class="item-info">
+                                <div class="item-title" title="${item.fileName}">${item.fileName}</div>
+                                <div class="item-meta">
+                                    <span>${dateStr}</span>
+                                    <span class="meta-badge" style="text-transform:uppercase;">${item.type === 'thumb' ? 'thumbnail' : item.type}</span>
+                                    <span class="meta-badge provider">${item.provider || 'Server'}</span>
+                                    ${sizeBadge}
+                                </div>
+                            </div>
+                            <div class="item-actions">
+                                <button class="action-btn play" onclick="${playAction}" title="${playTitle}"><i class="fa-solid ${playIcon}"></i></button>
+                                <button class="action-btn dl" onclick="downloadFile('${item.directUrl}', '${item.fileName.replace(/'/g, "\\'")}')" title="Unduh"><i class="fa-solid fa-download"></i></button>
+                                <button class="action-btn del" onclick="deleteFile('${item.id}', 'dl')" title="Hapus"><i class="fa-solid fa-trash"></i></button>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    // RENDER ITEM AI GENERATE (DIPERBAIKI UNTUK PROSES SEPARASI TIPE DAN METADATA)
+                    const isImage = item.type === 'image';
+                    const isAudio = item.type === 'audio';
+                    const isVideo = item.type === 'video';
+                    
+                    const iconClass = isImage ? 'fa-image' : (isAudio ? 'fa-music' : 'fa-video');
+                    const bgClass = isImage ? 'image' : (isAudio ? 'audio' : 'video');
+                    
+                    // Deteksi jika item berasal dari LyricShot AI
+                    const isLyricShot = item.tool === "LyricShot AI";
+                    const title = isLyricShot ? `LyricShot AI - "${item.lyrics_segment || 'Klip Video'}"` : (item.prompt ? item.prompt.substring(0, 50) + '...' : 'Media AI Generate');
+                    
+                    let statusLabel = '';
+                    let actionButtons = '';
+                    
+                    if (isLyricShot && item.status === "pending") {
+                        statusLabel = `<span style="font-size:0.75rem; color:#F59E0B; font-weight:700; display:flex; align-items:center; gap:6px;"><i class="fa-solid fa-circle-notch fa-spin"></i> Rendering (Cek 30d)</span>`;
+                        actionButtons = `
+                            <button class="action-btn play" style="background:#F3F4F6; color:var(--text-light); cursor:not-allowed;" disabled><i class="fa-solid fa-circle-notch fa-spin"></i></button>
+                            <button class="action-btn dl" style="background:#F3F4F6; color:var(--text-light); cursor:not-allowed;" disabled><i class="fa-solid fa-hourglass-start"></i></button>
+                            <button class="action-btn del" onclick="deleteFile('${item.id}', 'gen')" title="Hapus"><i class="fa-solid fa-trash"></i></button>
+                        `;
+                    } else if (isLyricShot && item.status === "failed") {
+                        statusLabel = `<span style="font-size:0.75rem; color:var(--danger-color); font-weight:700;"><i class="fa-solid fa-circle-xmark"></i> Gagal</span>`;
+                        actionButtons = `
+                            <button class="action-btn play" style="background:#FEE2E2; color:var(--danger-color); cursor:not-allowed;" disabled><i class="fa-solid fa-triangle-exclamation"></i></button>
+                            <button class="action-btn del" onclick="deleteFile('${item.id}', 'gen')" title="Hapus"><i class="fa-solid fa-trash"></i></button>
+                        `;
+                    } else {
+                        actionButtons = `
+                            ${isImage ? 
+                                `<button class="action-btn play" onclick="window.open('${item.url}', '_blank')" title="Lihat"><i class="fa-solid fa-eye"></i></button>` : 
+                                `<button class="action-btn play" onclick="openPlayer('${item.url}', '${title.replace(/'/g, "\\'")}', '${item.type}', '')" title="Putar"><i class="fa-solid fa-play"></i></button>`
+                            }
+                            <button class="action-btn dl" onclick="downloadFile('${item.url}', 'Kreaverse_AI_Generate')" title="Unduh"><i class="fa-solid fa-download"></i></button>
+                            <button class="action-btn del" onclick="deleteFile('${item.id}', 'gen')" title="Hapus"><i class="fa-solid fa-trash"></i></button>
+                        `;
+                    }
+
+                    const toolBadge = isLyricShot ? `<span class="meta-badge" style="background:#EEF2FF; color:#6366F1; font-weight:800;"><i class="fa-solid fa-clapperboard"></i> LyricShot AI</span>` : '';
+                    const providerBadge = isLyricShot ? `<span class="meta-badge provider">${item.provider || 'Leonardo AI'}</span>` : '';
+                    const modelBadge = isLyricShot ? `<span class="meta-badge" style="background:#E0E7FF; color:#4F46E5; font-weight:700;">${item.model || 'default'}</span>` : '';
+
+                    html += `
+                        <div class="berkas-item">
+                            <div class="item-number">${num}.</div>
+                            <div class="item-icon ${bgClass}"><i class="fa-solid ${iconClass}"></i></div>
+                            <div class="item-info">
+                                <div class="item-title" title="${isLyricShot ? (item.prompt || 'Adegan') : (item.prompt || 'Media')}">${title}</div>
+                                <div class="item-meta">
+                                    <span>${dateStr}</span>
+                                    <span class="meta-badge">${item.type.toUpperCase()}</span>
+                                    ${toolBadge}
+                                    ${providerBadge}
+                                    ${modelBadge}
+                                    ${statusLabel}
+                                </div>
+                            </div>
+                            <div class="item-actions">
+                                ${actionButtons}
+                            </div>
+                        </div>
+                    `;
+                }
+            });
+
+            container.innerHTML = html;
+            
+            // RENDERING PAGINATION BUTTONS (10 FILE PER TAB)
+            if (totalPages > 1) {
+                let pagHtml = '';
+                // Prev
+                pagHtml += `<button onclick="changePage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''} style="background:${currentPage === 1 ? '#F3F4F6' : '#FFFFFF'}; color:${currentPage === 1 ? '#9CA3AF' : '#111827'}; border:1px solid var(--border-color); padding:8px 12px; border-radius:12px; font-weight:700; cursor:${currentPage === 1 ? 'not-allowed' : 'pointer'}; transition:var(--transition); font-size:0.85rem;"><i class="fa-solid fa-chevron-left"></i></button>`;
+                
+                for (let i = 1; i <= totalPages; i++) {
+                    const isActive = currentPage === i;
+                    pagHtml += `<button onclick="changePage(${i})" style="background:${isActive ? 'var(--accent-color)' : '#FFFFFF'}; color:${isActive ? '#FFFFFF' : 'var(--text-secondary)'}; border:1px solid ${isActive ? 'var(--accent-color)' : 'var(--border-color)'}; padding:8px 14px; border-radius:12px; font-weight:700; cursor:pointer; transition:var(--transition); font-size:0.85rem; box-shadow:${isActive ? '0 4px 10px rgba(99, 102, 241, 0.2)' : 'var(--shadow-sm)'};">${i}</button>`;
+                }
+                
+                // Next
+                pagHtml += `<button onclick="changePage(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''} style="background:${currentPage === totalPages ? '#F3F4F6' : '#FFFFFF'}; color:${currentPage === totalPages ? '#9CA3AF' : '#111827'}; border:1px solid var(--border-color); padding:8px 12px; border-radius:12px; font-weight:700; cursor:${currentPage === totalPages ? 'not-allowed' : 'pointer'}; transition:var(--transition); font-size:0.85rem;"><i class="fa-solid fa-chevron-right"></i></button>`;
+                
+                paginationContainer.innerHTML = pagHtml;
+                paginationContainer.style.display = 'flex';
+            } else {
+                paginationContainer.innerHTML = '';
+                paginationContainer.style.display = 'none';
+            }
         };
 
         window.changePage = function(page) {
