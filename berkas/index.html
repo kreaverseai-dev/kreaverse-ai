@@ -364,6 +364,7 @@
             
             <video id="custom-video" class="video-element" playsinline preload="metadata" referrerpolicy="no-referrer"></video>
             <audio id="custom-audio" class="hidden" preload="metadata" referrerpolicy="no-referrer"></audio>
+            <img id="custom-image" class="hidden" style="width: 100%; height: 100%; object-fit: contain; display: none;" referrerpolicy="no-referrer">
             
             <div class="player-controls">
                 <button class="play-pause-btn" id="play-pause-btn"><i class="fa-solid fa-play" style="margin-left:2px;"></i></button>
@@ -793,6 +794,14 @@
             playerTitle.innerText = title;
             playerModal.classList.add('active');
 
+            const customImage = document.getElementById('custom-image');
+            if (customImage) {
+                customImage.src = "";
+                customImage.style.display = "none";
+                customImage.classList.add('hidden');
+            }
+            document.querySelector('.player-controls').style.display = "flex";
+
             let decodedThumb = '';
             try { if(base64Thumb) decodedThumb = atob(base64Thumb); } catch(e){}
             const finalThumb = decodedThumb || 'https://i.postimg.cc/mZdwnfsm/Claude-ai-icon-svg.png';
@@ -804,6 +813,26 @@
                 mediaWrapper.classList.add('audio-mode'); 
                 customVideo.style.display = "none";
                 customAudio.play();
+            } else if (type === 'thumb' || type === 'thumbnail' || type === 'image') {
+                activeMedia = null;
+                customVideo.style.display = "none";
+                customAudio.style.display = "none";
+                document.getElementById('audio-ui').style.display = "none";
+                document.querySelector('.player-controls').style.display = "none";
+                
+                if (customImage) {
+                    customImage.src = "https://kreaverse-proxy.kreaverse-ai.workers.dev/?targetUrl=" + encodeURIComponent(url);
+                    customImage.style.display = "block";
+                    customImage.classList.remove('hidden');
+                    customImage.onload = () => {
+                        if (customImage.naturalWidth > customImage.naturalHeight) {
+                            mediaWrapper.style.aspectRatio = "16/9";
+                        } else {
+                            mediaWrapper.style.aspectRatio = "9/16";
+                        }
+                    };
+                }
+                mediaWrapper.classList.remove('audio-mode');
             } else {
                 activeMedia = customVideo; 
                 customVideo.src = url;
@@ -820,6 +849,16 @@
                 activeMedia.src = "";
                 activeMedia = null;
             }
+            const customImage = document.getElementById('custom-image');
+            if (customImage) {
+                customImage.src = "";
+                customImage.style.display = "none";
+                customImage.classList.add('hidden');
+            }
+            document.querySelector('.player-controls').style.display = "flex";
+            document.getElementById('audio-ui').style.display = "flex";
+            mediaWrapper.style.aspectRatio = '';
+            
             updatePlayPauseUI(false);
             progressFill.style.width = '0%';
             currentTimeEl.innerText = '0:00'; 
@@ -918,16 +957,25 @@
             activeMedia.currentTime = ((e.clientX - rect.left) / rect.width) * activeMedia.duration;
         });
 
-        // FUNGSI DOWNLOAD
+        // FUNGSI DOWNLOAD (Direct Cloudflare Proxy download bypass redirect)
         window.downloadFile = function(url, fileName) {
-            showIphoneNotif('Mengunduh...', 'File sedang disimpan ke perangkat Anda.', 'fa-download');
-            const a = document.createElement('a');
-            a.href = url;
-            a.target = '_blank';
-            a.download = fileName;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
+            showIphoneNotif('Mengunduh...', 'Mengalirkan berkas secara langsung dengan nama premium...', 'fa-download');
+            const CLOUDFLARE_WORKER_PROXY = "https://kreaverse-proxy.kreaverse-ai.workers.dev";
+            
+            const ext = fileName.split('.').pop() || 'mp4';
+            let cleanTitle = fileName.replace(/\.[^/.]+$/, "");
+            
+            const proxyUrl = `${CLOUDFLARE_WORKER_PROXY}/?targetUrl=${encodeURIComponent(url)}&filename=${encodeURIComponent(cleanTitle + '.' + ext)}`;
+            
+            setTimeout(() => {
+                const a = document.createElement('a');
+                a.href = proxyUrl;
+                a.download = fileName;
+                a.style.display = 'none';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+            }, 500);
         };
 
         // FUNGSI HAPUS SATUAN DARI FIREBASE
