@@ -1171,21 +1171,139 @@
             <!-- LOGS TAB (VERCEL STYLE) -->
             <div id="tab-logs" class="section">
                 <div class="panel">
-                    <div class="panel-head">
-                        <div class="panel-title"><i class="fa-solid fa-terminal"></i> Log Integrasi API</div>
-                        <button class="btn btn-sm btn-danger" onclick="confirmAction('Kosongkan semua log?', window.deleteAllLogs)">
-                            <i class="fa-solid fa-eraser"></i> Bersihkan
-                        </button>
-                    </div>
-                    <div class="panel-body" style="padding:0; background: #FAFAFC;">
-                        <div class="vercel-log-list" id="logContainer"></div>
+                        <div class="panel-head">
+                            <div class="panel-title"><i class="fa-solid fa-terminal"></i> Log Integrasi API</div>
+                            <button class="btn btn-sm btn-danger" onclick="confirmAction('Kosongkan semua log?', window.deleteAllLogs)">
+                                <i class="fa-solid fa-eraser"></i> Bersihkan
+                            </button>
+                        </div>
+                        <div class="panel-body" style="padding:0; background: #FAFAFC;">
+                            <div class="vercel-log-list" id="logContainer"></div>
+                        </div>
                     </div>
                 </div>
+
+                <!-- EMAIL SEMENTARA TAB -->
+                <div id="tab-tempmail" class="section">
+                    <!-- SERVER STATUS (AUTO-PING) -->
+                    <div class="panel">
+                        <div class="panel-head">
+                            <div class="panel-title"><i class="fa-solid fa-server"></i> Status Konektivitas Server (Auto-Ping)</div>
+                            <button class="btn btn-sm btn-success" onclick="window.pingAllTempMailServers()"><i class="fa-solid fa-arrows-rotate"></i> Cek Status</button>
+                        </div>
+                        <div class="panel-body">
+                            <div id="tempmail-server-container" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 15px;">
+                                <!-- Dynamically populated server status cards -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- MANAJEMEN DOMAIN SENDIRI -->
+                    <div class="panel">
+                        <div class="panel-head">
+                            <div class="panel-title"><i class="fa-solid fa-globe"></i> Hubungkan Domain Sendiri</div>
+                        </div>
+                        <div class="panel-body">
+                            <form id="formCustomDomain" onsubmit="window.saveCustomDomain(event)">
+                                <div class="form-row col-3">
+                                    <div style="flex: 2;">
+                                        <label>Nama Domain Baru</label>
+                                        <input type="text" id="tmNewDomain" required placeholder="Contoh: mail.kreaverse.ai" autocomplete="off">
+                                    </div>
+                                    <div style="flex: 1;">
+                                        <label>Tautkan ke Server</label>
+                                        <div class="custom-select-trigger" id="tmDomainServer-trigger" onclick="openCustomSelect('tmDomainServer')">
+                                            <span id="tmDomainServer-label">Mail.tm (Rekomendasi)</span>
+                                            <i class="fa-solid fa-chevron-down"></i>
+                                        </div>
+                                        <input type="hidden" id="tmDomainServer" value="mail.tm">
+                                    </div>
+                                    <button type="submit" class="btn btn-primary" style="height:52px;"><i class="fa-solid fa-plus"></i> Tambah</button>
+                                </div>
+                            </form>
+
+                            <div class="table-responsive" style="margin-top:20px;">
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>Nama Domain</th>
+                                            <th>Tipe Server</th>
+                                            <th>Status DNS</th>
+                                            <th style="text-align:right;">Aksi</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="customDomainsTable">
+                                        <tr><td colspan="4" style="text-align:center; padding:20px; color:var(--text-sec);">Belum ada domain kustom terdaftar.</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- PANDUAN DNS & AI PROMPT -->
+                    <div class="form-row">
+                        <!-- PANDUAN DNS -->
+                        <div class="panel" style="margin-bottom:0;">
+                            <div class="panel-head">
+                                <div class="panel-title"><i class="fa-solid fa-book"></i> Panduan Pengaturan DNS / MX Record</div>
+                            </div>
+                            <div class="panel-body" style="font-size:0.85rem; line-height:1.6; color:var(--text-sec);">
+                                <p style="margin-bottom:10px;">Agar domain pribadi Anda bisa menerima pesan secara otomatis di website pengguna, arahkan pengaturan DNS di provider domain Anda ke nilai berikut:</p>
+                                <div style="background:#F4F5F7; padding:12px; border-radius:10px; font-family:monospace; margin-bottom:10px; border:1px solid var(--border);">
+                                    <strong>Type:</strong> MX<br>
+                                    <strong>Host/Name:</strong> @ (atau kosong)<br>
+                                    <strong>Value:</strong> mx.mail.tm.<br>
+                                    <strong>Priority:</strong> 10
+                                </div>
+                                <p>Setelah melakukan perubahan DNS, dibutuhkan waktu sekitar 5 - 30 menit untuk proses propagasi internet sebelum domain siap menerima email [Kejadian Juni 15, 2026].</p>
+                            </div>
+                        </div>
+
+                        <!-- AI PROMPT COPY-READY -->
+                        <div class="panel" style="margin-bottom:0;">
+                            <div class="panel-head">
+                                <div class="panel-title"><i class="fa-solid fa-code"></i> AI Prompt Integration (Tambah Provider)</div>
+                                <button class="btn btn-sm btn-info" onclick="window.copyAiPrompt()"><i class="fa-solid fa-copy"></i> Salin Prompt</button>
+                            </div>
+                            <div class="panel-body" style="font-size:0.85rem; line-height:1.6; color:var(--text-sec);">
+                                <p style="margin-bottom:10px;">Gunakan prompt di bawah ini untuk ditanyakan ke AI saat ingin menambahkan provider ber-API Key baru secara otomatis:</p>
+                                <textarea id="aiPromptText" readonly rows="4" style="font-family:monospace; font-size:0.8rem; background:#F4F5F7;" onclick="this.select()">Halo Habi Studio, tolong tambahkan integrasi API Key provider baru untuk website Email Sementara saya. Buatlah modul kode JavaScript independen yang meniru endpoint REST/JSON provider lama, lalu lakukan pencocokan untuk mereplace baris setupEmail() agar otomatis mendeteksi provider baru yang saya buat di dashboard.</textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="margin-bottom: 25px;"></div>
+
+                    <!-- LIVE INBOX MONITOR -->
+                    <div class="panel">
+                        <div class="panel-head">
+                            <div class="panel-title"><i class="fa-solid fa-envelope-open-text"></i> Live Inbox Monitor Pengguna</div>
+                            <button class="btn btn-sm btn-danger" onclick="window.clearInboxLogs()"><i class="fa-solid fa-eraser"></i> Bersihkan Log</button>
+                        </div>
+                        <div class="panel-body" style="padding:0;">
+                            <div class="table-responsive">
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>Waktu</th>
+                                            <th>Alamat Email</th>
+                                            <th>Dari Pengirim</th>
+                                            <th>Perihal (Subject)</th>
+                                            <th>Isi Pesan (Preview)</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="tempMailMonitorTable">
+                                        <tr><td colspan="5" style="text-align:center; padding:40px; color:var(--text-sec);">Belum ada pesan email yang diproses oleh pengguna.</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
             </div>
 
-        </div>
-
-        <footer class="footer">
+            <footer class="footer">
             <span class="shimmer-footer">&copy; 2026 Kreaverse AI</span>
         </footer>
     </div>
@@ -2819,6 +2937,170 @@ window.closeHfHelpModal = (e) => {
         document.getElementById('hf-help-modal').classList.remove('open');
     }
 };
+
+// ============================================================
+// MODUL EMAIL SEMENTARA (DYNAMIC SETUP & FIREBASE INTEG)
+// ============================================================
+window.pingAllTempMailServers = async function() {
+    const servers = [
+        { id: 'mail_tm', name: 'Mail.tm (Rekomendasi)', url: 'https://api.mail.tm/domains' },
+        { id: 'mail_gw', name: 'Mail.gw (Cadangan)', url: 'https://api.mail.gw/domains' },
+        { id: '1secmail', name: '1secmail (Kilat)', url: 'https://www.1secmail.com/api/v1/?action=getDomainList' }
+    ];
+    
+    const container = document.getElementById('tempmail-server-container');
+    if (!container) return;
+    container.innerHTML = '';
+    
+    for (const s of servers) {
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.style.cursor = 'default';
+        card.innerHTML = `
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <span style="font-weight:700; font-size:0.9rem;">${s.name}</span>
+                <span id="ping-status-${s.id}" class="badge badge-gray"><span class="status-dot orange"></span> Menghubungkan...</span>
+            </div>
+            <div style="font-size:0.75rem; color:var(--text-sec); margin-top:8px; font-family:monospace;">${s.url.substring(0, 35)}...</div>
+        `;
+        container.appendChild(card);
+        
+        setTimeout(async () => {
+            const statusBadge = document.getElementById(`ping-status-${s.id}`);
+            if (!statusBadge) return;
+            try {
+                const controller = new AbortController();
+                const idTimeout = setTimeout(() => controller.abort(), 6000);
+                
+                const proxiedUrl = `https://kreaverse-proxy.kreaverse-ai.workers.dev/?targetUrl=${encodeURIComponent(s.url)}`;
+                const res = await fetch(proxiedUrl, { signal: controller.signal });
+                clearTimeout(idTimeout);
+                
+                if (res.ok) {
+                    statusBadge.className = 'badge badge-green';
+                    statusBadge.innerHTML = `<span class="status-dot green"></span> ONLINE`;
+                } else {
+                    statusBadge.className = 'badge badge-red';
+                    statusBadge.innerHTML = `<span class="status-dot red"></span> OFFLINE (${res.status})`;
+                }
+            } catch (err) {
+                statusBadge.className = 'badge badge-red';
+                statusBadge.innerHTML = `<span class="status-dot red"></span> OFFLINE`;
+            }
+        }, 50);
+    }
+};
+
+window.saveCustomDomain = async function(e) {
+    e.preventDefault();
+    const domain = document.getElementById('tmNewDomain').value.trim().toLowerCase();
+    const server = document.getElementById('tmDomainServer').value;
+    if(!domain) return;
+    
+    try {
+        await addDoc(collection(db, "temp_email_domains"), {
+            domain,
+            server,
+            createdAt: Date.now()
+        });
+        document.getElementById('tmNewDomain').value = '';
+        showToast(`Domain ${domain} berhasil ditambahkan!`, "success");
+    } catch (err) {
+        showToast("Gagal menyimpan domain", "danger");
+    }
+};
+
+window.deleteCustomDomain = async function(id, domain) {
+    confirmAction(`Hapus domain ${domain} dari database?`, async () => {
+        try {
+            await deleteDoc(doc(db, "temp_email_domains", id));
+            showToast("Domain berhasil dihapus!", "success");
+        } catch (err) {
+            showToast("Gagal menghapus", "danger");
+        }
+    });
+};
+
+function setupRealtimeTempMail() {
+    // Monitor real-time custom domains
+    onSnapshot(collection(db, "temp_email_domains"), snapshot => {
+        const tbody = document.getElementById('customDomainsTable');
+        if (!tbody) return;
+        let html = '';
+        snapshot.forEach(docSnap => {
+            const d = docSnap.data();
+            html += `
+                <tr>
+                    <td style="font-weight:700;">${d.domain}</td>
+                    <td><span class="badge badge-blue">${d.server}</span></td>
+                    <td><span class="badge badge-green"><span class="status-dot green"></span> Aktif</span></td>
+                    <td style="text-align:right;">
+                        <button class="btn btn-sm btn-danger" onclick="window.deleteCustomDomain('${docSnap.id}', '${d.domain}')"><i class="fa-solid fa-trash"></i></button>
+                    </td>
+                </tr>
+            `;
+        });
+        tbody.innerHTML = html || `<tr><td colspan="4" style="text-align:center; padding:20px; color:var(--text-sec);">Belum ada domain kustom terdaftar.</td></tr>`;
+    });
+    
+    // Monitor real-time logs email masuk pengguna
+    const q = query(collection(db, "temp_email_logs"), orderBy("timestamp", "desc"), limit(30));
+    onSnapshot(q, snapshot => {
+        const tbody = document.getElementById('tempMailMonitorTable');
+        if (!tbody) return;
+        let html = '';
+        snapshot.forEach(docSnap => {
+            const d = docSnap.data();
+            const dTime = new Date(d.timestamp).toLocaleTimeString('id-ID');
+            html += `
+                <tr>
+                    <td style="color:var(--text-sec); font-size:0.8rem; font-family:monospace;">${dTime}</td>
+                    <td style="font-weight:700; color:var(--accent);">${d.email}</td>
+                    <td style="font-weight:600;">${d.from}</td>
+                    <td style="font-weight:700;">${d.subject}</td>
+                    <td style="color:var(--text-sec); font-size:0.85rem; max-width:250px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${d.snippet}">${d.snippet}</td>
+                </tr>
+            `;
+        });
+        tbody.innerHTML = html || `<tr><td colspan="5" style="text-align:center; padding:40px; color:var(--text-sec);">Belum ada pesan email yang diproses oleh pengguna.</td></tr>`;
+    });
+    
+    // Auto run pings on first load
+    window.pingAllTempMailServers();
+}
+
+window.clearInboxLogs = async () => {
+    confirmAction("Kosongkan semua log email masuk pengguna?", async () => {
+        try {
+            let total = 0;
+            while(true) {
+                const snap = await getDocs(query(collection(db, "temp_email_logs"), limit(500)));
+                if(snap.empty) break;
+                let batch = writeBatch(db);
+                snap.forEach(d => { batch.delete(d.ref); total++; });
+                await batch.commit();
+            }
+            showToast("Log dibersihkan!", "success");
+        } catch(err) {
+            showToast("Gagal mengosongkan log", "danger");
+        }
+    });
+};
+
+window.copyAiPrompt = () => {
+    const promptArea = document.getElementById('aiPromptText');
+    if (!promptArea) return;
+    promptArea.select();
+    navigator.clipboard.writeText(promptArea.value);
+    showToast("Prompt AI disalin ke clipboard!", "success");
+};
+
+// Daftarkan listener otentikasi mandiri (Sangat aman & modular)
+onAuthStateChanged(auth, user => {
+    if (user && ALLOWED_ADMINS.includes(user.email)) {
+        setupRealtimeTempMail();
+    }
+});
 
 </script>
 </body>
