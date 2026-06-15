@@ -460,25 +460,28 @@
         <div class="nav-item active" onclick="nav('dash')">
             <i class="fa-solid fa-border-all" style="width:18px;"></i> Ikhtisar Sistem
         </div>
+        <div class="nav-item" onclick="nav('users')">
+            <i class="fa-solid fa-users" style="width:18px;"></i> Data Klien
+            <span id="user-count-badge" class="badge badge-gray" style="margin-left:auto; font-size:0.7rem; padding:4px 8px;">0</span>
+        </div>
+        <div class="nav-item" onclick="nav('tempmail')">
+            <i class="fa-solid fa-envelope-open" style="width:18px;"></i> Email Sementara
+        </div>
         <div class="nav-item" onclick="nav('api')">
             <i class="fa-solid fa-key" style="width:18px;"></i> Integrasi API DB
             <span id="api-count-badge" class="badge badge-gray" style="margin-left:auto; font-size:0.7rem; padding:4px 8px;">0</span>
         </div>
-        <div class="nav-item" onclick="nav('cloudinary')">
-            <i class="fa-solid fa-cloud" style="width:18px;"></i> Cloudinary DB
-        </div>
         <div class="nav-item" onclick="nav('downloader')">
             <i class="fa-solid fa-cloud-arrow-down" style="width:18px;"></i> Server Downloader
+        </div>
+        <div class="nav-item" onclick="nav('cloudinary')">
+            <i class="fa-solid fa-cloud" style="width:18px;"></i> Cloudinary DB
         </div>
         <div class="nav-item" onclick="nav('huggingface')">
             <i class="fa-solid fa-server" style="width:18px;"></i> Server Hugging Face
         </div>
         <div class="nav-item" onclick="nav('monitor')">
             <i class="fa-solid fa-desktop" style="width:18px;"></i> Live Monitor
-        </div>
-        <div class="nav-item" onclick="nav('users')">
-            <i class="fa-solid fa-users" style="width:18px;"></i> Data Klien
-            <span id="user-count-badge" class="badge badge-gray" style="margin-left:auto; font-size:0.7rem; padding:4px 8px;">0</span>
         </div>
         <div class="nav-item" onclick="nav('berkas')">
             <i class="fa-solid fa-folder-open" style="width:18px;"></i> Berkas Pengguna
@@ -492,9 +495,6 @@
         </div>
         <div class="nav-item" onclick="nav('logs')">
             <i class="fa-solid fa-terminal" style="width:18px;"></i> Log Integrasi API
-        </div>
-        <div class="nav-item" onclick="nav('tempmail')">
-            <i class="fa-solid fa-envelope-open" style="width:18px;"></i> Email Sementara
         </div>
     </div>
     <div class="sidebar-footer">
@@ -1380,6 +1380,11 @@ window.nav = id => {
     }
     if (window.innerWidth <= 1023 && document.getElementById('sidebar').classList.contains('open')) toggleSidebar();
     localStorage.setItem('kreaverse_admin_tab', id);
+    
+    // Aktifkan modul Email Sementara hanya ketika menu diklik secara aktif (Bypass Layar Loading)
+    if (id === 'tempmail') {
+        setupRealtimeTempMail();
+    }
 };
 
 // ============================================================
@@ -1451,14 +1456,27 @@ window.CUSTOM_SELECT_OPTIONS = {
         { value: "pro", label: "Pro (Bulanan)" },
         { value: "max_monthly", label: "Max (Bulanan)" },
         { value: "max_lifetime", label: "Max (Lifetime)" }
-    ]
+    ],
+    tmServerDriver: [
+        { value: "type_a", label: "Tipe A (Hydra / JWT Token)" },
+        { value: "type_b", label: "Tipe B (Parameter Query)" },
+        { value: "type_c", label: "Tipe C (API-Key Headers)" }
+    ],
+    tmDomainServer: [] // Diisi dinamis dari database Firebase Server
 };
 
 let activeSelectId = null;
 
 window.openCustomSelect = function(id) {
     activeSelectId = id;
-    const titleMap = { apiProvider: "Pilih Provider API", promoStatus: "Status Pengumuman", promoType: "Pilih Tipe Info", uTier: "Pilih Paket Layanan" };
+    const titleMap = { 
+        apiProvider: "Pilih Provider API", 
+        promoStatus: "Status Pengumuman", 
+        promoType: "Pilih Tipe Info", 
+        uTier: "Pilih Paket Layanan",
+        tmServerDriver: "Pilih Mesin Driver API", 
+        tmDomainServer: "Pilih Server Tautan" 
+    };
     document.getElementById('sheet-title').innerText = titleMap[id] || "Pilih Opsi";
     const container = document.getElementById('sheet-options');
     container.innerHTML = "";
@@ -1492,6 +1510,19 @@ function selectOptionValue(value, label) {
         else { expiryContainer.style.display = 'block'; }
     }
     if (activeSelectId === 'promoStatus' || activeSelectId === 'promoType') { updatePromoPreview(); }
+    
+    // Tampilkan form pengisian API Key hanya jika tipe Driver C dipilih (Gambar 12)
+    if (activeSelectId === 'tmServerDriver') {
+        const hName = document.getElementById('tm-header-name-wrapper');
+        const hVal = document.getElementById('tm-header-value-wrapper');
+        if (value === 'type_c') {
+            hName.style.display = 'block';
+            hVal.style.display = 'block';
+        } else {
+            hName.style.display = 'none';
+            hVal.style.display = 'none';
+        }
+    }
     triggerCloseBottomSheet();
 }
 
