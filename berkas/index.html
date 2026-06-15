@@ -609,7 +609,7 @@
                     const isAudio = item.type === 'audio';
                     const isThumb = item.type === 'thumb' || item.type === 'thumbnail';
                     
-                    // Menambahkan awalan 'fa-solid' pada ikon default agar terbebas dari bug kotak kosong [X]
+                    // MEMPERBAIKI KETIDAKHADIRAN AWALAN 'fa-solid' PADA KELAS IKON DEFAULT AGAR TIDAK MUNCUL KOTAK KOSONG [X]
                     let iconClass = isAudio ? 'fa-solid fa-music' : (isThumb ? 'fa-solid fa-image' : 'fa-solid fa-video');
                     let bgClass = isAudio ? 'audio' : (isThumb ? 'image' : 'video');
                     let iconStyle = '';
@@ -621,14 +621,11 @@
                         iconStyle = `color: ${plat.color} !important; background-color: ${plat.bg} !important;`;
                     }
                     
-                    const sizeBadge = item.size ? `<span class="meta-badge">${item.size}</span>` : '';
+                    const sizeBadge = (item.size && item.size !== 'undefined') ? `<span class="meta-badge">${item.size}</span>` : '';
                     const safeThumb = item.thumbnail ? btoa(item.thumbnail) : '';
                     
-                    // Aksi putar: Jika thumbnail, langsung buka tab baru untuk melihat gambar. Jika audio/video, jalankan pemutar native
-                    const playAction = isThumb ? 
-                        `window.open('${item.directUrl}', '_blank')` : 
-                        `openPlayer('${item.directUrl}', '${item.fileName.replace(/'/g, "\\'")}', '${item.type}', '${safeThumb}')`;
-                    
+                    // Aksi putar: Sekarang thumbnail/gambar akan terbuka langsung di dalam popup modal website!
+                    const playAction = `openPlayer('${item.directUrl}', '${item.fileName.replace(/'/g, "\\'")}', '${item.type}', '${safeThumb}')`;
                     const playIcon = isThumb ? 'fa-eye' : 'fa-play';
                     const playTitle = isThumb ? 'Lihat Gambar' : 'Putar';
                     
@@ -673,6 +670,25 @@
                         actionButtons = `
                             <button class="action-btn play" style="background:#F3F4F6; color:var(--text-light); cursor:not-allowed;" disabled><i class="fa-solid fa-circle-notch fa-spin"></i></button>
                             <button class="action-btn dl" style="background:#F3F4F6; color:var(--text-light); cursor:not-allowed;" disabled><i class="fa-solid fa-hourglass-start"></i></button>
+                            <button class="action-btn del" onclick="deleteFile('${item.id}', 'gen')" title="Hapus"><i class="fa-solid fa-trash"></i></button>
+                        `;
+                    } else if (isLyricShot && item.status === "failed") {
+                        statusLabel = `<span style="font-size:0.75rem; color:var(--danger-color); font-weight:700;"><i class="fa-solid fa-circle-xmark"></i> Gagal</span>`;
+                        actionButtons = `
+                            <button class="action-btn play" style="background:#FEE2E2; color:var(--danger-color); cursor:not-allowed;" disabled><i class="fa-solid fa-triangle-exclamation"></i></button>
+                            <button class="action-btn del" onclick="deleteFile('${item.id}', 'gen')" title="Hapus"><i class="fa-solid fa-trash"></i></button>
+                        `;
+                    } else {
+                        // Aksi melihat gambar AI Generate: Sekarang dibuka langsung di dalam popup modal website!
+                        const playAction = isImage ?
+                            `openPlayer('${item.url}', '${title.replace(/'/g, "\\'")}', '${item.type}', '')` :
+                            `openPlayer('${item.url}', '${title.replace(/'/g, "\\'")}', '${item.type}', '')`;
+                        const playIcon = isImage ? 'fa-eye' : 'fa-play';
+                        const playTitle = isImage ? 'Lihat Gambar' : 'Putar';
+                        
+                        actionButtons = `
+                            <button class="action-btn play" onclick="${playAction}" title="${playTitle}"><i class="fa-solid ${playIcon}"></i></button>
+                            <button class="action-btn dl" onclick="downloadFile('${item.url}', 'Kreaverse_AI_Generate')" title="Unduh"><i class="fa-solid fa-download"></i></button>
                             <button class="action-btn del" onclick="deleteFile('${item.id}', 'gen')" title="Hapus"><i class="fa-solid fa-trash"></i></button>
                         `;
                     } else if (isLyricShot && item.status === "failed") {
