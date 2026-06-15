@@ -1343,11 +1343,20 @@
             const apiKeys = rawApiKey.split(/[\n,]+/).map(k => k.trim()).filter(k => k);
             if (apiKeys.length === 0) apiKeys.push("");
 
-            for (let path of pathsArray) {
-                for (let apiKey of apiKeys) {
-                    let cleanPath = path;
-                    
-                    // PENYEMPURNAAN CERDAS: Jika path mengandung {mediaUrl}, langsung ganti!
+            // SMART AUTO-PARAM SWITCH: Menghindari limit terbuang sia-sia
+                    if (currentFormat === 'audio') {
+                        if (cleanPath.includes('type=video')) {
+                            cleanPath = cleanPath.replace('type=video', 'type=audio');
+                            // Hapus parameter kualitas video karena formatnya adalah audio
+                            cleanPath = cleanPath.replace(/&quality=[^&]*/g, '');
+                            cleanPath = cleanPath.replace(/\?quality=[^&]*&/g, '?');
+                            cleanPath = cleanPath.replace(/\?quality=[^&]*/g, '');
+                        }
+                    } else if (currentFormat === 'video') {
+                        if (cleanPath.includes('type=audio')) {
+                            cleanPath = cleanPath.replace('type=audio', 'type=video');
+                        }
+                    }
                     let fullUrl = "";
                     if (cleanPath.includes('{mediaUrl}')) {
                         cleanPath = cleanPath.replace('{mediaUrl}', encodeURIComponent(mediaUrl));
