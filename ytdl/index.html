@@ -81,7 +81,7 @@
             height: 32px; 
             position: absolute; 
             left: 50%; 
-            transform: translateX(-46%); /* Penyelarasan visual (optical center) agar presisi di tengah layar */
+            transform: translateX(-50%); /* Penyelarasan matematis & visual presisi di tengah layar */
             z-index: 5; 
             pointer-events: none; 
         }
@@ -123,6 +123,8 @@
         /* FORMAT TOGGLE */
         .format-toggle { 
             display: inline-flex; 
+            width: 100%;
+            max-width: 320px; /* Lebar container toggle tetap presisi di semua perangkat */
             background: rgba(238, 242, 246, 0.8); 
             padding: 4px; 
             border-radius: 99px; 
@@ -131,7 +133,7 @@
             gap: 2px; 
         }
         .format-btn { 
-            min-width: 95px; /* Menyamakan footprint lebar tiap tombol agar tombol tengah Audio berada tepat di center murni */
+            flex: 1; /* Setiap tombol mengambil ukuran sepertiga lebar yang sama rata agar tombol Audio presisi di tengah */
             padding: 6px 12px; 
             border-radius: 99px; 
             background: transparent; 
@@ -503,12 +505,12 @@
             .url-icon { display: none; }
             .input-actions { margin-right: 0; justify-content: flex-end; gap: 2px; }
             #paste-btn { padding: 8px 12px; font-size: 0.8rem; background: #eef2f6; color: #374151; }
-            .download-btn { width: auto; justify-content: center; padding: 12px 30px; margin: 0 auto !important; }
+            .download-btn { width: 100%; justify-content: center; padding: 14px 0; margin: 15px auto 0 !important; }
             
             .settings-pills { padding: 0; gap: 6px; margin-bottom: 10px; }
             .pill { padding: 6px 12px; font-size: 0.75rem; border-radius: 99px; }
             .pill i { font-size: 0.8rem; }
-            .format-btn { padding: 6px 12px; font-size: 0.8rem; min-width: 90px; }
+            .format-btn { padding: 6px 12px; font-size: 0.8rem; }
             .format-toggle { gap: 2px; }
             
             /* Carousel Scroll untuk Fitur & Cara Kerja (Tidak Banyak Makan Scroll Bawah) */
@@ -550,7 +552,7 @@
         <a href="/" class="back-btn" title="Kembali"><i class="fa-solid fa-chevron-left"></i></a>
         <div class="logo-container">
             <!-- Logo Utama Kreaverse AI -->
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 60" class="krea-logo-svg">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="10 0 190 60" class="krea-logo-svg">
                 <defs><linearGradient id="kreaGrad" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#D97757" /><stop offset="50%" stop-color="#AF52DE" /><stop offset="100%" stop-color="#007AFF" /></linearGradient></defs>
                 <g><path d="M 30,10 Q 30,30 50,30 Q 30,30 30,50 Q 30,30 10,30 Q 30,30 30,10 Z" fill="url(#kreaGrad)" /><path d="M 30,17 Q 30,30 43,30 Q 30,30 30,43 Q 30,30 17,30 Q 30,30 30,17 Z" fill="url(#kreaGrad)" transform="rotate(45, 30, 30)" opacity="0.85" /></g>
                 <text x="65" y="38" font-family="'Plus Jakarta Sans', sans-serif" font-weight="800" font-size="21" fill="currentColor" letter-spacing="-0.5px">Kreaverse<tspan font-weight="500" fill="#D97757"> AI</tspan></text>
@@ -634,7 +636,7 @@
                 
                 <!-- REVISI 2, 3: WATERMARK DI DALAM VIDEO (Bukan di background) & Fade Animasi -->
                 <div class="player-watermark" id="player-watermark">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 60" style="width:100%; height:100%;">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="10 0 190 60" style="width:100%; height:100%;">
                         <defs>
                             <linearGradient id="kreaGradWM" x1="0%" y1="0%" x2="100%" y2="100%">
                                 <stop offset="0%" stop-color="#D97757" />
@@ -778,7 +780,7 @@
 
     <!-- FOOTER -->
     <footer class="footer">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 60" style="width:140px; height:32px; margin: 0 auto 20px; display: block; filter: drop-shadow(0 1px 2px rgba(0,0,0,0.1));">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="10 0 190 60" style="width:140px; height:32px; margin: 0 auto 20px; display: block; filter: drop-shadow(0 1px 2px rgba(0,0,0,0.1));">
             <defs>
                 <linearGradient id="kreaGradFooter" x1="0%" y1="0%" x2="100%" y2="100%">
                     <stop offset="0%" stop-color="#D97757" />
