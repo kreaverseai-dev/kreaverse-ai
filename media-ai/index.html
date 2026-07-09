@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Studio Media AI - Kreaverse AI</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+    
+    <link rel="stylesheet" href="../style.css"> <!-- Import base style dari root -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <nav class="navbar">
+        <a href="/" class="back-btn"><i class="fa-solid fa-arrow-left"></i></a>
+        <div class="logo-container">
+            <i class="fa-solid fa-photo-film logo-icon"></i>
+            <span class="logo-text">Studio Media AI</span>
+        </div>
+        <button id="theme-toggle" class="theme-btn" aria-label="Toggle Theme">
+            <i class="fa-solid fa-moon"></i>
+        </button>
+    </nav>
+
+    <main class="container">
+        <header class="hero media-hero">
+            <h1>Studio Kreatif Tanpa Batas.</h1>
+            <p>Pilih provider dan model AI terbaik untuk menciptakan Gambar, Video (Sora, Veo 3), atau Musik (Suno, Nuro) berkelas studio.</p>
+        </header>
+
+        <div class="generator-card">
+            <div class="config-row">
+                <div class="input-group">
+                    <label for="provider-select">Provider API</label>
+                    <div class="select-wrapper">
+                        <select id="provider-select">
+                            <option value="" disabled selected>-- Pilih Provider --</option>
+                            <option value="apiframe">APIFrame (Image, Video, Music)</option>
+                            <option value="crun">Crun.ai (Unified Model)</option>
+                            <option value="musicapi">MusicAPI (Studio Audio)</option>
+                        </select>
+                        <i class="fa-solid fa-chevron-down select-icon"></i>
+                    </div>
+                </div>
+                
+                <div class="input-group">
+                    <label for="model-select">Model AI</label>
+                    <div class="select-wrapper">
+                        <select id="model-select" disabled>
+                            <option value="" disabled selected>-- Pilih Provider Dahulu --</option>
+                        </select>
+                        <i class="fa-solid fa-chevron-down select-icon"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="input-group prompt-group">
+                <label for="prompt-input">Deskripsi (Prompt)</label>
+                <textarea id="prompt-input" placeholder="Deskripsikan secara detail apa yang ingin Anda buat... (Contoh: Lagu genre DJ Slow Bass dengan vokal wanita, atau Video cinematic hutan neon)" rows="4" disabled></textarea>
+            </div>
+
+            <button id="generate-btn" class="primary-btn" disabled>
+                <i class="fa-solid fa-wand-magic-sparkles"></i> Generate Sekarang
+            </button>
+        </div>
+
+        <!-- Wadah untuk menampilkan hasil (Gambar/Video/Audio) -->
+        <div id="result-container" class="result-container hidden">
+            <div class="result-header">
+                <h3>Hasil Generasi</h3>
+                <span id="result-status" class="status-badge processing">Memproses...</span>
+            </div>
+            <div id="result-content" class="result-content">
+                <!-- Konten media akan disuntikkan oleh JS di sini -->
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <p>&copy; 2024 Kreaverse AI. All rights reserved.</p>
+    </footer>
+
+    <!-- Watermark -->
+    <div id="watermark" class="watermark">Kreaverse AI</div>
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="../script.js"></script> <!-- Base logic (Theme & Watermark) -->
+    <script src="script.js"></script>
+</body>
+</html>
