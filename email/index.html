@@ -1,0 +1,2320 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Temp Email - Kreaverse AI</title>
+    
+    <!-- External Resources (Fonts, Icons, SweetAlert) -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+    
+    <style>
+        :root {
+            --text-primary: #111827;
+            --text-secondary: #4b5563;
+            --text-light: #9ca3af;
+            --accent-color: #007AFF; /* Premium Logo Blue */
+            --accent-hover: #0056cc;
+            --success-color: #007AFF;
+            --danger-color: #ef4444;
+            --surface-color: #ffffff;
+            --border-color: #e5e7eb;
+            --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.02);
+            --shadow-md: 0 8px 16px rgba(0, 0, 0, 0.04);
+            --shadow-lg: 0 12px 24px -4px rgba(0, 0, 0, 0.05);
+            --shadow-xl: 0 20px 30px -6px rgba(0, 0, 0, 0.08);
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body { 
+            font-family: 'Plus Jakarta Sans', sans-serif; 
+            color: var(--text-primary); 
+            background: radial-gradient(circle at top left, #fff0f5 0%, #f0f8ff 45%, #fafafc 100%); 
+            overflow-x: hidden; 
+            min-height: 100vh;
+        }
+        a { text-decoration: none; color: inherit; }
+        .hidden { display: none !important; }
+
+        /* NAVBAR */
+        .navbar { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            padding: 16px 20px; 
+            background: transparent !important; 
+            position: absolute; 
+            top: 0; 
+            width: 100%; 
+            z-index: 1000; 
+            border: none !important;
+            box-shadow: none !important;
+        }
+        .back-btn { 
+            font-size: 0.8rem; 
+            color: var(--text-secondary); 
+            background: #ffffff;
+            border: 1px solid rgba(0, 0, 0, 0.08);
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: var(--transition);
+            box-shadow: var(--shadow-sm);
+        }
+        .back-btn:hover { 
+            color: var(--text-primary); 
+            background-color: #f3f4f6; 
+            transform: scale(1.05);
+        }
+        .logo-container { 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            width: 168px; /* Diperbesar 20% */
+            height: 38px; /* Diperbesar 20% */
+            position: absolute; 
+            left: 50%; 
+            transform: translateX(-50%); 
+            z-index: 5; 
+            pointer-events: none; 
+        }
+        .krea-logo-svg { width: 100%; height: 100%; display: block; }
+        .theme-btn {
+            background: #ffffff;
+            border: 1px solid rgba(0, 0, 0, 0.08);
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            cursor: pointer;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition);
+            box-shadow: var(--shadow-sm);
+        }
+        .theme-btn:hover {
+            color: var(--text-primary);
+            background-color: #f3f4f6;
+            transform: scale(1.05);
+        }
+
+        /* HERO SECTION */
+        .hero-section {
+            position: relative;
+            padding: 110px 20px 30px;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background: transparent;
+        }
+        .hero-title { 
+            font-family: 'Plus Jakarta Sans', sans-serif; 
+            font-size: 2.1rem; 
+            font-weight: 900; 
+            color: #111827; 
+            margin-bottom: 16px; 
+            line-height: 1.15; 
+            letter-spacing: -1.2px; 
+            max-width: 90%;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .hero-title-sub {
+            font-size: 1.35rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #D97757 0%, #AF52DE 50%, #007AFF 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -0.5px;
+            display: block;
+            margin-top: 6px;
+        }
+        .hero-subtitle { 
+            font-family: 'Plus Jakarta Sans', sans-serif; 
+            font-size: 0.8rem; 
+            font-weight: 500; 
+            color: var(--text-secondary); 
+            max-width: 480px; 
+            margin: 15px auto 25px; 
+            line-height: 1.6; 
+        }
+
+        /* TAB NAVIGATION TOGGLE */
+        .format-toggle { 
+            display: inline-flex; 
+            width: 100%;
+            max-width: 360px; 
+            background: rgba(238, 242, 246, 0.8); 
+            padding: 4px; 
+            border-radius: 99px; 
+            border: 1px solid rgba(229, 231, 235, 0.6); 
+            margin-bottom: 25px; 
+            gap: 2px; 
+        }
+        .format-btn { 
+            flex: 1; 
+            padding: 8px 12px; 
+            border-radius: 99px; 
+            background: transparent; 
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-size: 0.82rem; 
+            font-weight: 700; 
+            color: #4b5563; 
+            cursor: pointer; 
+            transition: var(--transition); 
+            display: inline-flex; 
+            align-items: center; 
+            justify-content: center;
+            border: none;
+            gap: 6px;
+        }
+        .format-btn.active { 
+            background: var(--accent-color); 
+            color: #ffffff; 
+            box-shadow: 0 4px 12px rgba(0, 122, 255, 0.25);
+        }
+
+        /* TAB PANELS */
+        .tab-panel {
+            display: none;
+            width: 100%;
+            max-width: 650px; /* Lebar maksimal panel diperlebar untuk mengoptimalkan ruang kosong lateral */
+            animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            flex-direction: column;
+        }
+        .tab-panel.active {
+            display: flex;
+        }
+        @keyframes slideUp { 
+            from { opacity: 0; transform: translateY(12px); } 
+            to { opacity: 1; transform: translateY(0); } 
+        }
+
+        /* EMAIL MOCK CARD (RESULT CARD STYLE) */
+        .email-mock-card {
+            background: var(--surface-color);
+            border-radius: 24px;
+            padding: 32px 28px; /* Padding samping diperlebar agar kotak email terlihat lebih proporsional */
+            text-align: center;
+            box-shadow: var(--shadow-xl);
+            border: 1px solid var(--border-color);
+            margin-bottom: 24px;
+            position: relative;
+            width: 100%;
+        }
+        .card-envelope-icon {
+            font-size: 3.5rem;
+            color: var(--accent-color);
+            margin-bottom: 16px;
+        }
+        .email-address-wrapper {
+            background-color: #F9FAFB;
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 16px 48px 16px 16px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            position: relative;
+            word-break: break-all;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: var(--shadow-sm);
+        }
+        .qr-icon-btn {
+            position: absolute;
+            right: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 1.3rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition);
+        }
+        .qr-icon-btn:hover {
+            color: var(--accent-color);
+            transform: translateY(-50%) scale(1.08);
+        }
+
+        /* CAPSULE ACTION BUTTONS */
+        .btn-save-gallery { 
+            width: 100%; 
+            padding: 16px; 
+            background: var(--accent-color); 
+            color: #ffffff; 
+            border: none; 
+            border-radius: 99px; 
+            font-size: 1rem; 
+            font-weight: 700; 
+            cursor: pointer; 
+            transition: var(--transition); 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            gap: 10px; 
+            box-shadow: 0 4px 14px rgba(0, 122, 255, 0.2); 
+            margin-bottom: 12px;
+        }
+        .action-buttons-wrapper {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+        }
+        .btn-save-gallery:hover { 
+            background: var(--accent-hover); 
+            transform: translateY(-1px); 
+            box-shadow: 0 6px 18px rgba(0, 122, 255, 0.3); 
+        }
+        .btn-server-kreaverse { 
+            background: #ffffff !important; 
+            color: var(--accent-color) !important; 
+            border: 2px solid var(--accent-color) !important; 
+            border-radius: 99px !important; 
+            font-size: 1rem; 
+            padding: 14px; 
+            font-weight: 700;
+            box-shadow: none !important; 
+        }
+        .btn-server-kreaverse:hover { 
+            background: #e6f2ff !important; 
+            border-color: var(--accent-hover) !important; 
+            color: var(--accent-hover) !important; 
+            transform: translateY(-1px); 
+        }
+
+        /* INBOX ELEMENTS */
+        .inbox-header-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 15px;
+            padding: 0 4px;
+        }
+        .inbox-refresh-btn {
+            background-color: #ffffff;
+            border: 1px solid var(--border-color);
+            color: var(--text-secondary);
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition);
+            box-shadow: var(--shadow-sm);
+        }
+        .inbox-refresh-btn:hover {
+            background-color: var(--accent-color);
+            color: white;
+            border-color: var(--accent-color);
+        }
+        .inbox-refresh-btn i {
+            transition: transform 0.3s ease;
+        }
+        .inbox-refresh-btn:hover i {
+            transform: rotate(180deg);
+        }
+        .inbox-container {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .empty-state {
+            text-align: center;
+            padding: 48px 20px;
+            color: var(--text-secondary);
+            border: 2px dashed var(--border-color);
+            border-radius: 20px;
+            font-size: 0.9rem;
+            background: rgba(255, 255, 255, 0.5);
+        }
+        .empty-state i {
+            font-size: 2.5rem;
+            margin-bottom: 12px;
+            color: var(--accent-color);
+            opacity: 0.8;
+        }
+
+        /* EMAIL ITEM */
+        .email-item {
+            background-color: var(--surface-color);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 18px;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            box-shadow: var(--shadow-sm);
+            transition: var(--transition);
+        }
+        .email-item:hover {
+            border-color: var(--accent-color);
+            box-shadow: var(--shadow-md);
+            transform: translateY(-2px);
+        }
+        .email-item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .email-item-sender-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: var(--accent-color);
+        }
+        .email-item-sender {
+            font-weight: 700;
+            font-size: 0.85rem;
+            color: var(--accent-color);
+        }
+        .email-item-time {
+            font-size: 0.75rem;
+            color: var(--text-light);
+            font-weight: 600;
+        }
+        .email-item-subject {
+            font-weight: 700;
+            font-size: 1rem;
+            color: var(--text-primary);
+        }
+        .email-item-snippet-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+        }
+        .email-item-snippet {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            flex: 1;
+            font-weight: 500;
+        }
+
+        /* FORM GROUP (UBAH EMAIL TAB) */
+        .form-group {
+            margin-bottom: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            text-align: left;
+        }
+        .form-group label {
+            font-size: 0.75rem;
+            font-weight: 800;
+            letter-spacing: 0.5px;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+        }
+        .form-control {
+            width: 100%;
+            padding: 14px 16px;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            background-color: var(--surface-color);
+            color: var(--text-primary);
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-size: 0.95rem;
+            font-weight: 600;
+            outline: none;
+            box-shadow: var(--shadow-sm);
+            transition: var(--transition);
+        }
+        .form-control:focus {
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 4px rgba(5, 150, 105, 0.08), var(--shadow-sm);
+        }
+
+        /* BOTTOM SHEET SELECTOR DESIGN */
+        .bottom-sheet-overlay { 
+            position: fixed; 
+            inset: 0; 
+            background: rgba(0,0,0,0.6); 
+            backdrop-filter: blur(4px); 
+            z-index: 99999; 
+            display: none; 
+            align-items: flex-end; 
+            justify-content: center; 
+            opacity: 0; 
+            transition: var(--transition); 
+        }
+        .bottom-sheet-overlay.active { 
+            display: flex; 
+            opacity: 1; 
+        }
+        .bottom-sheet-container { 
+            background: var(--surface-color); 
+            width: 100%; 
+            max-width: 600px; 
+            border-radius: 24px 24px 0 0; 
+            padding: 24px; 
+            transform: translateY(100%); 
+            transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1); 
+            max-height: 80vh; 
+            display: flex; 
+            flex-direction: column; 
+            box-shadow: 0 -10px 40px rgba(0,0,0,0.2); 
+        }
+        .bottom-sheet-overlay.active .bottom-sheet-container { 
+            transform: translateY(0); 
+        }
+        .sheet-header { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            margin-bottom: 20px; 
+            flex-shrink: 0; 
+        }
+        .sheet-title { 
+            font-size: 1.15rem; 
+            font-weight: 800; 
+        }
+        .sheet-close-btn { 
+            background: none; 
+            border: none; 
+            font-size: 1.5rem; 
+            color: var(--text-light); 
+            cursor: pointer; 
+            padding: 5px; 
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .sheet-option-list { 
+            display: flex; 
+            flex-direction: column; 
+            gap: 8px; 
+            overflow-y: auto; 
+            flex: 1; 
+        }
+
+        /* GROUP HEADERS & BADGES IN BOTTOM SHEET */
+        .sheet-group-header {
+            font-size: 0.75rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            color: var(--accent-color);
+            background-color: #f3f4f6;
+            padding: 10px 14px;
+            border-radius: 8px;
+            margin-top: 14px;
+            margin-bottom: 4px;
+            letter-spacing: 0.5px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .sheet-option {
+            padding: 16px;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            background-color: var(--surface-color);
+            color: var(--text-primary);
+            font-size: 0.95rem;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.15s;
+        }
+        .sheet-option:hover {
+            border-color: var(--accent-color);
+            background-color: #f9fafb;
+        }
+        .sheet-option.selected {
+            border-color: var(--accent-color);
+            background-color: rgba(0, 122, 255, 0.05);
+            color: var(--accent-color);
+        }
+        .sheet-option-meta {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .badge-premium {
+            background-color: #AF52DE;
+            color: white;
+            font-size: 0.65rem;
+            font-weight: 800;
+            padding: 3px 8px;
+            border-radius: 6px;
+            text-transform: uppercase;
+        }
+        .badge-new {
+            background-color: var(--accent-color);
+            color: white;
+            font-size: 0.65rem;
+            font-weight: 800;
+            padding: 3px 8px;
+            border-radius: 6px;
+            text-transform: uppercase;
+        }
+
+        /* NAVIGATION BADGE COUNTER */
+        .nav-badge {
+            position: absolute;
+            top: -6px;
+            right: -10px;
+            background-color: #EF4444; 
+            color: white;
+            font-size: 0.7rem;
+            font-weight: 700;
+            min-width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid var(--surface-color);
+            box-shadow: 0 2px 4px rgba(239, 68, 68, 0.3);
+        }
+
+        /* SWEETALERT STYLING */
+        .swal-email-view {
+            text-align: left;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+        .email-view-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding-bottom: 14px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .email-avatar {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background-color: var(--accent-color);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1.1rem;
+        }
+        .email-meta-sender {
+            display: flex;
+            flex-direction: column;
+        }
+        .sender-name {
+            font-weight: 700;
+            color: var(--text-primary);
+            font-size: 0.95rem;
+        }
+        .sender-address {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+        .email-view-details {
+            padding: 12px 0;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        .detail-row {
+            display: flex;
+        }
+        .detail-label {
+            font-weight: 600;
+            color: var(--text-primary);
+            width: 70px;
+            flex-shrink: 0;
+        }
+        .email-view-body {
+            padding: 16px 0;
+            max-height: 350px;
+            overflow-y: auto;
+            font-size: 0.95rem;
+            line-height: 1.6;
+            color: var(--text-primary);
+        }
+        .email-view-body a {
+            color: var(--accent-color);
+        }
+        .email-view-body img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+        }
+
+        /* FAQ SECTION */
+        .section-container { padding: 40px 20px; max-width: 1000px; margin: 0 auto; text-align: center; }
+        .faq-item { background: var(--surface-color); border: 1px solid var(--border-color); border-radius: 16px; overflow: hidden; transition: var(--transition); box-shadow: var(--shadow-sm); }
+        .faq-content { max-height: 0; overflow: hidden; transition: max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1); background: #fcfcfd; }
+
+        /* FOOTER */
+        .footer { background: #FFFFFF; color: var(--text-secondary); padding: 40px 20px 30px; text-align: center; border-top: 1px solid var(--border-color); width: 100%; margin-top: auto; }
+        .footer-links { display: flex; justify-content: center; gap: 24px; margin-bottom: 20px; flex-wrap: wrap; }
+        .footer-links a { color: var(--text-secondary); transition: color 0.2s; font-size: 0.9rem; font-weight: 600; }
+        .footer-links a:hover { color: var(--accent-color); }
+        .footer-bottom { border-top: 1px solid var(--border-color); padding-top: 20px; font-size: 0.85rem; display: flex; flex-direction: column; align-items: center; gap: 10px; color: var(--text-light); }
+
+        /* RESPONSIVE MOBILE */
+        @media (max-width: 640px) {
+            .navbar { padding: 12px 16px; }
+            .hero-section { padding: 75px 16px 20px; }
+            .logo-container { width: 132px; height: 34px; } /* Diperbesar 20% */
+            .hero-title { font-size: 1.6rem; letter-spacing: -0.8px; line-height: 1.15; margin-bottom: 12px; }
+            .hero-title-sub { font-size: 1.05rem; margin-top: 4px; }
+            .hero-subtitle { font-size: 0.75rem; padding: 0; margin: 10px auto 16px; }
+            .format-toggle { margin-bottom: 16px; }
+            .format-btn { padding: 6px 10px; font-size: 0.78rem; }
+            .email-mock-card { padding: 20px 16px; margin-bottom: 16px; border-radius: 18px; }
+            .card-envelope-icon { font-size: 2.5rem; margin-bottom: 12px; }
+            .email-address-wrapper { padding: 12px 40px 12px 12px; font-size: 0.95rem; border-radius: 12px; }
+            .btn-save-gallery { padding: 12px 16px; font-size: 0.9rem; border-radius: 99px; }
+            .bottom-sheet-container { padding: 16px; }
+            .sheet-title { font-size: 1.05rem; }
+            .sheet-option { padding: 12px 14px; font-size: 0.85rem; border-radius: 12px; }
+            .footer-links { gap: 12px; }
+            .footer-links a { font-size: 0.8rem; }
+            .footer-bottom { font-size: 0.72rem; }
+            #live-clock-footer { font-size: 0.75rem; }
+            .email-item { padding: 12px 14px; border-radius: 12px; }
+            .email-item-subject { font-size: 0.9rem; }
+            .email-item-snippet { font-size: 0.8rem; }
+            .inbox-header-row h3 { font-size: 0.95rem !important; }
+            .inbox-header-row p { font-size: 0.72rem !important; }
+        }
+
+        /* OPTIMASI LAYAR LEBAR (PC, LAPTOP, KOMPUTER, DAN SMART TV) */
+        @media (min-width: 1024px) {
+            .hero-section {
+                padding: 140px 40px 50px;
+                max-width: 1200px;
+                margin: 0 auto;
+            }
+            .hero-title {
+                font-size: 3rem;
+                letter-spacing: -1.8px;
+                line-height: 1.15;
+                margin-bottom: 20px;
+            }
+            .hero-title-sub {
+                font-size: 1.95rem;
+                margin-top: 8px;
+            }
+            .hero-subtitle {
+                font-size: 0.95rem;
+                max-width: 650px;
+                margin-bottom: 35px;
+            }
+            .format-toggle {
+                max-width: 450px;
+                padding: 5px;
+                margin-bottom: 40px;
+            }
+            .format-btn {
+                padding: 10px 20px;
+                font-size: 0.9rem;
+            }
+            .tab-panel {
+                max-width: 750px; /* Panel diperlebar proporsional agar seimbang di layar monitor */
+            }
+            .email-mock-card {
+                padding: 40px 50px;
+                border-radius: 32px;
+                margin-bottom: 24px;
+            }
+            .card-envelope-icon {
+                font-size: 4.2rem;
+                margin-bottom: 20px;
+            }
+            .email-address-wrapper {
+                padding: 20px 60px 20px 24px;
+                font-size: 1.3rem;
+                border-radius: 20px;
+            }
+            .action-buttons-wrapper {
+                flex-direction: row; /* Tombol diletakkan berdampingan secara horizontal pada layar lebar */
+                gap: 16px;
+                width: 100%;
+                margin-bottom: 24px;
+            }
+            .action-buttons-wrapper .btn-save-gallery {
+                flex: 1;
+                margin-bottom: 0;
+                padding: 18px;
+                font-size: 1.05rem;
+                border-radius: 99px;
+            }
+            .inbox-container {
+                gap: 14px;
+            }
+            .email-item {
+                padding: 22px;
+                border-radius: 20px;
+            }
+            .email-item-subject {
+                font-size: 1.1rem;
+            }
+            .email-item-sender {
+                font-size: 0.95rem;
+            }
+            .email-item-snippet {
+                font-size: 0.9rem;
+            }
+            .section-container {
+                max-width: 750px;
+                margin: 60px auto;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar">
+        <a href="/" class="back-btn" title="Kembali"><i class="fa-solid fa-chevron-left"></i></a>
+        <div class="logo-container">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="10 0 190 60" class="krea-logo-svg">
+                <defs><linearGradient id="kreaGrad" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#D97757" /><stop offset="50%" stop-color="#AF52DE" /><stop offset="100%" stop-color="#007AFF" /></linearGradient></defs>
+                <g><path d="M 30,10 Q 30,30 50,30 Q 30,30 30,50 Q 30,30 10,30 Q 30,30 30,10 Z" fill="url(#kreaGrad)" /><path d="M 30,17 Q 30,30 43,30 Q 30,30 30,43 Q 30,30 17,30 Q 30,30 30,17 Z" fill="url(#kreaGrad)" transform="rotate(45, 30, 30)" opacity="0.85" /></g>
+                <text x="65" y="38" font-family="'Plus Jakarta Sans', sans-serif" font-weight="800" font-size="21" fill="currentColor" letter-spacing="-0.5px">Kreaverse<tspan font-weight="500" fill="#D97757"> AI</tspan></text>
+            </svg>
+        </div>
+        <div style="width: 32px; height: 32px;"></div>
+    </nav>
+
+    <!-- HERO SECTION -->
+    <section class="hero-section">
+        <h1 class="hero-title">Kreaverse AI<br><span class="hero-title-sub">Pelindung Privasi Sekali Pakai</span></h1>
+        
+        <!-- Premium format-toggle layout to switch between tabs -->
+        <div class="format-toggle">
+            <button class="format-btn active" id="tab-btn-address" onclick="switchTab('address')">Alamat Email</button>
+            <button class="format-btn" id="tab-btn-inbox" onclick="switchTab('inbox')">Kotak Masuk <span id="inbox-badge-count" class="badge" style="background: #EF4444; color: white; font-size: 0.65rem; min-width: 16px; height: 16px; padding: 0 4px; border-radius: 99px; display: none; align-items: center; justify-content: center; line-height: 1; margin-left: 4px; flex-shrink: 0; box-sizing: border-box;">0</span></button>
+            <button class="format-btn" id="tab-btn-change" onclick="switchTab('change')">Ubah Email</button>
+        </div>
+
+        <div class="hero-subtitle" id="main-subtitle-text">
+            Layanan kotak surat sementara premium. Mengamankan privasi Anda dari spam secara instan dan tanpa biaya.
+        </div>
+
+        <!-- ==========================================
+             TAB PANEL: ALAMAT EMAIL
+             ========================================== -->
+        <div id="tab-address" class="tab-panel active">
+            <div class="email-mock-card">
+                <div class="card-envelope-icon">
+                    <i class="fa-solid fa-envelope-open-text"></i>
+                </div>
+                <div class="email-address-wrapper">
+                    <span id="display-email-text">Menghubungkan...</span>
+                    <button id="qr-btn" class="qr-icon-btn" title="Lihat QR Code">
+                        <i class="fa-solid fa-qrcode"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="action-buttons-wrapper">
+                <button id="btn-copy-main" class="btn-save-gallery"><i class="fa-regular fa-copy"></i> Salin Alamat</button>
+                <button id="btn-new-main" class="btn-save-gallery btn-server-kreaverse"><i class="fa-solid fa-plus"></i> Buat Alamat Baru</button>
+            </div>
+        </div>
+
+        <!-- ==========================================
+             TAB PANEL: KOTAK MASUK
+             ========================================== -->
+        <div id="tab-inbox" class="tab-panel">
+            <div class="inbox-header-row" style="align-items: center;">
+                <div style="text-align: left; flex: 1; min-width: 0; padding-right: 12px;">
+                    <h3 style="font-size: 1.05rem; font-weight: 800;" id="inbox-title-label">Kotak Masuk</h3>
+                    <p id="inbox-email-sub" style="font-size: 0.78rem; color: var(--text-secondary); font-weight: 600; word-break: break-all; margin-top: 2px;">...</p>
+                </div>
+                <button id="inbox-refresh-btn" class="inbox-refresh-btn" title="Ping & Refresh Pesan" style="width: auto; padding: 0 14px; border-radius: 99px; display: inline-flex; align-items: center; gap: 8px;">
+                    <i class="fa-solid fa-arrows-rotate" style="font-size: 0.85rem;"></i>
+                    <span id="ping-ms-text" style="font-size: 0.75rem; font-weight: 800; color: #10B981; font-family: monospace;">-- ms</span>
+                </button>
+            </div>
+            
+            <div id="inbox-container" class="inbox-container">
+                <div class="empty-state">
+                    <i class="fa-solid fa-inbox"></i><br>
+                    Menunggu pesan masuk...
+                </div>
+            </div>
+        </div>
+
+        <!-- ==========================================
+             TAB PANEL: UBAH EMAIL
+             ========================================== -->
+        <div id="tab-change" class="tab-panel">
+            <!-- Hidden inputs to resolve any textual reference errors -->
+            <input type="hidden" id="provider-select" value="">
+            <span id="provider-select-label" class="hidden">Memuat...</span>
+
+            <div class="form-group">
+                <label>Nama Depan Email (Custom)</label>
+                <input type="text" id="custom-username" class="form-control" placeholder="Contoh: userbaru">
+            </div>
+
+            <div class="form-group">
+                <label>Pilih Domain Tersedia</label>
+                <div class="custom-select-trigger" id="domain-select-trigger" onclick="openCustomSelect('domain-select')">
+                    <span id="domain-select-label">Memuat domain...</span>
+                    <i class="fa-solid fa-chevron-down"></i>
+                </div>
+                <input type="hidden" id="domain-select" value="">
+            </div>
+
+            <button id="btn-save-custom" class="btn-save-gallery" style="margin-top: 10px;">
+                <i class="fa-solid fa-floppy-disk"></i> Simpan Alamat Baru
+            </button>
+        </div>
+    </section>
+
+    <!-- FAQ SECTION -->
+    <section class="section-container" style="max-width: 650px; margin: 40px auto; text-align: left; padding: 0 20px;">
+        <h2 style="font-family: 'Plus Jakarta Sans', sans-serif; font-size: 1.3rem; font-weight: 900; margin-bottom: 20px; text-align: center; color: var(--text-primary);">Tanya Jawab Kreaverse AI</h2>
+        <div style="display: flex; flex-direction: column; gap: 12px;">
+            <div class="faq-item">
+                <button onclick="toggleFaq(this)" style="width: 100%; display: flex; justify-content: space-between; align-items: center; padding: 18px 20px; background: none; border: none; text-align: left; font-family: 'Plus Jakarta Sans', sans-serif; font-size: 0.9rem; font-weight: 800; color: var(--text-primary); cursor: pointer; outline: none; gap: 15px;">
+                    <span>Apa tujuan dari layanan Kreaverse AI Temp Email?</span>
+                    <i class="fa-solid fa-chevron-down" style="font-size: 0.8rem; color: var(--text-light); transition: transform 0.3s ease;"></i>
+                </button>
+                <div class="faq-content">
+                    <p style="padding: 0 20px 18px; font-size: 0.8rem; color: var(--text-secondary); line-height: 1.6; font-weight: 500;">
+                        Layanan <a href="https://kreaverse-ai.biz.id" style="color: var(--accent-color); font-weight: 700; text-decoration: none;">Kreaverse AI</a> bertujuan untuk menyediakan kotak masuk surat elektronik sementara secara instan guna melindungi alamat email utama Anda dari tumpukan pesan sampah (spam), phising, dan menjaga keamanan data pribadi Anda.
+                    </p>
+                </div>
+            </div>
+            <div class="faq-item">
+                <button onclick="toggleFaq(this)" style="width: 100%; display: flex; justify-content: space-between; align-items: center; padding: 18px 20px; background: none; border: none; text-align: left; font-family: 'Plus Jakarta Sans', sans-serif; font-size: 0.9rem; font-weight: 800; color: var(--text-primary); cursor: pointer; outline: none; gap: 15px;">
+                    <span>Siapa saja yang dapat menggunakan layanan ini secara gratis?</span>
+                    <i class="fa-solid fa-chevron-down" style="font-size: 0.8rem; color: var(--text-light); transition: transform 0.3s ease;"></i>
+                </button>
+                <div class="faq-content">
+                    <p style="padding: 0 20px 18px; font-size: 0.8rem; color: var(--text-secondary); line-height: 1.6; font-weight: 500;">
+                        Seluruh fungsionalitas email sementara premium ini disediakan 100% gratis bagi seluruh pengguna Kreaverse AI yang telah terdaftar dan melakukan login ke dalam sistem website utama kami.
+                    </p>
+                </div>
+            </div>
+            <div class="faq-item">
+                <button onclick="toggleFaq(this)" style="width: 100%; display: flex; justify-content: space-between; align-items: center; padding: 18px 20px; background: none; border: none; text-align: left; font-family: 'Plus Jakarta Sans', sans-serif; font-size: 0.9rem; font-weight: 800; color: var(--text-primary); cursor: pointer; outline: none; gap: 15px;">
+                    <span>Bagaimana infrastruktur server dan pembaruan domain email dikelola?</span>
+                    <i class="fa-solid fa-chevron-down" style="font-size: 0.8rem; color: var(--text-light); transition: transform 0.3s ease;"></i>
+                </button>
+                <div class="faq-content">
+                    <p style="padding: 0 20px 18px; font-size: 0.8rem; color: var(--text-secondary); line-height: 1.6; font-weight: 500;">
+                        Sistem kami berjalan di atas VPS (Virtual Private Server) berspesifikasi tinggi dengan teknologi penarikan API Email kelas dunia. Demi menjaga kualitas layanan tetap bersih dari blacklist, sistem memperbarui daftar domain aktif secara otomatis setiap 1 minggu sekali.
+                    </p>
+                </div>
+            </div>
+        </div>
+        <script>
+            function toggleFaq(btn) {
+                const item = btn.parentElement;
+                const content = item.querySelector('.faq-content');
+                const icon = btn.querySelector('i');
+                const isOpen = item.classList.contains('faq-open');
+                
+                document.querySelectorAll('.faq-item').forEach(el => {
+                    el.classList.remove('faq-open');
+                    el.querySelector('.faq-content').style.maxHeight = '0';
+                    el.querySelector('i').style.transform = 'rotate(0deg)';
+                    el.style.borderColor = 'var(--border-color)';
+                    el.style.boxShadow = 'var(--shadow-sm)';
+                });
+
+                if (!isOpen) {
+                    item.classList.add('faq-open');
+                    content.style.maxHeight = content.scrollHeight + 'px';
+                    icon.style.transform = 'rotate(180deg)';
+                    item.style.borderColor = 'var(--accent-color)';
+                    item.style.boxShadow = 'var(--shadow-md)';
+                }
+            }
+        </script>
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="footer">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="10 0 190 60" style="width:140px; height:32px; margin: 0 auto 20px; display: block; filter: drop-shadow(0 1px 2px rgba(0,0,0,0.1));">
+            <defs>
+                <linearGradient id="kreaGradFooter" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stop-color="#D97757" /><stop offset="50%" stop-color="#AF52DE" /><stop offset="100%" stop-color="#007AFF" />
+                </linearGradient>
+            </defs>
+            <g>
+                <path d="M 30,10 Q 30,30 50,30 Q 30,30 30,50 Q 30,30 10,30 Q 30,30 30,10 Z" fill="url(#kreaGradFooter)" />
+                <path d="M 30,17 Q 30,30 43,30 Q 30,30 30,43 Q 30,30 17,30 Q 30,30 30,17 Z" fill="url(#kreaGradFooter)" transform="rotate(45, 30, 30)" opacity="0.85" />
+                <text x="65" y="38" font-family="'Plus Jakarta Sans', sans-serif" font-weight="800" font-size="21" fill="url(#kreaGradFooter)" letter-spacing="-0.5px">Kreaverse<tspan font-weight="500"> AI</tspan></text>
+            </g>
+        </svg>
+        <div class="footer-links">
+            <a href="/">Beranda</a>
+            <a href="/chat">Studio Media</a>
+            <a href="/ketentuan">Syarat & Ketentuan</a>
+            <a href="/privasi">Kebijakan Privasi</a>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2026 Kreaverse AI. All rights reserved.</p>
+            <div id="live-clock-footer" style="font-family: monospace; color: var(--text-secondary); font-weight:700;"></div>
+        </div>
+    </footer>
+
+    <!-- BOTTOM SHEET SELECTOR -->
+    <div id="bottom-sheet" class="bottom-sheet-overlay" onclick="closeBottomSheet(event)">
+        <div class="bottom-sheet-container">
+            <div class="sheet-header">
+                <span class="sheet-title" id="sheet-title">Pilih Opsi</span>
+                <button class="sheet-close-btn" onclick="triggerCloseBottomSheet()">&times;</button>
+            </div>
+            <div class="sheet-option-list" id="sheet-options"></div>
+        </div>
+    </div>
+
+    <!-- legacy input placeholder support -->
+    <input type="text" id="email-address" readonly style="display:none;">
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script type="module">
+        // ==========================================
+        // FIREBASE IMPORTS
+        // ==========================================
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+        import {
+            getFirestore, collection, addDoc, getDocs, doc, getDoc, onSnapshot, query, orderBy, limit
+        } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+
+        // ==========================================
+        // FIREBASE CONFIG
+        // ==========================================
+        const firebaseConfig = {
+            apiKey: "AIzaSyAO8JV4jkJmbHChYvjUCS7wqfVbKr94tHM",
+            authDomain: "kreaverse-ai0107.firebaseapp.com",
+            databaseURL: "https://kreaverse-ai0107-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "kreaverse-ai0107",
+            storageBucket: "kreaverse-ai0107.firebasestorage.app",
+            messagingSenderId: "1048550433011",
+            appId: "1:1048550433011:web:0cf2e4074b20fe09909786",
+            measurementId: "G-CJHMKKYQ4C"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        const CONFIG = {
+            basePath: '/email/'
+        };
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Helper Fetch with Timeout (Anti-Hangs & Instant Fallback)
+            async function fetchWithTimeout(resource, options = {}, timeout = 3000) {
+                const controller = new AbortController();
+                const id = setTimeout(() => controller.abort(), timeout);
+                try {
+                    const response = await fetch(resource, {
+                        ...options,
+                        signal: controller.signal
+                    });
+                    clearTimeout(id);
+                    return response;
+                } catch (error) {
+                    clearTimeout(id);
+                    throw error;
+                }
+            }
+
+            const emailAddressInput = document.getElementById('email-address');
+            const displayEmailText = document.getElementById('display-email-text');
+            const inboxEmailSub = document.getElementById('inbox-email-sub');
+            const inboxContainer = document.getElementById('inbox-container');
+            const providerSelect = document.getElementById('provider-select');
+            const domainSelect = document.getElementById('domain-select');
+            const customUsernameInput = document.getElementById('custom-username');
+            
+            // Buttons & Badges
+            const btnCopyMain = document.getElementById('btn-copy-main');
+            const btnNewMain = document.getElementById('btn-new-main');
+            const btnSaveCustom = document.getElementById('btn-save-custom');
+            const inboxRefreshBtn = document.getElementById('inbox-refresh-btn');
+            const qrBtn = document.getElementById('qr-btn');
+            const inboxBadgeCount = document.getElementById('inbox-badge-count');
+
+            let currentServer = null; 
+            let currentToken = '';
+            let currentAccountId = '';
+            let currentEmail = '';
+            let currentUsername = ''; 
+            let currentDomain = '';   
+            
+            let seenMessageIds = new Set();
+            let serviceWorkerReg = null;
+            let pollInterval = null;
+            let isFetchingMessages = false;
+            let currentMessages = [];
+
+            // Cache data Firestore
+            let fbServers = {};   // id -> serverData
+            let fbDomains = [];   // list of domains
+            let setupCompletedOnLoad = false;
+            let unifiedDomainPool = []; // Penampung unik: { domain: "domain.com", serverId: "srvId", isCustom: true/false }
+
+            // --- 1. Tab Switching Function (Premium Capsule Format Sync) ---
+            window.switchTab = function(targetTab) {
+                document.querySelectorAll('.format-btn').forEach(btn => btn.classList.remove('active'));
+                document.querySelectorAll('.tab-panel').forEach(panel => panel.classList.remove('active'));
+
+                const activeBtn = document.getElementById(`tab-btn-${targetTab}`);
+                const activePanel = document.getElementById(`tab-${targetTab}`);
+
+                if (activeBtn) activeBtn.classList.add('active');
+                if (activePanel) activePanel.classList.add('active');
+                localStorage.setItem('temp_email_active_tab', targetTab);
+
+                // Ubah subjudul secara dinamis sesuai tab aktif
+                const subtitle = document.getElementById('main-subtitle-text');
+                if (subtitle) {
+                    if (targetTab === 'address') {
+                        subtitle.innerText = "Layanan kotak surat sementara premium. Mengamankan privasi Anda dari spam secara instan dan tanpa biaya.";
+                    } else if (targetTab === 'inbox') {
+                        subtitle.innerText = "Kotak masuk email sementara Anda. Semua pesan masuk diperbarui secara otomatis secara real-time setiap detik.";
+                    } else if (targetTab === 'change') {
+                        subtitle.innerText = "Kustomisasi nama kotak surat Anda sendiri dengan pilihan domain premium yang dikendalikan dari database.";
+                    }
+                }
+            };
+
+            // --- 2. Window Custom Select Bindings (Grouped Headers & Badges) ---
+            window.openCustomSelect = function(type) {
+                const overlay = document.getElementById('bottom-sheet');
+                const titleEl = document.getElementById('sheet-title');
+                const optionsContainer = document.getElementById('sheet-options');
+                
+                if (!optionsContainer || !overlay) return;
+                optionsContainer.innerHTML = '';
+                overlay.classList.add('active');
+                
+                if (type === 'domain-select') {
+                    titleEl.textContent = 'Pilih Domain Tersedia';
+                    
+                    // Kelompokkan seluruh domain unik di pool berdasarkan ID Server asal mereka
+                    const grouped = {};
+                    unifiedDomainPool.forEach(item => {
+                        if (!grouped[item.serverId]) {
+                            grouped[item.serverId] = [];
+                        }
+                        grouped[item.serverId].push(item);
+                    });
+                    
+                    const srvKeys = Object.keys(grouped);
+                    srvKeys.forEach(srvId => {
+                        const serverInfo = fbServers[srvId];
+                        if (serverInfo) {
+                            // Membuat baris pembatas (header group) sesuai Nama Server asli dari Dashboard Admin
+                            const groupHeader = document.createElement('div');
+                            groupHeader.className = 'sheet-group-header';
+                            groupHeader.innerHTML = `<i class="fa-solid fa-server"></i> ${serverInfo.name}`;
+                            optionsContainer.appendChild(groupHeader);
+                        }
+                        
+                        grouped[srvId].forEach(item => {
+                            const optionDiv = document.createElement('div');
+                            const isSelected = (domainSelect && domainSelect.value === item.domain) ? ' selected' : '';
+                            optionDiv.className = 'sheet-option' + isSelected;
+                            
+                            // Berikan tag badge Premium jika domain kustom milik admin, atau Baru jika domain bawaan API
+                            const badgeHtml = item.isCustom 
+                                ? `<span class="badge-premium">Premium</span>` 
+                                : `<span class="badge-new">Baru</span>`;
+
+                            optionDiv.innerHTML = `
+                                <span>@${item.domain}</span>
+                                <div class="sheet-option-meta">
+                                    ${badgeHtml}
+                                    ${(domainSelect && domainSelect.value === item.domain) ? '<i class="fa-solid fa-check" style="color:var(--accent-color);"></i>' : ''}
+                                </div>
+                            `;
+                            
+                            optionDiv.addEventListener('click', () => {
+                                if (domainSelect) {
+                                    domainSelect.value = item.domain;
+                                }
+                                const domLabel = document.getElementById('domain-select-label');
+                                if (domLabel) {
+                                    domLabel.textContent = `@${item.domain}`;
+                                }
+                                
+                                if (providerSelect) {
+                                    providerSelect.value = item.serverId;
+                                }
+                                const provLabel = document.getElementById('provider-select-label');
+                                if (provLabel && fbServers[item.serverId]) {
+                                    provLabel.textContent = fbServers[item.serverId].name;
+                                }
+                                
+                                // Sesi email kustom hanya akan dibuat saat tombol "Simpan Alamat Baru" diklik, bukan saat memilih opsi dropdown
+                                window.triggerCloseBottomSheet();
+                            });
+                            optionsContainer.appendChild(optionDiv);
+                        });
+                    });
+                }
+            };
+
+            window.closeBottomSheet = function(event) {
+                if (event.target === document.getElementById('bottom-sheet')) {
+                    window.triggerCloseBottomSheet();
+                }
+            };
+
+            window.triggerCloseBottomSheet = function() {
+                const overlay = document.getElementById('bottom-sheet');
+                if (overlay) overlay.classList.remove('active');
+            };
+
+            // --- 3. Sistem Silent Background Sync (Ping & Pull Otomatis 10 Detik) ---
+            async function silentBackgroundSync() {
+                const refreshBtn = document.getElementById('inbox-refresh-btn');
+                if (refreshBtn) {
+                    const icon = refreshBtn.querySelector('i');
+                    if (icon) icon.classList.add('fa-spin');
+                }
+                
+                // Mulai penghitungan waktu latensi (Ping) asli / non-dummy
+                const startTime = performance.now();
+                let latencySuccess = false;
+                
+                try {
+                    // Lakukan head-fetch ringan ke server proxy Cloudflare Workers utama
+                    await fetch('https://kreaverse-proxy.kreaverse-ai.workers.dev/', { 
+                        method: 'HEAD', 
+                        mode: 'no-cors',
+                        cache: 'no-store'
+                    });
+                    latencySuccess = true;
+                } catch (e) {
+                    console.warn("Ping test direct connection failure:", e);
+                }
+                
+                const endTime = performance.now();
+                const latency = Math.round(endTime - startTime);
+                const pingTextEl = document.getElementById('ping-ms-text');
+                
+                if (pingTextEl) {
+                    if (latencySuccess) {
+                        pingTextEl.textContent = `${latency} ms`;
+                        if (latency < 250) {
+                            pingTextEl.style.color = '#10B981'; // Hijau (Bagus)
+                        } else if (latency < 600) {
+                            pingTextEl.style.color = '#F59E0B'; // Oranye (Sedang)
+                        } else {
+                            pingTextEl.style.color = '#EF4444'; // Merah (Lag)
+                        }
+                    } else {
+                        pingTextEl.textContent = 'err';
+                        pingTextEl.style.color = '#EF4444'; // Merah (Putus/Error)
+                    }
+                }
+                
+                try {
+                    // 1. Ambil update server & domain terbaru secara senyap dari Firebase
+                    await buildUnifiedDomainPool();
+                    
+                    // 2. Tarik pesan masuk saat ini secara instan
+                    if (currentEmail) {
+                        await fetchMessages();
+                    }
+                } catch (err) {
+                    console.warn("Silent background sync failed:", err);
+                } finally {
+                    if (refreshBtn) {
+                        const icon = refreshBtn.querySelector('i');
+                        setTimeout(() => {
+                            if (icon) icon.classList.remove('fa-spin');
+                        }, 800);
+                    }
+                }
+            }
+
+            if (inboxRefreshBtn) {
+                inboxRefreshBtn.addEventListener('click', () => {
+                    silentBackgroundSync();
+                });
+            }
+
+            // Auto-Ping Background Sync setiap 8 detik sekali secara otomatis
+            setInterval(silentBackgroundSync, 8000);
+
+            // --- 4. Fungsi Jam Real-Time Pada Footer ---
+            function updateLiveClock() {
+                const d = new Date();
+                let hours = d.getHours(); let minutes = d.getMinutes(); let seconds = d.getSeconds(); let ampm = hours >= 12 ? 'PM' : 'AM';
+                hours = hours % 12 || 12; 
+                minutes = minutes < 10 ? '0' + minutes : minutes;
+                seconds = seconds < 10 ? '0' + seconds : seconds;
+                
+                const days = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+                const months = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+                const dayName = days[d.getDay()];
+                const date = d.getDate();
+                const monthName = months[d.getMonth()];
+                const year = d.getFullYear();
+
+                const footerEl = document.getElementById('live-clock-footer');
+                if (footerEl) {
+                    footerEl.innerHTML = `
+                        <div>Waktu Server: ${hours}:${minutes}:${seconds} ${ampm} WIB</div>
+                        <div style="font-size: 0.8rem; margin-top: 6px; color: var(--text-light); font-weight: 700;">${dayName}, ${date} ${monthName} ${year}</div>
+                    `;
+                }
+            }
+            setInterval(updateLiveClock, 1000); updateLiveClock();
+
+            // --- 5. Registrasi Service Worker ---
+            if ('serviceWorker' in navigator && 'Notification' in window) {
+                try {
+                    serviceWorkerReg = await navigator.serviceWorker.register('sw.js');
+                    // Paksa Chrome untuk langsung mengecek pembaruan file sw.js di server secara instan
+                    if (serviceWorkerReg) {
+                        serviceWorkerReg.update();
+                    }
+                    const permission = await Notification.requestPermission();
+                    if (permission !== 'granted') {
+                        console.log('Izin notifikasi tidak diberikan.');
+                    }
+                } catch (error) {
+                    console.error('Service Worker gagal didaftarkan:', error);
+                }
+            }
+
+            // --- 6. Fungsi Notifikasi Audio Chime Premium (Synthesized Web Audio API - Unlocked) ---
+            let audioContextUnlocked = false;
+            let audioCtx = null;
+
+            const unlockAudio = () => {
+                if (audioContextUnlocked) return;
+                try {
+                    const AudioContext = window.AudioContext || window.webkitAudioContext;
+                    audioCtx = new AudioContext();
+                    // Memaksa aktivasi AudioContext langsung pada gestur pertama pengguna
+                    audioCtx.resume().then(() => {
+                        audioContextUnlocked = true;
+                        document.removeEventListener('click', unlockAudio);
+                        document.removeEventListener('touchstart', unlockAudio);
+                    }).catch(err => console.warn("Failed to resume AudioContext:", err));
+                } catch (e) {
+                    console.warn("Audio Context failed to initialize:", e);
+                }
+            };
+            document.addEventListener('click', unlockAudio);
+            document.addEventListener('touchstart', unlockAudio);
+
+            const playChime = () => {
+                try {
+                    if (!audioContextUnlocked || !audioCtx) return;
+                    if (audioCtx.state === 'suspended') {
+                        audioCtx.resume();
+                    }
+                    
+                    const playTone = (freq, startTime, duration) => {
+                        const osc = audioCtx.createOscillator();
+                        const gain = audioCtx.createGain();
+                        
+                        osc.type = 'sine';
+                        osc.frequency.setValueAtTime(freq, startTime);
+                        
+                        gain.gain.setValueAtTime(0.15, startTime); 
+                        gain.gain.exponentialRampToValueAtTime(0.001, startTime + duration);
+                        
+                        osc.connect(gain);
+                        gain.connect(audioCtx.destination);
+                        
+                        osc.start(startTime);
+                        osc.stop(startTime + duration);
+                    };
+                    
+                    const now = audioCtx.currentTime;
+                    playTone(523.25, now, 0.15); // Nada pertama C5
+                    playTone(659.25, now + 0.10, 0.3); // Nada kedua E5
+                } catch (err) {
+                    console.error("Sistem audio notifikasi gagal dijalankan:", err);
+                }
+            };
+
+            // --- 7. Memuat Setelan Secara Dinamis dari Firebase ---
+            function loadFirebaseConfigurations() {
+                // Tarik database Server
+                onSnapshot(collection(db, "temp_email_providers"), snapshot => {
+                    fbServers = {};
+                    snapshot.forEach(docSnap => {
+                        fbServers[docSnap.id] = { id: docSnap.id, ...docSnap.data() };
+                    });
+                    buildUnifiedDomainPool();
+                }, err => console.log("Gagal memuat server:", err));
+
+                // Tarik database Domain
+                onSnapshot(collection(db, "temp_email_domains"), snapshot => {
+                    fbDomains = [];
+                    snapshot.forEach(docSnap => {
+                        fbDomains.push({ id: docSnap.id, ...docSnap.data() });
+                    });
+                    buildUnifiedDomainPool();
+                }, err => console.log("Gagal memuat domain:", err));
+            }
+
+            async function buildUnifiedDomainPool() {
+                let tempPool = [];
+                
+                // 1. Tambahkan seluruh domain kustom terhubung yang terdaftar di Firestore (Beri tag Premium)
+                fbDomains.forEach(d => {
+                    if (fbServers[d.server]) {
+                        tempPool.push({
+                            domain: d.domain,
+                            serverId: d.server,
+                            isCustom: true
+                        });
+                    }
+                });
+                
+                // 2. Tarik domain publik secara otomatis dari API Provider (Beri tag Baru) - Parallel Fast Fetch
+                const srvKeys = Object.keys(fbServers);
+                const fetchPromises = srvKeys.map(async (key) => {
+                    const serverObj = fbServers[key];
+                    const cleanApiBase = serverObj.url.replace(/\/+$/, '');
+                    
+                    if (serverObj.driver === 'type_a') {
+                        try {
+                            const res = await fetchWithTimeout(`${cleanApiBase}/domains`, {}, 2500);
+                            const data = await res.json();
+                            const domains = data['hydra:member'] || [];
+                            domains.forEach(d => {
+                                tempPool.push({ domain: d.domain, serverId: key, isCustom: false });
+                            });
+                        } catch (e) {
+                            try {
+                                const proxiedUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(`${cleanApiBase}/domains`)}`;
+                                const res = await fetchWithTimeout(proxiedUrl, {}, 3500);
+                                const data = await res.json();
+                                const domains = data['hydra:member'] || [];
+                                domains.forEach(d => {
+                                    tempPool.push({ domain: d.domain, serverId: key, isCustom: false });
+                                });
+                            } catch (err) {}
+                        }
+                    } else if (serverObj.driver === 'type_b') {
+                        try {
+                            const res = await fetchWithTimeout(`${cleanApiBase}/api/v1/?action=getDomainList`, {}, 2500);
+                            const domains = await res.json();
+                            domains.forEach(d => {
+                                tempPool.push({ domain: d, serverId: key, isCustom: false });
+                            });
+                        } catch (e) {
+                            try {
+                                const proxiedUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(`${cleanApiBase}/api/v1/?action=getDomainList`)}`;
+                                const res = await fetchWithTimeout(proxiedUrl, {}, 3500);
+                                const domains = await res.json();
+                                domains.forEach(d => {
+                                    tempPool.push({ domain: d, serverId: key, isCustom: false });
+                                });
+                            } catch (err) {}
+                        }
+                    } else if (serverObj.driver === 'type_c') {
+                        // Tipe C: API-Key Headers (Otomatis menarik domain RapidAPI)
+                        const headers = {};
+                        if (serverObj.headerName && serverObj.headerValue) {
+                            headers[serverObj.headerName] = serverObj.headerValue;
+                        }
+                        try {
+                            const res = await fetchWithTimeout(`${cleanApiBase}/domains`, { headers }, 2500);
+                            const domains = await res.json();
+                            if (Array.isArray(domains)) {
+                                domains.forEach(d => {
+                                    tempPool.push({ domain: d, serverId: key, isCustom: false });
+                                });
+                            }
+                        } catch (e) {
+                            try {
+                                const proxiedUrl = `https://kreaverse-proxy.kreaverse-ai.workers.dev/?targetUrl=${encodeURIComponent(`${cleanApiBase}/domains`)}`;
+                                const res = await fetchWithTimeout(proxiedUrl, { headers }, 3500);
+                                const domains = await res.json();
+                                if (Array.isArray(domains)) {
+                                    domains.forEach(d => {
+                                        tempPool.push({ domain: d, serverId: key, isCustom: false });
+                                    });
+                                }
+                            } catch (err) {}
+                        }
+                    } else if (serverObj.driver === 'type_d') {
+                        const dList = ['catchmail.io', 'mailistry.com', 'zeppost.com'];
+                        dList.forEach(d => {
+                            tempPool.push({ domain: d, serverId: key, isCustom: false });
+                        });
+                    }
+                });
+                await Promise.allSettled(fetchPromises);
+                
+                // 3. Sensor Otomatis Dinamis Terhadap Nama Brand Server Bawaan
+                const staticBlacklist = ['maildrop', 'secmail', 'boxim', 'wwjmp'];
+                let finalBlacklist = [...staticBlacklist];
+                
+                Object.keys(fbServers).forEach(key => {
+                    const serverObj = fbServers[key];
+                    try {
+                        const host = new URL(serverObj.url).hostname.toLowerCase();
+                        finalBlacklist.push(host);
+                        const cleanHost = host.replace(/^(api|www)\./, '');
+                        finalBlacklist.push(cleanHost);
+                        const domainLabels = cleanHost.split('.');
+                        if (domainLabels.length > 0) {
+                            const primaryLabel = domainLabels[0];
+                            // Cek & hindari menyensor kata kunci 'mail' atau 'api' sebagai substring yang merusak nama domain normal seperti 'mailistry.com'
+                            if (primaryLabel.length > 2 && primaryLabel !== 'mail' && primaryLabel !== 'api') {
+                                finalBlacklist.push(primaryLabel);
+                            }
+                        }
+                    } catch (e) {}
+                });
+                
+                tempPool = tempPool.filter(item => {
+                    const domLower = item.domain.toLowerCase();
+                    return !finalBlacklist.some(badString => {
+                        if (badString === 'mail' || badString === 'api') {
+                            return domLower === badString;
+                        }
+                        return domLower.includes(badString);
+                    });
+                });
+
+                // --- 4. Deduplikasi Sinkron (Set Deduplication) ---
+                // Menghilangkan duplikasi domain akibat pemanggilan snapshot Firebase ganda atau tumpang tindih API
+                const uniquePool = [];
+                const seenKeys = new Set();
+                tempPool.forEach(item => {
+                    const uniqueKey = `${item.domain}-${item.serverId}`;
+                    if (!seenKeys.has(uniqueKey)) {
+                        seenKeys.add(uniqueKey);
+                        uniquePool.push(item);
+                    }
+                });
+
+                unifiedDomainPool = uniquePool;
+                renderDomainDropdownUI();
+            }
+
+            function renderDomainDropdownUI() {
+                if (unifiedDomainPool.length > 0) {
+                    if (domainSelect && (!domainSelect.value || !unifiedDomainPool.some(item => item.domain === domainSelect.value))) {
+                        // Rotasi Otomatis: Memilih domain secara acak dari pool dinamis saat pertama kali memuat halaman
+                        const firstItem = unifiedDomainPool[Math.floor(Math.random() * unifiedDomainPool.length)];
+                        domainSelect.value = firstItem.domain;
+                        if (providerSelect) {
+                            providerSelect.value = firstItem.serverId;
+                        }
+                        const domLabel = document.getElementById('domain-select-label');
+                        if (domLabel) {
+                            domLabel.textContent = `@${firstItem.domain}`;
+                        }
+                        const provLabel = document.getElementById('provider-select-label');
+                        if (provLabel && fbServers[firstItem.serverId]) {
+                            provLabel.textContent = fbServers[firstItem.serverId].name;
+                        }
+                    } else {
+                        const domLabel = document.getElementById('domain-select-label');
+                        if (domLabel && domainSelect) {
+                            domLabel.textContent = `@${domainSelect.value}`;
+                        }
+                    }
+                } else {
+                    if (domainSelect) domainSelect.value = '';
+                    const domLabel = document.getElementById('domain-select-label');
+                    if (domLabel) {
+                        domLabel.textContent = 'Tidak ada domain aktif';
+                    }
+                }
+
+                // Jalankan inisiasi email pertama kali jika server dan pool domain sudah terintegrasi murni
+                if (!setupCompletedOnLoad && unifiedDomainPool.length > 0) {
+                    setupCompletedOnLoad = true;
+                    setTimeout(() => {
+                        setupEmail();
+                        const savedTab = localStorage.getItem('temp_email_active_tab');
+                        if (savedTab) window.switchTab(savedTab);
+                    }, 1000);
+                }
+            }
+
+            // --- 8. Setup Akun Email (Bypass Registrasi & Rotasi Server) ---
+            async function setupEmail(customUser = null, customDomString = null, customSrvId = null) {
+                const savedEmail = localStorage.getItem('temp_email_address');
+                const savedToken = localStorage.getItem('temp_email_token');
+                const savedAccountId = localStorage.getItem('temp_email_account_id');
+                const savedUsername = localStorage.getItem('temp_email_username');
+                const savedDomain = localStorage.getItem('temp_email_domain');
+                const savedSrvId = localStorage.getItem('temp_email_server_id');
+
+                if (!customUser && !customDomString && savedEmail && savedSrvId && fbServers[savedSrvId]) {
+                    currentEmail = savedEmail;
+                    currentToken = savedToken || '';
+                    currentAccountId = savedAccountId || '';
+                    currentUsername = savedUsername || '';
+                    currentDomain = savedDomain || '';
+                    currentServer = fbServers[savedSrvId];
+                    
+                    if (emailAddressInput) emailAddressInput.value = currentEmail;
+                    if (displayEmailText) displayEmailText.textContent = currentEmail;
+                    if (inboxEmailSub) inboxEmailSub.textContent = currentEmail;
+
+                    fetchMessages();
+                    if (pollInterval) clearInterval(pollInterval);
+                    pollInterval = setInterval(fetchMessages, 5000); // Polling aman 5 detik untuk mencegah tabrakan data
+                    return;
+                }
+
+                if (displayEmailText) displayEmailText.textContent = 'Menghubungkan...';
+                if (inboxEmailSub) inboxEmailSub.textContent = 'Menghubungkan...';
+                
+                if (inboxContainer) {
+                    inboxContainer.innerHTML = `
+                        <div class="empty-state">
+                            <i class="fa-solid fa-spinner fa-spin"></i><br>
+                            Menyiapkan email baru dari server...
+                        </div>
+                    `;
+                }
+
+                currentToken = '';
+                currentAccountId = '';
+                currentEmail = '';
+                currentUsername = '';
+                currentDomain = '';
+                seenMessageIds.clear();
+
+                if (pollInterval) clearInterval(pollInterval);
+
+                // Jika ini permintaan kustom, batasi percobaan hanya untuk domain pilihan saja (mencegah fallback ke domain acak lain)
+                let attemptPool = (customUser && customDomString && customSrvId)
+                    ? [{ domain: customDomString, serverId: customSrvId }]
+                    : [...unifiedDomainPool];
+                
+                let success = false;
+                let lastError = null;
+                const maxAttempts = (customUser && customDomString && customSrvId) ? 1 : 3;
+
+                for (let attempt = 0; attempt < maxAttempts; attempt++) {
+                    try {
+                        let finalDomainStr = customDomString;
+                        let finalServerObj = null;
+
+                        if (customUser && customDomString && customSrvId && attempt === 0) {
+                            finalServerObj = fbServers[customSrvId];
+                            finalDomainStr = customDomString;
+                        } else if (attemptPool.length > 0) {
+                            // Memilih acak dari pool dinamis
+                            const randomIdx = Math.floor(Math.random() * attemptPool.length);
+                            const randomItem = attemptPool[randomIdx];
+                            // Hapus node gagal ini agar tidak dipilih lagi pada perulangan berikutnya
+                            attemptPool.splice(randomIdx, 1);
+                            
+                            finalServerObj = fbServers[randomItem.serverId];
+                            finalDomainStr = randomItem.domain;
+                        }
+
+                        if (!finalServerObj || !finalDomainStr) {
+                            break;
+                        }
+
+                        currentServer = finalServerObj;
+                        currentDomain = finalDomainStr;
+                        const apiBase = finalServerObj.url;
+                        const randomString = Math.random().toString(36).substring(2, 8);
+                        
+                        // Standarisasi awalan kreaverse-ai- (Tanda hubung yang didukung 100% oleh semua driver)
+                        let finalUsername = "";
+                        if (customUser) {
+                            const cleanUser = customUser.trim().toLowerCase();
+                            if (cleanUser.startsWith("kreaverse-ai-")) {
+                                finalUsername = cleanUser;
+                            } else {
+                                finalUsername = `kreaverse-ai-${cleanUser}`;
+                            }
+                        } else {
+                            finalUsername = `kreaverse-ai-${randomString}`;
+                        }
+                        currentUsername = finalUsername;
+                        const address = `${currentUsername}@${currentDomain}`;
+                        const password = `KreaversePass!${currentUsername}`;
+
+                        // Driver Tipe A: Hydra/JWT
+                        if (finalServerObj.driver === 'type_a') {
+                            let accountRes;
+                            try {
+                                accountRes = await fetchWithTimeout(`${apiBase}/accounts`, {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({ address, password })
+                                }, 2500);
+                            } catch (err) {
+                                const proxiedUrl = `https://kreaverse-proxy.kreaverse-ai.workers.dev/?targetUrl=${encodeURIComponent(`${apiBase}/accounts`)}`;
+                                accountRes = await fetchWithTimeout(proxiedUrl, {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({ address, password })
+                                }, 3500);
+                            }
+                            
+                            if (accountRes.ok) {
+                                const accountData = await accountRes.json();
+                                currentAccountId = accountData.id;
+                            }
+
+                            let tokenRes;
+                            try {
+                                tokenRes = await fetchWithTimeout(`${apiBase}/token`, {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({ address, password })
+                                }, 2500);
+                            } catch (err) {
+                                const proxiedUrl = `https://kreaverse-proxy.kreaverse-ai.workers.dev/?targetUrl=${encodeURIComponent(`${apiBase}/token`)}`;
+                                tokenRes = await fetchWithTimeout(proxiedUrl, {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({ address, password })
+                                }, 3500);
+                            }
+                            
+                            if (!tokenRes.ok) {
+                                throw new Error("Gagal masuk. Alamat email mungkin sudah terpakai oleh pengguna lain dengan kata sandi berbeda.");
+                            }
+
+                            const tokenData = await tokenRes.json();
+                            currentToken = tokenData.token;
+                            currentEmail = address;
+
+                            // Simpan Sesi
+                            localStorage.setItem('temp_email_address', currentEmail);
+                            localStorage.setItem('temp_email_token', currentToken);
+                            localStorage.setItem('temp_email_account_id', currentAccountId);
+                            localStorage.setItem('temp_email_username', currentUsername);
+                            localStorage.setItem('temp_email_domain', currentDomain);
+                            localStorage.setItem('temp_email_server_id', finalServerObj.id);
+
+                        // Driver Tipe B, C & D
+                        } else if (finalServerObj.driver === 'type_b' || finalServerObj.driver === 'type_c' || finalServerObj.driver === 'type_d') {
+                            currentEmail = address;
+
+                            // Simpan Sesi
+                            localStorage.setItem('temp_email_address', currentEmail);
+                            localStorage.setItem('temp_email_username', currentUsername);
+                            localStorage.setItem('temp_email_domain', currentDomain);
+                            localStorage.setItem('temp_email_server_id', finalServerObj.id);
+                        }
+
+                        // Sinkronisasi data ke input legacy dan UI
+                        if (emailAddressInput) emailAddressInput.value = currentEmail;
+                        if (displayEmailText) displayEmailText.textContent = currentEmail;
+                        if (inboxEmailSub) inboxEmailSub.textContent = currentEmail;
+
+                        // Sinkronisasi label trigger select
+                        if (domainSelect) domainSelect.value = currentDomain;
+                        const domLabel = document.getElementById('domain-select-label');
+                        if (domLabel) {
+                            domLabel.textContent = `@${currentDomain}`;
+                        }
+                        if (providerSelect) providerSelect.value = finalServerObj.id;
+                        const provLabel = document.getElementById('provider-select-label');
+                        if (provLabel) {
+                            provLabel.textContent = finalServerObj.name;
+                        }
+
+                        // Berikan notifikasi jika pembuatan kustom sukses
+                        if (customUser) {
+                            Swal.fire({
+                                title: 'Email Diperbarui',
+                                text: `Berhasil membuat alamat email khusus: ${currentEmail}`,
+                                icon: 'success',
+                                confirmButtonColor: '#007AFF',
+                                background: document.documentElement.getAttribute('data-theme') === 'dark' ? '#151F32' : '#FFF',
+                                color: document.documentElement.getAttribute('data-theme') === 'dark' ? '#F8FAFC' : '#0F172A'
+                            });
+                            // Kembali ke tab utama otomatis
+                            window.switchTab('address');
+                        }
+
+                        fetchMessages();
+                        if (pollInterval) clearInterval(pollInterval);
+                        pollInterval = setInterval(fetchMessages, 5000); // Polling aman 5 detik untuk mencegah tabrakan data
+                        
+                        success = true;
+                        break; // Keluar dari loop sukses!
+
+                    } catch (error) {
+                        console.warn(`Percobaan setup email ke-${attempt + 1} gagal, mencoba merotasi node server...`, error);
+                        lastError = error;
+                    }
+                }
+
+                if (!success) {
+                    Swal.fire({
+                        title: 'Registrasi Gagal',
+                        text: (lastError ? lastError.message : '') || 'Gagal terhubung ke seluruh provider email. Silakan coba kembali.',
+                        icon: 'error',
+                        confirmButtonColor: '#007AFF',
+                        background: document.documentElement.getAttribute('data-theme') === 'dark' ? '#151F32' : '#FFF',
+                        color: document.documentElement.getAttribute('data-theme') === 'dark' ? '#F8FAFC' : '#0F172A'
+                    });
+                    if (displayEmailText) displayEmailText.textContent = 'Gagal memuat alamat email.';
+                }
+            }
+
+            // --- 9. Ambil Pesan Masuk (Polling Real-Time ABCD) ---
+            async function fetchMessages() {
+                if (!currentServer || !currentEmail || isFetchingMessages) return;
+                isFetchingMessages = true;
+                try {
+                    let messages = [];
+                    const apiBase = currentServer.url;
+                    const cleanApiBase = apiBase.replace(/\/+$/, '');
+
+                    const headers = {};
+                    if (currentServer.driver === 'type_c' && currentServer.headerName) {
+                        headers[currentServer.headerName] = currentServer.headerValue;
+                    }
+
+                    // Parsing Driver Tipe A (Hydra/JWT)
+                    if (currentServer.driver === 'type_a') {
+                        if (!currentToken) return;
+                        let res;
+                        try {
+                            res = await fetchWithTimeout(`${cleanApiBase}/messages`, {
+                                headers: { 'Authorization': `Bearer ${currentToken}` }
+                            }, 2500);
+                        } catch (err) {
+                            const proxiedUrl = `https://kreaverse-proxy.kreaverse-ai.workers.dev/?targetUrl=${encodeURIComponent(`${cleanApiBase}/messages`)}`;
+                            res = await fetchWithTimeout(proxiedUrl, {
+                                headers: { 'Authorization': `Bearer ${currentToken}` }
+                            }, 4000);
+                        }
+                        const data = await res.json();
+                        const rawMsgs = data['hydra:member'] || [];
+
+                        messages = rawMsgs.map(msg => ({
+                            id: msg.id,
+                            from: msg.from.address,
+                            subject: msg.subject,
+                            snippet: msg.intro || 'Ketuk untuk melihat seluruh isi pesan.',
+                            hasAttachment: msg.hasAttachments || false
+                        }));
+
+                        checkForNewMessages(rawMsgs.map(m => ({
+                            id: m.id,
+                            from: m.from.address,
+                            subject: m.subject
+                        })));
+
+                    // Parsing Driver Tipe B
+                    } else if (currentServer.driver === 'type_b') {
+                        const targetUrl = `${cleanApiBase}/api/v1/?action=getMessages&login=${currentUsername}&domain=${currentDomain}`;
+                        let res;
+                        try {
+                            res = await fetchWithTimeout(targetUrl, {}, 2500);
+                            if (!res.ok) throw new Error('Direct fetch failed');
+                        } catch (corsErr) {
+                            res = await fetchWithTimeout(`https://kreaverse-proxy.kreaverse-ai.workers.dev/?targetUrl=${encodeURIComponent(targetUrl)}`, { headers }, 4000);
+                        }
+                        const rawMsgs = await res.json();
+
+                        messages = rawMsgs.map(msg => ({
+                            id: msg.id,
+                            from: msg.from,
+                            subject: msg.subject,
+                            snippet: `Pesan masuk dari ${msg.from}. Ketuk untuk membaca isi surat.`,
+                            bodyHtml: msg.htmlBody || msg.textBody || 'Tidak ada isi pesan.',
+                            hasAttachment: false
+                        }));
+
+                        checkForNewMessages(rawMsgs.map(m => ({
+                            id: m.id,
+                            from: m.from,
+                            subject: m.subject
+                        })));
+
+                    // Parsing Driver Tipe C (Format Khusus RapidAPI / Temp Mail (Almost Free))
+                    } else if (currentServer.driver === 'type_c') {
+                        const targetUrl = `${cleanApiBase}/email/${encodeURIComponent(currentEmail)}/messages`;
+                        let res;
+                        try {
+                            res = await fetchWithTimeout(targetUrl, { headers }, 2500);
+                            if (!res.ok) throw new Error('Direct fetch failed');
+                        } catch (corsErr) {
+                            res = await fetchWithTimeout(`https://kreaverse-proxy.kreaverse-ai.workers.dev/?targetUrl=${encodeURIComponent(targetUrl)}`, { headers }, 4000);
+                        }
+                        const rawMsgs = await res.json();
+
+                        messages = rawMsgs.map(msg => {
+                            let bodyHtml = 'Tidak ada isi pesan.';
+                            if (msg.html || msg.htmlBody) {
+                                bodyHtml = msg.html || msg.htmlBody;
+                            } else if (msg.text || msg.textBody) {
+                                bodyHtml = msg.text || msg.textBody;
+                            } else if (msg.body) {
+                                bodyHtml = typeof msg.body === 'string' ? msg.body : (msg.body.html || msg.body.text || 'Tidak ada isi pesan.');
+                            }
+
+                            return {
+                                id: msg.id || msg.message_id || msg.uid || Math.random().toString(),
+                                from: msg.from || msg.sender || 'Unknown',
+                                subject: msg.subject || 'No Subject',
+                                snippet: (msg.intro || msg.snippet || bodyHtml.replace(/<[^>]*>/g, '')).substring(0, 80) + '...',
+                                bodyHtml: bodyHtml,
+                                attachments: msg.attachments || [],
+                                hasAttachment: (msg.attachments && msg.attachments.length > 0) || false
+                            };
+                        });
+
+                        checkForNewMessages(rawMsgs.map(m => ({
+                            id: m.id || m.message_id || m.uid || Math.random().toString(),
+                            from: m.from || m.sender || 'Unknown',
+                            subject: m.subject || 'No Subject'
+                        })));
+
+                    // Parsing Driver Tipe D (Direct Address Query / Catchmail)
+                    } else if (currentServer.driver === 'type_d') {
+                        const targetUrl = `${cleanApiBase}/api/v1/mailbox?address=${encodeURIComponent(currentEmail)}`;
+                        let res;
+                        try {
+                            res = await fetchWithTimeout(targetUrl, {}, 2500);
+                            if (!res.ok) throw new Error('Direct fetch failed');
+                        } catch (corsErr) {
+                            res = await fetchWithTimeout(`https://kreaverse-proxy.kreaverse-ai.workers.dev/?targetUrl=${encodeURIComponent(targetUrl)}`, { headers }, 4000);
+                        }
+                        const data = await res.json();
+                        const rawMsgs = data.messages || [];
+
+                        messages = rawMsgs.map(msg => ({
+                            id: msg.id,
+                            from: msg.from,
+                            subject: msg.subject,
+                            snippet: `Pesan masuk dari ${msg.from}. Ketuk untuk membaca isi surat.`,
+                            hasAttachment: msg.attachments && msg.attachments.length > 0
+                        }));
+
+                        checkForNewMessages(rawMsgs.map(m => ({
+                            id: m.id,
+                            from: m.from,
+                            subject: m.subject
+                        })));
+                    }
+
+                    renderMessages(messages);
+
+                } catch (error) {
+                    console.error('Gagal memuat surat masuk:', error);
+                } finally {
+                    isFetchingMessages = false;
+                }
+            }
+
+            // --- 10. Render Kotak Masuk ke UI (Premium Design) ---
+            let lastRenderedHash = "";
+            function renderMessages(messages) {
+                const seenEmails = JSON.parse(localStorage.getItem('temp_email_seen') || "[]");
+                const unreadCount = messages.filter(m => !seenEmails.includes(String(m.id))).length;
+
+                // Update badge navigasi format-toggle secara real-time
+                if (inboxBadgeCount) {
+                    if (unreadCount > 0) {
+                        inboxBadgeCount.textContent = unreadCount;
+                        inboxBadgeCount.style.display = 'inline-flex'; // Menggunakan inline-flex agar teks sejajar tepat di tengah lingkaran tanpa menambah tinggi tombol
+                    } else {
+                        inboxBadgeCount.style.display = 'none';
+                    }
+                }
+
+                if (!inboxContainer) return;
+                currentMessages = messages; // Simpan daftar pesan ke memori lokal
+
+                // Anti-Flicker check: Cek apakah isi data atau status baca ada perubahan sebelum merender ulang DOM
+                const currentHash = JSON.stringify(messages.map(m => ({ id: m.id, from: m.from, isSeen: seenEmails.includes(String(m.id)) })));
+                if (currentHash === lastRenderedHash) {
+                    return; // Lewati render jika tidak ada perubahan, menjaga posisi layar tetap tenang dan tidak kedip
+                }
+                lastRenderedHash = currentHash;
+
+                if (messages.length === 0) {
+                    inboxContainer.innerHTML = `
+                        <div class="empty-state">
+                            <i class="fa-solid fa-inbox"></i><br>
+                            Menunggu pesan masuk...
+                        </div>
+                    `;
+                    return;
+                }
+
+                inboxContainer.innerHTML = '';
+                messages.forEach((msg, idx) => {
+                    const div = document.createElement('div');
+                    div.className = 'email-item';
+                    
+                    // Deteksi timestamp real-time sederhana
+                    const fakeTime = new Date();
+                    fakeTime.setMinutes(fakeTime.getMinutes() - idx * 2);
+                    const timeString = fakeTime.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+                    const isSeen = seenEmails.includes(String(msg.id));
+
+                    div.innerHTML = `
+                        <div class="email-item-header">
+                            <div class="email-item-sender-row">
+                                <span class="status-dot" style="${isSeen ? 'background-color: var(--text-light);' : ''}"></span>
+                                <span class="email-item-sender" style="${isSeen ? 'color: var(--text-secondary); font-weight: 500;' : ''}">${msg.from}</span>
+                            </div>
+                            <span class="email-item-time">${timeString}</span>
+                        </div>
+                        <div class="email-item-subject" style="${isSeen ? 'font-weight: 500; color: var(--text-secondary);' : ''}">${msg.subject}</div>
+                        <div class="email-item-snippet-row">
+                            <span class="email-item-snippet">${msg.snippet}</span>
+                            ${msg.hasAttachment ? '<i class="fa-solid fa-paperclip email-item-attachment"></i>' : ''}
+                        </div>
+                    `;
+                    div.addEventListener('click', () => {
+                        const currentSeen = JSON.parse(localStorage.getItem('temp_email_seen') || "[]");
+                        if (!currentSeen.includes(String(msg.id))) {
+                            currentSeen.push(String(msg.id));
+                            localStorage.setItem('temp_email_seen', JSON.stringify(currentSeen));
+                        }
+                        showEmailDetail(msg.id);
+                        // Trigger render manual instan untuk update badge unread dan gaya baris setelah diklik
+                        lastRenderedHash = ""; 
+                        renderMessages(messages);
+                    });
+                    inboxContainer.appendChild(div);
+                });
+            }
+
+            // --- 11. Deteksi Surat Baru & Kirim Push Notifikasi + Audio Chime & Kirim Log ---
+            function checkForNewMessages(messages) {
+                let hasNew = false;
+                messages.forEach(async msg => {
+                    if (!seenMessageIds.has(msg.id)) {
+                        seenMessageIds.add(msg.id);
+                        hasNew = true;
+                        
+                        // 1. Kirim push notifikasi browser via Service Worker Ready (Metode paling andal & stabil di Android Chrome)
+                        if (Notification.permission === 'granted' && navigator.serviceWorker) {
+                            navigator.serviceWorker.ready.then((reg) => {
+                                reg.showNotification('Pesan Baru: Kreaverse Email', {
+                                    body: `Dari: ${msg.from}\nSubjek: ${msg.subject}`,
+                                    icon: 'https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/72x72/2709.png', // Ikon Twemoji CDN bebas blokir 403
+                                    vibrate: [200, 100, 200]
+                                });
+                            }).catch((err) => {
+                                console.error("Gagal mengirimkan notifikasi Service Worker:", err);
+                            });
+                        }
+
+                        // 2. Kirim LOG email masuk secara otomatis ke Firebase (Menghidupkan Live Monitor Dashboard)
+                        try {
+                            await addDoc(collection(db, "temp_email_logs"), {
+                                email: currentEmail,
+                                from: msg.from,
+                                subject: msg.subject,
+                                snippet: msg.snippet || 'Ketuk untuk membaca detail.',
+                                timestamp: Date.now()
+                            });
+                        } catch (err) {
+                            console.error("Gagal mengirim log ke Dashboard:", err);
+                        }
+                    }
+                });
+
+                if (hasNew) {
+                    playChime(); // Mainkan nada chime premium 75%
+                }
+            }
+
+            // --- Helper: Render Pop-Up Membaca Pesan Premium ---
+            function renderAndShowMessageModal(subject, fromText, bodyHtml, attachments) {
+                const dObj = new Date();
+                const daysIndo = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"];
+                const monthsIndo = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agt", "Sep", "Okt", "Nov", "Des"];
+                const indonesianDay = daysIndo[dObj.getDay()];
+                const indonesianDate = dObj.getDate();
+                const indonesianMonth = monthsIndo[dObj.getMonth()];
+                const indonesianYear = dObj.getFullYear();
+                const indonesianTime = dObj.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }).replace('.', ':');
+                const formattedIndoDate = `${indonesianDay} ${indonesianDate} ${indonesianMonth} ${indonesianYear}, ${indonesianTime}`;
+
+                const initials = fromText.slice(0, 1).toUpperCase();
+                const senderNameOnly = fromText.split('@')[0];
+
+                let attachmentHtml = '';
+                if (attachments && attachments.length > 0) {
+                    attachmentHtml = `
+                        <div style="margin-top:16px; padding-top:12px; border-top:1px solid var(--border-color); font-size: 0.85rem;">
+                            <b>Lampiran Dokumen:</b>
+                            <div style="display:flex; flex-direction:column; gap:6px; margin-top:8px;">
+                                ${attachments.map(att => `
+                                    <div style="display:flex; justify-content:space-between; align-items:center; background:#F9FAFB; padding:10px; border-radius:8px; border:1px solid var(--border-color);">
+                                        <span><i class="fa-regular fa-file-lines"></i> ${att.filename || att.name} (${att.size ? (att.size / 1024).toFixed(1) + ' KB' : 'Dokumen'})</span>
+                                        <a href="#" style="color:var(--accent-color); font-weight:700; text-decoration:none;">UNDUH</a>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    `;
+                }
+
+                const viewContent = `
+                    <div class="swal-email-view" style="font-family: 'Plus Jakarta Sans', sans-serif;">
+                        <div style="font-size: 1.15rem; font-weight: 800; color: var(--text-primary); margin-bottom: 16px; border-bottom: 1px solid var(--border-color); padding-bottom: 12px; line-height: 1.4;">
+                            ${subject}
+                        </div>
+                        
+                        <div class="email-view-header" style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+                            <div class="email-avatar" style="width: 42px; height: 42px; border-radius: 50%; background-color: var(--accent-color); color: white; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 1.1rem; flex-shrink: 0;">
+                                ${initials}
+                            </div>
+                            <div style="display: flex; flex-direction: column; flex: 1; min-width: 0;">
+                                <div style="display: flex; align-items: baseline; justify-content: space-between; flex-wrap: wrap; gap: 4px;">
+                                    <span class="sender-name" style="font-weight: 700; color: var(--text-primary); font-size: 0.95rem;">${senderNameOnly}</span>
+                                    <span style="font-size: 0.75rem; color: var(--text-light); font-weight: 600;">${indonesianTime}</span>
+                                </div>
+                                
+                                <details style="width: 100%; margin-top: 2px;">
+                                    <summary style="font-size: 0.8rem; color: var(--text-secondary); cursor: pointer; outline: none; list-style: none; display: flex; align-items: center; gap: 4px; font-weight: 600;">
+                                        kepada saya <i class="fa-solid fa-chevron-down" style="font-size: 0.65rem;"></i>
+                                    </summary>
+                                    <div style="background-color: #F9FAFB; border: 1px solid var(--border-color); border-radius: 12px; padding: 12px; margin-top: 8px; font-size: 0.8rem; display: flex; flex-direction: column; gap: 6px; color: var(--text-secondary);">
+                                        <div><strong>Dari:</strong> ${senderNameOnly} &lt;${fromText}&gt;</div>
+                                        <div><strong>Alamat Email:</strong> ${fromText}</div>
+                                        <div><strong>Tanggal:</strong> ${formattedIndoDate}</div>
+                                        <div><strong>Perihal:</strong> ${subject}</div>
+                                        <div style="display: flex; align-items: center; gap: 6px; border-top: 1px solid var(--border-color); padding-top: 6px; margin-top: 4px; color: #10B981; font-weight: 700; font-size: 0.75rem;">
+                                            <i class="fa-solid fa-lock" style="font-size:0.75rem;"></i> Enkripsi standar (TLS).
+                                        </div>
+                                    </div>
+                                </details>
+                            </div>
+                        </div>
+                        
+                        <div class="email-view-body" style="border-top: none; padding-top: 8px; margin-top: 15px; font-size: 0.9rem; line-height: 1.6; color: var(--text-primary);">
+                            ${bodyHtml}
+                        </div>
+                        ${attachmentHtml}
+                    </div>
+                `;
+
+                Swal.fire({
+                    html: viewContent,
+                    width: '560px',
+                    confirmButtonColor: '#007AFF',
+                    confirmButtonText: 'TUTUP',
+                    background: document.documentElement.getAttribute('data-theme') === 'dark' ? '#151F32' : '#FFF',
+                    color: document.documentElement.getAttribute('data-theme') === 'dark' ? '#F8FAFC' : '#0F172A'
+                });
+            }
+
+            // --- 12. Desain Pop-Up Membaca Pesan Premium ---
+            async function showEmailDetail(msgId) {
+                if (!currentServer) return;
+
+                // Jika data detail pesan sudah terunduh di memori (seperti Tipe C / RapidAPI), langsung tampilkan!
+                const localMsg = currentMessages.find(m => String(m.id) === String(msgId));
+                if (localMsg && localMsg.bodyHtml && currentServer.driver === 'type_c') {
+                    renderAndShowMessageModal(localMsg.subject, localMsg.from, localMsg.bodyHtml, localMsg.attachments || []);
+                    return;
+                }
+                
+                Swal.fire({
+                    title: 'Memuat pesan...',
+                    allowOutsideClick: false,
+                    didOpen: () => Swal.showLoading(),
+                    background: document.documentElement.getAttribute('data-theme') === 'dark' ? '#151F32' : '#FFF',
+                });
+
+                try {
+                    let subject = '';
+                    let fromText = '';
+                    let bodyHtml = '';
+                    let attachments = [];
+                    const apiBase = currentServer.url;
+                    const cleanApiBase = apiBase.replace(/\/+$/, '');
+
+                    const headers = {};
+                    if (currentServer.driver === 'type_c' && currentServer.headerName) {
+                        headers[currentServer.headerName] = currentServer.headerValue;
+                    }
+
+                    if (currentServer.driver === 'type_a') {
+                        let res;
+                        try {
+                            res = await fetchWithTimeout(`${cleanApiBase}/messages/${msgId}`, {
+                                headers: { 'Authorization': `Bearer ${currentToken}` }
+                            }, 10000);
+                        } catch (err) {
+                            const proxiedUrl = `https://kreaverse-proxy.kreaverse-ai.workers.dev/?targetUrl=${encodeURIComponent(`${cleanApiBase}/messages/${msgId}`)}`;
+                            res = await fetchWithTimeout(proxiedUrl, {
+                                headers: { 'Authorization': `Bearer ${currentToken}` }
+                            }, 10000);
+                        }
+                        const data = await res.json();
+                        subject = data.subject;
+                        fromText = data.from.address;
+                        bodyHtml = data.html ? data.html[0] : (data.text || 'Tidak ada isi pesan.');
+                        attachments = data.attachments || [];
+
+                    } else if (currentServer.driver === 'type_d') {
+                        const targetUrl = `${cleanApiBase}/api/v1/message/${msgId}?mailbox=${encodeURIComponent(currentEmail)}`;
+                        let res;
+                        try {
+                            res = await fetchWithTimeout(targetUrl, {}, 10000);
+                            if (!res.ok) throw new Error('Direct fetch failed');
+                        } catch (corsErr) {
+                            res = await fetchWithTimeout(`https://kreaverse-proxy.kreaverse-ai.workers.dev/?targetUrl=${encodeURIComponent(targetUrl)}`, { headers }, 10000);
+                        }
+                        const data = await res.json();
+                        subject = data.subject;
+                        fromText = data.from;
+                        bodyHtml = data.body ? (data.body.html || data.body.text || 'Tidak ada isi pesan.') : (data.htmlBody || data.textBody || 'Tidak ada isi pesan.');
+                        attachments = data.attachments || [];
+
+                    } else {
+                        const targetUrl = `${cleanApiBase}/api/v1/?action=readMessage&login=${currentUsername}&domain=${currentDomain}&id=${msgId}`;
+                        let res;
+                        try {
+                            res = await fetchWithTimeout(targetUrl, {}, 10000);
+                            if (!res.ok) throw new Error('Direct fetch failed');
+                        } catch (corsErr) {
+                            res = await fetchWithTimeout(`https://kreaverse-proxy.kreaverse-ai.workers.dev/?targetUrl=${encodeURIComponent(targetUrl)}`, { headers }, 10000);
+                        }
+                        const data = await res.json();
+                        subject = data.subject;
+                        fromText = data.from;
+                        bodyHtml = data.htmlBody ? data.htmlBody : (data.textBody || 'Tidak ada isi pesan.');
+                        attachments = data.attachments || [];
+                    }
+
+                    renderAndShowMessageModal(subject, fromText, bodyHtml, attachments);
+
+                } catch (error) {
+                    Swal.fire('Error', 'Gagal memuat detail pesan.', 'error');
+                }
+            }
+
+            // --- 13. Handler Tombol Salin, Buat Baru, & QR Code ---
+            if (btnCopyMain) {
+                btnCopyMain.addEventListener('click', () => {
+                    if (!currentEmail || currentEmail.includes('...')) return;
+                    navigator.clipboard.writeText(currentEmail);
+                    btnCopyMain.innerHTML = '<i class="fa-solid fa-check"></i> Berhasil Disalin';
+                    setTimeout(() => btnCopyMain.innerHTML = '<i class="fa-regular fa-copy"></i> Salin Alamat', 2000);
+                });
+            }
+
+            if (btnNewMain) {
+                btnNewMain.addEventListener('click', () => {
+                    Swal.fire({
+                        title: 'Buat Alamat Baru?',
+                        text: "Sesi email aktif akan dihapus permanen dan diganti alamat baru.",
+                        icon: 'question',
+                        showCancelButton: true,
+                        confirmButtonColor: '#007AFF',
+                        cancelButtonColor: '#64748B',
+                        confirmButtonText: 'Ya, Buat Baru',
+                        cancelButtonText: 'Batal',
+                        background: document.documentElement.getAttribute('data-theme') === 'dark' ? '#151F32' : '#FFF',
+                        color: document.documentElement.getAttribute('data-theme') === 'dark' ? '#F8FAFC' : '#0F172A'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            localStorage.clear(); // Hapus sesi lama
+                            setupEmail();
+                        }
+                    });
+                });
+            }
+
+            if (qrBtn) {
+                qrBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    if (!currentEmail || currentEmail.includes('...')) return;
+                    const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(currentEmail)}`;
+                    Swal.fire({
+                        title: 'Scan QR Alamat Anda',
+                        html: `
+                            <div style="text-align: center; padding: 10px;">
+                                <img src="${qrUrl}" alt="QR Code" style="max-width: 100%; border: 1px solid var(--border); border-radius: 12px; padding: 8px; background: white;" />
+                                <p style="margin-top: 12px; font-size: 0.9rem; color: var(--text-secondary); word-break: break-all;"><b>${currentEmail}</b></p>
+                            </div>
+                        `,
+                        confirmButtonText: 'Tutup',
+                        confirmButtonColor: '#007AFF',
+                        background: document.documentElement.getAttribute('data-theme') === 'dark' ? '#151F32' : '#FFF',
+                        color: document.documentElement.getAttribute('data-theme') === 'dark' ? '#F8FAFC' : '#0F172A'
+                    });
+                });
+            }
+
+            // Validasi Input Nama Depan Email (Custom): Paksa huruf kecil, hapus spasi, dan buang karakter ilegal
+            if (customUsernameInput) {
+                customUsernameInput.addEventListener('input', (e) => {
+                    let value = e.target.value;
+                    value = value.toLowerCase().replace(/\s+/g, '').replace(/[^a-z0-9._-]/g, '');
+                    e.target.value = value;
+                });
+            }
+
+            // Daftarkan Custom Username & Domain pilihan
+            if (btnSaveCustom) {
+                btnSaveCustom.addEventListener('click', () => {
+                    if (!customUsernameInput || !domainSelect) return;
+                    const user = customUsernameInput.value.trim().toLowerCase();
+                    const dom = domainSelect.value;
+                    if (!user) {
+                        Swal.fire({
+                            title: 'Data Kurang Lengkap',
+                            text: 'Silakan ketik nama depan email terlebih dahulu.',
+                            icon: 'warning',
+                            confirmButtonColor: '#007AFF',
+                            background: document.documentElement.getAttribute('data-theme') === 'dark' ? '#151F32' : '#FFF',
+                            color: document.documentElement.getAttribute('data-theme') === 'dark' ? '#F8FAFC' : '#0F172A'
+                        });
+                        return;
+                    }
+                    
+                    // Temukan serverID asal domain yang dipilih di pool secara dinamis
+                    const matchedItem = unifiedDomainPool.find(item => item.domain === dom);
+                    const targetSrvId = matchedItem ? matchedItem.serverId : (providerSelect ? providerSelect.value : '');
+
+                    localStorage.clear(); // Bersihkan sesi lama
+                    setupEmail(user, dom, targetSrvId);
+                });
+            }
+
+            // Jalankan inisiasi sinkronisasi Firebase
+            loadFirebaseConfigurations();
+        });
+    </script>
+</body>
+</html>
