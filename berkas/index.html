@@ -1,0 +1,1004 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Berkas AI - Kreaverse</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../style.css">
+    <style>
+        :root {
+            --text-primary: #111827;
+            --text-secondary: #4B5563;
+            --text-light: #9CA3AF;
+            --accent-color: #007AFF; 
+            --accent-hover: #0056b3;
+            --success-color: #10B981;
+            --danger-color: #EF4444;
+            --surface-color: #FFFFFF;
+            --border-color: #E5E7EB;
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #FAFAFA; color: var(--text-primary); overflow-x: hidden; }
+        a { text-decoration: none; color: inherit; }
+        .hidden { display: none !important; }
+
+        /* NAVBAR */
+        .navbar { display: flex; justify-content: space-between; align-items: center; padding: 16px 5%; background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(10px); position: fixed; top: 0; width: 100%; z-index: 1000; border-bottom: 1px solid rgba(229, 231, 235, 0.5); }
+        .menu-hamburger-btn { background: transparent; border: none; cursor: pointer; width: 40px; height: 32px; display: flex; align-items: center; justify-content: flex-start; z-index: 1001; }
+        .hamburger-lines { display: flex; flex-direction: column; gap: 6px; width: 20px; }
+        .hamburger-lines span { height: 2px; background-color: var(--text-primary); border-radius: 2px; transition: 0.3s; }
+        .hamburger-lines span:first-child { width: 100%; }
+        .hamburger-lines span:last-child { width: 60%; }
+        
+        .logo-container { display: flex; align-items: center; justify-content: center; width: 130px; height: 32px; position: absolute; left: 50%; transform: translateX(-50%); }
+        .krea-logo-svg { width: 100%; height: 100%; display: block; }
+        .nav-right { width: 40px; } 
+
+        /* HEADER & LOGO */
+        .berkas-header-container { text-align: center; margin-bottom: 20px; display: flex; flex-direction: column; align-items: center; padding-top: 80px; }
+        .berkas-title { font-size: 2rem; font-weight: 800; color: var(--text-primary); letter-spacing: -0.5px; display: flex; align-items: center; justify-content: center; gap: 12px; }
+        .berkas-title i { color: var(--accent-color); }
+
+        /* INFO BOX */
+        .info-box { background: #F0F8FF; border: 1px solid #BAE6FD; border-radius: 16px; padding: 16px 20px; margin-bottom: 25px; display: flex; gap: 15px; align-items: flex-start; box-shadow: var(--shadow-sm); }
+        .info-box i { color: var(--accent-color); font-size: 1.5rem; margin-top: 2px; }
+        .info-content h4 { font-size: 0.95rem; font-weight: 700; color: var(--text-primary); margin-bottom: 6px; }
+        .info-content p { font-size: 0.85rem; color: var(--text-secondary); line-height: 1.5; }
+
+        /* MAIN TABS */
+        .main-tabs { display: flex; background: #FFFFFF; border-radius: 16px; padding: 6px; margin-bottom: 20px; width: 100%; box-shadow: var(--shadow-sm); border: 1px solid var(--border-color); }
+        .main-tab-btn { flex: 1; background: transparent; border: none; padding: 12px; border-radius: 12px; font-size: 0.95rem; font-weight: 700; color: var(--text-secondary); cursor: pointer; transition: var(--transition); }
+        .main-tab-btn.active { background: var(--accent-color); color: #FFFFFF; box-shadow: 0 4px 12px rgba(0, 122, 255, 0.3); }
+
+        /* SUB TABS (FILTER) */
+        .sub-tabs { display: flex; gap: 10px; margin-bottom: 15px; overflow-x: auto; padding-bottom: 5px; scrollbar-width: none; }
+        .sub-tabs::-webkit-scrollbar { display: none; }
+        .sub-tab-btn { background: #FFFFFF; border: 1px solid var(--border-color); padding: 8px 16px; border-radius: 20px; font-size: 0.85rem; font-weight: 600; color: var(--text-secondary); cursor: pointer; transition: var(--transition); display: flex; align-items: center; gap: 6px; white-space: nowrap; box-shadow: var(--shadow-sm); }
+        .sub-tab-btn:hover { border-color: var(--accent-color); color: var(--accent-color); }
+        .sub-tab-btn.active { background: #F0F8FF; border-color: var(--accent-color); color: var(--accent-color); }
+
+        /* MINI FILTER HABI RMX */
+        .mini-filter-btn { background: #FFFFFF; border: 1px solid var(--border-color); padding: 6px 14px; border-radius: 99px; font-size: 0.75rem; font-weight: 700; color: var(--text-secondary); cursor: pointer; transition: var(--transition); box-shadow: var(--shadow-sm); flex-shrink: 0; }
+        .mini-filter-btn.active { background: #10B981; border-color: #10B981; color: #FFFFFF; box-shadow: 0 4px 10px rgba(16, 185, 129, 0.3); }
+
+        /* CONTROLS (SORTING & HAPUS SEMUA) */
+        .berkas-controls { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; padding: 0 5px; }
+        .total-text { font-size: 0.9rem; color: var(--text-secondary); font-weight: 600; }
+        .control-btns { display: flex; gap: 8px; }
+        .sort-btn { background: #FFFFFF; border: 1px solid var(--border-color); padding: 8px 16px; border-radius: 12px; font-size: 0.85rem; font-weight: 600; color: var(--text-primary); cursor: pointer; display: flex; align-items: center; gap: 8px; box-shadow: var(--shadow-sm); transition: var(--transition); }
+        .sort-btn:hover { background: #F9FAFB; }
+        .delete-all-btn { background: #FEF2F2; border: 1px solid #FECACA; color: var(--danger-color); }
+        .delete-all-btn:hover { background: #FEE2E2; }
+
+        /* LIST CONTAINER */
+        .berkas-list { display: flex; flex-direction: column; gap: 12px; padding-bottom: 40px; }
+        .berkas-item { background: var(--surface-color); border: 1px solid var(--border-color); border-radius: 16px; padding: 16px; display: flex; align-items: center; gap: 15px; transition: var(--transition); position: relative; box-shadow: var(--shadow-sm); }
+        .berkas-item:hover { border-color: var(--accent-color); box-shadow: var(--shadow-md); transform: translateY(-2px); }
+        
+        .item-number { font-size: 0.85rem; font-weight: 800; color: var(--text-light); min-width: 24px; text-align: center; }
+        
+        /* THUMBNAIL COVER ART */
+        .item-thumb-wrapper { width: 56px; height: 56px; border-radius: 12px; overflow: hidden; flex-shrink: 0; background: #F3F4F6; display: flex; align-items: center; justify-content: center; border: 1px solid rgba(0,0,0,0.05); position: relative; }
+        .item-thumb-img { width: 100%; height: 100%; object-fit: cover; }
+        .item-thumb-icon { font-size: 1.5rem; color: var(--accent-color); }
+
+        .item-info { flex: 1; min-width: 0; }
+        .item-title { font-size: 0.95rem; font-weight: 800; color: var(--text-primary); margin-bottom: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .item-meta { font-size: 0.75rem; color: var(--text-secondary); display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+        
+        .meta-badge { background: #F3F4F6; padding: 4px 8px; border-radius: 6px; font-weight: 700; color: var(--text-secondary); display: flex; align-items: center; gap: 4px; }
+        .meta-badge.tool { background: #F0F8FF; color: var(--accent-color); }
+        .meta-badge.mode { background: #FEF3C7; color: #D97706; }
+        .meta-badge.processing { background: #FEF2F2; color: #EF4444; animation: pulse 2s infinite; }
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.6; } 100% { opacity: 1; } }
+
+        .item-actions { display: flex; gap: 8px; flex-shrink: 0; }
+        .action-btn { width: 38px; height: 38px; border-radius: 12px; border: none; display: flex; align-items: center; justify-content: center; font-size: 0.95rem; cursor: pointer; transition: var(--transition); }
+        .action-btn.play { background: #F0F8FF; color: var(--accent-color); }
+        .action-btn.play:hover { background: var(--accent-color); color: #FFF; }
+        .action-btn.dl { background: #ECFDF5; color: #10B981; }
+        .action-btn.dl:hover { background: #10B981; color: #FFF; }
+        .action-btn.del { background: #FEF2F2; color: #EF4444; }
+        .action-btn.del:hover { background: #EF4444; color: #FFF; }
+        .action-btn.disabled { background: #F3F4F6; color: #9CA3AF; cursor: not-allowed; }
+
+        .empty-state { text-align: center; padding: 60px 20px; color: var(--text-secondary); background: var(--surface-color); border-radius: 20px; border: 1px dashed var(--border-color); box-shadow: var(--shadow-sm); }
+        .empty-state i { font-size: 3.5rem; color: var(--text-light); margin-bottom: 15px; }
+        .empty-state h3 { font-size: 1.2rem; font-weight: 800; color: var(--text-primary); margin-bottom: 8px; }
+
+        /* BOTTOM SHEET (SORTING) */
+        .bottom-sheet-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); z-index: 9999; display: flex; align-items: flex-end; justify-content: center; opacity: 0; visibility: hidden; transition: var(--transition); }
+        .bottom-sheet-overlay.active { opacity: 1; visibility: visible; }
+        .bottom-sheet-content { background: var(--surface-color); width: 100%; max-width: 600px; border-radius: 24px 24px 0 0; padding: 24px; transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
+        .bottom-sheet-overlay.active .bottom-sheet-content { transform: translateY(0); }
+        .sheet-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .sheet-title { font-size: 1.2rem; font-weight: 800; }
+        .sheet-close { background: none; border: none; font-size: 1.2rem; color: var(--text-light); cursor: pointer; padding: 5px; }
+        .sheet-opt-btn { display: flex; justify-content: space-between; align-items: center; width: 100%; padding: 16px; background: #FAFAFA; border: 1px solid var(--border-color); border-radius: 16px; font-size: 1rem; font-weight: 700; color: var(--text-primary); cursor: pointer; transition: var(--transition); margin-bottom: 10px; }
+        .sheet-opt-btn.selected { border-color: var(--accent-color); background: #F0F8FF; color: var(--accent-color); }
+
+        /* IN-PAGE PLAYER MODAL (ANTI CORS) */
+        .player-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.95); backdrop-filter: blur(10px); z-index: 10000; display: flex; flex-direction: column; align-items: center; justify-content: center; opacity: 0; visibility: hidden; transition: 0.3s; padding: 20px; }
+        .player-modal.active { opacity: 1; visibility: visible; }
+        .player-header { width: 100%; max-width: 800px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; color: #FFF; }
+        .player-title { font-size: 1.1rem; font-weight: 800; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding-right: 15px; }
+        .close-player-btn { background: rgba(255,255,255,0.2); border: none; color: #FFF; width: 40px; height: 40px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.2s; flex-shrink: 0; font-size: 1.2rem; }
+        .close-player-btn:hover { background: var(--danger-color); }
+        
+        .media-player-wrapper { position: relative; width: 100%; max-width: 800px; border-radius: 16px; overflow: hidden; background: #000; display: flex; align-items: center; justify-content: center; aspect-ratio: 16/9; z-index: 1; box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
+        .media-player-wrapper.audio-mode { background: linear-gradient(135deg, #0f172a, #1e293b); aspect-ratio: auto; padding: 60px 20px 20px; flex-direction: column; }
+        .media-player-wrapper:fullscreen { width: 100vw; height: 100vh; max-width: none; border-radius: 0; }
+        
+        .video-element { width: 100%; height: 100%; max-height: 75vh; object-fit: contain; display: block; }
+        .media-player-wrapper:fullscreen .video-element { max-height: 100vh; }
+        
+        .audio-ui-container { display: none; flex-direction: column; align-items: center; gap: 15px; width: 100%; }
+        .media-player-wrapper.audio-mode .audio-ui-container { display: flex; }
+        
+        .spotify-thumbnail { width: 200px; height: 200px; border-radius: 16px; object-fit: cover; box-shadow: 0 15px 35px rgba(0,0,0,0.5); background: #222; transition: transform 0.3s ease; border: 1px solid rgba(255,255,255,0.1); }
+        .spotify-thumbnail.playing { transform: scale(1.05); }
+
+        /* WATERMARK */
+        .player-watermark { position: absolute; top: 15px; right: 10px; width: 105px; height: 26px; z-index: 10; pointer-events: none; filter: drop-shadow(0 1px 2px rgba(0,0,0,0.4)); overflow: hidden; }
+        .media-player-wrapper.audio-mode .player-watermark { top: 15px; right: 15px; display: block; }
+
+        /* CONTROLS */
+        .player-controls { position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(to top, rgba(0,0,0,0.9), transparent); padding: 30px 20px 15px; display: flex; align-items: center; gap: 15px; z-index: 10; transition: opacity 0.3s; }
+        .media-player-wrapper.audio-mode .player-controls { position: relative; background: transparent; padding: 25px 0 0; width: 100%; max-width: 400px; }
+        
+        .play-pause-btn { width: 50px; height: 50px; border-radius: 50%; background: var(--accent-color); color: #FFF; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; flex-shrink: 0; transition: 0.2s; box-shadow: 0 4px 15px rgba(0, 122, 255, 0.4); }
+        .play-pause-btn:hover { transform: scale(1.08); background: var(--accent-hover); }
+        
+        .progress-area { flex: 1; display: flex; flex-direction: column; gap: 8px; }
+        .progress-bar-bg { width: 100%; height: 6px; background: rgba(255,255,255,0.2); border-radius: 4px; cursor: pointer; position: relative; overflow: hidden; }
+        .progress-bar-fill { height: 100%; background: var(--accent-color); width: 0%; border-radius: 4px; transition: width 0.1s linear; }
+        .time-display { font-size: 0.75rem; color: rgba(255,255,255,0.9); font-weight: 700; display: flex; justify-content: space-between; font-family: monospace; }
+        
+        .control-icon-btn { background: none; border: none; color: #FFF; font-size: 1.3rem; cursor: pointer; padding: 5px; transition: 0.2s; opacity: 0.9; }
+        .control-icon-btn:hover { opacity: 1; transform: scale(1.1); }
+        .media-player-wrapper.audio-mode .fullscreen-btn { display: none; }
+
+        .buffering-spinner { position: absolute; z-index: 20; display: flex; align-items: center; justify-content: center; }
+
+        /* IPHONE TOAST */
+        .iphone-toast-container { position: fixed; top: 15px; left: 50%; transform: translateX(-50%) translateY(-120%); background: rgba(20, 20, 20, 0.95); backdrop-filter: blur(12px); color: #FFFFFF; padding: 12px 24px; border-radius: 30px; display: flex; align-items: center; gap: 12px; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2); opacity: 0; transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1); z-index: 100000; width: max-content; max-width: 90vw; pointer-events: none; }
+        .iphone-toast-container.show { top: 85px; transform: translateX(-50%) translateY(0); opacity: 1; }
+        .iphone-toast-icon { font-size: 1.2rem; flex-shrink: 0; }
+        .iphone-toast-content { display: flex; flex-direction: column; text-align: left; }
+        .iphone-toast-title { font-size: 0.9rem; font-weight: 700; line-height: 1.2; margin-bottom: 2px; }
+        .iphone-toast-desc { font-size: 0.8rem; color: #E5E5EA; line-height: 1.3; white-space: normal; word-wrap: break-word; }
+
+        @media (max-width: 600px) {
+            .berkas-item { flex-wrap: wrap; }
+            .item-actions { width: 100%; justify-content: flex-end; border-top: 1px solid var(--border-color); padding-top: 12px; margin-top: 5px; }
+            .berkas-title { font-size: 1.6rem; }
+            .control-btns { width: 100%; justify-content: space-between; margin-top: 10px; }
+            .berkas-controls { flex-direction: column; align-items: flex-start; }
+        }
+    </style>
+</head>
+<body class="claude-layout">
+
+    <!-- NAVBAR -->
+    <nav class="navbar">
+        <button id="mobile-menu-btn" class="menu-hamburger-btn">
+            <div class="hamburger-lines"><span></span><span></span></div>
+        </button>
+        <div class="logo-container">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 60" class="krea-logo-svg">
+                <defs>
+                    <linearGradient id="kreaGradWMColor" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stop-color="#D97757" />
+                        <stop offset="50%" stop-color="#AF52DE" />
+                        <stop offset="100%" stop-color="#007AFF" />
+                    </linearGradient>
+                </defs>
+                <g>
+                    <path d="M 30,10 Q 30,30 50,30 Q 30,30 30,50 Q 30,30 10,30 Q 30,30 30,10 Z" fill="url(#kreaGradWMColor)" />
+                    <path d="M 30,17 Q 30,30 43,30 Q 30,30 30,43 Q 30,30 17,30 Q 30,30 30,17 Z" fill="url(#kreaGradWMColor)" transform="rotate(45, 30, 30)" opacity="0.85" />
+                </g>
+                <text x="65" y="38" font-family="'Plus Jakarta Sans', sans-serif" font-weight="800" font-size="21" fill="url(#kreaGradWMColor)" letter-spacing="-0.5px">Kreaverse<tspan font-weight="500"> AI</tspan></text>
+            </svg>
+        </div>
+        <div class="nav-right"></div>
+    </nav>
+
+    <!-- SIDEBAR -->
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
+    <aside id="sidebar" class="claude-sidebar">
+        <div class="sidebar-header" style="display:flex; align-items:center; justify-content:space-between; padding:15px 20px; border-bottom:1px solid var(--border-color); height:60px; flex-shrink:0;">
+            <div style="display:flex; align-items:center; width:160px; height:40px;">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 60" style="width:100%; height:100%; display:block;">
+                  <g id="kreaverse-star">
+                    <path d="M 30,10 Q 30,30 50,30 Q 30,30 30,50 Q 30,30 10,30 Q 30,30 30,10 Z" fill="url(#kreaGradWMColor)" />
+                    <path d="M 30,17 Q 30,30 43,30 Q 30,30 30,43 Q 30,30 17,30 Q 30,30 30,17 Z" fill="url(#kreaGradWMColor)" transform="rotate(45, 30, 30)" opacity="0.85" />
+                  </g>
+                  <text x="65" y="38" font-family="'Plus Jakarta Sans', sans-serif" font-weight="800" font-size="21" fill="currentColor" letter-spacing="-0.5px">
+                    Kreaverse<tspan font-weight="500" fill="#D97757"> AI</tspan>
+                  </text>
+                </svg>
+            </div>
+            <button class="close-btn" id="close-sidebar-btn" style="background:none; border:none; width:32px; height:32px; cursor:pointer; display:flex; align-items:center; justify-content:center; color:var(--text-secondary); transition:0.2s;">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+        <div class="sidebar-menu">
+            <a href="/" class="menu-item"><i class="fa-solid fa-house"></i> <span>Kembali ke Beranda</span></a>
+            <div class="menu-divider"></div>
+            <a href="/otp/" class="menu-item"><i class="fa-solid fa-sim-card"></i> <span>OTP MURAH</span></a>
+            <a href="/media-ai/" class="menu-item"><i class="fa-solid fa-photo-film"></i> <span>Studio Media</span></a>
+            <a href="/ytdl/" class="menu-item"><i class="fa-solid fa-download"></i> <span>Downloader</span></a>
+        </div>
+    </aside>
+
+    <main class="claude-container" style="align-items: flex-start; justify-content: flex-start; padding: 20px; overflow-y: auto; width: 100%;">
+        
+        <div style="max-width: 900px; width: 100%; margin: 0 auto;">
+            
+            <div class="berkas-header-container">
+                <h1 class="berkas-title"><i class="fa-solid fa-folder-open"></i> Pusat Berkas AI</h1>
+            </div>
+
+            <!-- INFO BOX -->
+            <div class="info-box" id="info-box-container">
+                <i class="fa-solid fa-lock"></i>
+                <div class="info-content">
+                    <h4>Brankas Pribadi</h4>
+                    <p>Semua file yang Anda unduh atau hasilkan akan tersimpan di sini secara permanen. File ini bersifat privat dan hanya bisa dilihat oleh akun Anda.</p>
+                </div>
+            </div>
+
+            <div class="main-tabs" id="main-tabs-container">
+                <button class="main-tab-btn active" id="tab-dl" onclick="switchMainTab('dl')">Hasil Downloader</button>
+                <button class="main-tab-btn" id="tab-gen" onclick="switchMainTab('gen')">Hasil AI Generate</button>
+            </div>
+
+            <!-- SUB TABS UNTUK DOWNLOADER -->
+            <div class="sub-tabs" id="sub-tabs-dl">
+                <button class="sub-tab-btn active" onclick="setFilter('video')"><i class="fa-solid fa-video"></i> Video</button>
+                <button class="sub-tab-btn" onclick="setFilter('audio')"><i class="fa-solid fa-music"></i> Audio</button>
+                <button class="sub-tab-btn" onclick="setFilter('thumb')"><i class="fa-solid fa-image"></i> Thumbnail</button>
+            </div>
+
+            <!-- SUB TABS UNTUK AI GENERATE (NAMA TOOL ASLI) -->
+            <div class="sub-tabs hidden" id="sub-tabs-gen">
+                <button class="sub-tab-btn active" onclick="setFilter('Habi RMX')"><i class="fa-solid fa-compact-disc"></i> Habi RMX</button>
+                <button class="sub-tab-btn" onclick="setFilter('LyricShot AI')"><i class="fa-solid fa-clapperboard"></i> LyricShot AI</button>
+                <button class="sub-tab-btn" onclick="setFilter('Studio Media')"><i class="fa-solid fa-photo-film"></i> Studio Media</button>
+            </div>
+
+            <!-- MINI FILTER KHUSUS HABI RMX -->
+            <div id="habi-rmx-filters" class="hidden" style="display: flex; gap: 8px; margin-bottom: 15px; padding: 0 5px; overflow-x: auto; scrollbar-width: none;">
+                <button class="mini-filter-btn active" onclick="setHabiMode('all')">Semua</button>
+                <button class="mini-filter-btn" onclick="setHabiMode('generate')">Bikin Lagu Sendiri</button>
+                <button class="mini-filter-btn" onclick="setHabiMode('cover')">Cover Lagu</button>
+            </div>
+
+            <!-- KONTROL -->
+            <div class="berkas-controls" id="berkas-controls-container">
+                <span class="total-text" id="total-files-text">Memuat data...</span>
+                <div class="control-btns">
+                    <button class="sort-btn delete-all-btn" onclick="deleteAllFiles()"><i class="fa-solid fa-trash"></i> Hapus Semua</button>
+                    <button class="sort-btn" onclick="openSortSheet()"><i class="fa-solid fa-arrow-down-wide-short"></i> <span id="sort-label">Terbaru</span></button>
+                </div>
+            </div>
+
+            <div class="berkas-list" id="berkas-list-container">
+                <div class="empty-state"><i class="fa-solid fa-circle-notch fa-spin"></i><h3>Menghubungkan ke brankas...</h3></div>
+            </div>
+
+            <!-- PAGINATION CONTAINER -->
+            <div id="pagination-container" style="display: flex; justify-content: center; align-items: center; gap: 8px; margin-top: 20px; padding-bottom: 40px; width: 100%;"></div>
+
+        </div>
+    </main>
+
+    <!-- BOTTOM SHEET SORTING -->
+    <div class="bottom-sheet-overlay" id="sort-sheet">
+        <div class="bottom-sheet-content">
+            <div class="sheet-header">
+                <div class="sheet-title">Urutkan Berkas</div>
+                <button class="sheet-close" onclick="closeSortSheet()"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <button class="sheet-opt-btn selected" id="sort-newest" onclick="setSort('newest')">Terbaru <i class="fa-solid fa-check"></i></button>
+            <button class="sheet-opt-btn" id="sort-oldest" onclick="setSort('oldest')">Terlama <i class="fa-solid fa-check hidden"></i></button>
+        </div>
+    </div>
+
+    <!-- IN-PAGE PLAYER MODAL -->
+    <div class="player-modal" id="player-modal">
+        <div class="player-header">
+            <div class="player-title" id="player-title">Memutar Media...</div>
+            <button class="close-player-btn" onclick="closePlayer()"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div class="media-player-wrapper" id="media-wrapper">
+            <!-- WATERMARK SEMPURNA -->
+            <div class="player-watermark">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 60" style="width:100%; height:100%;">
+                    <defs>
+                        <linearGradient id="kreaGradWM" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stop-color="#D97757" />
+                            <stop offset="50%" stop-color="#AF52DE" />
+                            <stop offset="100%" stop-color="#007AFF" />
+                        </linearGradient>
+                        <linearGradient id="shimmerGlow" x1="200%" y1="0%" x2="100%" y2="0%">
+                            <stop offset="0%" stop-color="rgba(255,255,255,0)" />
+                            <stop offset="45%" stop-color="rgba(255,255,255,0)" />
+                            <stop offset="50%" stop-color="rgba(255,255,255,0.9)" />
+                            <stop offset="55%" stop-color="rgba(255,255,255,0)" />
+                            <stop offset="100%" stop-color="rgba(255,255,255,0)" />
+                            <animate attributeName="x1" values="200%; -100%" dur="4s" repeatCount="indefinite" />
+                            <animate attributeName="x2" values="300%; 0%" dur="4s" repeatCount="indefinite" />
+                        </linearGradient>
+                    </defs>
+                    <g>
+                        <path d="M 30,10 Q 30,30 50,30 Q 30,30 30,50 Q 30,30 10,30 Q 30,30 30,10 Z" fill="url(#kreaGradWM)" />
+                        <path d="M 30,17 Q 30,30 43,30 Q 30,30 30,43 Q 30,30 17,30 Q 30,30 30,17 Z" fill="url(#kreaGradWM)" transform="rotate(45, 30, 30)" opacity="0.85" />
+                        <text x="65" y="38" font-family="'Plus Jakarta Sans', sans-serif" font-weight="800" font-size="21" fill="url(#kreaGradWM)" letter-spacing="-0.5px">Kreaverse<tspan font-weight="500"> AI</tspan></text>
+                    </g>
+                    <g style="mix-blend-mode: overlay;">
+                        <path d="M 30,10 Q 30,30 50,30 Q 30,30 30,50 Q 30,30 10,30 Q 30,30 30,10 Z" fill="url(#shimmerGlow)" />
+                        <path d="M 30,17 Q 30,30 43,30 Q 30,30 30,43 Q 30,30 17,30 Q 30,30 30,17 Z" fill="url(#shimmerGlow)" transform="rotate(45, 30, 30)" />
+                        <text x="65" y="38" font-family="'Plus Jakarta Sans', sans-serif" font-weight="800" font-size="21" fill="url(#shimmerGlow)" letter-spacing="-0.5px">Kreaverse<tspan font-weight="500"> AI</tspan></text>
+                    </g>
+                </svg>
+            </div>
+
+            <!-- AUDIO UI -->
+            <div class="audio-ui-container" id="audio-ui">
+                <img src="" id="audio-thumbnail" class="spotify-thumbnail" alt="Cover Music" onerror="this.src='https://i.postimg.cc/Jh211FTG/46cc61ec-de7f-4c62-8245-946e22312d2b.jpg'">
+            </div>
+
+            <div class="buffering-spinner hidden" id="buffering-spinner">
+                <div style="background:rgba(0,0,0,0.8); padding:20px; border-radius:16px; display:flex; flex-direction:column; align-items:center;">
+                    <i class="fa-solid fa-circle-notch fa-spin" style="font-size: 2rem; color: var(--accent-color);"></i>
+                    <span id="buffering-text" style="font-size:0.85rem; font-weight:700; margin-top:10px; color:#FFF;">Memuat media...</span>
+                </div>
+            </div>
+            
+            <video id="custom-video" class="video-element" playsinline preload="metadata" crossorigin="anonymous"></video>
+            <audio id="custom-audio" class="hidden" preload="metadata" crossorigin="anonymous"></audio>
+            
+            <div class="player-controls">
+                <button class="play-pause-btn" id="play-pause-btn"><i class="fa-solid fa-play" style="margin-left:2px;"></i></button>
+                <div class="progress-area">
+                    <div class="progress-bar-bg" id="progress-bg">
+                        <div class="progress-bar-fill" id="progress-fill"></div>
+                    </div>
+                    <div class="time-display">
+                        <span id="current-time">0:00</span>
+                        <span id="total-time">0:00</span>
+                    </div>
+                </div>
+                <button class="control-icon-btn fullscreen-btn" id="fullscreen-btn" title="Layar Penuh"><i class="fa-solid fa-expand"></i></button>
+            </div>
+        </div>
+    </div>
+
+    <!-- FIREBASE & LOGIC SCRIPT -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+        import { getFirestore, collection, query, where, onSnapshot, deleteDoc, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+
+        // FIREBASE CONFIG
+        const firebaseConfig = {
+            apiKey: "AIzaSyAO8JV4jkJmbHChYvjUCS7wqfVbKr94tHM",
+            authDomain: "kreaverse-ai0107.firebaseapp.com",
+            projectId: "kreaverse-ai0107"
+        };
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        const isLoggedIn = localStorage.getItem('kreaverse_logged_in') === 'true';
+        const userId = localStorage.getItem('kreaverse_user_id');
+        const userEmail = localStorage.getItem('kreaverse_user_email');
+
+        window.showIphoneNotif = function(title, desc, iconClass = 'fa-circle-info') {
+            const existing = document.getElementById('iphone-island-toast');
+            if (existing) existing.remove();
+            const toast = document.createElement('div'); toast.id = 'iphone-island-toast'; toast.className = 'iphone-toast-container';
+            let iconColor = '#007AFF'; 
+            if (iconClass.includes('fa-trash') || iconClass.includes('fa-triangle-exclamation') || iconClass.includes('fa-xmark')) iconColor = '#EF4444';
+            else if (iconClass.includes('fa-check') || iconClass.includes('fa-download') || iconClass.includes('fa-music')) iconColor = '#10B981';
+            toast.innerHTML = `<div class="iphone-toast-icon" style="color: ${iconColor};"><i class="fa-solid ${iconClass}"></i></div><div class="iphone-toast-content"><span class="iphone-toast-title">${title}</span><span class="iphone-toast-desc">${desc}</span></div>`;
+            document.body.appendChild(toast);
+            setTimeout(() => { toast.classList.add('show'); }, 50);
+            setTimeout(() => { toast.classList.remove('show'); setTimeout(() => toast.remove(), 400); }, 4000);
+        };
+
+        // CEK LOGIN (PENGUNCIAN BRANKAS PRIVASI)
+        if (!isLoggedIn || !userEmail) {
+            document.getElementById('info-box-container').style.display = 'none';
+            document.getElementById('main-tabs-container').style.display = 'none';
+            document.getElementById('sub-tabs-dl').style.display = 'none';
+            document.getElementById('berkas-controls-container').style.display = 'none';
+            document.getElementById('berkas-list-container').innerHTML = `
+                <div class="empty-state" style="padding: 80px 20px; border-color: #FECACA; background: #FEF2F2;">
+                    <i class="fa-solid fa-lock" style="color: #EF4444; font-size: 4rem;"></i>
+                    <h3 style="color: #EF4444; margin-top: 20px;">Brankas Terkunci</h3>
+                    <p style="margin-top:8px; font-size:0.9rem; color: #9CA3AF;">Silakan login terlebih dahulu untuk melihat file hasil generate dan unduhan pribadi Anda.</p>
+                    <button onclick="window.location.href='/login/index.html'" style="margin-top: 20px; background: #EF4444; color: #FFF; border: none; padding: 12px 24px; border-radius: 99px; font-weight: 800; font-size: 0.9rem; cursor: pointer; box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);">Masuk Sekarang</button>
+                </div>
+            `;
+        }
+
+        // SIDEBAR LOGIC
+        document.getElementById('mobile-menu-btn').addEventListener('click', () => {
+            document.getElementById('sidebar').classList.add('open');
+            document.getElementById('sidebar-overlay').classList.add('active');
+        });
+        document.getElementById('close-sidebar-btn').addEventListener('click', () => {
+            document.getElementById('sidebar').classList.remove('open');
+            document.getElementById('sidebar-overlay').classList.remove('active');
+        });
+        document.getElementById('sidebar-overlay').addEventListener('click', () => {
+            document.getElementById('sidebar').classList.remove('open');
+            document.getElementById('sidebar-overlay').classList.remove('active');
+        });
+
+        let currentMainTab = 'dl'; 
+        let currentFilter = 'video'; // Default Downloader
+        let currentSort = 'newest';
+        let dlData = [];
+        let genData = [];
+        let currentPage = 1;
+        const itemsPerPage = 10;
+
+        window.switchMainTab = function(tab) {
+            currentMainTab = tab;
+            currentPage = 1; 
+            document.getElementById('tab-dl').classList.toggle('active', tab === 'dl');
+            document.getElementById('tab-gen').classList.toggle('active', tab === 'gen');
+            
+            if (tab === 'dl') {
+                document.getElementById('sub-tabs-dl').classList.remove('hidden');
+                document.getElementById('sub-tabs-gen').classList.add('hidden');
+                setFilter('video'); // Default tab DL
+            } else {
+                document.getElementById('sub-tabs-dl').classList.add('hidden');
+                document.getElementById('sub-tabs-gen').classList.remove('hidden');
+                setFilter('Habi RMX'); // Default tab AI
+            }
+        };
+
+        let currentHabiMode = 'all';
+
+        window.setFilter = function(filterType) {
+            currentFilter = filterType;
+            currentPage = 1; 
+            const activeSubTabs = currentMainTab === 'dl' ? document.getElementById('sub-tabs-dl') : document.getElementById('sub-tabs-gen');
+            
+            activeSubTabs.querySelectorAll('.sub-tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.getAttribute('onclick').includes(`'${filterType}'`)) {
+                    btn.classList.add('active');
+                }
+            });
+
+            // Tampilkan mini filter jika Habi RMX dipilih
+            const habiFilters = document.getElementById('habi-rmx-filters');
+            if (currentMainTab === 'gen' && filterType === 'Habi RMX') {
+                if (habiFilters) habiFilters.classList.remove('hidden');
+            } else {
+                if (habiFilters) habiFilters.classList.add('hidden');
+            }
+
+            renderList();
+        };
+
+        window.setHabiMode = function(mode) {
+            currentHabiMode = mode;
+            currentPage = 1;
+            const buttons = document.querySelectorAll('.mini-filter-btn');
+            buttons.forEach(btn => btn.classList.remove('active'));
+            event.currentTarget.classList.add('active');
+            renderList();
+        };
+
+        window.openSortSheet = () => document.getElementById('sort-sheet').classList.add('active');
+        window.closeSortSheet = () => document.getElementById('sort-sheet').classList.remove('active');
+
+        window.setSort = function(sortType) {
+            currentSort = sortType;
+            currentPage = 1; 
+            document.getElementById('sort-newest').classList.remove('selected');
+            document.getElementById('sort-oldest').classList.remove('selected');
+            document.getElementById('sort-newest').querySelector('i').classList.add('hidden');
+            document.getElementById('sort-oldest').querySelector('i').classList.add('hidden');
+
+            const activeBtn = document.getElementById(`sort-${sortType}`);
+            activeBtn.classList.add('selected');
+            activeBtn.querySelector('i').classList.remove('hidden');
+            
+            document.getElementById('sort-label').innerText = sortType === 'newest' ? 'Terbaru' : 'Terlama';
+            closeSortSheet();
+            renderList();
+        };
+
+        window.changePage = function(page) {
+            currentPage = page;
+            renderList();
+            document.querySelector('.berkas-header-container').scrollIntoView({ behavior: 'smooth' });
+        };
+
+        // AMBIL DATA DARI FIREBASE (SUPER HEMAT KUOTA - WHERE EMAIL)
+        if (isLoggedIn && userEmail) {
+            // Data Downloader
+            const qDl = query(collection(db, "users", userId, "downloads"));
+            onSnapshot(qDl, (snapshot) => {
+                dlData = [];
+                snapshot.forEach((doc) => {
+                    const d = doc.data();
+                    // FILTER KUALITAS TINGGI (Hanya yang punya directUrl yang valid)
+                    if (d.directUrl && d.directUrl.startsWith('http')) {
+                        dlData.push({ id: doc.id, ...d });
+                    }
+                });
+                // Sort manual di Javascript agar tidak butuh Composite Index Firestore
+                dlData.sort((a, b) => b.timestamp - a.timestamp);
+                if (currentMainTab === 'dl') renderList();
+            });
+
+            // Data AI Generate (Filter by Email)
+            const qGen = query(collection(db, "render_gallery"), where("email", "==", userEmail));
+            onSnapshot(qGen, (snapshot) => {
+                genData = [];
+                snapshot.forEach((doc) => {
+                    genData.push({ id: doc.id, ...doc.data() });
+                });
+                // Sort manual di Javascript
+                genData.sort((a, b) => b.timestamp - a.timestamp);
+                if (currentMainTab === 'gen') renderList();
+            });
+        }
+
+        function formatDate(ts) {
+            const d = new Date(ts);
+            const months = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
+            let hours = d.getHours();
+            let minutes = d.getMinutes();
+            let ampm = hours >= 12 ? 'PM' : 'AM';
+            hours = hours % 12;
+            hours = hours ? hours : 12; 
+            minutes = minutes < 10 ? '0' + minutes : minutes;
+            return `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()} • ${hours}:${minutes} ${ampm}`;
+        }
+
+        window.renderList = function() {
+            if (!isLoggedIn || !userEmail) return; // Stop jika tamu
+            
+            const container = document.getElementById('berkas-list-container');
+            const paginationContainer = document.getElementById('pagination-container');
+            let dataToRender = currentMainTab === 'dl' ? [...dlData] : [...genData];
+
+            // Terapkan Filter Kategori
+            if (currentMainTab === 'dl') {
+                if (currentFilter === 'thumb') {
+                    dataToRender = dataToRender.filter(item => item.type === 'thumb' || item.type === 'thumbnail' || item.type === 'image');
+                } else {
+                    dataToRender = dataToRender.filter(item => (item.type || 'video') === currentFilter);
+                }
+            } else {
+                // Filter Tool AI
+                dataToRender = dataToRender.filter(item => (item.tool || 'Studio Media') === currentFilter);
+                
+                // Filter tambahan khusus Habi RMX (Cover vs Generate)
+                if (currentFilter === 'Habi RMX' && currentHabiMode !== 'all') {
+                    dataToRender = dataToRender.filter(item => {
+                        const isCover = item.mode === 'cover' || (item.title && item.title.toLowerCase().includes('cover'));
+                        const actualMode = isCover ? 'cover' : 'generate';
+                        return actualMode === currentHabiMode;
+                    });
+                }
+            }
+
+            // Terapkan Sorting
+            if (currentSort === 'oldest') {
+                dataToRender.reverse();
+            }
+
+            const totalItems = dataToRender.length;
+            document.getElementById('total-files-text').innerText = `Total: ${totalItems} File`;
+
+            if (totalItems === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fa-regular fa-folder-open"></i>
+                        <h3>Belum ada berkas</h3>
+                        <p style="margin-top:8px; font-size:0.9rem;">File yang Anda hasilkan untuk kategori ini akan muncul di sini.</p>
+                    </div>
+                `;
+                paginationContainer.innerHTML = '';
+                return;
+            }
+
+            const totalPages = Math.ceil(totalItems / itemsPerPage);
+            if (currentPage > totalPages) currentPage = totalPages || 1;
+            
+            const startIndex = (currentPage - 1) * itemsPerPage;
+            const endIndex = startIndex + itemsPerPage;
+            const paginatedData = dataToRender.slice(startIndex, endIndex);
+
+            let html = '';
+            paginatedData.forEach((item, index) => {
+                const num = startIndex + index + 1;
+                const dateStr = formatDate(item.timestamp);
+                
+                if (currentMainTab === 'dl') {
+                    // RENDER DOWNLOADER (THUMBNAIL GAMBAR ASLI)
+                    const isAudio = item.type === 'audio';
+                    const isThumb = item.type === 'thumb' || item.type === 'thumbnail';
+                    
+                    const sizeBadge = item.size ? `<span class="meta-badge">${item.size}</span>` : '';
+                    const safeThumb = item.thumbnail || 'https://i.postimg.cc/mZdwnfsm/Claude-ai-icon-svg.png';
+                    
+                    const playAction = isThumb ? 
+                        `window.open('${item.directUrl}', '_blank')` : 
+                        `openPlayer('${item.directUrl}', '${item.fileName.replace(/'/g, "\\'")}', '${item.type}', '${btoa(safeThumb)}')`;
+                    
+                    const playIcon = isThumb ? 'fa-eye' : 'fa-play';
+                    
+                    html += `
+                        <div class="berkas-item">
+                            <div class="item-number">${num}.</div>
+                            <div class="item-thumb-wrapper">
+                                <img src="${safeThumb}" class="item-thumb-img" alt="Thumb" onerror="this.src='https://i.postimg.cc/mZdwnfsm/Claude-ai-icon-svg.png'">
+                            </div>
+                            <div class="item-info">
+                                <div class="item-title" title="${item.fileName}">${item.fileName}</div>
+                                <div class="item-meta">
+                                    <span>${dateStr}</span>
+                                    <span class="meta-badge tool"><i class="fa-solid fa-download"></i> Downloader</span>
+                                    ${sizeBadge}
+                                </div>
+                            </div>
+                            <div class="item-actions">
+                                <button class="action-btn play" onclick="${playAction}" title="Putar/Lihat"><i class="fa-solid ${playIcon}"></i></button>
+                                <button class="action-btn dl" onclick="downloadFile('${item.directUrl}', '${item.fileName.replace(/'/g, "\\'")}')" title="Unduh"><i class="fa-solid fa-download"></i></button>
+                                <button class="action-btn del" onclick="deleteFile('${item.id}', 'dl')" title="Hapus"><i class="fa-solid fa-trash"></i></button>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    // RENDER AI GENERATE DENGAN THUMBNAIL & BADGE MODE CERDAS
+                    const itemType = item.type || 'video';
+                    const isImage = itemType === 'image';
+                    const isAudio = itemType === 'audio';
+                    
+                    const isLyricShot = item.tool === "LyricShot AI";
+                    const isHabiRmx = item.tool === "Habi RMX";
+                    
+                    // Deteksi Mode Habi RMX (Cover vs Bikin Sendiri)
+                    let modeBadge = '';
+                    if (isHabiRmx) {
+                        // Menggunakan properti item.mode yang akurat (jika ada), fallback ke deteksi judul
+                        const isCover = item.mode === 'cover' || (item.title && item.title.toLowerCase().includes('cover'));
+                        if (isCover) {
+                            modeBadge = `<span class="meta-badge mode"><i class="fa-solid fa-microphone-lines"></i> Cover Lagu</span>`;
+                        } else {
+                            modeBadge = `<span class="meta-badge mode" style="background:#ECFDF5; color:#10B981;"><i class="fa-solid fa-wand-magic-sparkles"></i> Bikin Lagu Sendiri</span>`;
+                        }
+                    }
+
+                    const title = item.title || (item.prompt ? item.prompt.substring(0, 40) + '...' : 'Media AI');
+                    
+                    // Gunakan image_url dari backend jika ada, jika tidak pakai default
+                    const thumbUrl = item.imageUrl || 'https://i.postimg.cc/Jh211FTG/46cc61ec-de7f-4c62-8245-946e22312d2b.jpg';
+                    
+                    let statusLabel = '';
+                    let actionButtons = '';
+                    
+                    if (item.status === "processing" || item.status === "pending") {
+                        // TAMPILAN LOADING LIVE DI BERKAS
+                        statusLabel = `<span class="meta-badge processing"><i class="fa-solid fa-circle-notch fa-spin"></i> Sedang Diproses AI...</span>`;
+                        actionButtons = `
+                            <button class="action-btn disabled" disabled><i class="fa-solid fa-hourglass-half"></i></button>
+                            <button class="action-btn del" onclick="deleteFile('${item.id}', 'gen')" title="Batalkan"><i class="fa-solid fa-xmark"></i></button>
+                        `;
+                    } else if (item.status === "failed") {
+                        statusLabel = `<span class="meta-badge" style="background:#FEE2E2; color:#EF4444;"><i class="fa-solid fa-triangle-exclamation"></i> Gagal/Copyright</span>`;
+                        actionButtons = `
+                            <button class="action-btn del" onclick="deleteFile('${item.id}', 'gen')" title="Hapus"><i class="fa-solid fa-trash"></i></button>
+                        `;
+                    } else {
+                        // SUKSES
+                        actionButtons = `
+                            ${isImage ? 
+                                `<button class="action-btn play" onclick="window.open('${item.url}', '_blank')" title="Lihat"><i class="fa-solid fa-eye"></i></button>` : 
+                                `<button class="action-btn play" onclick="openPlayer('${item.url}', '${title.replace(/'/g, "\\'")}', '${itemType}', '${btoa(thumbUrl)}')" title="Putar"><i class="fa-solid fa-play"></i></button>`
+                            }
+                            <button class="action-btn dl" onclick="downloadFile('${item.url}', 'Kreaverse_AI_${Date.now()}')" title="Unduh"><i class="fa-solid fa-download"></i></button>
+                            <button class="action-btn del" onclick="deleteFile('${item.id}', 'gen')" title="Hapus"><i class="fa-solid fa-trash"></i></button>
+                        `;
+                    }
+
+                    html += `
+                        <div class="berkas-item">
+                            <div class="item-number">${num}.</div>
+                            <div class="item-thumb-wrapper">
+                                <img src="${thumbUrl}" class="item-thumb-img" alt="Thumb" onerror="this.src='https://i.postimg.cc/Jh211FTG/46cc61ec-de7f-4c62-8245-946e22312d2b.jpg'">
+                            </div>
+                            <div class="item-info">
+                                <div class="item-title" title="${isLyricShot ? (item.prompt || 'Adegan') : (item.prompt || 'Media')}">${title}</div>
+                                <div class="item-meta">
+                                    <span>${dateStr}</span>
+                                    <span class="meta-badge">${itemType.toUpperCase()}</span>
+                                    ${modeBadge}
+                                    ${statusLabel}
+                                </div>
+                            </div>
+                            <div class="item-actions">
+                                ${actionButtons}
+                            </div>
+                        </div>
+                    `;
+                }
+            });
+
+            container.innerHTML = html;
+            
+            // RENDERING PAGINATION BUTTONS (10 FILE PER TAB)
+            if (totalPages > 1) {
+                let pagHtml = '';
+                // Prev
+                pagHtml += `<button onclick="changePage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''} style="background:${currentPage === 1 ? '#F3F4F6' : '#FFFFFF'}; color:${currentPage === 1 ? '#9CA3AF' : '#111827'}; border:1px solid var(--border-color); padding:8px 12px; border-radius:12px; font-weight:700; cursor:${currentPage === 1 ? 'not-allowed' : 'pointer'}; transition:var(--transition); font-size:0.85rem;"><i class="fa-solid fa-chevron-left"></i></button>`;
+                
+                for (let i = 1; i <= totalPages; i++) {
+                    const isActive = currentPage === i;
+                    pagHtml += `<button onclick="changePage(${i})" style="background:${isActive ? 'var(--accent-color)' : '#FFFFFF'}; color:${isActive ? '#FFFFFF' : 'var(--text-secondary)'}; border:1px solid ${isActive ? 'var(--accent-color)' : 'var(--border-color)'}; padding:8px 14px; border-radius:12px; font-weight:700; cursor:pointer; transition:var(--transition); font-size:0.85rem; box-shadow:${isActive ? '0 4px 10px rgba(0, 122, 255, 0.2)' : 'var(--shadow-sm)'};">${i}</button>`;
+                }
+                
+                // Next
+                pagHtml += `<button onclick="changePage(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''} style="background:${currentPage === totalPages ? '#F3F4F6' : '#FFFFFF'}; color:${currentPage === totalPages ? '#9CA3AF' : '#111827'}; border:1px solid var(--border-color); padding:8px 12px; border-radius:12px; font-weight:700; cursor:${currentPage === totalPages ? 'not-allowed' : 'pointer'}; transition:var(--transition); font-size:0.85rem;"><i class="fa-solid fa-chevron-right"></i></button>`;
+                
+                paginationContainer.innerHTML = pagHtml;
+                paginationContainer.style.display = 'flex';
+            } else {
+                paginationContainer.innerHTML = '';
+                paginationContainer.style.display = 'none';
+            }
+        };
+
+        // SISTEM AUTO-CHECK STATUS GENERATE LATAR BELAKANG (DIHAPUS)
+        // Pengecekan status kini ditangani sepenuhnya oleh Backend (Cron Job) 
+        // sehingga pengguna bisa menutup aplikasi dan hasil tetap masuk ke brankas.
+        // UI akan otomatis terupdate berkat onSnapshot Firebase.
+
+        // FUNGSI PLAYER BERKAS ALA YTDL (MODERN) - ANTI CORS
+        let activeMedia = null;
+        const playerModal = document.getElementById('player-modal');
+        const customAudio = document.getElementById('custom-audio');
+        const customVideo = document.getElementById('custom-video');
+        const mediaWrapper = document.getElementById('media-wrapper');
+        const audioThumbnail = document.getElementById('audio-thumbnail');
+        const playPauseBtn = document.getElementById('play-pause-btn');
+        const progressFill = document.getElementById('progress-fill');
+        const currentTimeEl = document.getElementById('current-time');
+        const totalTimeEl = document.getElementById('total-time');
+        const bufferingSpinner = document.getElementById('buffering-spinner');
+        const playerTitle = document.getElementById('player-title');
+
+        const PROXY_URL = "https://kreaverse-proxy.kreaverse-ai.workers.dev/?targetUrl=";
+
+        window.openPlayer = function(url, title, type, base64Thumb) {
+            playerTitle.innerText = title;
+            playerModal.classList.add('active');
+
+            document.querySelector('.player-controls').style.display = "flex";
+
+            let decodedThumb = '';
+            try { if(base64Thumb) decodedThumb = atob(base64Thumb); } catch(e){}
+            const finalThumb = decodedThumb || 'https://i.postimg.cc/Jh211FTG/46cc61ec-de7f-4c62-8245-946e22312d2b.jpg';
+            audioThumbnail.src = finalThumb;
+
+            const safePlayUrl = PROXY_URL + encodeURIComponent(url);
+
+            if (type === 'audio') {
+                activeMedia = customAudio; 
+                customAudio.src = safePlayUrl;
+                mediaWrapper.classList.add('audio-mode'); 
+                customVideo.style.display = "none";
+                customAudio.play();
+            } else {
+                activeMedia = customVideo; 
+                customVideo.src = safePlayUrl;
+                mediaWrapper.classList.remove('audio-mode'); 
+                customVideo.style.display = "block";
+                customVideo.play();
+            }
+        };
+        
+        window.closePlayer = function() {
+            playerModal.classList.remove('active');
+            if(activeMedia) {
+                activeMedia.pause();
+                activeMedia.src = "";
+                activeMedia = null;
+            }
+            document.querySelector('.player-controls').style.display = "flex";
+            document.getElementById('audio-ui').style.display = "flex";
+            mediaWrapper.style.aspectRatio = '';
+            
+            updatePlayPauseUI(false);
+            progressFill.style.width = '0%';
+            currentTimeEl.innerText = '0:00'; 
+            totalTimeEl.innerText = '0:00';
+            bufferingSpinner.classList.add('hidden');
+            
+            if (document.fullscreenElement || document.webkitFullscreenElement) {
+                if (document.exitFullscreen) document.exitFullscreen();
+                else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
+            }
+        };
+
+        function updatePlayPauseUI(isPlaying) {
+            if (isPlaying) {
+                playPauseBtn.innerHTML = '<i class="fa-solid fa-pause"></i>';
+                if (mediaWrapper.classList.contains('audio-mode')) audioThumbnail.classList.add('playing');
+            } else {
+                playPauseBtn.innerHTML = '<i class="fa-solid fa-play" style="margin-left:2px;"></i>';
+                if (mediaWrapper.classList.contains('audio-mode')) audioThumbnail.classList.remove('playing');
+            }
+        }
+
+        function formatTime(sec) {
+            if(isNaN(sec)) return "0:00";
+            const m = Math.floor(sec / 60); const s = Math.floor(sec % 60);
+            return `${m}:${s < 10 ? '0' : ''}${s}`;
+        }
+
+        playPauseBtn.addEventListener('click', () => {
+            if(!activeMedia) return;
+            if (activeMedia.paused) { 
+                activeMedia.play(); updatePlayPauseUI(true); 
+            } else { 
+                activeMedia.pause(); updatePlayPauseUI(false); 
+            }
+        });
+
+        const fullscreenBtn = document.getElementById('fullscreen-btn');
+        fullscreenBtn.addEventListener('click', () => {
+            if(!activeMedia || mediaWrapper.classList.contains('audio-mode')) return;
+            if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+                if (mediaWrapper.requestFullscreen) mediaWrapper.requestFullscreen();
+                else if (mediaWrapper.webkitRequestFullscreen) mediaWrapper.webkitRequestFullscreen(); 
+            } else {
+                if (document.exitFullscreen) document.exitFullscreen();
+                else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
+            }
+        });
+
+        document.addEventListener('fullscreenchange', () => {
+            if (document.fullscreenElement) {
+                if (activeMedia && activeMedia.videoWidth > activeMedia.videoHeight) { try { screen.orientation.lock('landscape').catch(e=>{}); } catch(e){} }
+            } else { try { screen.orientation.unlock().catch(e=>{}); } catch(e){} }
+        });
+
+        [customAudio, customVideo].forEach(media => {
+            media.addEventListener('timeupdate', () => {
+                if(media !== activeMedia) return;
+                const percent = (media.duration) ? (media.currentTime / media.duration) * 100 : 0;
+                progressFill.style.width = `${percent}%`;
+                currentTimeEl.innerText = formatTime(media.currentTime);
+            });
+            media.addEventListener('loadedmetadata', () => {
+                if(media !== activeMedia) return;
+                totalTimeEl.innerText = formatTime(media.duration);
+            });
+            media.addEventListener('ended', () => {
+                if(media !== activeMedia) return;
+                updatePlayPauseUI(false); progressFill.style.width = '0%';
+            });
+            media.addEventListener('waiting', () => { 
+                if(media === activeMedia) bufferingSpinner.classList.remove('hidden'); 
+            });
+            media.addEventListener('playing', () => { 
+                if(media === activeMedia) {
+                    bufferingSpinner.classList.add('hidden'); 
+                    updatePlayPauseUI(true);
+                }
+            });
+            media.addEventListener('pause', () => { 
+                if(media === activeMedia) updatePlayPauseUI(false);
+            });
+            media.addEventListener('error', () => {
+                if(media === activeMedia) {
+                    bufferingSpinner.innerHTML = `<div style="background:rgba(0,0,0,0.85); padding:20px; border-radius:16px; display:flex; flex-direction:column; align-items:center;"><i class="fa-solid fa-triangle-exclamation" style="font-size:2.5rem; color:var(--danger-color);"></i><span style="font-size:0.9rem; text-align:center; padding-top:12px; color:#FFF; font-weight:600; line-height:1.5;">Media Dilindungi Penyedia.<br>Silakan Unduh file.</span></div>`;
+                    bufferingSpinner.classList.remove('hidden');
+                    updatePlayPauseUI(false);
+                }
+            });
+        });
+
+        const progressBg = document.getElementById('progress-bg');
+        progressBg.addEventListener('click', (e) => {
+            if(!activeMedia || !activeMedia.duration) return;
+            const rect = progressBg.getBoundingClientRect();
+            activeMedia.currentTime = ((e.clientX - rect.left) / rect.width) * activeMedia.duration;
+        });
+
+        window.downloadFile = function(url, fileName) {
+            showIphoneNotif('Mengunduh...', 'Mengalirkan berkas secara langsung dengan nama premium...', 'fa-download');
+            const ext = fileName.split('.').pop() || 'mp4';
+            let cleanTitle = fileName.replace(/\.[^/.]+$/, "");
+            const proxyUrl = `${PROXY_URL}${encodeURIComponent(url)}&filename=${encodeURIComponent(cleanTitle + '.' + ext)}`;
+            
+            setTimeout(() => {
+                const a = document.createElement('a');
+                a.href = proxyUrl;
+                a.download = fileName;
+                a.style.display = 'none';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+            }, 500);
+        };
+
+        window.deleteFile = async function(docId, tabType) {
+            if (confirm("Hapus file ini secara permanen dari brankas?")) {
+                try {
+                    if (tabType === 'dl') {
+                        await deleteDoc(doc(db, "users", userId, "downloads", docId));
+                    } else {
+                        await deleteDoc(doc(db, "render_gallery", docId));
+                    }
+                    showIphoneNotif('Dihapus', 'File berhasil dihapus permanen.', 'fa-trash');
+                } catch (error) {
+                    console.error("Gagal menghapus:", error);
+                    showIphoneNotif('Gagal', 'Terjadi kesalahan saat menghapus.', 'fa-triangle-exclamation');
+                }
+            }
+        };
+
+        window.deleteAllFiles = async function() {
+            let dataToDelete = currentMainTab === 'dl' ? [...dlData] : [...genData];
+            if (currentFilter !== 'all') {
+                if (currentMainTab === 'dl') {
+                    dataToDelete = dataToDelete.filter(item => item.type === currentFilter);
+                } else {
+                    if (currentFilter === 'Habi RMX - Original') {
+                        dataToDelete = dataToDelete.filter(item => item.tool === 'Habi RMX' && item.mode !== 'cover');
+                    } else if (currentFilter === 'Habi RMX - Cover') {
+                        dataToDelete = dataToDelete.filter(item => item.tool === 'Habi RMX' && item.mode === 'cover');
+                    } else {
+                        dataToDelete = dataToDelete.filter(item => (item.tool || 'Studio Media') === currentFilter);
+                    }
+                }
+            }
+
+            if (dataToDelete.length === 0) {
+                showIphoneNotif('Perhatian', 'Tidak ada file untuk dihapus pada kategori ini.', 'fa-triangle-exclamation');
+                return;
+            }
+
+            if (confirm("AWAS! Apakah Anda yakin ingin menghapus SEMUA file pada kategori ini secara PERMANEN?")) {
+                showIphoneNotif('Menghapus...', 'Sedang memproses penghapusan massal.', 'fa-circle-notch fa-spin');
+                try {
+                    const deletePromises = dataToDelete.map(item => {
+                        if (currentMainTab === 'dl') {
+                            return deleteDoc(doc(db, "users", userId, "downloads", item.id));
+                        } else {
+                            return deleteDoc(doc(db, "render_gallery", item.id));
+                        }
+                    });
+                    
+                    await Promise.all(deletePromises);
+                    showIphoneNotif('Berhasil', 'Semua file di kategori ini telah dihapus permanen.', 'fa-trash');
+                } catch (error) {
+                    console.error("Gagal menghapus semua:", error);
+                    showIphoneNotif('Gagal', 'Terjadi kesalahan jaringan saat menghapus massal.', 'fa-triangle-exclamation');
+                }
+            }
+        };
+
+    </script>
+</body>
+</html>
