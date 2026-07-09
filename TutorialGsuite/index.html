@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Tutorial Setup G Suite - Kreaverse AI</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Poppins:wght@500;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --bg: #F8F7F3; --surface: #FFFFFF; --text: #111111; --text-sec: #666666;
+            --border: #EAEAEA; --accent: #D97757; --accent-hover: #C56648;
+            --danger: #FF3B30; --success: #34C759; --warning: #FF9500; --info: #007AFF;
+            --radius: 16px; --shadow: 0 4px 20px rgba(0,0,0,0.04);
+        }
+        * { box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; margin: 0; padding: 0; }
+        body { background: var(--bg); color: var(--text); line-height: 1.6; }
+        
+        /* HEADER */
+        .header { background: var(--surface); padding: 15px 40px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; position: relative; z-index: 100; box-shadow: 0 2px 10px rgba(0,0,0,0.02); }
+        .brand { display: flex; align-items: center; gap: 15px; }
+        .btn-back { display: inline-flex; align-items: center; gap: 8px; padding: 10px 18px; border-radius: 10px; background: var(--text); color: #FFF; font-weight: 600; text-decoration: none; font-size: 0.9rem; transition: 0.2s; }
+        .btn-back:hover { background: var(--accent); }
+
+        /* MAIN CONTENT */
+        .container { max-width: 900px; margin: 40px auto; padding: 0 20px; }
+        .page-title { font-size: 2.2rem; font-weight: 800; margin-bottom: 10px; text-align: center; font-family: 'Poppins', sans-serif; }
+        .page-desc { text-align: center; color: var(--text-sec); margin-bottom: 40px; font-size: 1.05rem; }
+
+        /* STEP CARDS */
+        .step-card { background: var(--surface); border-radius: var(--radius); padding: 35px; margin-bottom: 30px; box-shadow: var(--shadow); border: 1px solid var(--border); position: relative; overflow: hidden; }
+        .step-badge { position: absolute; top: 0; left: 0; background: var(--accent); color: #FFF; padding: 8px 20px; font-weight: 800; font-size: 0.9rem; border-radius: 0 0 16px 0; }
+        .step-title { font-size: 1.4rem; font-weight: 800; margin: 20px 0 15px 0; color: var(--text); display: flex; align-items: center; gap: 10px; }
+        
+        .content-box { margin-top: 15px; }
+        .content-box p { margin-bottom: 12px; color: var(--text-sec); }
+        .content-box ul, .content-box ol { margin-left: 20px; margin-bottom: 15px; color: var(--text-sec); }
+        .content-box li { margin-bottom: 8px; }
+        .content-box strong { color: var(--text); }
+
+        /* CALLOUTS */
+        .callout { padding: 15px 20px; border-radius: 12px; margin: 20px 0; font-size: 0.95rem; display: flex; gap: 15px; align-items: flex-start; }
+        .callout-icon { font-size: 1.5rem; flex-shrink: 0; }
+        .callout.info { background: rgba(0,122,255,0.08); border: 1px solid rgba(0,122,255,0.2); color: #0056b3; }
+        .callout.warning { background: rgba(255,149,0,0.08); border: 1px solid rgba(255,149,0,0.2); color: #b36800; }
+        .callout.danger { background: rgba(255,59,48,0.08); border: 1px solid rgba(255,59,48,0.2); color: #b32420; }
+        .callout.success { background: rgba(52,199,89,0.08); border: 1px solid rgba(52,199,89,0.2); color: #248a3d; }
+
+        /* CODE BLOCK */
+        .code-block { background: #111; color: #00FF41; padding: 15px; border-radius: 10px; font-family: monospace; font-size: 0.9rem; margin: 10px 0; word-break: break-all; border: 1px solid #333; position: relative; }
+        .copy-btn { position: absolute; top: 10px; right: 10px; background: rgba(255,255,255,0.2); border: none; color: #FFF; padding: 4px 10px; border-radius: 6px; cursor: pointer; font-size: 0.75rem; font-weight: bold; }
+        .copy-btn:hover { background: rgba(255,255,255,0.4); }
+
+        /* DOMAIN LIST */
+        .domain-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 15px; margin-top: 15px; }
+        .domain-item { background: #FAFAFC; border: 1px solid var(--border); padding: 15px; border-radius: 12px; display: flex; align-items: center; gap: 12px; }
+        .domain-item i { font-size: 1.5rem; color: var(--info); }
+        .domain-item div { font-weight: 700; font-size: 0.95rem; }
+        .domain-item span { display: block; font-size: 0.75rem; color: var(--text-sec); font-weight: 400; }
+
+        @media (max-width: 768px) {
+            .header { padding: 15px 20px; flex-direction: column; gap: 15px; }
+            .step-card { padding: 25px 20px; }
+        }
+    </style>
+</head>
+<body>
+
+    <header class="header">
+        <div class="brand">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 60" style="width:140px; height:35px; display:block;">
+                <defs>
+                    <linearGradient id="kreaGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stop-color="#D97757" />
+                        <stop offset="50%" stop-color="#AF52DE" />
+                        <stop offset="100%" stop-color="#007AFF" />
+                    </linearGradient>
+                </defs>
+                <g>
+                    <path d="M 30,10 Q 30,30 50,30 Q 30,30 30,50 Q 30,30 10,30 Q 30,30 30,10 Z" fill="url(#kreaGradient)" />
+                    <path d="M 30,17 Q 30,30 43,30 Q 30,30 30,43 Q 30,30 17,30 Q 30,30 30,17 Z" fill="url(#kreaGradient)" transform="rotate(45, 30, 30)" opacity="0.85" />
+                </g>
+                <text x="65" y="38" font-family="'Poppins', 'Inter', sans-serif" font-weight="800" font-size="21" fill="#111111" letter-spacing="-0.5px">
+                    Kreaverse<tspan font-weight="500" fill="#D97757"> AI</tspan>
+                </text>
+            </svg>
+            <span style="font-weight:800; color:var(--text-sec); border-left:2px solid var(--border); padding-left:15px;">Tutorial Center</span>
+        </div>
+        <a href="javascript:history.back()" class="btn-back"><i class="fa-solid fa-arrow-left"></i> Kembali ke Dashboard</a>
+    </header>
+
+    <main class="container">
+        <h1 class="page-title">Panduan Setup G Suite Temp Email</h1>
+        <p class="page-desc">Langkah demi langkah dari nol hingga sistem siap digunakan untuk *generate* unlimited akun.</p>
+
+        <!-- STEP 1 -->
+        <div class="step-card">
+            <div class="step-badge">LANGKAH 1</div>
+            <h2 class="step-title"><i class="fa-solid fa-globe" style="color:var(--info);"></i> Mendaftar Domain Gratis</h2>
+            <div class="content-box">
+                <p>Untuk membuat Google Workspace, Anda membutuhkan sebuah nama domain. Jika Anda tidak ingin membeli domain berbayar (.com / .id), Anda bisa menggunakan layanan penyedia subdomain gratis yang mendukung pengaturan DNS (TXT Record).</p>
+                
+                <div class="callout info">
+                    <i class="fa-solid fa-circle-info callout-icon"></i>
+                    <div>
+                        <strong>Cara Daftar di DNSExit.com (Sangat Direkomendasikan):</strong><br>
+                        1. Buka website <a href="https://dnsexit.com" target="_blank">dnsexit.com</a> dan buat akun.<br>
+                        2. Masuk ke menu <strong>Domains</strong> -> <strong>Free Subdomains</strong>.<br>
+                        3. Ketik nama yang Anda inginkan (misal: <code>kreaverse-app</code>) dan pilih akhiran yang tersedia (misal: <code>.2bd.net</code>).<br>
+                        4. Selesaikan proses *checkout* ($0.00). Domain Anda langsung aktif!
+                    </div>
+                </div>
+
+                <h3 style="margin-top:25px; margin-bottom:10px; font-size:1.1rem;">3 Rekomendasi Website Domain Gratis (Terbukti Berhasil 100%):</h3>
+                <div class="domain-grid">
+                    <a href="https://dnsexit.com/" target="_blank" style="text-decoration:none; color:inherit;">
+                        <div class="domain-item" style="transition:0.2s; cursor:pointer;" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
+                            <i class="fa-solid fa-check-circle"></i>
+                            <div>DNSExit.com<span>Free Subdomains (.2bd.net dll)</span></div>
+                        </div>
+                    </a>
+                    <a href="https://freedomain.one/" target="_blank" style="text-decoration:none; color:inherit;">
+                        <div class="domain-item" style="transition:0.2s; cursor:pointer;" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
+                            <i class="fa-solid fa-check-circle"></i>
+                            <div>FreeDomain.one<span>Satu server dengan DNSExit</span></div>
+                        </div>
+                    </a>
+                    <a href="https://www.dynu.com/" target="_blank" style="text-decoration:none; color:inherit;">
+                        <div class="domain-item" style="transition:0.2s; cursor:pointer;" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
+                            <i class="fa-solid fa-check-circle"></i>
+                            <div>Dynu.com<span>Free DDNS (.freeddns.org dll)</span></div>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- STEP 2 -->
+        <div class="step-card">
+            <div class="step-badge">LANGKAH 2</div>
+            <h2 class="step-title"><i class="fa-brands fa-google" style="color:var(--danger);"></i> Daftar Cloud Identity Free & Verifikasi</h2>
+            <div class="content-box">
+                <p>Setelah memiliki domain, langkah selanjutnya adalah mendaftarkannya ke Google untuk mendapatkan kapasitas 50 akun gratis.</p>
+                <ol>
+                    <li>Buka halaman pendaftaran <a href="https://workspace.google.com/signup/identity/welcome" target="_blank" style="color:var(--info); font-weight:800; text-decoration:underline;">Google Cloud Identity Free (Klik di sini)</a>.</li>
+                    <li>Masukkan nama domain yang baru Anda buat di Langkah 1 (misal: <code>kreaverse-app.2bd.net</code>).</li>
+                    <li>Isi data diri dan buat akun Admin pertama Anda (misal: <code>admin@kreaverse-app.2bd.net</code>). <strong>Catat password-nya!</strong></li>
+                    <li>Setelah berhasil login ke <a href="https://admin.google.com" target="_blank">admin.google.com</a>, Google akan meminta Anda <strong>Memverifikasi Kepemilikan Domain</strong>.</li>
+                    <li>Google akan memberikan sebuah kode <strong>TXT Record</strong>.<br>
+                        <div style="background:#F4F5F7; padding:8px 12px; border-radius:8px; font-family:monospace; font-size:0.85rem; margin-top:6px; margin-bottom:6px; border:1px solid var(--border); color:var(--text-sec);">
+                            <strong>Contoh bentuk kode dari Google:</strong><br>
+                            google-site-verification=90zsOND6L-2jdUeKaWTCMomNNeNmWVn_Dd96QpDxz2g
+                        </div>
+                    </li>
+                    <li>Buka panel DNS di tempat Anda mendaftar domain (misal: DNSExit).</li>
+                    <li>Tambahkan <strong>TXT Record</strong> baru. Kosongkan kolom <em>Host/Name</em> (atau isi dengan <code>@</code>), lalu *paste* kode panjang dari Google tersebut ke kolom <em>Value / Teks</em>. Simpan.</li>
+                    <li>Kembali ke Google Admin dan klik <strong>Verifikasi</strong>. (Tunggu 5-15 menit jika gagal).</li>
+                </ol>
+            </div>
+        </div>
+
+        <!-- STEP 3 -->
+        <div class="step-card">
+            <div class="step-badge">LANGKAH 3</div>
+            <h2 class="step-title"><i class="fa-solid fa-key" style="color:var(--warning);"></i> Mendapatkan Kunci JSON (Jalan Ninja Anti-Error)</h2>
+            <div class="content-box">
+                <p>Untuk menghubungkan Google Admin ke Dashboard Kreaverse, kita butuh file JSON. Seringkali pemula mengalami error saat mencoba membuat Kunci JSON di akun Workspace baru.</p>
+                
+                <div class="callout danger">
+                    <i class="fa-solid fa-triangle-exclamation callout-icon"></i>
+                    <div>
+                        <strong>SOLUSI ERROR "Service account key creation is disabled" (JALAN NINJA):</strong><br>
+                        Jika Anda mendapat error merah karena <em>Organization Policies</em> saat membuat Kunci JSON, <strong>Jangan buat Project menggunakan akun Workspace Anda!</strong><br><br>
+                        Gunakan akun <strong>@gmail.com pribadi Anda</strong> untuk membuat Kunci JSON. Kunci dari Gmail pribadi tidak terkena blokir kebijakan dan tetap bisa dipakai untuk membuka Workspace manapun!
+                    </div>
+                </div>
+
+                <ol>
+                    <li>Buka <a href="https://console.cloud.google.com" target="_blank">Google Cloud Console</a> dan login menggunakan akun <strong>@gmail.com</strong> pribadi Anda.</li>
+                    <li>Buat Project Baru (Bebas beri nama apa saja).</li>
+                    <li>Di kolom pencarian atas, ketik <strong>Admin SDK API</strong>, lalu klik <strong>Enable (Aktifkan)</strong>.</li>
+                    <li>Klik menu garis tiga di kiri atas -> <strong>IAM & Admin</strong> -> <strong>Service Accounts</strong>.</li>
+                    <li>Klik <strong>+ Create Service Account</strong> dan isi nama bebas.</li>
+                </ol>
+
+                <div class="callout warning" style="margin: 15px 0 15px 20px;">
+                    <i class="fa-solid fa-circle-question callout-icon"></i>
+                    <div>
+                        <strong>Tanya Jawab Penting Saat Membuat Kunci:</strong><br>
+                        <ul style="margin-top:8px; margin-bottom:0;">
+                            <li><strong>Pilih Role (Peran) apa di Step 2?</strong><br>KOSONGKAN SAJA (Lewati). Anda tidak perlu memilih peran apapun. Langsung klik <em>Continue / Done</em>.</li>
+                            <li><strong>Di mana letak "OAuth 2 Client ID"?</strong><br>Angka ini ada di tabel daftar Service Account. Atau jika Anda mengklik nama Service Account-nya, angkanya ada di bagian paling atas (tepat di bawah kotak pencarian).</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <ol start="6">
+                    <li><strong>Copy (Salin) angka OAuth 2 Client ID</strong> tersebut dan simpan di Notepad.</li>
+                    <li>Klik titik tiga di sebelah kanan Service Account tersebut -> <strong>Manage Keys</strong>.</li>
+                    <li>Klik <strong>Add Key</strong> -> <strong>Create new key</strong> -> Pilih <strong>JSON</strong> -> Klik Create. File JSON akan terdownload ke HP/Laptop Anda.</li>
+                </ol>
+            </div>
+        </div>
+
+        <!-- STEP 4 -->
+        <div class="step-card">
+            <div class="step-badge">LANGKAH 4</div>
+            <h2 class="step-title"><i class="fa-solid fa-handshake-angle" style="color:var(--success);"></i> Memberikan Izin Delegasi Domain</h2>
+            <div class="content-box">
+                <p>Kunci JSON sudah ada, sekarang kita harus menyuruh Google Admin untuk "menerima" kunci tersebut agar bisa membuat dan menghapus email.</p>
+                <ol>
+                    <li>Login ke <a href="https://admin.google.com" target="_blank">admin.google.com</a> menggunakan akun admin Workspace Anda (misal: <code>admin@kreaverse-app.2bd.net</code>).</li>
+                    <li>Di menu kiri, masuk ke <strong>Keamanan</strong> -> <strong>Kontrol akses dan data</strong> -> <strong>Kontrol API</strong>.</li>
+                    <li>Scroll ke bawah, klik <strong>Kelola Delegasi Beri Akses Domain</strong>.</li>
+                    <li>Klik <strong>Tambahkan Baru</strong>.</li>
+                    <li>Di kolom <strong>Client ID</strong>, *paste* angka yang Anda simpan di Notepad pada Langkah 3.</li>
+                    <li>Di kolom <strong>Cakupan OAuth</strong>, *copy-paste* kode di bawah ini:</li>
+                </ol>
+                
+                <div class="code-block">
+                    <button class="copy-btn" onclick="copyText('scope-text')">COPY</button>
+                    <span id="scope-text">https://www.googleapis.com/auth/admin.directory.user</span>
+                </div>
+                
+                <ol start="7">
+                    <li>Klik <strong>Otorisasi</strong>. Selesai! Google Admin Anda sekarang sudah terbuka untuk Kreaverse.</li>
+                </ol>
+            </div>
+        </div>
+
+        <!-- STEP 5 -->
+        <div class="step-card">
+            <div class="step-badge">LANGKAH 5</div>
+            <h2 class="step-title"><i class="fa-solid fa-rocket" style="color:var(--accent);"></i> Hubungkan ke Dashboard Kreaverse</h2>
+            <div class="content-box">
+                <p>Langkah terakhir! Mari kita masukkan Kunci JSON tadi ke dalam Dashboard Admin Kreaverse Anda.</p>
+                <ol>
+                    <li>Buka <strong>Dashboard Admin Kreaverse AI</strong> Anda.</li>
+                    <li>Masuk ke menu <strong>G Suite Temp Email</strong>.</li>
+                    <li>Di panel <em>Penyetelan Google Workspace API</em>, klik tombol hijau <strong>+ Tambah Akun Admin</strong>.</li>
+                    <li>Masukkan email admin Workspace Anda (misal: <code>admin@kreaverse-app.2bd.net</code>).</li>
+                    <li>Buka file JSON yang Anda download di Langkah 3 menggunakan aplikasi teks (Notepad/Teks Editor). <strong>Copy seluruh isi teksnya dari kurung kurawal awal { sampai akhir }</strong>.</li>
+                    <li>*Paste* seluruh teks JSON tersebut ke kolom yang disediakan di Dashboard.</li>
+                    <li>Klik <strong>Simpan</strong>.</li>
+                </ol>
+                
+                <div class="callout success">
+                    <i class="fa-solid fa-party-horn callout-icon"></i>
+                    <div>
+                        <strong>SELAMAT! SISTEM SUDAH SIAP!</strong><br>
+                        Sekarang Anda bisa langsung menggunakan fitur <em>Auto Generate (Gen Z)</em> untuk membuat puluhan akun G Suite secara otomatis. Sistem akan membagi beban (pooling) maksimal 30 akun per organisasi. Jika ingin lebih, cukup ulangi Langkah 1-5 untuk domain baru!
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <footer class="footer" style="text-align:center; padding:30px; border-top:1px solid var(--border); background:var(--surface); margin-top:40px;">
+        <div style="font-weight:800; color:var(--text); font-size:1.2rem; margin-bottom:10px;">Kreaverse AI</div>
+        <div style="color:var(--text-sec); font-size:0.9rem;">Enterprise System Documentation &copy; 2026</div>
+    </footer>
+
+    <script>
+        function copyText(id) {
+            const text = document.getElementById(id).innerText;
+            navigator.clipboard.writeText(text).then(() => {
+                alert("Teks berhasil disalin!");
+            });
+        }
+    </script>
+</body>
+</html>
