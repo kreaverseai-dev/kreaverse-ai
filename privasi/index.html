@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Kebijakan Privasi - Kreaverse AI</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../style.css">
+</head>
+<body class="claude-layout">
+
+    <button id="mobile-menu-btn" class="mobile-menu-btn"><i class="fa-solid fa-bars"></i></button>
+
+    <!-- SIDEBAR TETAP ADA AGAR UI KONSISTEN -->
+    <aside id="sidebar" class="claude-sidebar">
+        <div class="sidebar-header">
+            <h2>Kreaverse</h2>
+            <button id="close-sidebar-btn" class="close-btn"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div class="sidebar-menu">
+            <a href="/" class="menu-item"><i class="fa-solid fa-house"></i> <span>Kembali ke Beranda</span></a>
+            <div class="menu-divider"></div>
+            <a href="/chat/" class="menu-item"><i class="fa-regular fa-comments"></i> <span>Chat AI</span></a>
+            <a href="/berkas/" class="menu-item"><i class="fa-solid fa-folder-open"></i> <span>Berkas AI</span></a>
+        </div>
+    </aside>
+
+    <!-- KONTEN HALAMAN -->
+    <main class="claude-container" style="align-items: flex-start; justify-content: flex-start; padding: 40px; overflow-y: auto;">
+        <div style="max-width: 800px; width: 100%; margin: 0 auto; background: var(--surface-color); padding: 40px; border-radius: 16px; border: 1px solid var(--border-color); box-shadow: var(--shadow-soft);">
+            <h1 style="font-family: 'Georgia', serif; font-size: 2.2rem; margin-bottom: 10px; color: var(--text-primary);">Kebijakan Privasi</h1>
+            <p style="color: var(--text-secondary); margin-bottom: 30px;">Terakhir diperbarui: 24 Oktober 2026</p>
+
+            <div style="line-height: 1.8; color: var(--text-primary);">
+                <h3 style="margin-top: 25px; color: var(--accent-color);">1. Pendahuluan</h3>
+                <p>Kreaverse AI ("kami", "milik kami", atau "platform") berkomitmen penuh untuk melindungi privasi dan keamanan data pengguna ("Anda"). Kebijakan Privasi ini menjelaskan secara komprehensif bagaimana kami mengumpulkan, menggunakan, menyimpan, dan melindungi informasi pribadi Anda saat Anda mengakses layanan Kreaverse AI, termasuk namun tidak terbatas pada Chat AI, Studio Media, dan Manajemen Berkas AI.</p>
+
+                <h3 style="margin-top: 25px; color: var(--accent-color);">2. Pengumpulan Informasi</h3>
+                <p>Dalam rangka memberikan layanan Artificial Intelligence yang optimal, kami mengumpulkan beberapa jenis informasi: (a) <strong>Informasi Akun:</strong> Nama, alamat email, dan kredensial login saat Anda mendaftar. (b) <strong>Data Interaksi AI:</strong> Teks obrolan (prompts), gambar, audio, dan parameter yang Anda unggah atau ketikkan untuk diproses oleh model LLM (Large Language Models) pihak ketiga. (c) <strong>Informasi Perangkat & Sesi:</strong> Alamat IP, jenis browser, preferensi bahasa, dan data Cookie untuk menjaga sesi login Anda tetap aktif.</p>
+
+                <h3 style="margin-top: 25px; color: var(--accent-color);">3. Penggunaan Model Pihak Ketiga</h3>
+                <p>Kreaverse AI bertindak sebagai agregator yang mengintegrasikan berbagai model canggih seperti Claude (Anthropic), ChatGPT (OpenAI), dan Google Gemini. Prompts dan file yang Anda kirimkan dapat diteruskan melalui API yang aman ke penyedia ini untuk proses *generate*. Kami memastikan bahwa penyedia pihak ketiga tersebut terikat oleh standar enkripsi ketat dan tidak menggunakan data pribadi Anda untuk melatih model publik mereka tanpa anonimisasi tingkat tinggi.</p>
+
+                <h3 style="margin-top: 25px; color: var(--accent-color);">4. Keamanan dan Penyimpanan Berkas</h3>
+                <p>Semua *output* (hasil generate) baik berupa teks, gambar resolusi tinggi, maupun audio akan dienkripsi dan disimpan dengan aman di dalam direktori "Berkas AI" Anda. Anda memegang kendali penuh untuk mengunduh, menyimpan, atau menghapus file tersebut dari server kami secara permanen kapan saja.</p>
+
+                <h3 style="margin-top: 25px; color: var(--accent-color);">5. Perubahan Kebijakan</h3>
+                <p>Kami berhak memperbarui Kebijakan Privasi ini dari waktu ke waktu untuk menyesuaikan dengan regulasi teknologi informasi terbaru. Pemberitahuan akan dikirimkan melalui dashboard atau email pengguna apabila terdapat perubahan yang signifikan.</p>
+            </div>
+
+            <div style="margin-top: 50px; padding-top: 20px; border-top: 1px solid var(--border-color); text-align: center; color: var(--text-secondary); font-size: 0.9rem;">
+                &copy; 2026 Kreaverse AI. All rights reserved. Platform aggregator AI Profesional.
+            </div>
+        </div>
+    </main>
+
+    <script src="../script.js"></script>
+</body>
+</html>
