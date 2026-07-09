@@ -1,0 +1,2459 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kreaverse AI - Lirik karaoke</title>
+    <!-- Tailwind CSS untuk Desain CapCut Premium -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome untuk Icon -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts Melimpah (Poin 5) -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&family=Montserrat:wght@700;900&family=Impact&family=Bebas+Neue&family=Pacifico&family=Lobster&family=Caveat:wght@700&family=Luckiest+Guy&family=Titan+One&family=Fredoka+One&family=Righteous&family=Rubik+Mono+One&display=swap" rel="stylesheet">
+    
+    <style>
+        /* Desain Gaya CapCut Premium */
+        ::-webkit-scrollbar {
+            width: 4px;
+            height: 4px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #09090b;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #27272a;
+            border-radius: 10px;
+        }
+        
+        /* Hilangkan gaya default slider */
+        input[type="range"] {
+            -webkit-appearance: none;
+            appearance: none;
+            background: #27272a;
+            height: 4px;
+            border-radius: 2px;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #06b6d4;
+            cursor: pointer;
+        }
+
+        /* Transisi Drawer Menu Bawah */
+        .drawer-active {
+            transform: translateY(0);
+        }
+        .drawer-inactive {
+            transform: translateY(100%);
+        }
+
+        /* Floating Preview Styles (Poin 5) */
+        .floating-preview {
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.85) !important;
+            border-radius: 16px !important;
+            touch-action: none;
+            user-select: none;
+        }
+    </style>
+<!-- Detektor Error Eruda Sementara -->
+<script src="https://cdn.jsdelivr.net/npm/eruda"></script>
+<script>eruda.init();</script>
+</head>
+<body class="bg-[#09090b] text-zinc-100 font-['Poppins'] min-h-screen flex flex-col justify-between select-none pb-6">
+
+    <!-- Top Navigation Bar -->
+    <header class="flex items-center justify-between px-4 py-3 bg-[#121214] border-b border-[#1f1f23] sticky top-0 z-40">
+        <div class="flex items-center gap-2">
+            <i class="fa-solid fa-circle-play text-cyan-400 text-lg animate-pulse"></i>
+            <span class="font-extrabold text-xs tracking-wider text-cyan-400">KREAVERSE AI - KARAOKE</span>
+        </div>
+        <div class="flex items-center gap-2">
+            <button id="btnRatioToggle" class="bg-[#1f1f23] text-[10px] font-bold px-2.5 py-1.5 rounded-lg border border-[#2d2d34] text-gray-300 flex items-center gap-1">
+                <i class="fa-solid fa-mobile-screen"></i> 9:16 (TikTok)
+            </button>
+            <button id="btnToggleFloat" class="bg-[#1f1f23] text-[10px] font-bold px-2.5 py-1.5 rounded-lg border border-[#2d2d34] text-gray-300 flex items-center gap-1">
+                <i class="fa-solid fa-up-right-and-down-left-from-center"></i> Melayang
+            </button>
+            <button id="btnExport" class="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-bold text-[10px] px-3 py-1.5 rounded-lg shadow-md transition-all active:scale-95 flex items-center gap-1">
+                <i class="fa-solid fa-download"></i> Ekspor
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Workspace -->
+    <main class="flex-grow max-w-md mx-auto w-full px-3 py-3 flex flex-col gap-3">
+
+        <!-- 1. Video Preview Area (CapCut Safe Zone) (Poin 1 & 5) -->
+        <div id="previewContainer" class="relative w-full aspect-[9/16] max-h-[380px] mx-auto bg-black rounded-2xl overflow-hidden border border-[#1f1f23] shadow-2xl flex items-center justify-center transition-all duration-300">
+            <!-- Hidden native elements -->
+            <video id="hiddenVideo" class="hidden" playsinline></video>
+            <audio id="hiddenAudio" class="hidden"></audio>
+
+            <!-- Canvas Utama -->
+            <canvas id="mainCanvas" class="w-full h-full object-contain"></canvas>
+
+            <!-- Overlay Petunjuk Loading / Kosong -->
+            <div id="previewPlaceholder" class="absolute inset-0 flex flex-col items-center justify-center bg-zinc-950/90 text-center p-6 gap-2 z-10 pointer-events-none">
+                <i class="fa-solid fa-clapperboard text-2xl text-cyan-400 mb-1"></i>
+                <p class="text-[11px] text-zinc-400 font-semibold">Silakan impor media untuk memulai</p>
+                <p class="text-[9px] text-zinc-600">Mendukung Video, Gambar, atau Audio saja</p>
+            </div>
+            
+            <!-- Safe Zone Guides -->
+            <div id="safeZoneGuide" class="absolute inset-x-0 bottom-10 border-t border-dashed border-red-500/20 text-[9px] text-red-500/30 text-center pointer-events-none">Batas Aman Lirik</div>
+
+            <!-- Poin 1: Overlay Kontrol Video Terintegrasi di Dalam Video (Auto-Hide 12 Detik) -->
+            <div id="videoControlsOverlay" class="absolute inset-0 bg-black/60 flex flex-col justify-between p-3 opacity-0 transition-opacity duration-300 z-30 pointer-events-none">
+                <!-- Atas: Indikator mode -->
+                <div class="flex justify-between items-center w-full">
+                    <span class="text-[8px] font-bold text-zinc-400 bg-black/40 px-2 py-0.5 rounded">Preview Mode</span>
+                </div>
+                
+                <!-- Tengah: Tombol Play/Pause Besar & Seek Buttons -->
+                <div class="flex items-center justify-center gap-4 w-full">
+                    <button id="btnOverlayPrev" class="w-8 h-8 rounded-full bg-black/50 border border-zinc-700/50 flex items-center justify-center text-zinc-300 hover:text-cyan-400 transition-all pointer-events-auto active:scale-90">
+                        <i class="fa-solid fa-backward text-xs"></i>
+                    </button>
+                    <button id="btnOverlayPlayPause" class="w-12 h-12 rounded-full bg-cyan-500/20 border border-cyan-500/40 flex items-center justify-center text-cyan-400 shadow-md transition-all pointer-events-auto active:scale-90">
+                        <i id="overlayPlayIcon" class="fa-solid fa-play text-sm"></i>
+                    </button>
+                    <button id="btnOverlayNext" class="w-8 h-8 rounded-full bg-black/50 border border-zinc-700/50 flex items-center justify-center text-zinc-300 hover:text-cyan-400 transition-all pointer-events-auto active:scale-90">
+                        <i class="fa-solid fa-forward text-xs"></i>
+                    </button>
+                </div>
+                
+                <!-- Bawah: Progress Bar & Penunjuk Waktu Sederhana -->
+                <div class="flex flex-col gap-1 w-full bg-black/40 p-2 rounded-xl border border-zinc-800/40 pointer-events-auto">
+                    <div class="flex items-center justify-between text-[8px] text-zinc-400 font-mono">
+                        <span id="overlayCurrentTime">00:00</span>
+                        <span id="overlayDuration">00:00</span>
+                    </div>
+                    <input type="range" id="overlayProgressBar" min="0" max="100" value="0" class="w-full h-1 bg-zinc-700 rounded-lg appearance-none cursor-pointer accent-cyan-500">
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. CapCut Player Controls & Speed (Poin 3) -->
+        <section class="bg-[#121214] p-3 rounded-2xl border border-[#1f1f23] flex flex-col gap-2">
+            <div class="flex items-center justify-between flex-wrap gap-2">
+                <div class="flex items-center gap-1">
+                    <button id="btnSeekPrev10" class="px-2 py-1 bg-[#1c1c1f] border border-[#2d2d34] rounded text-[9px] text-zinc-400 font-bold active:scale-90 hover:text-cyan-400 transition-all">-10s</button>
+                    <button id="btnSeekPrev5" class="px-2 py-1 bg-[#1c1c1f] border border-[#2d2d34] rounded text-[9px] text-zinc-400 font-bold active:scale-90 hover:text-cyan-400 transition-all">-5s</button>
+                    <button id="btnSeekPrev1" class="px-2 py-1 bg-[#1c1c1f] border border-[#2d2d34] rounded text-[9px] text-zinc-400 font-bold active:scale-90 hover:text-cyan-400 transition-all">-1s</button>
+                </div>
+                <button id="btnPlayPause" class="w-8 h-8 rounded-full bg-[#1f1f23] border border-[#2d2d34] flex items-center justify-center text-cyan-400 active:scale-90 transition-all">
+                    <i id="playIcon" class="fa-solid fa-play text-xs"></i>
+                </button>
+                <div class="flex items-center gap-1">
+                    <button id="btnSeekNext1" class="px-2 py-1 bg-[#1c1c1f] border border-[#2d2d34] rounded text-[9px] text-zinc-400 font-bold active:scale-90 hover:text-cyan-400 transition-all">+1s</button>
+                    <button id="btnSeekNext5" class="px-2 py-1 bg-[#1c1c1f] border border-[#2d2d34] rounded text-[9px] text-zinc-400 font-bold active:scale-90 hover:text-cyan-400 transition-all">+5s</button>
+                    <button id="btnSeekNext10" class="px-2 py-1 bg-[#1c1c1f] border border-[#2d2d34] rounded text-[9px] text-zinc-400 font-bold active:scale-90 hover:text-cyan-400 transition-all">+10s</button>
+                </div>
+            </div>
+            <div class="flex items-center gap-2">
+                <span id="currentTimeText" class="text-[9px] font-mono text-zinc-500">00:00</span>
+                <input type="range" id="progressBar" min="0" max="100" value="0" class="flex-grow">
+                <span id="durationText" class="text-[9px] font-mono text-zinc-500">00:00</span>
+            </div>
+            <div class="flex items-center justify-between text-[10px] border-t border-[#1f1f23] pt-2 mt-1">
+                <div class="flex items-center gap-1 text-zinc-400">
+                    <i class="fa-solid fa-gauge text-cyan-400"></i> Kecepatan:
+                </div>
+                <div class="flex gap-1.5">
+                    <button class="btn-speed px-2 py-0.5 rounded bg-[#1f1f23] border border-[#2d2d34]" data-speed="0.5">0.5x</button>
+                    <button class="btn-speed px-2 py-0.5 rounded bg-cyan-500/20 text-cyan-400 border border-cyan-500/30" data-speed="1.0">1.0x</button>
+                    <button class="btn-speed px-2 py-0.5 rounded bg-[#1f1f23] border border-[#2d2d34]" data-speed="1.5">1.5x</button>
+                    <button class="btn-speed px-2 py-0.5 rounded bg-[#1f1f23] border border-[#2d2d34]" data-speed="2.0">2.0x</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- 3. Media Importer & Image Duration Settings -->
+        <section class="bg-[#121214] p-3 rounded-2xl border border-[#1f1f23] flex flex-col gap-2">
+            <h3 class="text-[10px] font-bold text-zinc-400 tracking-wider flex items-center gap-1">
+                <i class="fa-solid fa-folder-open text-cyan-400"></i> IMPOR MEDIA & DURASI
+            </h3>
+            <div class="grid grid-cols-3 gap-2">
+                <label class="flex flex-col items-center justify-center p-2 bg-[#1c1c1f] hover:bg-[#232327] rounded-xl border border-dashed border-[#2d2d34] cursor-pointer text-center">
+                    <i class="fa-solid fa-video text-cyan-400 text-sm mb-1"></i>
+                    <span class="text-[9px] font-bold text-zinc-300">VIDEO</span>
+                    <input type="file" id="videoInput" accept="video/*" class="hidden">
+                </label>
+                <label class="flex flex-col items-center justify-center p-2 bg-[#1c1c1f] hover:bg-[#232327] rounded-xl border border-dashed border-[#2d2d34] cursor-pointer text-center">
+                    <i class="fa-solid fa-image text-emerald-400 text-sm mb-1"></i>
+                    <span class="text-[9px] font-bold text-zinc-300">GAMBAR</span>
+                    <input type="file" id="imageInput" accept="image/*" class="hidden">
+                </label>
+                <label class="flex flex-col items-center justify-center p-2 bg-[#1c1c1f] hover:bg-[#232327] rounded-xl border border-dashed border-[#2d2d34] cursor-pointer text-center">
+                    <i class="fa-solid fa-music text-purple-400 text-sm mb-1"></i>
+                    <span class="text-[9px] font-bold text-zinc-300">AUDIO</span>
+                    <input type="file" id="audioInput" accept="audio/*" class="hidden">
+                </label>
+            </div>
+            <!-- Penggeser Durasi Gambar -->
+            <div id="imageDurationContainer" class="hidden flex flex-col gap-1 bg-[#1c1c1f] p-2 rounded-xl border border-[#2d2d34] mt-1">
+                <div class="flex justify-between text-[9px] font-bold text-zinc-400">
+                    <span>DURASI GAMBAR LATAR</span>
+                    <span id="lblImgDuration" class="text-cyan-400">15 Detik</span>
+                </div>
+                <input type="range" id="sliderImgDuration" min="5" max="300" value="15" class="w-full">
+            </div>
+            <div id="mediaStatus" class="hidden text-[10px] text-zinc-400 mt-1"></div>
+        </section>
+
+        <!-- 4. Timeline Tracks Visualizer -->
+        <section class="bg-[#121214] p-3 rounded-2xl border border-[#1f1f23] flex flex-col gap-2 overflow-hidden">
+            <h3 class="text-[10px] font-bold text-zinc-400 tracking-wider flex items-center gap-1">
+                <i class="fa-solid fa-bars text-cyan-400"></i> TIMELINE EDITOR
+            </h3>
+            <div class="relative bg-black/60 rounded-xl border border-[#1f1f23] p-2 flex flex-col gap-2 text-[9px] font-semibold text-zinc-500 pr-1">
+                <!-- Track Media -->
+                <div class="flex items-center gap-2 h-5 bg-zinc-900/50 rounded-md px-2 relative border border-[#1f1f23]">
+                    <i class="fa-solid fa-image text-emerald-400"></i>
+                    <span id="trackMediaName" class="text-[8px] truncate">Belum ada media latar</span>
+                </div>
+                <!-- Track Audio -->
+                <div class="flex items-center gap-2 h-5 bg-zinc-900/50 rounded-md px-2 relative border border-[#1f1f23]">
+                    <i class="fa-solid fa-music text-purple-400"></i>
+                    <span id="trackAudioName" class="text-[8px] truncate">Belum ada audio musik</span>
+                </div>
+                <!-- Track Lirik -->
+                <div id="trackLyrics" class="flex items-center gap-1 h-5 bg-zinc-900/50 rounded-md px-2 relative border border-[#1f1f23] overflow-hidden">
+                    <i class="fa-solid fa-closed-captioning text-cyan-400"></i>
+                    <span id="trackLyricsPlaceholder" class="text-[8px]">Belum ada lirik karaoke</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- 5. Search Online Database (Firebase) -->
+        <section class="bg-[#121214] p-3 rounded-2xl border border-[#1f1f23] flex flex-col gap-2">
+            <h3 class="text-[10px] font-bold text-zinc-400 tracking-wider flex items-center gap-1">
+                <i class="fa-solid fa-cloud-arrow-down text-cyan-400"></i> CARI DATABASE LIRIK
+            </h3>
+            <div class="flex gap-2">
+                <input type="text" id="searchQuery" placeholder="Cari judul lagu atau artis..." class="flex-grow bg-[#1c1c1f] border border-[#2d2d34] focus:border-cyan-500 rounded-xl px-3 py-2 text-xs focus:outline-none transition-all text-zinc-200">
+                <button id="btnSearch" class="bg-[#1c1c1f] hover:bg-[#232327] border border-[#2d2d34] text-cyan-400 p-2.5 rounded-xl transition-all active:scale-95">
+                    <i class="fa-solid fa-magnifying-glass text-xs"></i>
+                </button>
+            </div>
+            <div id="searchResults" class="hidden max-h-32 overflow-y-auto bg-[#1c1c1f] rounded-xl border border-[#2d2d34] p-2 text-xs flex flex-col gap-1"></div>
+        </section>
+
+        <!-- 6. Lyrics Editor & Tabs (Poin 2, 3, 4) -->
+        <section class="bg-[#121214] p-3 rounded-2xl border border-[#1f1f23] flex flex-col gap-2">
+            <!-- Tab Buttons -->
+            <div class="flex border-b border-[#1f1f23] mb-1">
+                <button id="tabInput" class="flex-1 py-1 text-center text-[10px] font-bold border-b-2 border-cyan-500 text-cyan-400">1. Tempel</button>
+                <button id="tabSync" class="flex-1 py-1 text-center text-[10px] font-bold text-zinc-500 border-b-2 border-transparent">2. Sinkronkan</button>
+                <button id="tabAdjust" class="flex-1 py-1 text-center text-[10px] font-bold text-zinc-500 border-b-2 border-transparent">3. Koreksi</button>
+            </div>
+
+            <!-- Tab 1: Panel Input -->
+            <div id="panelInput" class="flex flex-col gap-2">
+                <textarea id="rawLyrics" rows="3" placeholder="Tempel lirik polos dari Google..." class="w-full bg-[#1c1c1f] border border-[#2d2d34] focus:border-cyan-500 rounded-xl p-3 text-xs focus:outline-none transition-all resize-none text-zinc-300 leading-relaxed"></textarea>
+                <button id="btnStartSync" class="w-full bg-cyan-500/10 hover:bg-cyan-500/15 text-cyan-400 border border-cyan-500/35 font-bold text-xs py-2.5 rounded-xl transition-all active:scale-95 flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-clock"></i> Mulai Sinkronisasi
+                </button>
+            </div>
+
+            <!-- Tab 2: Panel Sinkronisasi Ketukan (Poin 2, 3 & 4) -->
+            <div id="panelSync" class="hidden flex flex-col gap-3 text-center">
+                <div class="bg-[#1c1c1f] p-3 rounded-xl border border-[#2d2d34]">
+                    <span class="text-[9px] text-zinc-500 font-bold tracking-widest block mb-0.5">Baris yang Dinyanyikan</span>
+                    <p id="syncCurrentLine" class="text-xs font-bold text-cyan-400 min-h-5">---</p>
+                    <div class="h-[1px] bg-[#2d2d34] my-2"></div>
+                    <span class="text-[9px] text-zinc-500 font-bold tracking-widest block mb-0.5">Baris Berikutnya</span>
+                    <p id="syncNextLine" class="text-[11px] text-zinc-500 min-h-4">---</p>
+                </div>
+                
+                <!-- Poin 3: Tombol Seek Duplikat Langsung di Menu Sinkronisasi -->
+                <div class="flex justify-center gap-1.5 mt-1">
+                    <button id="btnSyncSeekPrev10" class="px-2 py-1 bg-[#1c1c1f] border border-[#2d2d34] rounded text-[9px] text-zinc-400 font-bold active:scale-90 hover:text-cyan-400 transition-all">-10s</button>
+                    <button id="btnSyncSeekPrev5" class="px-2 py-1 bg-[#1c1c1f] border border-[#2d2d34] rounded text-[9px] text-zinc-400 font-bold active:scale-90 hover:text-cyan-400 transition-all">-5s</button>
+                    <button id="btnSyncSeekPrev1" class="px-2 py-1 bg-[#1c1c1f] border border-[#2d2d34] rounded text-[9px] text-zinc-400 font-bold active:scale-90 hover:text-cyan-400 transition-all">-1s</button>
+                    <button id="btnSyncSeekNext1" class="px-2 py-1 bg-[#1c1c1f] border border-[#2d2d34] rounded text-[9px] text-zinc-400 font-bold active:scale-90 hover:text-cyan-400 transition-all">+1s</button>
+                    <button id="btnSyncSeekNext5" class="px-2 py-1 bg-[#1c1c1f] border border-[#2d2d34] rounded text-[9px] text-zinc-400 font-bold active:scale-90 hover:text-cyan-400 transition-all">+5s</button>
+                    <button id="btnSyncSeekNext10" class="px-2 py-1 bg-[#1c1c1f] border border-[#2d2d34] rounded text-[9px] text-zinc-400 font-bold active:scale-90 hover:text-cyan-400 transition-all">+10s</button>
+                </div>
+
+                <!-- Tombol Ketukan (Poin 1) -->
+                <button id="btnTapSync" class="w-24 h-24 mx-auto rounded-full bg-gradient-to-br from-cyan-500 to-blue-600 shadow-lg active:scale-90 transition-all flex flex-col items-center justify-center border-4 border-[#121214] cursor-pointer">
+                    <i class="fa-solid fa-microphone text-xl text-white animate-pulse"></i>
+                    <span id="btnTapSyncText" class="text-[9px] font-black text-white tracking-wider mt-1">MULAI BARIS</span>
+                </button>
+                
+                <!-- Poin 4: Tombol Batal Ketuk (Undo) Waktu Musik & Lirik Terkoreksi -->
+                <div class="flex gap-2 mt-1">
+                    <button id="btnResetSync" class="flex-1 bg-yellow-500/10 hover:bg-yellow-500/15 text-yellow-400 border border-yellow-500/20 text-[10px] font-bold py-2 rounded-xl">Batal Ketuk (Undo)</button>
+                    <button id="btnResetAllSync" class="flex-1 bg-red-500/10 hover:bg-red-500/15 text-red-400 border border-red-500/20 text-[10px] font-bold py-2 rounded-xl">Ulang Semua</button>
+                    <button id="btnFinishSync" class="flex-1 bg-green-500/10 hover:bg-green-500/15 text-green-400 border border-green-500/20 text-[10px] font-bold py-2 rounded-xl">Selesai</button>
+                </div>
+
+                <!-- Poin 2: Daftar Urutan Lirik Berurutan agar Tidak Membingungkan -->
+                <div class="bg-[#1c1c1f]/50 p-2 rounded-xl border border-[#2d2d34]/60 text-left">
+                    <span class="text-[8px] text-zinc-600 font-bold tracking-widest uppercase block mb-1">Daftar Urutan Lirik</span>
+                    <div id="syncLyricsList" class="max-h-24 overflow-y-auto flex flex-col gap-1 text-[10px] text-zinc-500 pr-1 select-none">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab 3: Panel Koreksi Detail -->
+            <div id="panelAdjust" class="hidden flex flex-col gap-2">
+                <div class="bg-[#1c1c1f] p-2 rounded-xl border border-[#2d2d34] flex flex-col gap-1.5">
+                    <div class="flex justify-between items-center text-[9px] font-bold text-zinc-400">
+                        <span>GESER SEMUA WAKTU (Global Offset)</span>
+                        <span id="globalOffsetVal" class="text-cyan-400">0.0s</span>
+                    </div>
+                    <input type="range" id="globalOffsetSlider" min="-1.5" max="1.5" step="0.1" value="0" class="w-full">
+                </div>
+                <div class="flex justify-between items-center text-[9px] font-bold text-zinc-400 mt-1">
+                    <span>KOREKSI SATU PERSATU</span>
+                    <button id="btnSaveToFirebase" class="text-cyan-400 hover:text-cyan-300 flex items-center gap-1">
+                        <i class="fa-solid fa-cloud-arrow-up"></i> Simpan ke Firebase
+                    </button>
+                </div>
+                <div id="adjustList" class="max-h-40 overflow-y-auto flex flex-col gap-1.5 p-1 bg-[#1c1c1f] rounded-xl border border-[#2d2d34]">
+                    <p class="text-center text-[9px] text-zinc-500 py-3">Lirik belum disinkronkan.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- 7. Bottom Drawer Triggers (Fonts & Colors) (Poin 4) -->
+        <section class="bg-[#121214] p-3 rounded-2xl border border-[#1f1f23] grid grid-cols-3 gap-2">
+            <button id="btnOpenFontDrawer" class="bg-[#1c1c1f] hover:bg-[#232327] border border-[#2d2d34] py-1.5 rounded-xl text-[10px] font-bold text-zinc-300 flex items-center justify-center gap-1">
+                <i class="fa-solid fa-font text-cyan-400"></i> Pilih Font
+            </button>
+            <button id="btnOpenColorDrawer" class="bg-[#1c1c1f] hover:bg-[#232327] border border-[#2d2d34] py-1.5 rounded-xl text-[10px] font-bold text-zinc-300 flex items-center justify-center gap-1">
+                <i class="fa-solid fa-palette text-cyan-400"></i> Gaya Teks
+            </button>
+            <button id="btnOpenLogoDrawer" class="bg-[#1c1c1f] hover:bg-[#232327] border border-[#2d2d34] py-1.5 rounded-xl text-[10px] font-bold text-zinc-300 flex items-center justify-center gap-1">
+                <i class="fa-solid fa-image text-cyan-400"></i> Logo & WM
+            </button>
+        </section>
+
+    </main>
+
+    <!-- Drawer Menu Bawah: PILIHAN FONT (Poin 5) -->
+    <div id="drawerFont" class="fixed inset-x-0 bottom-0 bg-[#121214] border-t border-[#1f1f23] rounded-t-3xl p-4 z-50 drawer-inactive transition-transform duration-300 shadow-2xl">
+        <div class="w-10 h-1 bg-zinc-700 rounded-full mx-auto mb-4" id="btnCloseFontDrawer"></div>
+        <h4 class="text-xs font-bold text-zinc-400 tracking-wider mb-3 text-center">PILIH GAYA FONT</h4>
+        <div class="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto pr-1">
+            <button class="btn-font p-2 rounded-xl bg-[#1c1c1f] border border-cyan-500/40 text-cyan-400 text-xs font-semibold animate-none" data-font="Poppins">Poppins (Modern)</button>
+            <button class="btn-font p-2 rounded-xl bg-[#1c1c1f] border border-[#2d2d34] text-zinc-300 text-xs font-semibold" data-font="Montserrat">Montserrat</button>
+            <button class="btn-font p-2 rounded-xl bg-[#1c1c1f] border border-[#2d2d34] text-zinc-300 text-xs font-semibold" data-font="Impact">Impact (Karaoke)</button>
+            <button class="btn-font p-2 rounded-xl bg-[#1c1c1f] border border-[#2d2d34] text-zinc-300 text-xs font-semibold" data-font="Bebas Neue">Bebas Neue</button>
+            <button class="btn-font p-2 rounded-xl bg-[#1c1c1f] border border-[#2d2d34] text-zinc-300 text-xs font-semibold" data-font="Pacifico">Pacifico</button>
+            <button class="btn-font p-2 rounded-xl bg-[#1c1c1f] border border-[#2d2d34] text-zinc-300 text-xs font-semibold" data-font="Lobster">Lobster</button>
+            <button class="btn-font p-2 rounded-xl bg-[#1c1c1f] border border-[#2d2d34] text-zinc-300 text-xs font-semibold" data-font="Caveat">Caveat</button>
+            <button class="btn-font p-2 rounded-xl bg-[#1c1c1f] border border-[#2d2d34] text-zinc-300 text-xs font-semibold" data-font="Luckiest Guy">Luckiest Guy (Pop)</button>
+            <button class="btn-font p-2 rounded-xl bg-[#1c1c1f] border border-[#2d2d34] text-zinc-300 text-xs font-semibold" data-font="Titan One">Titan One (Chubby)</button>
+            <button class="btn-font p-2 rounded-xl bg-[#1c1c1f] border border-[#2d2d34] text-zinc-300 text-xs font-semibold" data-font="Fredoka One">Fredoka One</button>
+            <button class="btn-font p-2 rounded-xl bg-[#1c1c1f] border border-[#2d2d34] text-zinc-300 text-xs font-semibold" data-font="Righteous">Righteous</button>
+            <button class="btn-font p-2 rounded-xl bg-[#1c1c1f] border border-[#2d2d34] text-zinc-300 text-xs font-semibold" data-font="Rubik Mono One">Rubik Block</button>
+        </div>
+        <!-- Poin 5: Manajemen Font Kustom (IndexedDB) -->
+        <div class="mt-4 pt-3 border-t border-[#1f1f23]">
+            <span class="text-[9px] font-bold text-zinc-500 tracking-wider block mb-2">FONT KUSTOM SAYA (PERMANEN)</span>
+            <label class="flex items-center justify-between p-2 bg-[#1c1c1f] hover:bg-[#232327] rounded-xl border border-dashed border-[#2d2d34] cursor-pointer mb-2">
+                <span class="text-[9px] font-bold text-zinc-300">UNGGAH FILE FONT (.TTF/.WOFF)</span>
+                <i class="fa-solid fa-font text-cyan-400 text-xs"></i>
+                <input type="file" id="fontUploader" accept=".ttf,.woff,.woff2" class="hidden">
+            </label>
+            <div id="customFontsContainer" class="flex flex-col gap-1 max-h-24 overflow-y-auto pr-1 text-xs">
+                <p class="text-[8px] text-zinc-600 text-center py-2">Belum ada font kustom yang tersimpan.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Drawer Menu Bawah: KUSTOMISASI WARNA & UKURAN (Poin 5) -->
+    <div id="drawerColor" class="fixed inset-x-0 bottom-0 bg-[#121214] border-t border-[#1f1f23] rounded-t-3xl p-4 z-50 drawer-inactive transition-transform duration-300 shadow-2xl">
+        <div class="w-10 h-1 bg-zinc-700 rounded-full mx-auto mb-4" id="btnCloseColorDrawer"></div>
+        <h4 class="text-xs font-bold text-zinc-400 tracking-wider mb-3 text-center">GAYA & TAMPILAN TEKS LIRIK</h4>
+        <div class="flex flex-col gap-3 max-h-[360px] overflow-y-auto pr-1">
+            <div class="flex flex-col gap-1">
+                <div class="flex justify-between text-[10px] font-bold text-zinc-400">
+                    <span>UKURAN HURUF</span>
+                    <span id="fontSizeVal" class="text-cyan-400">22px</span>
+                </div>
+                <input type="range" id="fontSizeSlider" min="14" max="40" value="22" class="w-full">
+            </div>
+            <!-- Palet Preset Warna -->
+            <div class="grid grid-cols-3 gap-2 mt-1">
+                <div class="flex flex-col items-center bg-[#1c1c1f] p-1.5 rounded-xl border border-[#2d2d34]">
+                    <span class="text-[8px] font-bold text-zinc-500 mb-1">Dasar</span>
+                    <input type="color" id="colorBase" value="#ffffff" class="w-7 h-7 bg-transparent border-0 cursor-pointer">
+                </div>
+                <div class="flex flex-col items-center bg-[#1c1c1f] p-1.5 rounded-xl border border-[#2d2d34]">
+                    <span class="text-[8px] font-bold text-zinc-500 mb-1">Sapu</span>
+                    <input type="color" id="colorActive" value="#ffff00" class="w-7 h-7 bg-transparent border-0 cursor-pointer">
+                </div>
+                <div class="flex flex-col items-center bg-[#1c1c1f] p-1.5 rounded-xl border border-[#2d2d34]">
+                    <span class="text-[8px] font-bold text-zinc-500 mb-1">Tepian</span>
+                    <input type="color" id="colorStroke" value="#0000ff" class="w-7 h-7 bg-transparent border-0 cursor-pointer">
+                </div>
+            </div>
+            <!-- Poin 5: Pilihan Spasi & Format Tebal Miring -->
+            <div class="grid grid-cols-2 gap-2 mt-1 border-t border-[#1f1f23] pt-2">
+                <div class="flex flex-col gap-1">
+                    <span class="text-[8px] font-bold text-zinc-500">FORMAT HURUF</span>
+                    <div class="flex gap-1">
+                        <button id="btnFormatBold" class="flex-1 bg-[#1c1c1f] border border-[#2d2d34] text-zinc-300 font-bold p-1 rounded text-[10px] active:scale-95">B</button>
+                        <button id="btnFormatItalic" class="flex-1 bg-[#1c1c1f] border border-[#2d2d34] text-zinc-300 italic p-1 rounded text-[10px] active:scale-95">I</button>
+                    </div>
+                </div>
+                <div class="flex flex-col gap-1">
+                    <span class="text-[8px] font-bold text-zinc-500">KAPITALISASI</span>
+                    <div class="flex gap-1">
+                        <button id="btnCaseUpper" class="flex-1 bg-[#1c1c1f] border border-[#2d2d34] text-zinc-300 p-1 rounded text-[9px] active:scale-95">TT</button>
+                        <button id="btnCaseLower" class="flex-1 bg-[#1c1c1f] border border-[#2d2d34] text-zinc-300 p-1 rounded text-[9px] active:scale-95">tt</button>
+                        <button id="btnCaseNormal" class="flex-1 bg-[#1c1c1f] border border-[#2d2d34] text-zinc-300 p-1 rounded text-[9px] active:scale-95">Tt</button>
+                    </div>
+                </div>
+            </div>
+            <!-- Slider Spasi Huruf -->
+            <div class="flex flex-col gap-1 mt-1">
+                <div class="flex justify-between text-[10px] font-bold text-zinc-400">
+                    <span>SPASI HURUF (LETTER SPACING)</span>
+                    <span id="charSpacingVal" class="text-cyan-400">0px</span>
+                </div>
+                <input type="range" id="charSpacingSlider" min="-5" max="20" value="0" class="w-full">
+            </div>
+            <!-- Fitur Bayangan & Lirik Melengkung -->
+            <div class="grid grid-cols-2 gap-2 mt-1 border-t border-[#1f1f23] pt-2">
+                <div class="flex flex-col gap-1.5 bg-[#1c1c1f] p-2 rounded-xl border border-[#2d2d34]">
+                    <span class="text-[9px] font-bold text-zinc-400">BAYANGAN TEKS (SHADOW)</span>
+                    <div class="flex items-center justify-between">
+                        <span class="text-[8px] text-zinc-500">Warna</span>
+                        <input type="color" id="colorShadow" value="#000000" class="w-6 h-6 bg-transparent border-0 cursor-pointer">
+                    </div>
+                    <input type="range" id="shadowBlurSlider" min="0" max="15" value="4" class="w-full">
+                </div>
+                <div class="flex flex-col gap-1.5 bg-[#1c1c1f] p-2 rounded-xl border border-[#2d2d34]">
+                    <span class="text-[9px] font-bold text-zinc-400">LIRIK MELENGKUNG (CURVE)</span>
+                    <div class="flex items-center justify-between">
+                        <span class="text-[8px] text-zinc-500">Aktifkan Kurva</span>
+                        <input type="checkbox" id="chkTextCurve" class="w-4 h-4 accent-cyan-500 rounded cursor-pointer">
+                    </div>
+                    <input type="range" id="curveDepthSlider" min="-100" max="100" value="30" class="w-full">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Drawer Menu Bawah: WATERMARK & LOGO KUSTOM (Poin 4) -->
+    <div id="drawerLogo" class="fixed inset-x-0 bottom-0 bg-[#121214] border-t border-[#1f1f23] rounded-t-3xl p-4 z-50 drawer-inactive transition-transform duration-300 shadow-2xl">
+        <div class="w-10 h-1 bg-zinc-700 rounded-full mx-auto mb-4" id="btnCloseLogoDrawer"></div>
+        <h4 class="text-xs font-bold text-zinc-400 tracking-wider mb-3 text-center">WATERMARK & LOGO KUSTOM</h4>
+        <div class="flex flex-col gap-3">
+            <label class="flex items-center justify-between p-3 bg-[#1c1c1f] hover:bg-[#232327] rounded-xl border border-dashed border-[#2d2d34] cursor-pointer text-center">
+                <span class="text-[10px] font-bold text-zinc-300">UNGGAH LOGO KUSTOM (BEBAS UKURAN)</span>
+                <i class="fa-solid fa-cloud-arrow-up text-cyan-400 text-sm"></i>
+                <input type="file" id="logoInput" accept="image/*" class="hidden">
+            </label>
+            <div class="grid grid-cols-2 gap-2">
+                <div class="flex flex-col gap-1">
+                    <span class="text-[8px] font-bold text-zinc-500">SUDUT PENEMPATAN</span>
+                    <select id="logoPosition" class="bg-[#1c1c1f] border border-[#2d2d34] rounded text-[10px] p-1.5 text-zinc-300 focus:outline-none">
+                        <option value="top-right" selected>Kanan Atas</option>
+                        <option value="top-left">Kiri Atas</option>
+                        <option value="bottom-left">Kiri Bawah</option>
+                        <option value="bottom-right">Kanan Bawah</option>
+                        <option value="bottom-center">Tengah Bawah</option>
+                    </select>
+                </div>
+                <div class="flex flex-col gap-1">
+                    <span class="text-[8px] font-bold text-zinc-500">SKALA UKURAN</span>
+                    <input type="range" id="logoScaleSlider" min="20" max="150" value="100" class="w-full mt-1.5">
+                </div>
+            </div>
+            <!-- Status Autentikasi Akun (Simulasi Login) -->
+            <div class="flex items-center justify-between mt-2 p-2 bg-black/40 rounded-xl border border-[#2d2d34]">
+                <div class="flex flex-col">
+                    <span class="text-[9px] text-zinc-300 font-bold">STATUS LOGIN AKUN</span>
+                    <span class="text-[7px] text-zinc-500">Login otomatis hilangkan watermark bawaan</span>
+                </div>
+                <button id="btnToggleLoginSim" class="text-[9px] bg-red-500/10 border border-red-500/30 text-red-400 font-bold px-3 py-1 rounded-xl">Tamu (Watermark Bawaan)</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- BACKDROP DRAWER -->
+    <div id="drawerBackdrop" class="fixed inset-0 bg-black/60 hidden z-45"></div>
+
+    <!-- FULLSCREEN EXPORT OVERLAY (Sesuai Desain CapCut) -->
+    <div id="exportOverlay" class="fixed inset-0 bg-black flex flex-col items-center justify-between p-6 z-50 hidden">
+        <!-- Header Atas (Bisa Batal) -->
+        <header class="w-full flex items-center justify-start">
+            <button id="btnCancelExport" class="text-white text-lg active:scale-90 transition-all p-2">
+                <i class="fa-solid fa-chevron-left"></i>
+            </button>
+        </header>
+
+        <!-- Bagian Tengah (Layar CapCut Persis) -->
+        <div class="flex flex-col items-center text-center gap-3 relative w-full flex-grow justify-center">
+            <!-- Background Rendering Mini Preview -->
+            <div class="w-32 aspect-[9/16] rounded-lg border border-zinc-800 bg-zinc-950 overflow-hidden mb-2 relative opacity-50">
+                <canvas id="miniExportCanvas" class="w-full h-full object-contain"></canvas>
+            </div>
+            
+            <h4 id="exportTitleText" class="font-bold text-sm tracking-wide text-zinc-200">Mengekspor dalam 720p...</h4>
+            
+            <!-- Teks Persentase Besar -->
+            <h1 id="exportProgressText" class="text-5xl font-extrabold text-white tracking-widest my-1">0%</h1>
+            
+            <p class="text-[10px] text-zinc-500">Mohon jangan tutup Kreaverse AI atau kunci layar Anda.</p>
+        </div>
+
+        <!-- Footer Bawah -->
+        <footer class="w-full text-center pb-4 text-[9px] text-zinc-600">
+            Kreaverse AI - Rendering Offline Bebas Kuota Data
+        </footer>
+    </div>
+
+    <!-- CORE JAVASCRIPT ENGINE (Gabung Di Sini agar Tidak Gagal di HP) -->
+    <script>
+        // 1. DOM Elements
+        const hiddenVideo = document.getElementById('hiddenVideo');
+        const hiddenAudio = document.getElementById('hiddenAudio');
+        const mainCanvas = document.getElementById('mainCanvas');
+        const miniExportCanvas = document.getElementById('miniExportCanvas');
+        const previewPlaceholder = document.getElementById('previewPlaceholder');
+
+        const videoInput = document.getElementById('videoInput');
+        const imageInput = document.getElementById('imageInput');
+        const audioInput = document.getElementById('audioInput');
+        const mediaStatus = document.getElementById('mediaStatus');
+
+        const imageDurationContainer = document.getElementById('imageDurationContainer');
+        const sliderImgDuration = document.getElementById('sliderImgDuration');
+        const lblImgDuration = document.getElementById('lblImgDuration');
+
+        const btnRatioToggle = document.getElementById('btnRatioToggle');
+        const safeZoneGuide = document.getElementById('safeZoneGuide');
+
+        const trackMediaName = document.getElementById('trackMediaName');
+        const trackAudioName = document.getElementById('trackAudioName');
+        const trackLyricsPlaceholder = document.getElementById('trackLyricsPlaceholder');
+        const trackLyrics = document.getElementById('trackLyrics');
+
+        const btnPlayPause = document.getElementById('btnPlayPause');
+        const playIcon = document.getElementById('playIcon');
+        const progressBar = document.getElementById('progressBar');
+        const currentTimeText = document.getElementById('currentTimeText');
+        const durationText = document.getElementById('durationText');
+
+        const searchQuery = document.getElementById('searchQuery');
+        const btnSearch = document.getElementById('btnSearch');
+        const searchResults = document.getElementById('searchResults');
+
+        const tabInput = document.getElementById('tabInput');
+        const tabSync = document.getElementById('tabSync');
+        const tabAdjust = document.getElementById('tabAdjust');
+        const panelInput = document.getElementById('panelInput');
+        const panelSync = document.getElementById('panelSync');
+        const panelAdjust = document.getElementById('panelAdjust');
+
+        const rawLyrics = document.getElementById('rawLyrics');
+        const btnStartSync = document.getElementById('btnStartSync');
+
+        const syncCurrentLine = document.getElementById('syncCurrentLine');
+        const syncNextLine = document.getElementById('syncNextLine');
+        const btnTapSync = document.getElementById('btnTapSync');
+        const btnResetSync = document.getElementById('btnResetSync');
+        const btnFinishSync = document.getElementById('btnFinishSync');
+
+        const globalOffsetSlider = document.getElementById('globalOffsetSlider');
+        const globalOffsetVal = document.getElementById('globalOffsetVal');
+        const btnSaveToFirebase = document.getElementById('btnSaveToFirebase');
+        const adjustList = document.getElementById('adjustList');
+
+        // Drawers
+        const btnOpenFontDrawer = document.getElementById('btnOpenFontDrawer');
+        const btnCloseFontDrawer = document.getElementById('btnCloseFontDrawer');
+        const drawerFont = document.getElementById('drawerFont');
+
+        const btnOpenColorDrawer = document.getElementById('btnOpenColorDrawer');
+        const btnCloseColorDrawer = document.getElementById('btnCloseColorDrawer');
+        const drawerColor = document.getElementById('drawerColor');
+
+        const drawerBackdrop = document.getElementById('drawerBackdrop');
+
+        // Style elements
+        const fontSizeSlider = document.getElementById('fontSizeSlider');
+        const fontSizeVal = document.getElementById('fontSizeVal');
+        const colorBase = document.getElementById('colorBase');
+        const colorActive = document.getElementById('colorActive');
+        const colorStroke = document.getElementById('colorStroke');
+
+        const exportResolution = document.getElementById('exportResolution');
+        const btnExport = document.getElementById('btnExport');
+        const btnCancelExport = document.getElementById('btnCancelExport');
+        const exportOverlay = document.getElementById('exportOverlay');
+        const exportTitleText = document.getElementById('exportTitleText');
+        const exportProgressText = document.getElementById('exportProgressText');
+
+        // New DOM variables for seek, float, and logo watermark (Poin 2, 3 & 5)
+        const btnToggleFloat = document.getElementById('btnToggleFloat');
+        const previewContainer = document.getElementById('previewContainer');
+        const btnSeekPrev10 = document.getElementById('btnSeekPrev10');
+        const btnSeekPrev5 = document.getElementById('btnSeekPrev5');
+        const btnSeekPrev1 = document.getElementById('btnSeekPrev1');
+        const btnSeekNext1 = document.getElementById('btnSeekNext1');
+        const btnSeekNext5 = document.getElementById('btnSeekNext5');
+        const btnSeekNext10 = document.getElementById('btnSeekNext10');
+
+        const btnSyncSeekPrev10 = document.getElementById('btnSyncSeekPrev10');
+        const btnSyncSeekPrev5 = document.getElementById('btnSyncSeekPrev5');
+        const btnSyncSeekPrev1 = document.getElementById('btnSyncSeekPrev1');
+        const btnSyncSeekNext1 = document.getElementById('btnSyncSeekNext1');
+        const btnSyncSeekNext5 = document.getElementById('btnSyncSeekNext5');
+        const btnSyncSeekNext10 = document.getElementById('btnSyncSeekNext10');
+
+        const btnResetAllSync = document.getElementById('btnResetAllSync');
+        const syncLyricsList = document.getElementById('syncLyricsList');
+        const btnTapSyncText = document.getElementById('btnTapSyncText');
+
+        const logoInput = document.getElementById('logoInput');
+        const logoPosition = document.getElementById('logoPosition');
+        const logoScaleSlider = document.getElementById('logoScaleSlider');
+        const btnToggleLoginSim = document.getElementById('btnToggleLoginSim');
+
+        // New DOM references for styling drawer and watermark (Poin 4 & 5)
+        const btnOpenLogoDrawer = document.getElementById('btnOpenLogoDrawer');
+        const drawerLogo = document.getElementById('drawerLogo');
+        const btnCloseLogoDrawer = document.getElementById('btnCloseLogoDrawer');
+        const fontUploader = document.getElementById('fontUploader');
+        const customFontsContainer = document.getElementById('customFontsContainer');
+
+        const btnFormatBold = document.getElementById('btnFormatBold');
+        const btnFormatItalic = document.getElementById('btnFormatItalic');
+        const btnCaseUpper = document.getElementById('btnCaseUpper');
+        const btnCaseLower = document.getElementById('btnCaseLower');
+        const btnCaseNormal = document.getElementById('btnCaseNormal');
+        const charSpacingSlider = document.getElementById('charSpacingSlider');
+        const charSpacingVal = document.getElementById('charSpacingVal');
+        const colorShadow = document.getElementById('colorShadow');
+        const shadowBlurSlider = document.getElementById('shadowBlurSlider');
+        const chkTextCurve = document.getElementById('chkTextCurve');
+        const curveDepthSlider = document.getElementById('curveDepthSlider');
+
+        // New DOM variables for Video Controls Overlay (Poin 1)
+        const videoControlsOverlay = document.getElementById('videoControlsOverlay');
+        const btnOverlayPlayPause = document.getElementById('btnOverlayPlayPause');
+        const overlayPlayIcon = document.getElementById('overlayPlayIcon');
+        const btnOverlayPrev = document.getElementById('btnOverlayPrev');
+        const btnOverlayNext = document.getElementById('btnOverlayNext');
+        const overlayCurrentTime = document.getElementById('overlayCurrentTime');
+        const overlayDuration = document.getElementById('overlayDuration');
+        const overlayProgressBar = document.getElementById('overlayProgressBar');
+
+        const ctx = mainCanvas.getContext('2d');
+        const miniCtx = miniExportCanvas.getContext('2d');
+
+        // 2. Global State
+        let videoURL = null;
+        let audioURL = null;
+        let imageObj = null;
+
+        let aspect916 = true; // true = 9:16 (TikTok), false = 16:9 (YouTube)
+        let playbackSpeed = 1.0;
+        let imageDuration = 15; // default 15s jika mengupload gambar
+
+        let lyrics = [];
+        let rawLines = [];
+        let currentSyncIndex = 0;
+        let globalOffset = 0;
+        let selectedFont = 'Poppins'; // Default font secara global
+        let currentSongTitle = ""; // Menyimpan judul lagu untuk penamaan file
+
+        // Poin 1: State sistem ketuk Mulai/Selesai baris yang sangat presisi
+        let isTappingLineStart = true;
+        let currentLineStartTime = 0;
+
+        // Poin 2: State logo kustom, watermark bawaan, dan simulasi login
+        let isLoggedIn = false;
+        let customLogoObj = null;
+        let customLogoScale = 1.0;
+
+        // Poin 5: State gaya tipografi baru
+        let textWeight = "bold";
+        let textStyle = "normal";
+        let textCaseMode = "normal"; // "upper", "lower", "normal"
+        let charSpacing = 0;
+        let textCurveEnabled = false;
+        let textCurveDepth = 30;
+
+        // Poin 6: State Web Audio API / Vocal Gate Analyzer
+        let audioCtxInstance = null;
+        let audioAnalyser = null;
+        let audioSourceNode = null;
+        let audioFreqDataArray = null;
+        let vocalGateThreshold = -48; // Ambang batas desibel kesunyian (gate threshold)
+
+        // Cache dimensi media untuk performa optimal (mencegah lag di seluler)
+        let mediaWidth = 0;
+        let mediaHeight = 0;
+
+        // Penampung waktu pemutaran untuk interpolasi pemutaran yang mulus
+        let lastMediaTime = 0;
+        let lastMediaUpdateTime = 0;
+
+        // Virtual Timer jika media tidak ada sama sekali
+        let isVirtualPlay = false;
+        let virtualTime = 0;
+        let virtualDuration = 60; // 1 menit default virtual
+        let lastTimeUpdate = Date.now();
+
+        // Poin 5: Inisialisasi Database IndexedDB untuk Font Kustom Permanen
+        const fontDBName = "KreaverseFontStore";
+        let fontDB = null;
+
+        function initFontDB() {
+            return new Promise((resolve) => {
+                const request = indexedDB.open(fontDBName, 1);
+                request.onupgradeneeded = (e) => {
+                    const db = e.target.result;
+                    db.createObjectStore("custom_fonts", { keyPath: "name" });
+                };
+                request.onsuccess = (e) => {
+                    fontDB = e.target.result;
+                    loadCustomFontsFromDB();
+                    resolve();
+                };
+            });
+        }
+
+        async function saveFontToDB(name, dataBase64) {
+            if (!fontDB) return;
+            const transaction = fontDB.transaction(["custom_fonts"], "readwrite");
+            const store = transaction.objectStore("custom_fonts");
+            store.put({ name: name, data: dataBase64 });
+            transaction.oncomplete = () => {
+                loadCustomFontsFromDB();
+            };
+        }
+
+        function loadCustomFontsFromDB() {
+            if (!fontDB || !customFontsContainer) return;
+            const transaction = fontDB.transaction(["custom_fonts"], "readonly");
+            const store = transaction.objectStore("custom_fonts");
+            const request = store.getAll();
+
+            request.onsuccess = () => {
+                const fonts = request.result;
+                if (fonts.length === 0) {
+                    customFontsContainer.innerHTML = '<p class="text-[8px] text-zinc-600 text-center py-2">Belum ada font kustom.</p>';
+                    return;
+                }
+                customFontsContainer.innerHTML = "";
+                fonts.forEach(f => {
+                    // Daftarkan font ke CSS agar bisa dibaca Canvas
+                    const fontStyleNode = document.createElement('style');
+                    fontStyleNode.textContent = `@font-face { font-family: "${f.name}"; src: url("${f.data}"); }`;
+                    document.head.appendChild(fontStyleNode);
+
+                    // Buat elemen baris manajemen font
+                    const row = document.createElement('div');
+                    row.className = "flex justify-between items-center bg-[#1c1c1f] p-1.5 rounded-lg border border-[#2d2d34]";
+                    row.innerHTML = `
+                        <span class="font-bold text-zinc-300 text-[10px] truncate max-w-[100px]">${f.name}</span>
+                        <div class="flex gap-1">
+                            <button class="btn-use-custom bg-cyan-500/10 text-cyan-400 font-bold px-1.5 py-0.5 rounded border border-cyan-500/20 hover:bg-cyan-500/25 active:scale-95 text-[9px]">Gunakan</button>
+                            <button class="btn-del-custom bg-red-500/10 text-red-400 font-bold px-1.5 py-0.5 rounded border border-red-500/20 hover:bg-red-500/25 active:scale-95 text-[9px]">Hapus</button>
+                        </div>
+                    `;
+
+                    row.querySelector('.btn-use-custom').addEventListener('click', () => {
+                        selectedFont = f.name;
+                        alert(`Mengaktifkan font kustom: ${f.name}`);
+                    });
+
+                    row.querySelector('.btn-del-custom').addEventListener('click', () => {
+                        if (confirm(`Hapus font kustom ${f.name}?`)) {
+                            deleteFontFromDB(f.name);
+                        }
+                    });
+
+                    customFontsContainer.appendChild(row);
+                });
+            };
+        }
+
+        function deleteFontFromDB(name) {
+            if (!fontDB) return;
+            const transaction = fontDB.transaction(["custom_fonts"], "readwrite");
+            const store = transaction.objectStore("custom_fonts");
+            store.delete(name);
+            transaction.oncomplete = () => {
+                loadCustomFontsFromDB();
+            };
+        }
+
+        if (fontUploader) {
+            fontUploader.addEventListener('change', (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(event) {
+                        const fontName = file.name.split('.')[0].replace(/[^a-zA-Z0-9]/g, "");
+                        saveFontToDB(fontName, event.target.result);
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+        }
+
+        // Panggil inisialisasi database saat startup
+        initFontDB();
+
+        // 3. Setup Resolusi Canvas & Pratinjau (Aman dari Nilai Kosong)
+        function setCanvasDimensions() {
+            const res = exportResolution ? exportResolution.value : "720";
+            if (aspect916) {
+                // TikTok 9:16
+                mainCanvas.width = res === "1080" ? 1080 : 720;
+                mainCanvas.height = res === "1080" ? 1920 : 1280;
+                miniExportCanvas.width = 180;
+                miniExportCanvas.height = 320;
+                if (safeZoneGuide) {
+                    safeZoneGuide.style.bottom = "40px";
+                    safeZoneGuide.textContent = "Batas Aman Lirik (TikTok/Reels)";
+                }
+            } else {
+                // YouTube 16:9
+                mainCanvas.width = res === "1080" ? 1920 : 1280;
+                mainCanvas.height = res === "1080" ? 1080 : 720;
+                miniExportCanvas.width = 320;
+                miniExportCanvas.height = 180;
+                if (safeZoneGuide) {
+                    safeZoneGuide.style.bottom = "12px";
+                    safeZoneGuide.textContent = "Batas Aman Lirik (YouTube)";
+                }
+            }
+        }
+
+        if (btnRatioToggle) {
+            btnRatioToggle.addEventListener('click', () => {
+                aspect916 = !aspect916;
+                if (aspect916) {
+                    btnRatioToggle.innerHTML = '<i class="fa-solid fa-mobile-screen"></i> 9:16 (TikTok)';
+                } else {
+                    btnRatioToggle.innerHTML = '<i class="fa-solid fa-desktop"></i> 16:9 (YouTube)';
+                }
+                setCanvasDimensions();
+            });
+        }
+
+        if (exportResolution) {
+            exportResolution.addEventListener('change', setCanvasDimensions);
+        }
+        setCanvasDimensions();
+// 4. Impor Media Lokal
+        if (videoInput) {
+            videoInput.addEventListener('change', (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    imageObj = null; // hapus gambar jika ganti video
+                    mediaWidth = 0;
+                    mediaHeight = 0;
+                    if (imageInput) imageInput.value = "";
+                    if (imageDurationContainer) imageDurationContainer.classList.add('hidden');
+
+                    if (videoURL) URL.revokeObjectURL(videoURL);
+                    videoURL = URL.createObjectURL(file);
+                    hiddenVideo.src = videoURL;
+                    hiddenVideo.load();
+                    
+                    if (trackMediaName) trackMediaName.textContent = file.name;
+                    updateMediaStatus();
+                }
+            });
+        }
+
+        hiddenVideo.addEventListener('loadedmetadata', () => {
+            mediaWidth = hiddenVideo.videoWidth;
+            mediaHeight = hiddenVideo.videoHeight;
+        });
+
+        if (imageInput) {
+            imageInput.addEventListener('change', (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    videoURL = null; // hapus video jika ganti gambar
+                    mediaWidth = 0;
+                    mediaHeight = 0;
+                    if (videoInput) videoInput.value = "";
+                    hiddenVideo.removeAttribute('src');
+                    hiddenVideo.load();
+
+                    const reader = new FileReader();
+                    reader.onload = function(event) {
+                        imageObj = new Image();
+                        imageObj.onload = function() {
+                            mediaWidth = imageObj.naturalWidth;
+                            mediaHeight = imageObj.naturalHeight;
+                            if (imageDurationContainer) imageDurationContainer.classList.remove('hidden');
+                            if (trackMediaName) trackMediaName.textContent = file.name;
+                            updateMediaStatus();
+                        };
+                        imageObj.src = event.target.result;
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+        }
+
+        if (audioInput) {
+            audioInput.addEventListener('change', (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    if (audioURL) URL.revokeObjectURL(audioURL);
+                    audioURL = URL.createObjectURL(file);
+                    hiddenAudio.src = audioURL;
+                    hiddenAudio.load();
+
+                    if (trackAudioName) trackAudioName.textContent = file.name;
+                    updateMediaStatus();
+                }
+            });
+        }
+
+        if (sliderImgDuration) {
+            sliderImgDuration.addEventListener('input', (e) => {
+                imageDuration = parseInt(e.target.value);
+                if (lblImgDuration) lblImgDuration.textContent = imageDuration + " Detik";
+                updateMediaStatus();
+            });
+        }
+
+        function updateMediaStatus() {
+            if (previewPlaceholder) {
+                previewPlaceholder.classList.add('opacity-0');
+                setTimeout(() => previewPlaceholder.classList.add('hidden'), 200);
+            }
+
+            let msg = "";
+            if (videoURL) msg += "📹 Video AI aktif ";
+            if (imageObj) msg += `🖼️ Gambar (${imageDuration}s) aktif `;
+            if (audioURL) msg += "🎵 Audio aktif";
+            
+            if (mediaStatus) {
+                mediaStatus.textContent = msg;
+                mediaStatus.classList.remove('hidden');
+            }
+        }
+
+        // Get Total Project Duration
+        function getDuration() {
+            if (audioURL && hiddenAudio.duration) {
+                return hiddenAudio.duration;
+            }
+            if (videoURL && hiddenVideo.duration) {
+                return hiddenVideo.duration;
+            }
+            if (imageObj) {
+                return imageDuration;
+            }
+            return virtualDuration;
+        }
+
+        // Interpolasi Waktu Halus (Menghilangkan gerakan sapuan warna karaoke yang tersendat/laggy)
+        function getCurrentTime() {
+            if (isVirtualPlay) return virtualTime;
+            
+            let baseTime = 0;
+            let isPaused = true;
+
+            if (audioURL) {
+                baseTime = hiddenAudio.currentTime;
+                isPaused = hiddenAudio.paused;
+            } else if (videoURL) {
+                baseTime = hiddenVideo.currentTime;
+                isPaused = hiddenVideo.paused;
+            } else {
+                return 0;
+            }
+
+            if (isPaused) {
+                return baseTime;
+            }
+
+            const now = performance.now();
+            if (baseTime !== lastMediaTime) {
+                lastMediaTime = baseTime;
+                lastMediaUpdateTime = now;
+            }
+
+            const elapsed = (now - lastMediaUpdateTime) / 1000 * playbackSpeed;
+            // Batasi kompensasi maksimal 0.15 detik demi menghindari lonjakan waktu tidak konsisten
+            return baseTime + Math.min(0.15, elapsed);
+        }
+
+        function setMediaTime(time) {
+            if (isVirtualPlay) {
+                virtualTime = time;
+            }
+            if (audioURL) hiddenAudio.currentTime = time;
+            if (videoURL) hiddenVideo.currentTime = time;
+        }
+
+        // Poin 6: Inisialisasi Web Audio API untuk deteksi desibel suara vokal
+        function initAudioAnalyser() {
+            if (audioCtxInstance) return;
+            try {
+                audioCtxInstance = new (window.AudioContext || window.webkitAudioContext)();
+                audioAnalyser = audioCtxInstance.createAnalyser();
+                audioAnalyser.fftSize = 256;
+                const bufferLength = audioAnalyser.frequencyBinCount;
+                audioFreqDataArray = new Uint8Array(bufferLength);
+                
+                let mediaTarget = null;
+                if (audioURL) {
+                    mediaTarget = hiddenAudio;
+                } else if (videoURL) {
+                    mediaTarget = hiddenVideo;
+                }
+                
+                if (mediaTarget) {
+                    audioSourceNode = audioCtxInstance.createMediaElementSource(mediaTarget);
+                    audioSourceNode.connect(audioAnalyser);
+                    audioAnalyser.connect(audioCtxInstance.destination);
+                }
+            } catch (err) {
+                console.warn("Gagal inisialisasi AudioContext (Menunggu interaksi pertama):", err);
+            }
+        }
+
+        // Mengambil tingkat desibel amplitudo vokal (Poin 6)
+        function getVocalDecibels() {
+            if (!audioAnalyser || !audioFreqDataArray) return -100;
+            audioAnalyser.getByteTimeDomainData(audioFreqDataArray);
+            let sum = 0;
+            for (let i = 0; i < audioFreqDataArray.length; i++) {
+                const normalized = (audioFreqDataArray[i] - 128) / 128;
+                sum += normalized * normalized;
+            }
+            const rms = Math.sqrt(sum / audioFreqDataArray.length);
+            return rms > 0 ? 20 * Math.log10(rms) : -100;
+        }
+
+        // Fitur Pemilih Geser Pemutaran / Seek Button (Poin 3)
+        if (btnSeekPrev10) btnSeekPrev10.addEventListener('click', () => setMediaTime(Math.max(0, getCurrentTime() - 10)));
+        if (btnSeekPrev5) btnSeekPrev5.addEventListener('click', () => setMediaTime(Math.max(0, getCurrentTime() - 5)));
+        if (btnSeekPrev1) btnSeekPrev1.addEventListener('click', () => setMediaTime(Math.max(0, getCurrentTime() - 1)));
+        if (btnSeekNext1) btnSeekNext1.addEventListener('click', () => setMediaTime(Math.min(getDuration(), getCurrentTime() + 1)));
+        if (btnSeekNext5) btnSeekNext5.addEventListener('click', () => setMediaTime(Math.min(getDuration(), getCurrentTime() + 5)));
+        if (btnSeekNext10) btnSeekNext10.addEventListener('click', () => setMediaTime(Math.min(getDuration(), getCurrentTime() + 10)));
+
+        // Seek listeners inside Sync Panel (Poin 3)
+        if (btnSyncSeekPrev10) btnSyncSeekPrev10.addEventListener('click', () => setMediaTime(Math.max(0, getCurrentTime() - 10)));
+        if (btnSyncSeekPrev5) btnSyncSeekPrev5.addEventListener('click', () => setMediaTime(Math.max(0, getCurrentTime() - 5)));
+        if (btnSyncSeekPrev1) btnSyncSeekPrev1.addEventListener('click', () => setMediaTime(Math.max(0, getCurrentTime() - 1)));
+        if (btnSyncSeekNext1) btnSyncSeekNext1.addEventListener('click', () => setMediaTime(Math.min(getDuration(), getCurrentTime() + 1)));
+        if (btnSyncSeekNext5) btnSyncSeekNext5.addEventListener('click', () => setMediaTime(Math.min(getDuration(), getCurrentTime() + 5)));
+        if (btnSyncSeekNext10) btnSyncSeekNext10.addEventListener('click', () => setMediaTime(Math.min(getDuration(), getCurrentTime() + 10)));
+
+        // Poin 1: Logika Overlay Kontrol Video (Single Tap & Auto-Hide 12 Detik)
+        let hideControlsTimeout = null;
+
+        function showVideoControls() {
+            if (!videoControlsOverlay) return;
+            videoControlsOverlay.classList.remove('pointer-events-none');
+            videoControlsOverlay.classList.add('opacity-100');
+            videoControlsOverlay.classList.remove('opacity-0');
+
+            // Reset timer sembunyikan otomatis
+            clearTimeout(hideControlsTimeout);
+            hideControlsTimeout = setTimeout(hideVideoControls, 12000); // 12 detik (Poin 1)
+        }
+
+        function hideVideoControls() {
+            if (!videoControlsOverlay) return;
+            videoControlsOverlay.classList.add('pointer-events-none');
+            videoControlsOverlay.classList.add('opacity-0');
+            videoControlsOverlay.classList.remove('opacity-100');
+        }
+
+        // Tampilkan saat area preview diklik sekali
+        if (previewContainer) {
+            previewContainer.addEventListener('click', (e) => {
+                // Pastikan klik bukan berasal dari tombol interaktif dalam overlay
+                if (e.target.closest('button') || e.target.closest('input')) return;
+                
+                if (videoControlsOverlay && videoControlsOverlay.classList.contains('opacity-0')) {
+                    showVideoControls();
+                } else {
+                    hideVideoControls();
+                }
+            });
+        }
+
+        // Sinkronisasi kontrol overlay dengan kontrol player utama
+        if (btnOverlayPlayPause) {
+            btnOverlayPlayPause.addEventListener('click', (e) => {
+                e.stopPropagation();
+                togglePlay();
+                showVideoControls(); // Segarkan timer
+            });
+        }
+        if (btnOverlayPrev) {
+            btnOverlayPrev.addEventListener('click', (e) => {
+                e.stopPropagation();
+                setMediaTime(Math.max(0, getCurrentTime() - 5));
+                showVideoControls();
+            });
+        }
+        if (btnOverlayNext) {
+            btnOverlayNext.addEventListener('click', (e) => {
+                e.stopPropagation();
+                setMediaTime(Math.min(getDuration(), getCurrentTime() + 5));
+                showVideoControls();
+            });
+        }
+        if (overlayProgressBar) {
+            overlayProgressBar.addEventListener('input', (e) => {
+                const targetTime = (parseFloat(e.target.value) / 100) * getDuration();
+                setMediaTime(targetTime);
+                showVideoControls();
+            });
+        }
+
+        // Fitur Pratinjau Video Melayang & Draggable (Poin 5)
+        let isFloating = false;
+        if (btnToggleFloat && previewContainer) {
+            btnToggleFloat.addEventListener('click', () => {
+                isFloating = !isFloating;
+                if (isFloating) {
+                    previewContainer.style.position = 'fixed';
+                    previewContainer.style.top = '80px';
+                    previewContainer.style.right = '20px';
+                    previewContainer.style.width = '200px';
+                    previewContainer.style.height = '355px';
+                    previewContainer.style.zIndex = '9999';
+                    previewContainer.style.cursor = 'move';
+                    previewContainer.classList.add('floating-preview');
+                    btnToggleFloat.innerHTML = '<i class="fa-solid fa-minimize"></i> Normal';
+                    makeDraggable(previewContainer);
+                } else {
+                    previewContainer.style.position = '';
+                    previewContainer.style.top = '';
+                    previewContainer.style.right = '';
+                    previewContainer.style.width = '';
+                    previewContainer.style.height = '';
+                    previewContainer.style.zIndex = '';
+                    previewContainer.style.cursor = '';
+                    previewContainer.classList.remove('floating-preview');
+                    btnToggleFloat.innerHTML = '<i class="fa-solid fa-up-right-and-down-left-from-center"></i> Melayang';
+                    previewContainer.onmousedown = null;
+                    previewContainer.ontouchstart = null;
+                }
+            });
+        }
+
+        function makeDraggable(el) {
+            let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+            el.ontouchstart = dragTouchStart;
+            el.onmousedown = dragMouseDown;
+
+            function dragMouseDown(e) {
+                e = e || window.event;
+                e.preventDefault();
+                pos3 = e.clientX;
+                pos4 = e.clientY;
+                document.onmouseup = closeDragElement;
+                document.onmousemove = elementDrag;
+            }
+
+            function dragTouchStart(e) {
+                pos3 = e.touches[0].clientX;
+                pos4 = e.touches[0].clientY;
+                document.ontouchend = closeDragElement;
+                document.ontouchmove = elementTouchDrag;
+            }
+
+            function elementDrag(e) {
+                e = e || window.event;
+                e.preventDefault();
+                pos1 = pos3 - e.clientX;
+                pos2 = pos4 - e.clientY;
+                pos3 = e.clientX;
+                pos4 = e.clientY;
+                el.style.top = (el.offsetTop - pos2) + "px";
+                el.style.left = (el.offsetLeft - pos1) + "px";
+            }
+
+            function elementTouchDrag(e) {
+                pos1 = pos3 - e.touches[0].clientX;
+                pos2 = pos4 - e.touches[0].clientY;
+                pos3 = e.touches[0].clientX;
+                pos4 = e.touches[0].clientY;
+                el.style.top = (el.offsetTop - pos2) + "px";
+                el.style.left = (el.offsetLeft - pos1) + "px";
+            }
+
+            function closeDragElement() {
+                document.onmouseup = null;
+                document.onmousemove = null;
+                document.ontouchend = null;
+                document.ontouchmove = null;
+            }
+        }
+
+        // Poin 2: Listener Uploader Logo Kustom, Skala, & Simulasi Login
+        if (logoInput) {
+            logoInput.addEventListener('change', (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(event) {
+                        customLogoObj = new Image();
+                        customLogoObj.onload = function() {
+                            alert("Logo kustom berhasil diunggah!");
+                        };
+                        customLogoObj.src = event.target.result;
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+        }
+
+        if (logoScaleSlider) {
+            logoScaleSlider.addEventListener('input', (e) => {
+                customLogoScale = parseFloat(e.target.value) / 100;
+            });
+        }
+
+        if (btnToggleLoginSim) {
+            btnToggleLoginSim.addEventListener('click', () => {
+                isLoggedIn = !isLoggedIn;
+                if (isLoggedIn) {
+                    btnToggleLoginSim.className = "text-[8px] bg-green-500/10 border border-green-500/30 text-green-400 font-bold px-2 py-0.5 rounded";
+                    btnToggleLoginSim.textContent = "Sudah Login (Logo Kustom)";
+                } else {
+                    btnToggleLoginSim.className = "text-[8px] bg-red-500/10 border border-red-500/30 text-red-400 font-bold px-2 py-0.5 rounded";
+                    btnToggleLoginSim.textContent = "Tamu (Watermark Default)";
+                }
+            });
+        }
+
+        // Speed Controller
+        document.querySelectorAll('.btn-speed').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                document.querySelectorAll('.btn-speed').forEach(b => {
+                    b.className = "btn-speed px-2 py-0.5 rounded bg-[#1f1f23] border border-[#2d2d34]";
+                });
+                btn.className = "btn-speed px-2 py-0.5 rounded bg-cyan-500/20 text-cyan-400 border border-cyan-500/30";
+                
+                playbackSpeed = parseFloat(btn.dataset.speed);
+                hiddenAudio.playbackRate = playbackSpeed;
+                hiddenVideo.playbackRate = playbackSpeed;
+            });
+        });
+
+        // Play/Pause Controller
+        function togglePlay() {
+            const playing = isPlaying();
+            if (playing) {
+                pauseAll();
+            } else {
+                playAll();
+            }
+        }
+
+        function isPlaying() {
+            if (isVirtualPlay) return true;
+            if (audioURL && !hiddenAudio.paused) return true;
+            if (videoURL && !hiddenVideo.paused) return true;
+            return false;
+        }
+
+        function playAll() {
+            // Aktifkan Audio Analyser saat lagu mulai diputar
+            initAudioAnalyser();
+            if (audioCtxInstance && audioCtxInstance.state === 'suspended') {
+                audioCtxInstance.resume();
+            }
+
+            // Jika tidak ada media, gunakan virtual timer
+            if (!videoURL && !audioURL && !imageObj) {
+                isVirtualPlay = true;
+                lastTimeUpdate = Date.now();
+            } else {
+                isVirtualPlay = false;
+                if (audioURL) hiddenAudio.play().catch(()=>{});
+                if (videoURL) hiddenVideo.play().catch(()=>{});
+            }
+            if (playIcon) playIcon.className = "fa-solid fa-pause text-xs";
+        }
+
+        function pauseAll() {
+            isVirtualPlay = false;
+            if (audioURL) hiddenAudio.pause();
+            if (videoURL) hiddenVideo.pause();
+            if (playIcon) playIcon.className = "fa-solid fa-play text-xs";
+        }
+
+        if (btnPlayPause) {
+            btnPlayPause.addEventListener('click', togglePlay);
+        }
+
+        // 5. Drawer Mechanics
+        function openDrawer(drawer) {
+            if (drawerBackdrop) drawerBackdrop.classList.remove('hidden');
+            if (drawer) {
+                drawer.classList.remove('drawer-inactive');
+                drawer.classList.add('drawer-active');
+            }
+        }
+
+        function closeDrawers() {
+            if (drawerBackdrop) drawerBackdrop.classList.add('hidden');
+            if (drawerFont) {
+                drawerFont.classList.add('drawer-inactive');
+                drawerFont.classList.remove('drawer-active');
+            }
+            if (drawerColor) {
+                drawerColor.classList.add('drawer-inactive');
+                drawerColor.classList.remove('drawer-active');
+            }
+            if (drawerLogo) {
+                drawerLogo.classList.add('drawer-inactive');
+                drawerLogo.classList.remove('drawer-active');
+            }
+        }
+
+        if (btnOpenFontDrawer) btnOpenFontDrawer.addEventListener('click', () => openDrawer(drawerFont));
+        if (btnOpenColorDrawer) btnOpenColorDrawer.addEventListener('click', () => openDrawer(drawerColor));
+        if (btnOpenLogoDrawer) btnOpenLogoDrawer.addEventListener('click', () => openDrawer(drawerLogo));
+        if (btnCloseFontDrawer) btnCloseFontDrawer.addEventListener('click', closeDrawers);
+        if (btnCloseColorDrawer) btnCloseColorDrawer.addEventListener('click', closeDrawers);
+        if (btnCloseLogoDrawer) btnCloseLogoDrawer.addEventListener('click', closeDrawers);
+        if (drawerBackdrop) drawerBackdrop.addEventListener('click', closeDrawers);
+
+        // Kustomisasi Font & Warna
+        document.querySelectorAll('.btn-font').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.btn-font').forEach(b => {
+                    b.className = "btn-font p-2 rounded-xl bg-[#1c1c1f] border border-[#2d2d34] text-zinc-300 text-xs font-semibold";
+                });
+                btn.className = "btn-font p-2 rounded-xl bg-[#1c1c1f] border border-cyan-500/40 text-cyan-400 text-xs font-semibold";
+                selectedFont = btn.dataset.font;
+            });
+        });
+
+        if (fontSizeSlider) {
+            fontSizeSlider.addEventListener('input', (e) => {
+                if (fontSizeVal) fontSizeVal.textContent = e.target.value + "px";
+            });
+        }
+
+        // Poin 5: Event Listener Baru Kustomisasi Tampilan Gaya Huruf Lirik
+        if (btnFormatBold) {
+            btnFormatBold.addEventListener('click', () => {
+                textWeight = textWeight === "bold" ? "normal" : "bold";
+                btnFormatBold.className = textWeight === "bold" ? "flex-1 bg-cyan-500/20 border border-cyan-500 text-cyan-400 font-bold p-1 rounded text-[10px]" : "flex-1 bg-[#1c1c1f] border border-[#2d2d34] text-zinc-300 font-bold p-1 rounded text-[10px]";
+            });
+        }
+        if (btnFormatItalic) {
+            btnFormatItalic.addEventListener('click', () => {
+                textStyle = textStyle === "italic" ? "normal" : "italic";
+                btnFormatItalic.className = textStyle === "italic" ? "flex-1 bg-cyan-500/20 border border-cyan-500 text-cyan-400 italic p-1 rounded text-[10px]" : "flex-1 bg-[#1c1c1f] border border-[#2d2d34] text-zinc-300 italic p-1 rounded text-[10px]";
+            });
+        }
+        if (btnCaseUpper) {
+            btnCaseUpper.addEventListener('click', () => { textCaseMode = "upper"; });
+        }
+        if (btnCaseLower) {
+            btnCaseLower.addEventListener('click', () => { textCaseMode = "lower"; });
+        }
+        if (btnCaseNormal) {
+            btnCaseNormal.addEventListener('click', () => { textCaseMode = "normal"; });
+        }
+        if (charSpacingSlider) {
+            charSpacingSlider.addEventListener('input', (e) => {
+                charSpacing = parseInt(e.target.value);
+                if (charSpacingVal) charSpacingVal.textContent = charSpacing + "px";
+            });
+        }
+        if (chkTextCurve) {
+            chkTextCurve.addEventListener('change', (e) => {
+                textCurveEnabled = e.target.checked;
+            });
+        }
+        if (curveDepthSlider) {
+            curveDepthSlider.addEventListener('input', (e) => {
+                textCurveDepth = parseInt(e.target.value);
+            });
+        }
+
+        // 6. Logika Tab Menu
+        function showPanel(panelId) {
+            if (panelInput) panelInput.classList.add('hidden');
+            if (panelSync) panelSync.classList.add('hidden');
+            if (panelAdjust) panelAdjust.classList.add('hidden');
+            
+            if (tabInput) tabInput.className = "flex-1 py-1 text-center text-[10px] font-bold border-b-2 border-transparent text-zinc-500 tab-transition";
+            if (tabSync) tabSync.className = "flex-1 py-1 text-center text-[10px] font-bold border-b-2 border-transparent text-zinc-500 tab-transition";
+            if (tabAdjust) tabAdjust.className = "flex-1 py-1 text-center text-[10px] font-bold border-b-2 border-transparent text-zinc-500 tab-transition";
+
+            const targetPanel = document.getElementById(panelId);
+            if (targetPanel) targetPanel.classList.remove('hidden');
+
+            if (panelId === 'panelInput' && tabInput) {
+                tabInput.className = "flex-1 py-1 text-center text-[10px] font-bold border-b-2 border-cyan-500 text-cyan-400 tab-transition";
+            } else if (panelId === 'panelSync' && tabSync) {
+                tabSync.className = "flex-1 py-1 text-center text-[10px] font-bold border-b-2 border-cyan-500 text-cyan-400 tab-transition";
+                renderSyncLyricsList();
+            } else if (panelId === 'panelAdjust' && tabAdjust) {
+                tabAdjust.className = "flex-1 py-1 text-center text-[10px] font-bold border-b-2 border-cyan-500 text-cyan-400 tab-transition";
+                renderAdjustList();
+            }
+        }
+
+        if (tabInput) tabInput.addEventListener('click', () => showPanel('panelInput'));
+        if (tabSync) tabSync.addEventListener('click', () => showPanel('panelSync'));
+        if (tabAdjust) tabAdjust.addEventListener('click', () => showPanel('panelAdjust'));
+
+        // 7. Proses Sinkronisasi Ketuk (Tap-to-Sync)
+        if (btnStartSync) {
+            btnStartSync.addEventListener('click', () => {
+                const text = rawLyrics ? rawLyrics.value.trim() : "";
+                if (!text) {
+                    alert("Silakan masukkan lirik polos terlebih dahulu!");
+                    return;
+                }
+                rawLines = text.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+                lyrics = [];
+                currentSyncIndex = 0;
+                isTappingLineStart = true;
+                if (btnTapSyncText) btnTapSyncText.textContent = "MULAI BARIS";
+
+                setMediaTime(0);
+                playAll();
+                updateSyncDisplay();
+                renderSyncLyricsList();
+                showPanel('panelSync');
+            });
+        }
+
+        function updateSyncDisplay() {
+            if (currentSyncIndex < rawLines.length) {
+                if (syncCurrentLine) {
+                    syncCurrentLine.textContent = rawLines[currentSyncIndex] + (isTappingLineStart ? " (Menunggu Mulai)" : " (Menunggu Selesai)");
+                }
+                if (syncNextLine) syncNextLine.textContent = rawLines[currentSyncIndex + 1] ? rawLines[currentSyncIndex + 1] : "---";
+            } else {
+                if (syncCurrentLine) syncCurrentLine.textContent = "Sinkronisasi selesai!";
+                if (syncNextLine) syncNextLine.textContent = "Silakan klik tombol Selesai.";
+            }
+        }
+
+        // Poin 2: Menampilkan seluruh baris lirik secara berurutan & interaktif
+        function renderSyncLyricsList() {
+            if (!syncLyricsList) return;
+            syncLyricsList.innerHTML = "";
+            rawLines.forEach((line, index) => {
+                const item = document.createElement('div');
+                item.className = "p-1.5 rounded transition-all flex justify-between items-center";
+                
+                let badge = "";
+                if (index < currentSyncIndex) {
+                    item.className += " bg-emerald-500/10 text-emerald-400 font-semibold";
+                    const savedLyr = lyrics[index];
+                    badge = `<span class="text-[8px] font-mono opacity-80">${savedLyr.start.toFixed(1)}s - ${savedLyr.end.toFixed(1)}s</span>`;
+                } else if (index === currentSyncIndex) {
+                    if (!isTappingLineStart) {
+                        item.className += " bg-red-500/10 text-red-400 font-bold border border-red-500/30 animate-pulse";
+                        badge = `<span class="text-[8px] uppercase tracking-wider">Menyanyi...</span>`;
+                    } else {
+                        item.className += " bg-cyan-500/10 text-cyan-400 font-bold border border-cyan-500/30";
+                        badge = `<span class="text-[8px] uppercase tracking-wider">Antre...</span>`;
+                    }
+                } else {
+                    item.className += " text-zinc-600 opacity-60";
+                    badge = `<span class="text-[8px] opacity-40">Belum</span>`;
+                }
+
+                item.innerHTML = `
+                    <span class="truncate max-w-[70%]">${index + 1}. ${line}</span>
+                    ${badge}
+                `;
+                syncLyricsList.appendChild(item);
+            });
+
+            const activeEl = syncLyricsList.children[currentSyncIndex];
+            if (activeEl) {
+                activeEl.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+            }
+        }
+
+        // Poin 1: Sistem ketuk Mulai & Selesai yang presisi agar lirik diam saat tidak bernyanyi (Poin 1)
+        if (btnTapSync) {
+            btnTapSync.addEventListener('click', () => {
+                if (currentSyncIndex >= rawLines.length) return;
+                const curTime = getCurrentTime();
+
+                if (isTappingLineStart) {
+                    currentLineStartTime = curTime;
+                    isTappingLineStart = false;
+                    if (btnTapSyncText) btnTapSyncText.textContent = "SELESAI BARIS";
+                    if (btnTapSync) {
+                        btnTapSync.classList.remove('from-cyan-500', 'to-blue-600');
+                        btnTapSync.classList.add('from-red-500', 'to-pink-600');
+                    }
+                } else {
+                    lyrics.push({
+                        text: rawLines[currentSyncIndex],
+                        start: currentLineStartTime,
+                        end: curTime
+                    });
+                    currentSyncIndex++;
+                    isTappingLineStart = true;
+                    if (btnTapSyncText) btnTapSyncText.textContent = "MULAI BARIS";
+                    if (btnTapSync) {
+                        btnTapSync.classList.remove('from-red-500', 'to-pink-600');
+                        btnTapSync.classList.add('from-cyan-500', 'to-blue-600');
+                    }
+                }
+                updateSyncDisplay();
+                renderSyncLyricsList();
+                updateTimelineTrack();
+            });
+        }
+
+        // Poin 4: Batal Ketuk (Undo) lirik terakhir beserta memundurkan waktu musik otomatis agar tidak perlu manual (Poin 4)
+        if (btnResetSync) {
+            btnResetSync.addEventListener('click', () => {
+                if (!isTappingLineStart) {
+                    // Batalkan pengetukan tombol Mulai Baris yang sedang aktif berjalan
+                    isTappingLineStart = true;
+                    if (btnTapSyncText) btnTapSyncText.textContent = "MULAI BARIS";
+                    if (btnTapSync) {
+                        btnTapSync.classList.remove('from-red-500', 'to-pink-600');
+                        btnTapSync.classList.add('from-cyan-500', 'to-blue-600');
+                    }
+                    // Mundurkan musik ke 1 detik sebelum ketukan mulai baris tadi (Poin 4)
+                    setMediaTime(Math.max(0, currentLineStartTime - 1.0));
+                } else if (lyrics.length > 0) {
+                    // Batalkan baris lirik yang sudah selesai disinkronkan sebelumnya
+                    const undoneLyric = lyrics.pop();
+                    currentSyncIndex--;
+                    isTappingLineStart = true;
+                    if (btnTapSyncText) btnTapSyncText.textContent = "MULAI BARIS";
+                    if (btnTapSync) {
+                        btnTapSync.classList.remove('from-red-500', 'to-pink-600');
+                        btnTapSync.classList.add('from-cyan-500', 'to-blue-600');
+                    }
+                    // Mundurkan waktu lagu otomatis ke waktu lirik yang dibatalkan agar bisa dicoba ulang (Poin 4)
+                    setMediaTime(Math.max(0, undoneLyric.start - 1.0));
+                }
+                updateSyncDisplay();
+                renderSyncLyricsList();
+                updateTimelineTrack();
+            });
+        }
+
+        if (btnResetAllSync) {
+            btnResetAllSync.addEventListener('click', () => {
+                if (confirm("Apakah Anda yakin ingin mereset seluruh sinkronisasi dari awal?")) {
+                    lyrics = [];
+                    currentSyncIndex = 0;
+                    isTappingLineStart = true;
+                    if (btnTapSyncText) btnTapSyncText.textContent = "MULAI BARIS";
+                    if (btnTapSync) {
+                        btnTapSync.classList.remove('from-red-500', 'to-pink-600');
+                        btnTapSync.classList.add('from-cyan-500', 'to-blue-600');
+                    }
+                    setMediaTime(0);
+                    playAll();
+                    updateSyncDisplay();
+                    renderSyncLyricsList();
+                    updateTimelineTrack();
+                }
+            });
+        }
+
+        if (btnFinishSync) {
+            btnFinishSync.addEventListener('click', () => {
+                pauseAll();
+                showPanel('panelAdjust');
+            });
+        }
+// Sync visual blocks inside timeline
+        function updateTimelineTrack() {
+            if (!trackLyrics) return;
+            if (lyrics.length > 0) {
+                if (trackLyricsPlaceholder) trackLyricsPlaceholder.classList.add('hidden');
+                
+                // bersihkan lirik lama kecuali icon
+                const oldBlocks = trackLyrics.querySelectorAll('.lyric-block');
+                oldBlocks.forEach(b => b.remove());
+
+                lyrics.forEach((lyric) => {
+                    const block = document.createElement('div');
+                    block.className = "lyric-block h-3 bg-cyan-500/30 border border-cyan-400/50 rounded text-[6px] px-1 text-cyan-300 truncate max-w-[50px] inline-block";
+                    block.textContent = lyric.text;
+                    trackLyrics.appendChild(block);
+                });
+            } else {
+                if (trackLyricsPlaceholder) trackLyricsPlaceholder.classList.remove('hidden');
+                const oldBlocks = trackLyrics.querySelectorAll('.lyric-block');
+                oldBlocks.forEach(b => b.remove());
+            }
+        }
+
+        // 8. Koreksi Detail & Slider Global
+        if (globalOffsetSlider) {
+            globalOffsetSlider.addEventListener('input', (e) => {
+                globalOffset = parseFloat(e.target.value);
+                if (globalOffsetVal) globalOffsetVal.textContent = (globalOffset >= 0 ? "+" : "") + globalOffset.toFixed(1) + "s";
+            });
+        }
+
+        function renderAdjustList() {
+            if (!adjustList) return;
+            adjustList.innerHTML = "";
+            if (lyrics.length === 0) {
+                adjustList.innerHTML = '<p class="text-center text-[9px] text-zinc-500 py-3">Belum ada lirik yang tersinkron.</p>';
+                return;
+            }
+
+            lyrics.forEach((lyric, index) => {
+                const item = document.createElement('div');
+                item.className = "flex flex-col p-2 bg-zinc-900 border border-[#1f1f23] rounded-lg text-[10px] gap-1.5";
+                
+                const headerRow = document.createElement('div');
+                headerRow.className = "flex justify-between items-center border-b border-[#1f1f23] pb-1";
+                headerRow.innerHTML = `
+                    <span class="font-bold text-zinc-200 truncate max-w-[150px]">${index + 1}. ${lyric.text}</span>
+                    <button class="px-1.5 py-0.5 bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 rounded hover:bg-cyan-500/15 active:scale-90 text-[8px] flex items-center gap-1">
+                        <i class="fa-solid fa-play"></i> Play
+                    </button>
+                `;
+                
+                headerRow.querySelector('button').addEventListener('click', () => {
+                    const seekTime = Math.max(0, lyric.start - 1.5);
+                    setMediaTime(seekTime);
+                    playAll();
+                });
+
+                const timesRow = document.createElement('div');
+                timesRow.className = "flex justify-between items-center text-[9px] gap-2";
+
+                // Start Time Adjuster
+                const startContainer = document.createElement('div');
+                startContainer.className = "flex items-center gap-1 bg-[#1c1c1f] p-1 rounded border border-[#2d2d34]/60";
+                
+                const startLabel = document.createElement('span');
+                startLabel.className = "text-zinc-500 font-mono";
+                startLabel.textContent = `Mulai: ${lyric.start.toFixed(1)}s`;
+
+                const btnStartMinus = document.createElement('button');
+                btnStartMinus.className = "px-1 bg-[#121214] border border-[#2d2d34] text-cyan-400 rounded hover:bg-[#232327] active:scale-90 font-bold";
+                btnStartMinus.textContent = "-";
+                btnStartMinus.addEventListener('click', () => {
+                    lyric.start = Math.max(0, lyric.start - 0.1);
+                    startLabel.textContent = `Mulai: ${lyric.start.toFixed(1)}s`;
+                });
+
+                const btnStartPlus = document.createElement('button');
+                btnStartPlus.className = "px-1 bg-[#121214] border border-[#2d2d34] text-cyan-400 rounded hover:bg-[#232327] active:scale-90 font-bold";
+                btnStartPlus.textContent = "+";
+                btnStartPlus.addEventListener('click', () => {
+                    lyric.start = Math.min(lyric.end - 0.1, lyric.start + 0.1);
+                    startLabel.textContent = `Mulai: ${lyric.start.toFixed(1)}s`;
+                });
+
+                startContainer.appendChild(btnStartMinus);
+                startContainer.appendChild(startLabel);
+                startContainer.appendChild(btnStartPlus);
+
+                // End Time Adjuster
+                const endContainer = document.createElement('div');
+                endContainer.className = "flex items-center gap-1 bg-[#1c1c1f] p-1 rounded border border-[#2d2d34]/60";
+                
+                const endLabel = document.createElement('span');
+                endLabel.className = "text-zinc-500 font-mono";
+                endLabel.textContent = `Selesai: ${lyric.end.toFixed(1)}s`;
+
+                const btnEndMinus = document.createElement('button');
+                btnEndMinus.className = "px-1 bg-[#121214] border border-[#2d2d34] text-cyan-400 rounded hover:bg-[#232327] active:scale-90 font-bold";
+                btnEndMinus.textContent = "-";
+                btnEndMinus.addEventListener('click', () => {
+                    lyric.end = Math.max(lyric.start + 0.1, lyric.end - 0.1);
+                    endLabel.textContent = `Selesai: ${lyric.end.toFixed(1)}s`;
+                });
+
+                const btnEndPlus = document.createElement('button');
+                btnEndPlus.className = "px-1 bg-[#121214] border border-[#2d2d34] text-cyan-400 rounded hover:bg-[#232327] active:scale-90 font-bold";
+                btnEndPlus.textContent = "+";
+                btnEndPlus.addEventListener('click', () => {
+                    lyric.end = lyric.end + 0.1;
+                    endLabel.textContent = `Selesai: ${lyric.end.toFixed(1)}s`;
+                });
+
+                endContainer.appendChild(btnEndMinus);
+                endContainer.appendChild(endLabel);
+                endContainer.appendChild(btnEndPlus);
+
+                timesRow.appendChild(startContainer);
+                timesRow.appendChild(endContainer);
+
+                item.appendChild(headerRow);
+                item.appendChild(timesRow);
+                adjustList.appendChild(item);
+            });
+        }
+
+        // 9. Core Lyric Rendering (Menambahkan Curve, Spacing, Format Bold/Italic, Case, & Shadow)
+        function drawLyricLine(canvasCtx, text, y, isActive, progress, targetCanvas, opacityVal) {
+            if (!text) return;
+
+            // Poin 5: Mengubah format huruf kapital/kecil sesuai pilihan menu
+            let processedText = text;
+            if (textCaseMode === "upper") processedText = text.toUpperCase();
+            else if (textCaseMode === "lower") processedText = text.toLowerCase();
+
+            canvasCtx.save();
+            canvasCtx.globalAlpha = opacityVal; // Transisi Fade-In / Fade-Out (Poin 1)
+
+            const sizeMultiplier = targetCanvas.width / 360; 
+            const size = (fontSizeSlider ? parseFloat(fontSizeSlider.value) : 22) * sizeMultiplier;
+            
+            // Poin 5: Set tebal dan miring secara dinamis
+            canvasCtx.font = `${textStyle} ${textWeight} ${size}px "${selectedFont}"`;
+            canvasCtx.textAlign = 'center';
+            canvasCtx.textBaseline = 'middle';
+            
+            const x = targetCanvas.width / 2;
+            const strokeWidth = size * 0.18; 
+            
+            const strokeVal = colorStroke ? colorStroke.value : "#0000ff";
+            const baseVal = colorBase ? colorBase.value : "#ffffff";
+            const activeVal = colorActive ? colorActive.value : "#ffff00";
+
+            // Poin 5: Menggambar Bayangan Profesional (Shadow)
+            if (colorShadow) {
+                canvasCtx.shadowColor = colorShadow.value;
+                canvasCtx.shadowBlur = (shadowBlurSlider ? parseInt(shadowBlurSlider.value) : 4) * sizeMultiplier;
+                canvasCtx.shadowOffsetX = 2 * sizeMultiplier;
+                canvasCtx.shadowOffsetY = 2 * sizeMultiplier;
+            }
+
+            // Fungsi Pembantu Menggambar Karakter demi Karakter dengan dukungan Spasi & Kurva Melengkung
+            function renderStyledText(fillColor, strokeColor, limitProgress) {
+                canvasCtx.save();
+                
+                // Jika lirik melengkung diaktifkan (Poin 5 Curve)
+                if (textCurveEnabled) {
+                    const radius = (targetCanvas.width * 1.5) / (textCurveDepth / 30);
+                    const characters = processedText.split("");
+                    let currentAngle = - (characters.length * charSpacing * 0.05) / radius;
+                    
+                    characters.forEach((char, index) => {
+                        const charProgress = index / characters.length;
+                        if (limitProgress !== undefined && charProgress > limitProgress) return;
+
+                        canvasCtx.save();
+                        // Hitung posisi sudut kurva
+                        const cx = x + radius * Math.sin(currentAngle);
+                        const cy = y - radius * (1 - Math.cos(currentAngle));
+                        
+                        canvasCtx.translate(cx, cy);
+                        canvasCtx.rotate(currentAngle);
+                        
+                        // Garis Tepi
+                        if (strokeColor) {
+                            canvasCtx.strokeStyle = strokeColor;
+                            canvasCtx.lineWidth = strokeWidth;
+                            canvasCtx.lineJoin = 'round';
+                            canvasCtx.strokeText(char, 0, 0);
+                        }
+                        // Warna Isi
+                        if (fillColor) {
+                            canvasCtx.fillStyle = fillColor;
+                            canvasCtx.fillText(char, 0, 0);
+                        }
+                        canvasCtx.restore();
+                        currentAngle += (size * 0.4 + charSpacing) / radius;
+                    });
+                } else {
+                    // Gambar lirik lurus dengan dukungan kustom spasi huruf (Letter Spacing)
+                    const characters = processedText.split("");
+                    const totalWidth = characters.reduce((sum, char) => sum + canvasCtx.measureText(char).width + charSpacing, 0);
+                    let currentX = x - (totalWidth / 2);
+
+                    characters.forEach((char, index) => {
+                        const charProgress = index / characters.length;
+                        if (limitProgress !== undefined && charProgress > limitProgress) return;
+
+                        const charWidth = canvasCtx.measureText(char).width;
+                        const drawX = currentX + (charWidth / 2);
+
+                        // Garis Tepi
+                        if (strokeColor) {
+                            canvasCtx.strokeStyle = strokeColor;
+                            canvasCtx.lineWidth = strokeWidth;
+                            canvasCtx.lineJoin = 'round';
+                            canvasCtx.strokeText(char, drawX, y);
+                        }
+                        // Warna Isi
+                        if (fillColor) {
+                            canvasCtx.fillStyle = fillColor;
+                            canvasCtx.fillText(char, drawX, y);
+                        }
+                        currentX += charWidth + charSpacing;
+                    });
+                }
+                canvasCtx.restore();
+            }
+
+            // Render Warna Dasar
+            renderStyledText(baseVal, strokeVal);
+
+            // Render Warna Sapuan Aktif Berdasarkan Progress Karaoke
+            if (isActive && progress > 0) {
+                renderStyledText(activeVal, strokeVal, progress);
+            }
+
+            canvasCtx.restore();
+        }
+
+        // Render Lirik yang disempurnakan dengan Sistem Transisi Fade (Poin 1)
+        function renderLyricsOnCanvas(canvasCtx, targetCanvas, currentTime) {
+            if (lyrics.length === 0) return;
+
+            const curTime = currentTime + globalOffset;
+            
+            // Poin 1: Cari lirik aktif saat ini berdasarkan rentang waktu start & end
+            let activeIndex = -1;
+            for (let i = 0; i < lyrics.length; i++) {
+                if (curTime >= lyrics[i].start && curTime <= lyrics[i].end) {
+                    activeIndex = i;
+                    break;
+                }
+            }
+
+            // Jika tidak berada di rentang lirik aktif mana pun, cari lirik terdekat yang sudah lewat
+            if (activeIndex === -1) {
+                for (let i = lyrics.length - 1; i >= 0; i--) {
+                    if (curTime > lyrics[i].end) {
+                        activeIndex = i;
+                        break;
+                    }
+                }
+            }
+
+            let line1Text = "";
+            let line2Text = "";
+            let line1Progress = 0;
+            let line2Progress = 0;
+            let line1Active = false;
+            let line2Active = false;
+
+            // Poin 1: Logika hitung nilai opacity pemudaran (Fade-In & Fade-Out)
+            let opacityLine1 = 0;
+            let opacityLine2 = 0;
+
+            if (activeIndex === -1) {
+                // Intro Musik (Masih Hening) - Lirik belum waktunya muncul (Fading In lirik pertama)
+                const nextLyr = lyrics[0];
+                if (nextLyr) {
+                    line1Text = nextLyr.text;
+                    const diff = nextLyr.start - curTime;
+                    if (diff <= 1.5 && diff >= 0) {
+                        opacityLine1 = (1.5 - diff) / 1.5;
+                    }
+                }
+                line2Text = lyrics[1] ? lyrics[1].text : "";
+            } else {
+                const isOdd = (activeIndex % 2 === 0);
+
+                if (isOdd) {
+                    line1Text = lyrics[activeIndex].text;
+                    line2Text = lyrics[activeIndex + 1] ? lyrics[activeIndex + 1].text : "";
+                    line1Active = true;
+                    
+                    const start = lyrics[activeIndex].start;
+                    const end = lyrics[activeIndex].end;
+                    
+                    // Poin 6: Gerbang Deteksi Amplitudo Vokal
+                    const vocalDB = getVocalDecibels();
+                    if (vocalDB < vocalGateThreshold && curTime > start && curTime < end) {
+                        // Vokal hening/penyanyi berhenti: BEKUKAN pergerakan sapuan (Poin 6)
+                        if (lyrics[activeIndex].lastProgress === undefined) {
+                            lyrics[activeIndex].lastProgress = 0;
+                        }
+                        line1Progress = lyrics[activeIndex].lastProgress;
+                    } else {
+                        // Penyanyi sedang melantunkan vokal: Sapuan berjalan normal
+                        line1Progress = Math.min(1, Math.max(0, (curTime - start) / (end - start)));
+                        lyrics[activeIndex].lastProgress = line1Progress;
+                    }
+
+                    // Opacity baris 1 (Fading Out saat selesai)
+                    const fadeOutDiff = curTime - end;
+                    if (fadeOutDiff >= 0 && fadeOutDiff <= 1.0) {
+                        opacityLine1 = 1.0 - fadeOutDiff; // Memudar hilang dalam 1 detik
+                    } else if (fadeOutDiff > 1.0) {
+                        opacityLine1 = 0;
+                    } else {
+                        opacityLine1 = 1.0; // Baris aktif menyala penuh
+                    }
+
+                    // Opacity baris 2 (Fading In 1.5s sebelum baris kedua mulai bernyanyi)
+                    const nextLine = lyrics[activeIndex + 1];
+                    if (nextLine) {
+                        const fadeInDiff = nextLine.start - curTime;
+                        if (fadeInDiff <= 1.5 && fadeInDiff >= 0) {
+                            opacityLine2 = (1.5 - fadeInDiff) / 1.5;
+                        } else if (fadeInDiff < 0) {
+                            opacityLine2 = 1.0;
+                        }
+                    }
+                } else {
+                    line1Text = lyrics[activeIndex + 1] ? lyrics[activeIndex + 1].text : "";
+                    line2Text = lyrics[activeIndex].text;
+                    line2Active = true;
+
+                    const start = lyrics[activeIndex].start;
+                    const end = lyrics[activeIndex].end;
+                    
+                    // Poin 6: Deteksi Keheningan baris genap
+                    const vocalDB = getVocalDecibels();
+                    if (vocalDB < vocalGateThreshold && curTime > start && curTime < end) {
+                        if (lyrics[activeIndex].lastProgress === undefined) {
+                            lyrics[activeIndex].lastProgress = 0;
+                        }
+                        line2Progress = lyrics[activeIndex].lastProgress;
+                    } else {
+                        line2Progress = Math.min(1, Math.max(0, (curTime - start) / (end - start)));
+                        lyrics[activeIndex].lastProgress = line2Progress;
+                    }
+
+                    // Opacity baris 2 (Fading Out)
+                    const fadeOutDiff = curTime - end;
+                    if (fadeOutDiff >= 0 && fadeOutDiff <= 1.0) {
+                        opacityLine2 = 1.0 - fadeOutDiff;
+                    } else if (fadeOutDiff > 1.0) {
+                        opacityLine2 = 0;
+                    } else {
+                        opacityLine2 = 1.0;
+                    }
+
+                    // Opacity baris 1 (Fading In)
+                    const nextLine = lyrics[activeIndex + 1];
+                    if (nextLine) {
+                        const fadeInDiff = nextLine.start - curTime;
+                        if (fadeInDiff <= 1.5 && fadeInDiff >= 0) {
+                            opacityLine1 = (1.5 - fadeInDiff) / 1.5;
+                        } else if (fadeInDiff < 0) {
+                            opacityLine1 = 1.0;
+                        }
+                    }
+                }
+            }
+
+            let y1, y2;
+            if (aspect916) {
+                y1 = targetCanvas.height * 0.70;
+                y2 = targetCanvas.height * 0.78;
+            } else {
+                y1 = targetCanvas.height * 0.80;
+                y2 = targetCanvas.height * 0.88;
+            }
+
+            drawLyricLine(canvasCtx, line1Text, y1, line1Active, line1Progress, targetCanvas, opacityLine1);
+            drawLyricLine(canvasCtx, line2Text, y2, line2Active, line2Progress, targetCanvas, opacityLine2);
+        }
+
+        // Poin 2 & Poin 3: Menggambar logo/watermark dengan efek kilau 11 detik & 5 pilihan posisi kustom (Kiri Atas, Kanan Atas, Kiri Bawah, Kanan Bawah, Tengah Bawah)
+        function drawWatermark(canvasCtx, targetCanvas) {
+            canvasCtx.save();
+            const sizeMultiplier = targetCanvas.width / 360;
+            
+            // 5 Pilihan Posisi dengan margin pengaman 5% agar tidak keluar layar HP
+            const marginX = targetCanvas.width * 0.05;
+            const marginY = targetCanvas.height * 0.05;
+            const posType = logoPosition ? logoPosition.value : "top-right";
+            
+            let width = 0;
+            let height = 0;
+            
+            let isLogoLoaded = isLoggedIn && customLogoObj;
+            if (isLogoLoaded) {
+                width = customLogoObj.width * 0.1 * sizeMultiplier * customLogoScale;
+                height = customLogoObj.height * 0.1 * sizeMultiplier * customLogoScale;
+            } else {
+                canvasCtx.font = `bold ${10 * sizeMultiplier}px "Poppins"`;
+                width = canvasCtx.measureText("KREAVERSE AI").width;
+                height = 10 * sizeMultiplier;
+            }
+            
+            let x = 0;
+            let y = 0;
+            
+            if (posType === "top-left") {
+                x = marginX;
+                y = marginY;
+            } else if (posType === "top-right") {
+                x = targetCanvas.width - marginX - width;
+                y = marginY;
+            } else if (posType === "bottom-left") {
+                x = marginX;
+                y = targetCanvas.height - marginY - height;
+            } else if (posType === "bottom-right") {
+                x = targetCanvas.width - marginX - width;
+                y = targetCanvas.height - marginY - height;
+            } else if (posType === "bottom-center") {
+                x = (targetCanvas.width - width) / 2;
+                y = targetCanvas.height - marginY - height;
+            }
+
+            // Poin 3: Modulasi Siklus 55 Detik (50 detik Tampil Efek Keren, 5 detik transisi memudar hilang-muncul)
+            const globalTimeSec = performance.now() / 1000;
+            const cycleTime = globalTimeSec % 55;
+            let logoOpacity = 1.0;
+            let scaleMultiplier = 1.0;
+
+            if (cycleTime >= 50) {
+                // Rentang 5 Detik Terakhir: Animasi memudar hilangkan dan munculkan logo kustom (Poin 3)
+                const fadeProgress = (cycleTime - 50) / 5; // 0.0 ke 1.0
+                logoOpacity = Math.abs(Math.sin(fadeProgress * Math.PI)); // Sine wave opacity (1 -> 0 -> 1)
+                scaleMultiplier = 1.0 - 0.25 * Math.sin(fadeProgress * Math.PI); // Skala mengecil & membesar halus
+            }
+
+            canvasCtx.globalAlpha = logoOpacity;
+            
+            // Terapkan skala efek transisi melingkar tengah logo
+            canvasCtx.translate(x + width / 2, y + height / 2);
+            canvasCtx.scale(scaleMultiplier, scaleMultiplier);
+            canvasCtx.translate(- (x + width / 2), - (y + height / 2));
+            
+            // Menggambar piksel-piksel terisolasi dengan Masking agar kilau TIDAK KOTAK (Poin 3)
+            if (isLogoLoaded) {
+                const offscreenCanvas = document.createElement('canvas');
+                offscreenCanvas.width = width;
+                offscreenCanvas.height = height;
+                const offscreenCtx = offscreenCanvas.getContext('2d');
+                
+                // Gambar dasar logo
+                offscreenCtx.drawImage(customLogoObj, 0, 0, width, height);
+                
+                // Sapuan kilau per 10 detik di dalam 50 detik masa tampil
+                if (cycleTime < 50) {
+                    const shineCycle = globalTimeSec % 10;
+                    if (shineCycle < 2) { // Kilau berjalan 2 detik pertama tiap siklus 10 detik
+                        const progress = shineCycle / 2;
+                        offscreenCtx.save();
+                        offscreenCtx.globalCompositeOperation = "source-atop"; // Masking agar kilau hanya pada piksel logo
+                        
+                        const shineGrad = offscreenCtx.createLinearGradient(
+                            -width + (progress * width * 2), 0,
+                            (progress * width * 2), 0
+                        );
+                        shineGrad.addColorStop(0, "rgba(255,255,255,0)");
+                        shineGrad.addColorStop(0.5, "rgba(255,255,255,0.75)");
+                        shineGrad.addColorStop(1, "rgba(255,255,255,0)");
+                        
+                        offscreenCtx.fillStyle = shineGrad;
+                        offscreenCtx.fillRect(0, 0, width, height);
+                        offscreenCtx.restore();
+                    }
+                }
+                
+                canvasCtx.drawImage(offscreenCanvas, x, y);
+            } else {
+                // Masking kilau untuk Teks Watermark bawaan
+                const offscreenCanvas = document.createElement('canvas');
+                offscreenCanvas.width = width * 1.5;
+                offscreenCanvas.height = height * 2;
+                const offscreenCtx = offscreenCanvas.getContext('2d');
+                
+                offscreenCtx.font = `bold ${10 * sizeMultiplier}px "Poppins"`;
+                offscreenCtx.fillStyle = "rgba(255, 255, 255, 0.45)";
+                offscreenCtx.textBaseline = "top";
+                offscreenCtx.textAlign = "left";
+                offscreenCtx.fillText("KREAVERSE AI", 0, 0);
+                
+                if (cycleTime < 50) {
+                    const shineCycle = globalTimeSec % 10;
+                    if (shineCycle < 2) {
+                        const progress = shineCycle / 2;
+                        offscreenCtx.save();
+                        offscreenCtx.globalCompositeOperation = "source-atop";
+                        
+                        const shineGrad = offscreenCtx.createLinearGradient(
+                            -width + (progress * width * 2), 0,
+                            (progress * width * 2), 0
+                        );
+                        shineGrad.addColorStop(0, "rgba(255,255,255,0)");
+                        shineGrad.addColorStop(0.5, "rgba(255,255,255,0.75)");
+                        shineGrad.addColorStop(1, "rgba(255,255,255,0)");
+                        
+                        offscreenCtx.fillStyle = shineGrad;
+                        offscreenCtx.fillRect(0, 0, width * 1.5, height * 2);
+                        offscreenCtx.restore();
+                    }
+                }
+                
+                canvasCtx.drawImage(offscreenCanvas, x, y);
+            }
+            
+            canvasCtx.restore();
+        }
+
+        // 10. Frame Render Loop
+        function drawFrame() {
+            // Bersihkan Canvas
+            ctx.fillStyle = '#0b0b0d';
+            ctx.fillRect(0, 0, mainCanvas.width, mainCanvas.height);
+
+            // Logika Virtual Player
+            if (isVirtualPlay) {
+                const now = Date.now();
+                const delta = (now - lastTimeUpdate) / 1000 * playbackSpeed;
+                virtualTime += delta;
+                lastTimeUpdate = now;
+                if (virtualTime >= virtualDuration) {
+                    virtualTime = 0;
+                }
+            }
+
+            // Draw Background Media (Video atau Gambar) menggunakan cache dimensi agar tidak patah-patah
+            if (videoURL && hiddenVideo.readyState >= 2) {
+                drawMediaOnCanvas(ctx, mainCanvas, hiddenVideo);
+            } else if (imageObj) {
+                drawMediaOnCanvas(ctx, mainCanvas, imageObj);
+            }
+
+            // Draw Lyrics & Watermark
+            renderLyricsOnCanvas(ctx, mainCanvas, getCurrentTime());
+            drawWatermark(ctx, mainCanvas);
+
+            // Update UI Player Status
+            const curTime = getCurrentTime();
+            const totalDur = getDuration();
+            
+            if (currentTimeText) currentTimeText.textContent = formatTime(curTime);
+            if (durationText) durationText.textContent = formatTime(totalDur);
+            if (progressBar) progressBar.value = totalDur > 0 ? (curTime / totalDur) * 100 : 0;
+
+            // Sinkronisasi dengan UI Overlay Kontrol
+            if (overlayCurrentTime) overlayCurrentTime.textContent = formatTime(curTime);
+            if (overlayDuration) overlayDuration.textContent = formatTime(totalDur);
+            if (overlayProgressBar) overlayProgressBar.value = totalDur > 0 ? (curTime / totalDur) * 100 : 0;
+            if (overlayPlayIcon) {
+                overlayPlayIcon.className = isPlaying() ? "fa-solid fa-pause text-sm" : "fa-solid fa-play text-sm";
+            }
+
+            requestAnimationFrame(drawFrame);
+        }
+
+        // Dioptimalkan penuh dengan caching untuk menghentikan stuttering/lag pada perangkat seluler
+        function drawMediaOnCanvas(canvasCtx, targetCanvas, media) {
+            const mWidth = mediaWidth || media.videoWidth || media.naturalWidth || 1280;
+            const mHeight = mediaHeight || media.videoHeight || media.naturalHeight || 720;
+            const cWidth = targetCanvas.width;
+            const cHeight = targetCanvas.height;
+
+            const mRatio = mWidth / mHeight;
+            const cRatio = cWidth / cHeight;
+            let drawWidth, drawHeight, x, y;
+
+            if (mRatio > cRatio) {
+                drawHeight = cHeight;
+                drawWidth = cHeight * mRatio;
+                x = (cWidth - drawWidth) / 2;
+                y = 0;
+            } else {
+                drawWidth = cWidth;
+                drawHeight = cWidth / mRatio;
+                x = 0;
+                y = (cHeight - drawHeight) / 2;
+            }
+
+            canvasCtx.drawImage(media, x, y, drawWidth, drawHeight);
+        }
+
+        function formatTime(secs) {
+            if (isNaN(secs)) return "00:00";
+            const m = Math.floor(secs / 60).toString().padStart(2, '0');
+            const s = Math.floor(secs % 60).toString().padStart(2, '0');
+            return `${m}:${s}`;
+        }
+
+        if (progressBar) {
+            progressBar.addEventListener('input', (e) => {
+                const targetTime = (parseFloat(e.target.value) / 100) * getDuration();
+                setMediaTime(targetTime);
+            });
+        }
+
+        // Jalankan loop animasi pertama kali
+        requestAnimationFrame(drawFrame);
+
+        // 11. Layar Ekspor Persis CapCut
+        let exportInterval = null;
+        let isExporting = false;
+        let mediaRecorder = null;
+
+        // Poin 2: Mesin Ekspor Frame Offline (Mencegah Lag Latar Belakang & Panas Berlebih pada HP)
+        let wakeLockToken = null;
+
+        async function requestWakeLock() {
+            try {
+                if ('wakeLock' in navigator) {
+                    wakeLockToken = await navigator.wakeLock.request('screen');
+                }
+            } catch (err) {
+                console.warn("Gagal mengaktifkan Wake Lock Layar:", err);
+            }
+        }
+
+        function releaseWakeLock() {
+            if (wakeLockToken) {
+                wakeLockToken.release().then(() => {
+                    wakeLockToken = null;
+                });
+            }
+        }
+
+        if (btnExport) {
+            btnExport.addEventListener('click', async () => {
+                if (!videoURL && !audioURL && !imageObj) {
+                    alert("Harap masukkan video, gambar, atau audio terlebih dahulu!");
+                    return;
+                }
+
+                let confirmedTitle = prompt("Masukkan Judul Lagu untuk nama file ekspor:", currentSongTitle || "ya Allah");
+                if (!confirmedTitle) return;
+                currentSongTitle = confirmedTitle.trim();
+
+                const res = exportResolution ? exportResolution.value : "720";
+                if (exportTitleText) exportTitleText.textContent = `Mengekspor dalam ${res}p...`;
+                if (exportOverlay) exportOverlay.classList.remove('hidden');
+                if (exportProgressText) exportProgressText.textContent = '0,0%';
+                isExporting = true;
+
+                // Cegah layar redup atau terkunci selama pemrosesan ekspor (Poin 2)
+                await requestWakeLock();
+
+                // Hentikan pemutaran real-time audio agar tidak memicu panas berlebih
+                pauseAll();
+
+                // Deteksi format ekspor terbaik
+                let mimeType = 'video/webm;codecs=vp9,opus';
+                let extension = 'mp4';
+
+                if (MediaRecorder.isTypeSupported('video/mp4;codecs=h264,aac')) {
+                    mimeType = 'video/mp4;codecs=h264,aac';
+                } else if (MediaRecorder.isTypeSupported('video/mp4')) {
+                    mimeType = 'video/mp4';
+                } else if (MediaRecorder.isTypeSupported('video/webm;codecs=h264')) {
+                    mimeType = 'video/webm;codecs=h264';
+                }
+
+                const canvasStream = mainCanvas.captureStream(30);
+                const recorderInstance = new MediaRecorder(canvasStream, { mimeType: mimeType });
+                const chunks = [];
+
+                recorderInstance.ondataavailable = (e) => {
+                    if (e.data.size > 0) chunks.push(e.data);
+                };
+
+                recorderInstance.onstop = () => {
+                    const blob = new Blob(chunks, { type: mimeType });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `Kreaverse AI - ${currentSongTitle}.${extension}`;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+                    
+                    releaseWakeLock();
+                    if (exportOverlay) exportOverlay.classList.add('hidden');
+                    setMediaTime(0);
+                    isExporting = false;
+                };
+
+                recorderInstance.start();
+
+                // Poin 2: Pemrosesan Offline Langkah Demi Langkah (Offline Frame-by-Frame Render)
+                const fps = 30;
+                const frameStepTime = 1 / fps;
+                let currentExportProgressTime = 0;
+                const totalVideoDuration = getDuration();
+
+                async function renderNextFrame() {
+                    if (!isExporting) {
+                        recorderInstance.stop();
+                        return;
+                    }
+
+                    // Paksa lompat waktu video/audio secara offline
+                    setMediaTime(currentExportProgressTime);
+
+                    // Berikan toleransi seek khusus video sebelum menangkap frame agar presisi (Poin 2)
+                    if (videoURL && hiddenVideo.readyState < 2) {
+                        await new Promise(resolve => {
+                            const onSeeked = () => {
+                                hiddenVideo.removeEventListener('seeked', onSeeked);
+                                resolve();
+                            };
+                            hiddenVideo.addEventListener('seeked', onSeeked);
+                            setTimeout(resolve, 80); // Toleransi waktu fallback
+                        });
+                    } else {
+                        await new Promise(r => setTimeout(r, 10)); // Jeda pemrosesan gambar/audio
+                    }
+
+                    // Merender di Canvas Utama
+                    ctx.fillStyle = '#0b0b0d';
+                    ctx.fillRect(0, 0, mainCanvas.width, mainCanvas.height);
+                    if (videoURL) {
+                        drawMediaOnCanvas(ctx, mainCanvas, hiddenVideo);
+                    } else if (imageObj) {
+                        drawMediaOnCanvas(ctx, mainCanvas, imageObj);
+                    }
+                    renderLyricsOnCanvas(ctx, mainCanvas, currentExportProgressTime);
+                    drawWatermark(ctx, mainCanvas);
+
+                    // Menggambar Pratinjau Mini Rendah Daya
+                    miniCtx.fillStyle = '#000000';
+                    miniCtx.fillRect(0, 0, miniExportCanvas.width, miniExportCanvas.height);
+                    if (videoURL) {
+                        drawMediaOnCanvas(miniCtx, miniExportCanvas, hiddenVideo);
+                    } else if (imageObj) {
+                        drawMediaOnCanvas(miniCtx, miniExportCanvas, imageObj);
+                    }
+                    renderLyricsOnCanvas(miniCtx, miniExportCanvas, currentExportProgressTime);
+                    drawWatermark(miniCtx, miniExportCanvas);
+
+                    // Perhitungan Persentase
+                    const progressVal = (currentExportProgressTime / totalVideoDuration) * 100;
+                    if (exportProgressText) {
+                        exportProgressText.textContent = `${Math.min(100, progressVal).toFixed(1).replace('.', ',')}%`;
+                    }
+
+                    currentExportProgressTime += frameStepTime;
+
+                    if (currentExportProgressTime < totalVideoDuration) {
+                        requestAnimationFrame(renderNextFrame);
+                    } else {
+                        recorderInstance.stop();
+                    }
+                }
+
+                // Mulai proses rendering frame-by-frame pertama
+                requestAnimationFrame(renderNextFrame);
+            });
+        }
+
+        if (btnCancelExport) {
+            btnCancelExport.addEventListener('click', () => {
+                if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+                    mediaRecorder.stop();
+                }
+                clearInterval(exportInterval);
+                if (exportOverlay) exportOverlay.classList.add('hidden');
+                pauseAll();
+                isExporting = false;
+            });
+        }
+
+        // 12. Firebase Database Integrations (Real Fetch API Endpoints)
+        if (btnSaveToFirebase) {
+            btnSaveToFirebase.addEventListener('click', async () => {
+                if (lyrics.length === 0) {
+                    alert("Belum ada lirik untuk disimpan!");
+                    return;
+                }
+                const songName = prompt("Masukkan Judul Lagu:");
+                const artistName = prompt("Masukkan Nama Penyanyi:");
+                if (!songName || !artistName) return;
+                
+                currentSongTitle = songName.trim(); // Simpan judul lagu ke state global
+
+                btnSaveToFirebase.disabled = true;
+                btnSaveToFirebase.textContent = "Menyimpan...";
+
+                try {
+                    const response = await fetch('/api/save', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            title: songName,
+                            artist: artistName,
+                            lyrics: lyrics
+                        })
+                    });
+                    const resData = await response.json();
+                    if (response.ok) {
+                        alert("Sempurna! Lirik berhasil tersimpan ke database.");
+                    } else {
+                        alert(`Gagal menyimpan: ${resData.error || 'Terjadi kesalahan'}`);
+                    }
+                } catch (err) {
+                    alert(`Error: ${err.message}`);
+                } finally {
+                    btnSaveToFirebase.disabled = false;
+                    btnSaveToFirebase.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> Simpan ke Firebase';
+                }
+            });
+        }
+
+        if (btnSearch) {
+            btnSearch.addEventListener('click', async () => {
+                const query = searchQuery ? searchQuery.value.trim() : "";
+                if (!query) return;
+
+                if (searchResults) {
+                    searchResults.classList.remove('hidden');
+                    searchResults.innerHTML = '<p class="text-center text-zinc-500 py-2 text-[10px]">Mencari...</p>';
+                }
+
+                try {
+                    const response = await fetch(`/api/get?query=${encodeURIComponent(query)}`);
+                    const data = await response.json();
+                    
+                    if (response.ok && data.songs && data.songs.length > 0) {
+                        if (searchResults) searchResults.innerHTML = "";
+                        data.songs.forEach(song => {
+                            const row = document.createElement('div');
+                            row.className = "flex justify-between items-center p-2 hover:bg-[#1f1f23] rounded-lg cursor-pointer transition-all border-b border-[#2d2d34]/40";
+                            row.innerHTML = `
+                                <div class="flex flex-col">
+                                    <span class="font-bold text-zinc-200 text-[11px]">${song.title}</span>
+                                    <span class="text-[9px] text-zinc-500">${song.artist}</span>
+                                </div>
+                                <button class="bg-cyan-500/15 text-cyan-400 font-bold px-3 py-1 rounded-lg text-[9px] hover:bg-cyan-500/25 transition-all">Gunakan</button>
+                            `;
+                            row.querySelector('button').addEventListener('click', () => {
+                                lyrics = song.lyrics;
+                                currentSongTitle = song.title; // Simpan judul lagu ke state global
+                                if (rawLyrics) rawLyrics.value = lyrics.map(l => l.text).join('\n');
+                                renderAdjustList();
+                                updateTimelineTrack();
+                                showPanel('panelAdjust');
+                                alert(`Lirik lagu "${song.title}" berhasil dimuat!`);
+                            });
+                            if (searchResults) searchResults.appendChild(row);
+                        });
+                    } else {
+                        if (searchResults) searchResults.innerHTML = '<p class="text-center text-zinc-500 py-2 text-[10px]">Lirik tidak ditemukan.</p>';
+                    }
+                } catch (err) {
+                    if (searchResults) searchResults.innerHTML = `<p class="text-center text-red-400 py-2 text-[10px]">Error: ${err.message}</p>`;
+                }
+            });
+        }
+    </script>
+</body>
+</html>
