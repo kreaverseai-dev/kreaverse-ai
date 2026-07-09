@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-20 -20 100 100" width="512" height="512">
+  <!-- Background Putih Solid yang Diperluas agar tidak hitam di HP -->
+  <rect x="-50" y="-50" width="200" height="200" fill="#ffffff" />
+  <defs>
+    <linearGradient id="kreaGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#D97757" />
+      <stop offset="50%" stop-color="#AF52DE" />
+      <stop offset="100%" stop-color="#007AFF" />
+    </linearGradient>
+  </defs>
+  <g>
+    <path d="M 30,10 Q 30,30 50,30 Q 30,30 30,50 Q 30,30 10,30 Q 30,30 30,10 Z" fill="url(#kreaGradient)" />
+    <path d="M 30,17 Q 30,30 43,30 Q 30,30 30,43 Q 30,30 17,30 Q 30,30 30,17 Z" fill="url(#kreaGradient)" transform="rotate(45, 30, 30)" opacity="0.85" />
+  </g>
+</svg>
