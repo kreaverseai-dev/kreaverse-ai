@@ -1,0 +1,126 @@
+/* Styling Khusus Halaman Upload */
+.upload-card {
+    background-color: var(--surface-color);
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: var(--shadow);
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.drop-area {
+    border: 2px dashed var(--accent-color);
+    border-radius: 12px;
+    padding: 40px 20px;
+    text-align: center;
+    cursor: pointer;
+    background-color: var(--bg-color);
+    transition: background-color 0.2s, border-color 0.2s;
+}
+
+.drop-area:hover, .drop-area.dragover {
+    background-color: var(--hover-bg);
+}
+
+.drop-icon {
+    font-size: 3rem;
+    color: var(--accent-color);
+    margin-bottom: 16px;
+}
+
+.drop-area p {
+    font-size: 1.1rem;
+    font-weight: 500;
+    margin-bottom: 8px;
+    color: var(--text-primary);
+}
+
+.file-info {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+}
+
+.preview-container {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    animation: fadeIn 0.3s ease;
+}
+
+.preview-container.hidden, .result-container.hidden {
+    display: none;
+}
+
+.file-name-display {
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: var(--accent-color);
+    text-align: center;
+    word-break: break-all;
+    padding: 12px;
+    background-color: var(--hover-bg);
+    border-radius: 8px;
+}
+
+.primary-btn {
+    width: 100%;
+    padding: 14px;
+    background-color: var(--text-primary);
+    color: var(--bg-color);
+    border: none;
+    border-radius: 12px;
+    font-family: 'Inter', sans-serif;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: opacity 0.2s, transform 0.1s;
+}
+
+.primary-btn:active { transform: scale(0.98); }
+.primary-btn:hover { opacity: 0.9; }
+
+.result-container {
+    margin-top: 24px;
+    background-color: var(--surface-color);
+    border: 1px solid var(--accent-color);
+    border-radius: 16px;
+    padding: 24px;
+    text-align: center;
+}
+
+.result-input-group {
+    display: flex;
+    gap: 8px;
+    margin-top: 16px;
+}
+
+.result-input-group input {
+    flex: 1;
+    padding: 12px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    background-color: var(--bg-color);
+    color: var(--text-primary);
+    outline: none;
+}
+
+.copy-btn {
+    padding: 12px 20px;
+    background-color: var(--accent-color);
+    color: #FFF;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(5px); }
+    to { opacity: 1; transform: translateY(0); }
+}
