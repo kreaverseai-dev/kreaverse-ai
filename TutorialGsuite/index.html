@@ -254,6 +254,42 @@
             </div>
         </div>
 
+        <!-- STEP 6 -->
+        <div class="step-card">
+            <div class="step-badge" style="background: var(--text);">LANGKAH 6</div>
+            <h2 class="step-title"><i class="fa-solid fa-database" style="color:var(--warning);"></i> Setting Database Firebase (Wajib)</h2>
+            <div class="content-box">
+                <p>Agar sistem Kreaverse bisa menyimpan dan menghapus data email secara otomatis, Anda harus menyambungkan database Firebase ke server Vercel Anda melalui <strong>Environment Variables</strong>.</p>
+                
+                <h3 style="margin-top:20px; font-size:1.1rem; color:var(--text);">A. Cara Mengambil FIREBASE_DATABASE_URL</h3>
+                <ol>
+                    <li>Buka <a href="https://console.firebase.google.com/" target="_blank">Firebase Console</a> dan pilih Project Anda.</li>
+                    <li>Di menu sebelah kiri, buka <strong>Build</strong> -> <strong>Realtime Database</strong>.</li>
+                    <li>Di bagian atas, Anda akan melihat sebuah link dengan ikon rantai (contoh: <code>https://nama-project-default-rtdb.asia-southeast1.firebasedatabase.app</code>).</li>
+                    <li><strong>Copy link tersebut</strong> (pastikan tidak ada tanda garis miring <code>/</code> di akhir link).</li>
+                </ol>
+
+                <h3 style="margin-top:20px; font-size:1.1rem; color:var(--text);">B. Cara Mengambil FIREBASE_DATABASE_SECRET</h3>
+                <ol>
+                    <li>Kembali ke Firebase Console, klik ikon <strong>Gerigi (Settings)</strong> di kiri atas -> pilih <strong>Project settings</strong>.</li>
+                    <li>Pilih tab <strong>Service accounts</strong>.</li>
+                    <li>Di menu sebelah kiri bawah, klik <strong>Database secrets</strong> (Rahasia Database).</li>
+                    <li>Arahkan kursor ke tulisan rahasia (••••••••) lalu klik <strong>Show</strong>. <strong>Copy kode acak tersebut</strong>.</li>
+                </ol>
+
+                <div class="callout info">
+                    <i class="fa-solid fa-server callout-icon"></i>
+                    <div>
+                        <strong>Langkah Terakhir di Vercel:</strong><br>
+                        Buka Dashboard Vercel Anda > Settings > Environment Variables. Tambahkan kedua data di atas dengan nama variabel:<br>
+                        - <code>FIREBASE_DATABASE_URL</code><br>
+                        - <code>FIREBASE_DATABASE_SECRET</code><br><br>
+                        <strong>PENTING:</strong> Setelah disimpan, wajib masuk ke tab <strong>Deployments</strong> lalu klik titik tiga dan pilih <strong>Redeploy</strong> agar website tidak Error 500!
+                    </div>
+                </div>
+            </div>
+        </div>
+
     </main>
 
     <footer class="footer" style="text-align:center; padding:30px; border-top:1px solid var(--border); background:var(--surface); margin-top:40px;">
