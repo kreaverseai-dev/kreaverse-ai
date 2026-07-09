@@ -275,10 +275,7 @@
 </head>
 <body>
 
-<!-- PULL TO REFRESH LOADER -->
-<div id="pull-loader">
-    <i class="fa-solid fa-rotate-right" id="pull-icon"></i>
-</div>
+<!-- PULL TO REFRESH LOADER DIHAPUS (Diganti Tombol) -->
 
 <!-- LOADING SCREEN -->
 <div id="loading-screen">
@@ -620,7 +617,10 @@
             </text>
         </svg>
     </div>
-    <button class="btn-menu" onclick="toggleSidebar()"><i class="fa-solid fa-bars-staggered"></i></button>
+    <div style="display:flex; gap:15px; align-items:center;">
+        <button onclick="location.reload()" style="background:none; border:none; color:var(--text); font-size:1.3rem; cursor:pointer;" title="Refresh"><i class="fa-solid fa-rotate-right"></i></button>
+        <button class="btn-menu" onclick="toggleSidebar()"><i class="fa-solid fa-bars-staggered"></i></button>
+    </div>
 </div>
 
 <div class="overlay" id="overlay" onclick="toggleSidebar()"></div>
@@ -717,6 +717,7 @@
     <header class="topbar">
         <h2 id="pageTitle" style="font-size:1.4rem; font-weight:800;">Ikhtisar Sistem</h2>
         <div style="display:flex; align-items:center; gap:12px;">
+            <button class="btn btn-sm" onclick="location.reload()" style="background:#EAEAEA; border:none; padding:10px 15px; border-radius:8px; cursor:pointer; font-weight:700;"><i class="fa-solid fa-rotate-right"></i> Refresh</button>
             <div id="db-status-badge" class="badge badge-red" style="padding:10px 16px;">
                 <span class="status-dot red"></span> Database Terputus
             </div>
@@ -1437,8 +1438,9 @@
                 <div class="panel">
                     <div class="panel-head">
                         <div class="panel-title"><i class="fa-solid fa-gears" style="color:var(--warning);"></i> Penyetelan Google Workspace API</div>
-                        <div style="display:flex; gap:10px;">
+                        <div style="display:flex; gap:10px; flex-wrap:wrap;">
                             <button class="btn btn-sm btn-success" onclick="window.addGwAccount()"><i class="fa-solid fa-plus"></i> Tambah Akun Admin</button>
+                            <a href="TutorialGsuite/index.html" target="_blank" class="btn btn-sm btn-primary" style="text-decoration:none;"><i class="fa-solid fa-book"></i> Tutorial Setup</a>
                             <button class="btn btn-sm btn-info" onclick="window.openCredHistory()"><i class="fa-solid fa-clock-rotate-left"></i> Riwayat</button>
                         </div>
                     </div>
@@ -1952,42 +1954,8 @@ window.nav = id => {
 };
 
 // ============================================================
-// FITUR PULL-TO-REFRESH (STYLE YOUTUBE)
+// FITUR PULL-TO-REFRESH (DIHAPUS, DIGANTI TOMBOL)
 // ============================================================
-let pStartY = 0, pStartX = 0, isPulling = false;
-const cw = document.querySelector('.content-wrapper');
-const pullLoader = document.getElementById('pull-loader');
-const pullIcon = document.getElementById('pull-icon');
-if(cw) {
-    cw.addEventListener('touchstart', e => {
-        if (cw.scrollTop <= 0) { pStartY = e.touches[0].clientY; pStartX = e.touches[0].clientX; isPulling = true; pullLoader.style.transition = 'none'; pullLoader.classList.remove('pull-spin'); }
-    }, {passive: true});
-    cw.addEventListener('touchmove', e => {
-        if (!isPulling) return;
-        let diffY = e.touches[0].clientY - pStartY;
-        let diffX = Math.abs(e.touches[0].clientX - pStartX);
-        if (diffY > 0 && diffY > diffX) {
-            if (e.cancelable) e.preventDefault();
-            let pullDist = Math.min(diffY * 0.4, 120);
-            pullLoader.style.transform = `translateY(${pullDist}px)`;
-            if (pullIcon) pullIcon.style.transform = `rotate(${pullDist * 3}deg)`;
-        } else if (diffY < 0) { isPulling = false; }
-    }, {passive: false});
-    cw.addEventListener('touchend', e => {
-        if (!isPulling) return;
-        isPulling = false;
-        pullLoader.style.transition = 'transform 0.3s ease';
-        let diffY = e.changedTouches[0].clientY - pStartY;
-        if (diffY * 0.4 > 60) {
-            pullLoader.style.transform = `translateY(70px)`;
-            pullLoader.classList.add('pull-spin');
-            setTimeout(() => location.reload(), 800);
-        } else {
-            pullLoader.style.transform = `translateY(0)`;
-        }
-        pStartY = 0; pStartX = 0;
-    });
-}
 
 // ============================================================
 // FITUR AUTO-REFRESH
