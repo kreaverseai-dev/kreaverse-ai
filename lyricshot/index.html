@@ -1,0 +1,2982 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>LyricShot AI - Kreaverse AI</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --text-primary: #0f172a; /* Slate gelap yang tajam dan premium */
+            --text-secondary: #334155;
+            --text-light: #94a3b8;
+            --accent-color: #007AFF; /* Biru Royal Premium Kreaverse, teduh di mata */
+            --accent-hover: #0056b3;
+            --success-color: #10B981;
+            --danger-color: #ef4444;
+            --surface-color: #ffffff;
+            --border-color: #e2e8f0;
+            --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.02);
+            --shadow-md: 0 8px 16px rgba(0, 0, 0, 0.04);
+            --shadow-lg: 0 12px 24px -4px rgba(0, 0, 0, 0.05);
+            --shadow-xl: 0 20px 30px -6px rgba(0, 0, 0, 0.08);
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body { 
+            font-family: 'Plus Jakarta Sans', sans-serif; 
+            color: var(--text-primary); 
+            background: radial-gradient(circle at top left, #fff0f5 0%, #f0f8ff 45%, #fafafc 100%); 
+            overflow-x: hidden; 
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .container { max-width: 900px; width: 100%; margin-top: 45px; } /* Geser container ke atas (mengurangi ruang kosong) */
+        
+        /* NAVBAR */
+        .navbar { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            padding: 16px 20px; 
+            background: transparent !important; 
+            position: absolute; 
+            top: 0; 
+            left: 0;
+            width: 100%; 
+            z-index: 1000; 
+            border: none !important;
+            box-shadow: none !important;
+            backdrop-filter: none !important;
+            -webkit-backdrop-filter: none !important;
+        }
+        .back-btn { 
+            font-size: 0.72rem; /* Tombol diperkecil agar elegan */
+            color: var(--text-secondary); 
+            background: #ffffff;
+            border: none !important;
+            text-decoration: none !important;
+            outline: none !important;
+            width: 28px; /* Diperkecil sesuai keinginan Anda */
+            height: 28px; /* Diperkecil sesuai keinginan Anda */
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: var(--transition);
+            box-shadow: var(--shadow-sm);
+            margin-left: 14px; /* Geser tombol kembali sedikit ke kanan */
+        }
+        .back-btn:hover { 
+            color: var(--text-primary); 
+            background-color: #f3f4f6; 
+            transform: scale(1.05);
+        }
+        .logo-container { 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            width: 180px; /* Penyelarasan ukuran logo agar pas dan presisi */
+            height: 38px; 
+            position: absolute; 
+            left: 50%; /* Sentralisasi sempurna 100% rata tengah secara matematis */
+            transform: translateX(-50%); 
+            z-index: 5; 
+            pointer-events: none; 
+        }
+        .krea-logo-svg { width: 100%; height: 100%; display: block; }
+        .nav-right { width: 32px; }
+
+        /* HEADER */
+        header { text-align: center; margin-bottom: 30px; }
+        h1.hero-title { 
+            font-family: 'Plus Jakarta Sans', sans-serif; 
+            font-size: 1.95rem; 
+            font-weight: 800; 
+            color: #111827; 
+            margin-bottom: 12px; 
+            line-height: 1.25; 
+            letter-spacing: -1px; 
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        h1.hero-title span { color: var(--accent-color); }
+        .subtitle { 
+            font-size: 0.85rem; 
+            font-weight: 500; 
+            color: var(--text-secondary); 
+            max-width: 480px; 
+            margin: 0 auto;
+            line-height: 1.6; 
+        }
+
+        /* INPUT SECTION - PREMIUM EMBOSSED BOARD DESIGN */
+        .input-section {
+            background: linear-gradient(145deg, #ffffff 0%, #fbfcfe 100%);
+            padding: 32px;
+            border-radius: 28px;
+            border: 1px solid rgba(0, 122, 255, 0.12); /* Garis tepi biru tipis premium */
+            box-shadow: 0 20px 40px -10px rgba(0, 122, 255, 0.04), 0 1px 3px rgba(0, 0, 0, 0.02);
+            margin-bottom: 30px;
+        }
+        textarea {
+            width: 100%;
+            height: 140px;
+            background: #f8fafc; /* Latar papan ketik abu-abu lembut premium */
+            border: 1px solid #cbd5e1;
+            border-radius: 18px;
+            color: var(--text-primary);
+            padding: 18px;
+            font-size: 0.92rem;
+            font-family: inherit;
+            resize: vertical;
+            transition: var(--transition);
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.02);
+        }
+        textarea:focus { 
+            outline: none; 
+            border-color: var(--accent-color); 
+            box-shadow: 0 0 0 4px rgba(0, 122, 255, 0.08);
+            background: #ffffff;
+        }
+        
+        .options-bar {
+            margin: 24px 0;
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 16px;
+        }
+        @media (min-width: 640px) {
+            .options-bar { grid-template-columns: 1fr 1fr; }
+            .ratio-group-span { grid-column: span 2; }
+        }
+        .option-group { 
+            display: flex; 
+            flex-direction: column; 
+            gap: 6px; 
+            position: relative; 
+            z-index: 10; /* Berikan tumpukan dasar untuk elemen anak grid */
+        }
+        .option-group.active-group {
+            z-index: 9999 !important; /* Angkat pembungkus grid ke posisi teratas saat dropdown di dalamnya terbuka */
+        }
+        .option-group label { 
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-size: 0.8rem; 
+            color: var(--text-secondary); 
+            font-weight: 800; /* Dipertegas agar lebih jelas dibaca */
+            text-align: left; 
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 2px;
+        }
+        select {
+            background: #ffffff;
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            padding: 12px 16px;
+            border-radius: 12px;
+            font-family: inherit;
+            font-weight: 600;
+            cursor: pointer;
+            outline: none;
+            transition: var(--transition);
+            box-shadow: var(--shadow-sm);
+            width: 100%;
+        }
+        select:focus {
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 4px rgba(94, 92, 230, 0.08);
+        }
+        
+        .duration-info {
+            background: rgba(94, 92, 230, 0.06);
+            border-left: 4px solid var(--accent-color);
+            padding: 14px 18px;
+            border-radius: 12px;
+            font-size: 0.85rem;
+            margin-bottom: 20px;
+            color: var(--text-primary);
+            font-weight: 600;
+            line-height: 1.5;
+            text-align: left;
+        }
+        
+        /* UPLOADS STYLE */
+        .upload-section {
+            background: #f9fafb;
+            padding: 24px;
+            border-radius: 20px;
+            margin-bottom: 24px;
+            border: 1px dashed var(--border-color);
+            transition: var(--transition);
+        }
+        .upload-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 16px;
+            margin-top: 12px;
+        }
+        @media (min-width: 640px) {
+            .upload-grid { grid-template-columns: 1fr 1fr; }
+            .upload-section .file-input-group[style*="grid-column"] { grid-column: span 2 !important; }
+        }
+        .file-input-group { display: flex; flex-direction: column; gap: 6px; text-align: left; }
+        .file-input-group label { font-size: 0.8rem; color: var(--text-secondary); font-weight: 700; }
+        .file-input-group input {
+            background: #ffffff;
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            padding: 10px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            width: 100%;
+            transition: var(--transition);
+        }
+        .file-input-group input:focus {
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 3px rgba(94, 92, 230, 0.06);
+        }
+        
+        /* BUTTONS */
+        button {
+            background: var(--accent-color);
+            color: #ffffff;
+            border: none;
+            padding: 16px 28px;
+            font-size: 0.95rem;
+            font-weight: 700;
+            border-radius: 99px;
+            cursor: pointer;
+            width: 100%;
+            transition: var(--transition);
+            box-shadow: 0 4px 14px rgba(0, 122, 255, 0.25);
+        }
+        button:hover:not(:disabled) { 
+            background: var(--accent-hover); 
+            transform: translateY(-1px); 
+            box-shadow: 0 6px 20px rgba(0, 122, 255, 0.35); 
+        }
+        button:disabled { background: #d1d5db; color: #9ca3af; cursor: not-allowed; box-shadow: none; transform: none; }
+        
+        #loading { 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            margin: 40px 0; 
+        }
+        .hidden { display: none !important; }
+
+        /* CINEMATIC PREMIER NASKAH LOADER */
+        .cinematic-loader-card {
+            background: #ffffff;
+            border: 1px solid var(--border-color);
+            border-radius: 24px;
+            padding: 24px 32px;
+            box-shadow: var(--shadow-xl);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 14px;
+            width: 100%;
+            max-width: 420px;
+            position: relative;
+            overflow: hidden;
+        }
+        .cinematic-loader-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; height: 4px;
+            background: linear-gradient(90deg, var(--accent-color), #00c6ff);
+        }
+        .loader-icon-wrap {
+            width: 54px;
+            height: 54px;
+            border-radius: 50%;
+            background: rgba(0, 122, 255, 0.08);
+            color: var(--accent-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.4rem;
+            margin-bottom: 4px;
+        }
+        .cinematic-loader-title {
+            font-size: 1rem;
+            font-weight: 800;
+            color: var(--text-primary);
+            margin: 0;
+            letter-spacing: -0.2px;
+        }
+        .cinematic-progress-bar {
+            width: 100%;
+            height: 6px;
+            background: #f1f5f9;
+            border-radius: 99px;
+            overflow: hidden;
+            border: 1px solid rgba(0,0,0,0.02);
+        }
+        .cinematic-progress-fill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, var(--accent-color), #00c6ff);
+            border-radius: 99px;
+            transition: width 0.3s ease;
+            box-shadow: 0 0 8px rgba(0, 122, 255, 0.4);
+        }
+        .cinematic-loader-status {
+            font-size: 0.78rem;
+            font-weight: 700;
+            color: var(--text-secondary);
+            margin: 0;
+            letter-spacing: 0.1px;
+        }
+
+        /* PREMIUM ERROR CARD - NEON GLASSMORPHISM SLATE THEME */
+        .premium-error-card {
+            background: rgba(15, 23, 42, 0.98); /* Slate gelap premium senada dengan loader */
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(239, 68, 68, 0.25); /* Border neon merah transparan */
+            border-radius: 16px;
+            padding: 12px;
+            display: flex;
+            flex-direction: column; /* Vertikal agar muat presisi di rasio 9:16 maupun 16:9 */
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            text-align: center;
+            width: 100%;
+            height: 100%; /* Memenuhi tinggi video-box sepenuhnya */
+            overflow-y: auto; /* Aktifkan scroll internal jika teks melebihi tinggi wadah */
+            box-shadow: inset 0 0 20px rgba(239, 68, 68, 0.05), 0 8px 24px rgba(0, 0, 0, 0.25);
+            box-sizing: border-box;
+        }
+        .error-card-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: rgba(239, 68, 68, 0.15);
+            color: #ef4444;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.85rem;
+            flex-shrink: 0;
+            animation: errorPulse 1.5s infinite alternate;
+        }
+        @keyframes errorPulse {
+            0% { transform: scale(0.95); box-shadow: 0 0 5px rgba(239, 68, 68, 0.2); }
+            100% { transform: scale(1.05); box-shadow: 0 0 15px rgba(239, 68, 68, 0.4); }
+        }
+        .error-card-content {
+            width: 100%;
+        }
+        .error-card-title {
+            font-size: 0.8rem;
+            font-weight: 800;
+            color: #fca5a5; /* Merah muda pastel terang yang kontras & tajam */
+            margin-bottom: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .error-card-text {
+            font-size: 0.72rem; /* Ukuran yang pas untuk keterbacaan tinggi di ponsel */
+            color: #cbd5e1; /* Kontras tinggi di atas latar gelap */
+            line-height: 1.45;
+            font-weight: 600;
+            margin: 0;
+            padding: 0 4px;
+        }
+        
+        /* STORYBOARD CARDS (LIGHT THEME) */
+        #resultContainer h2 { font-size: 1.3rem; font-weight: 900; margin-bottom: 24px; border-left: 4px solid var(--accent-color); padding-left: 12px; text-align: left; }
+        #storyboardGrid { display: grid; grid-template-columns: 1fr; gap: 24px; margin-top: 15px; }
+        @media (min-width: 768px) {
+            #storyboardGrid { grid-template-columns: 1fr 1fr; }
+        }
+        .storyboard-card {
+            background: var(--surface-color);
+            border: 1px solid var(--border-color);
+            border-radius: 24px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            box-shadow: var(--shadow-lg);
+            transition: var(--transition);
+        }
+        .storyboard-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-xl);
+        }
+        .card-header {
+            background: #f9fafb;
+            padding: 16px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .scene-badge { background: var(--accent-color); color: #fff; font-weight: 800; padding: 6px 12px; border-radius: 99px; font-size: 0.75rem; }
+        .shot-type { color: var(--accent-color); font-size: 0.8rem; font-weight: 800; text-transform: uppercase; }
+        .card-body { padding: 20px; display: flex; flex-direction: column; gap: 16px; flex-grow: 1; text-align: left; }
+        .lyrics-quote { color: var(--text-primary); font-style: italic; background: rgba(94, 92, 230, 0.05); padding: 12px 18px; border-radius: 12px; border-left: 4px solid var(--accent-color); margin: 0; font-size: 0.9rem; font-weight: 600; }
+        .description { font-size: 0.9rem; line-height: 1.6; color: var(--text-secondary); font-weight: 500; }
+        .video-box { margin-top: 8px; border-radius: 16px; overflow: hidden; background: #000; display: flex; justify-content: center; aspect-ratio: 16/9; }
+        video { width: 100%; height: 100%; object-fit: cover; display: block; }
+        
+        /* PREMIUM DREMINA & FOLOW STYLE LOADERS */
+        .video-box.loading-state {
+            background: radial-gradient(circle at center, #1e1b4b 0%, #03001e 100%);
+            position: relative;
+            border: 1px solid rgba(139, 92, 246, 0.3);
+            box-shadow: 0 0 30px rgba(139, 92, 246, 0.15), inset 0 0 40px rgba(0,0,0,0.8);
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .video-box.loading-state::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(125deg, rgba(99,102,241,0.05) 0%, rgba(168,85,247,0.05) 50%, rgba(236,72,153,0.05) 100%);
+            background-size: 200% 200%;
+            animation: gradientShift 6s ease infinite;
+        }
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        .ai-glow-ring {
+            position: absolute;
+            width: 140px;
+            height: 140px;
+            border-radius: 50%;
+            border: 2px dashed rgba(168, 85, 247, 0.2);
+            animation: rotateGlow 20s linear infinite;
+        }
+        @keyframes rotateGlow {
+            100% { transform: rotate(360deg); }
+        }
+        .video-loader-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            width: 100%;
+            height: 100%;
+            padding: 20px;
+            color: #ffffff;
+            position: relative;
+            z-index: 2;
+        }
+        .ai-glow-orb {
+            position: relative;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(99,102,241,1) 0%, rgba(168,85,247,0.4) 70%);
+            animation: orbPulse 2s infinite ease-in-out;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 20px rgba(168,85,247,0.5);
+        }
+        .ai-glow-orb::after {
+            content: '';
+            position: absolute;
+            inset: -4px;
+            border-radius: 50%;
+            border: 2px solid transparent;
+            border-top-color: #a855f7;
+            border-bottom-color: #6366f1;
+            animation: orbRotate 1.5s infinite linear;
+        }
+        .ai-glow-orb i {
+            color: #ffffff;
+            font-size: 1rem;
+            animation: orbIconPulse 2s infinite ease-in-out;
+        }
+        .loader-title {
+            font-size: 0.88rem;
+            font-weight: 800;
+            letter-spacing: 0.5px;
+            color: #ffffff;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.5);
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .loader-progress-box {
+            width: 80%;
+            max-width: 240px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            margin: 8px 0;
+            z-index: 5;
+        }
+        .loader-progress-bar {
+            width: 100%;
+            height: 5px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 99px;
+            overflow: hidden;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+        .loader-progress-fill {
+            height: 100%;
+            width: 15%;
+            background: linear-gradient(90deg, #6366f1, #a855f7, #ec4899);
+            border-radius: 99px;
+            box-shadow: 0 0 10px rgba(168,85,247,0.8);
+            transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .loader-progress-label {
+            font-size: 0.68rem;
+            color: #cbd5e1;
+            font-weight: 700;
+            text-align: center;
+            text-shadow: 0 1px 3px rgba(0,0,0,0.8);
+            letter-spacing: 0.5px;
+        }
+        .loader-subtitle {
+            font-size: 0.72rem;
+            color: #94a3b8;
+            font-weight: 600;
+            margin-top: -2px;
+            text-align: center;
+            animation: textFlicker 3s infinite ease-in-out;
+        }
+        .btn-cancel-render {
+            background: rgba(255, 255, 255, 0.06);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #cbd5e1;
+            padding: 8px 16px;
+            border-radius: 99px;
+            font-size: 0.72rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            width: max-content;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            z-index: 10;
+        }
+        .btn-cancel-render:hover {
+            background: rgba(239, 68, 68, 0.15);
+            border-color: rgba(239, 68, 68, 0.3);
+            color: #fca5a5;
+            transform: scale(1.03);
+        }
+        @keyframes orbPulse {
+            0%, 100% { transform: scale(0.9); box-shadow: 0 0 15px rgba(168,85,247,0.3); }
+            50% { transform: scale(1.05); box-shadow: 0 0 25px rgba(99,102,241,0.7); }
+        }
+        @keyframes orbRotate {
+            to { transform: rotate(360deg); }
+        }
+        @keyframes orbIconPulse {
+            0%, 100% { opacity: 0.7; }
+            50% { opacity: 1; }
+        }
+        @keyframes textFlicker {
+            0%, 100% { opacity: 0.8; }
+            50% { opacity: 0.5; }
+        }
+
+        .download-btn {
+            background: #10b981;
+            color: #fff;
+            text-align: center;
+            text-decoration: none;
+            display: block;
+            padding: 14px;
+            border-radius: 99px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            margin-top: 10px;
+            transition: var(--transition);
+            box-shadow: 0 4px 10px rgba(16, 185, 129, 0.2);
+        }
+        .download-btn:hover { background: #059669; box-shadow: 0 6px 15px rgba(16, 185, 129, 0.3); }
+
+        /* FOOTER (CLEAN LIGHT WHITE) */
+        .footer { background: #FFFFFF; color: var(--text-secondary); padding: 40px 20px 30px; text-align: center; border-top: 1px solid var(--border-color); margin-top: 50px; border-radius: 24px 24px 0 0; }
+        .footer-logo { color: var(--text-primary); font-size: 1.3rem; font-weight: 900; margin-bottom: 20px; letter-spacing: -0.5px; }
+        .footer-links { display: flex; justify-content: center; gap: 24px; margin-bottom: 20px; flex-wrap: wrap; }
+        .footer-links a { color: var(--text-secondary); transition: color 0.2s; font-size: 0.85rem; font-weight: 600; text-decoration: none; }
+        .footer-links a:hover { color: var(--accent-color); }
+        .footer-bottom { border-top: 1px solid var(--border-color); padding-top: 20px; font-size: 0.85rem; display: flex; flex-direction: column; align-items: center; gap: 8px; color: var(--text-light); }
+
+        /* RESPONSIVE MOBILE ADJUSTMENTS */
+        @media (max-width: 640px) {
+            .navbar { padding: 12px 16px; }
+            .logo-container { width: 130px; height: 32px; }
+            h1.hero-title { font-size: 1.55rem; letter-spacing: -0.5px; line-height: 1.25; }
+            .subtitle { font-size: 0.8rem; padding: 0 10px; }
+            .input-section { padding: 20px; border-radius: 20px; }
+            textarea { padding: 12px; font-size: 0.9rem; height: 120px; }
+            .options-bar { gap: 12px; margin: 16px 0; }
+            select { padding: 10px 12px; font-size: 0.85rem; border-radius: 10px; }
+            .upload-section { padding: 16px; border-radius: 16px; }
+            .upload-grid { gap: 12px; grid-template-columns: 1fr; }
+            .upload-section .file-input-group[style*="grid-column"] { grid-column: span 1 !important; }
+            .file-input-group label { font-size: 0.75rem; }
+            .file-input-group input { padding: 8px; border-radius: 8px; font-size: 0.75rem; }
+            button { padding: 14px 20px; font-size: 0.9rem; }
+            #storyboardGrid { gap: 16px; }
+            .storyboard-card { border-radius: 20px; }
+            .card-header { padding: 12px 16px; }
+            .card-body { padding: 16px; gap: 12px; }
+            .lyrics-quote { padding: 10px 14px; font-size: 0.85rem; }
+            .description { font-size: 0.85rem; }
+            .download-btn { padding: 12px; font-size: 0.8rem; }
+            .options-bar {
+                grid-template-columns: 1fr 1fr !important; /* Paksa 2 kolom rapi di mobile sesuai keinginan Anda */
+                gap: 10px 12px !important; /* Celah sempit yang presisi agar tidak saling menumpuk */
+            }
+            .ratio-group-span {
+                grid-column: span 2 !important; /* Resolusi tetap lebar penuh membentang 2 kolom */
+            }
+            /* Perkecil ukuran font & padding elemen dropdown di seluler agar muat presisi & sangat jelas */
+            .option-group label {
+                font-size: 0.72rem !important;
+                letter-spacing: 0.3px;
+            }
+            .custom-dropdown-trigger {
+                padding: 10px 12px !important;
+                font-size: 0.8rem !important; /* Lebih ramping namun tetap tebal & tajam dibaca */
+                border-radius: 10px !important;
+            }
+            .model-type-badge-trigger {
+                font-size: 0.58rem !important;
+                padding: 1px 4px !important;
+                margin-left: 4px !important;
+            }
+            .custom-dropdown-option {
+                padding: 8px 10px !important;
+                font-size: 0.78rem !important;
+            }
+            .model-type-badge {
+                font-size: 0.58rem !important;
+                padding: 2px 6px !important;
+            }
+            .footer { padding: 20px 15px 20px; margin-top: 24px; }
+            .footer-logo { 
+                font-size: 1.3rem; 
+                margin: 0 auto 24px !important; /* Reset presisi margin tengah otomatis */
+                display: flex !important;
+                justify-content: center !important;
+                align-items: center !important;
+            }
+            .footer-links { 
+                display: flex !important;
+                flex-direction: column !important;
+                align-items: center !important;
+                gap: 12px !important; 
+                margin: 0 auto 24px !important; 
+            }
+            .footer-links a { font-size: 0.82rem; text-align: center; }
+            .footer-bottom { font-size: 0.75rem; gap: 6px; }
+        }
+    /* CUSTOM PREMIUM SELECT DROP-DOWNS BYPASSING NATIVE INTERCEPTIONS */
+        .custom-select-wrapper {
+            position: relative;
+            width: 100%;
+            z-index: 10;
+        }
+        .custom-select-wrapper.active-wrapper {
+            z-index: 9999 !important;
+        }
+        /* Sembunyikan select asli dari interaksi sentuhan agar tidak memicu pop-up bawaan browser */
+        .hidden-native-select {
+            display: none !important;
+        }
+        .custom-dropdown {
+            position: relative;
+            width: 100%;
+            user-select: none;
+            z-index: 100;
+        }
+        .custom-dropdown-trigger {
+            background: #f8fafc !important; /* Latar belakang abu-abu terang premium (sangat teduh di mata) */
+            border: 1px solid #cbd5e1 !important; /* Garis tepi abu-abu yang jelas & rapi */
+            border-left: 4px solid var(--accent-color) !important; /* Aksen garis tepi kiri warna Biru Royal Kreaverse */
+            color: var(--text-primary) !important; /* Tulisan berwarna gelap kontras tinggi agar sangat jelas */
+            padding: 12px 16px;
+            border-radius: 12px;
+            font-weight: 700; /* Dipertegas agar tulisan model/provider lebih jelas */
+            font-size: 0.92rem;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            width: 100%;
+            letter-spacing: -0.1px;
+        }
+        .custom-dropdown-trigger:hover {
+            background: #f1f5f9 !important;
+            border-color: #94a3b8 !important;
+            border-left-color: var(--accent-color) !important;
+        }
+        .custom-dropdown-trigger i {
+            font-size: 0.8rem;
+            color: var(--text-secondary) !important; /* Ikon panah abu-abu gelap */
+            transition: transform 0.3s ease;
+        }
+        .custom-dropdown.active .custom-dropdown-trigger i {
+            transform: rotate(180deg);
+            color: var(--accent-color) !important;
+        }
+        /* Efek sentuhan klik fisik (tactile feel) yang sangat memuaskan saat ditekan */
+        .custom-dropdown-trigger:active {
+            transform: scale(0.97) !important;
+        }
+        .custom-dropdown.active .custom-dropdown-trigger {
+            background: #e2e8f0 !important; /* Latar belakang lebih gelap sedikit saat terbuka */
+            border-color: var(--accent-color) !important;
+            border-left-color: var(--accent-color) !important;
+            box-shadow: 0 4px 14px rgba(0, 122, 255, 0.15), 0 0 0 4px rgba(0, 122, 255, 0.08) !important; /* Pendaran bayangan biru redup mewah */
+        }
+        .custom-dropdown-trigger i {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            transition: transform 0.3s ease;
+        }
+        .custom-dropdown.active .custom-dropdown-trigger i {
+            transform: rotate(180deg);
+            color: var(--accent-color);
+        }
+        .custom-dropdown-options {
+            position: absolute;
+            top: calc(100% + 8px);
+            left: 0; /* Default penyelarasan kiri */
+            width: auto;
+            min-width: 260px; /* Jaminan ruang sangat luas untuk nama model & lencana */
+            max-width: 90vw; /* Pengaman agar tidak melebihi lebar layar */
+            background: #ffffff;
+            border: 1px solid rgba(0, 122, 255, 0.15); /* Border biru transparan yang sangat tegas & rapi */
+            border-radius: 16px;
+            /* Shadow berlapis (dual-tone) premium agar efek melayang terlihat nyata dan sangat jelas */
+            box-shadow: 0 12px 30px -5px rgba(0, 0, 0, 0.08), 0 8px 16px -6px rgba(0, 122, 255, 0.04), 0 0 0 1px rgba(0, 122, 255, 0.05);
+            overflow-y: auto;
+            overflow-x: hidden !important; /* Blokir total geseran kiri-kanan */
+            max-height: 240px;
+            z-index: 1000;
+            padding: 6px;
+            animation: dropdownFadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+            display: none;
+        }
+        .custom-dropdown.active .custom-dropdown-options {
+            display: block;
+        }
+        @keyframes dropdownFadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .custom-dropdown-option {
+            padding: 10px 14px;
+            font-size: 0.85rem;
+            font-weight: 600; /* Karakter tulisan diperjelas */
+            color: var(--text-secondary);
+            border-radius: 10px;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            justify-content: flex-start; /* Merapat rapat ke kiri secara elegan */
+            align-items: center;
+            gap: 8px; /* Jarak rapat yang sangat pas antara nama dan lencana */
+            width: 100%;
+            box-sizing: border-box;
+            overflow: hidden;
+        }
+        .custom-dropdown-option .model-name-text, .custom-dropdown-trigger .model-name-text {
+            flex: 0 1 auto; /* Mengizinkan teks mengecil secara fleksibel tanpa memaksa melebar */
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .custom-dropdown-trigger {
+            display: flex;
+            justify-content: flex-start; /* Rapat ke kiri */
+            align-items: center;
+            gap: 6px;
+            width: 100%;
+            box-sizing: border-box;
+            overflow: hidden;
+        }
+        .custom-dropdown-trigger i {
+            margin-left: auto; /* Memaksa ikon panah tetap berada di sudut paling kanan trigger */
+            flex-shrink: 0;
+        }
+
+        /* ==========================================
+           SISTEM DETEKSI KOLOM HP PINTAR (ANTI-TABRAKAN)
+           ========================================== */
+        @media (max-width: 640px) {
+            /* Dropdown di Kolom Kiri (Provider Naskah, Provider Video, Suasana Waktu) */
+            .options-bar .option-group:nth-child(odd) .custom-dropdown-options {
+                left: 0 !important;
+                right: auto !important;
+            }
+            /* Dropdown di Kolom Kanan (Model Naskah, Model Video, Audio) */
+            .options-bar .option-group:nth-child(even) .custom-dropdown-options {
+                left: auto !important;
+                right: 0 !important;
+            }
+            /* Resolusi & Rasio Video (Rasio lebar penuh) */
+            .options-bar .option-group.ratio-group-span .custom-dropdown-options {
+                left: 0 !important;
+                right: 0 !important;
+                width: 100% !important;
+                min-width: 100% !important;
+            }
+        }
+        .custom-dropdown-option:hover {
+            background: rgba(0, 122, 255, 0.06); /* Hover biru transparan senada */
+            color: var(--accent-color);
+        }
+        .custom-dropdown-option.selected {
+            background: var(--accent-color); /* Latar belakang biru royal Kreaverse */
+            color: #ffffff;
+            /* Efek pendaran cahaya (glow shadow) biru di bawah opsi terpilih agar terlihat sangat jelas dan profesional */
+            box-shadow: 0 4px 12px rgba(0, 122, 255, 0.25);
+        }
+        .model-type-badge {
+            font-size: 0.58rem !important;
+            padding: 2px 6px !important;
+            flex-shrink: 0; /* Menjamin lencana tidak akan pernah menyusut atau gepeng */
+            letter-spacing: 0.3px;
+        }
+        .custom-dropdown-option:hover {
+            background: rgba(0, 122, 255, 0.06); /* Hover biru transparan senada */
+            color: var(--accent-color);
+        }
+        .custom-dropdown-option.selected {
+            background: var(--accent-color); /* Latar belakang biru royal Kreaverse */
+            color: #ffffff;
+            /* Efek pendaran cahaya (glow shadow) biru di bawah opsi terpilih agar terlihat sangat jelas dan profesional */
+            box-shadow: 0 4px 12px rgba(0, 122, 255, 0.25);
+        }
+        .model-type-badge {
+            font-size: 0.58rem !important;
+            padding: 2px 6px !important;
+            flex-shrink: 0; /* Menjamin lencana tidak akan pernah menyusut atau gepeng */
+            letter-spacing: 0.3px;
+        }
+
+        /* UNIVERSAL MODEL TYPE BADGES */
+        .model-type-badge {
+            font-size: 0.65rem;
+            font-weight: 800;
+            padding: 3px 8px;
+            border-radius: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            margin-left: auto; /* Dorong lencana ke sudut paling kanan pilihan */
+            border: 1px solid transparent;
+        }
+        .model-type-badge.text-to-video {
+            background: rgba(0, 122, 255, 0.08);
+            color: var(--accent-color);
+            border-color: rgba(0, 122, 255, 0.12);
+        }
+        .model-type-badge.photo-to-video {
+            background: rgba(16, 185, 129, 0.08);
+            color: var(--success-color);
+            border-color: rgba(16, 185, 129, 0.12);
+        }
+        .model-type-badge-trigger {
+            font-size: 0.62rem;
+            font-weight: 800;
+            padding: 2px 6px;
+            border-radius: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            margin-left: 8px;
+            display: inline-block;
+            vertical-align: middle;
+            background: rgba(0, 122, 255, 0.08) !important;
+            color: var(--accent-color) !important;
+            border: 1px solid rgba(0, 122, 255, 0.12);
+        }
+        .model-type-badge-trigger.text-to-video {
+            background: rgba(0, 122, 255, 0.08) !important;
+            color: var(--accent-color) !important;
+            border-color: rgba(0, 122, 255, 0.12) !important;
+        }
+        .model-type-badge-trigger.photo-to-video {
+            background: rgba(16, 185, 129, 0.08) !important;
+            color: var(--success-color) !important;
+            border-color: rgba(16, 185, 129, 0.12) !important;
+        }
+
+        /* DYNAMIC ASPECT RATIOS FOR VIDEO BOX */
+        .video-box.ratio-16-9 {
+            aspect-ratio: 16/9;
+        }
+        .video-box.ratio-9-16 {
+            aspect-ratio: 9/16;
+            max-width: 320px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        /* IPHONE TOAST STYLE (DYNAMIC ISLAND - SLEEK & COMPACT DESIGN) */
+        .iphone-toast-container {
+            position: fixed;
+            top: 15px; /* Lebih naik ke atas dekat notch/kamera */
+            left: 50%;
+            transform: translateX(-50%) translateY(-140%);
+            background: rgba(15, 23, 42, 0.98); /* Slate gelap premium */
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            color: #FFFFFF;
+            padding: 8px 18px; /* Lebih ramping & elegan */
+            border-radius: 24px; /* Bulat kapsul sempurna */
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.3), 0 0 1px 1px rgba(255, 255, 255, 0.1) inset;
+            opacity: 0;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.15); /* Transisi pop elastis yang halus */
+            z-index: 100000;
+            width: max-content;
+            max-width: 85vw; /* Lebih ramping di mobile */
+            pointer-events: none;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .iphone-toast-container.show {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+        }
+        .iphone-toast-icon {
+            font-size: 1rem; /* Ukuran ikon proporsional */
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .iphone-toast-content {
+            display: flex;
+            flex-direction: column;
+            text-align: left;
+            min-width: 0;
+        }
+        .iphone-toast-title {
+            font-size: 0.78rem; /* Lebih mungil tapi tebal tajam */
+            font-weight: 800;
+            line-height: 1.2;
+            letter-spacing: 0.1px;
+            margin-bottom: 1px;
+        }
+        .iphone-toast-desc {
+            font-size: 0.72rem; /* Sangat jelas dibaca namun tidak memakan tempat */
+            color: #cbd5e1;
+            font-weight: 600;
+            line-height: 1.3;
+            white-space: normal;
+            word-wrap: break-word;
+        }
+
+        /* HORIZONTAL (16:9) LOADING OVERFLOW CORRECTIONS */
+        .video-box.ratio-16-9 .video-loader-container {
+            padding: 8px !important;
+            gap: 6px !important;
+        }
+        .video-box.ratio-16-9 .ai-glow-ring {
+            width: 80px !important;
+            height: 80px !important;
+        }
+        .video-box.ratio-16-9 .ai-glow-orb {
+            width: 32px !important;
+            height: 32px !important;
+        }
+        .video-box.ratio-16-9 .ai-glow-orb::after {
+            inset: -3px !important;
+        }
+        .video-box.ratio-16-9 .ai-glow-orb i {
+            font-size: 0.8rem !important;
+        }
+        .video-box.ratio-16-9 .loader-title {
+            font-size: 0.8rem !important;
+        }
+        .video-box.ratio-16-9 .loader-progress-box {
+            margin: 2px 0 !important;
+            max-width: 180px !important;
+        }
+        .video-box.ratio-16-9 .loader-progress-bar {
+            height: 4px !important;
+        }
+        .video-box.ratio-16-9 .loader-progress-label {
+            font-size: 0.62rem !important;
+        }
+        .video-box.ratio-16-9 .loader-subtitle {
+            font-size: 0.65rem !important;
+            margin-top: -4px !important;
+        }
+        .video-box.ratio-16-9 .btn-cancel-render {
+            padding: 4px 10px !important;
+            font-size: 0.65rem !important;
+            gap: 4px !important;
+        }
+
+        /* TANYA JAWAB FAQ SECTION (PRESISI SESUAI EMAIL PAGE) */
+        .faq-section {
+            margin-top: 50px;
+            text-align: center;
+            width: 100%;
+        }
+        .faq-title {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--text-primary);
+            margin-bottom: 24px;
+            letter-spacing: -0.5px;
+        }
+        .faq-container {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            max-width: 800px;
+            margin: 0 auto 50px;
+            width: 100%;
+        }
+        .faq-card {
+            background: #ffffff;
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: var(--shadow-sm);
+            transition: var(--transition);
+            text-align: left;
+        }
+        .faq-card:hover {
+            box-shadow: var(--shadow-md);
+        }
+        .faq-trigger {
+            padding: 18px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            font-weight: 800;
+            font-size: 0.95rem;
+            color: var(--text-primary);
+        }
+        .faq-trigger i {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            transition: transform 0.3s ease;
+        }
+        .faq-card.active .faq-trigger i {
+            transform: rotate(180deg);
+            color: var(--accent-color);
+        }
+        .faq-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+            background: #fafafa;
+        }
+        .faq-inner-text {
+            padding: 20px 24px;
+            font-family: 'Inter', 'Plus Jakarta Sans', sans-serif; /* Gunakan Inter yang sangat jernih untuk teks penjelasan */
+            font-size: 0.86rem;
+            color: #334155; /* Abu-abu gelap kontras tinggi */
+            line-height: 1.65;
+            font-weight: 500; /* Diturunkan dari 600 ke 500 agar teks ramping, bersih, dan tajam di layar ponsel */
+            border-top: 1px solid var(--border-color);
+            letter-spacing: -0.05px;
+        }
+
+        /* FOOTER CLEAN LAYOUT (PRESISI SINKRON DENGAN EMAIL PAGE) */
+        .footer {
+            background: transparent !important;
+            border-top: 1px solid var(--border-color);
+            padding: 24px 20px 30px; /* Jarak kosong atas dikurangi secara rapat & seimbang */
+            text-align: center;
+            margin-top: 32px; /* Jarak kosong atas dikurangi secara rapat & seimbang */
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+        .footer-logo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 140px; /* Ukuran disamakan dengan halaman email */
+            height: 32px; /* Ukuran disamakan dengan halaman email */
+            margin: 0 auto 24px;
+        }
+        .footer-links {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px; /* Jarak pas antar baris menu */
+            margin-bottom: 24px;
+        }
+        .footer-links-row {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 24px; /* Jarak pas antar link horizontal */
+            flex-wrap: nowrap;
+        }
+        .footer-links a {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            font-weight: 500; /* Font weight disesuaikan dengan halaman email */
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+        /* EFEK BERKILAU (TWINKLE GLOW) KHUSUS BINTANG LOGO FOOTER - ANTI BLACK OUTLINE ARTIFAC */
+        .star-glow {
+            animation: starPulseGlow 3s ease-in-out infinite alternate;
+            transform-origin: 30px 30px; /* Pusat rotasi bintang pada koordinat (30,30) */
+        }
+        @keyframes starPulseGlow {
+            0% {
+                opacity: 0.85;
+                /* Gunakan shadow putih & biru sangat tipis untuk menghilangkan bias hitam/gelap di browser */
+                filter: drop-shadow(0 0 2px rgba(255, 255, 255, 0.4));
+                transform: scale(0.98);
+            }
+            100% {
+                opacity: 1;
+                /* Pendaran murni terang tanpa bayangan gelap */
+                filter: drop-shadow(0 0 10px rgba(0, 122, 255, 0.6)) drop-shadow(0 0 15px rgba(255, 255, 255, 0.5));
+                transform: scale(1.03);
+            }
+        }
+
+        /* TEXT SHIMMER KILAU ORANYE DURASI 10 DETIK PER 1 MENIT (60 DETIK) - SANGAT ELEGAN & TEDUH */
+        .shimmer-orange-text {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-weight: 800;
+            text-decoration: none;
+            display: inline-block;
+            background: linear-gradient(120deg, #D97757 35%, #ffd1b3 50%, #D97757 65%);
+            background-size: 200% auto;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            color: transparent;
+            animation: textShimmerSweep 60s linear infinite; /* Siklus total 1 menit (60 detik) */
+        }
+        @keyframes textShimmerSweep {
+            0% { background-position: 100% center; }
+            16.67% { background-position: -100% center; } /* 16.67% dari 60 detik = 10 detik sapuan kilau lambat senada */
+            100% { background-position: -100% center; } /* Diam (idle) total selama sisa 50 detik berikutnya */
+        }
+        .footer-links a:hover {
+            color: var(--accent-color);
+        }
+        .footer-bottom {
+            font-size: 0.85rem;
+            color: var(--text-light);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+            border-top: none !important;
+            padding-top: 0 !important;
+        }
+    /* FORCE RESET DURATION TABS TO COMPACT PILL DESIGN (BYPASS GLOBAL BUTTON STYLE) */
+        .duration-tab-btn {
+            background: transparent !important;
+            border: none !important;
+            box-shadow: none !important;
+            padding: 6px 14px !important;
+            border-radius: 16px !important;
+            font-size: 0.78rem !important;
+            font-weight: 800 !important;
+            color: var(--text-secondary) !important;
+            width: auto !important; /* Batalkan paksaan lebar 100% dari CSS global */
+            height: auto !important;
+            cursor: pointer;
+            transition: var(--transition);
+            white-space: nowrap;
+            display: inline-block !important;
+            text-align: center;
+            outline: none !important;
+        }
+        .duration-tab-btn.active {
+            background: var(--accent-color) !important;
+            color: #ffffff !important;
+            box-shadow: 0 4px 10px rgba(0, 122, 255, 0.2) !important;
+        }
+    /* DURATION TABS STYLE (SLEEK PILL DESIGN) */
+        .duration-tabs-container {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-bottom: 24px;
+            text-align: left;
+        }
+        .duration-tabs {
+            display: inline-flex;
+            background: #f1f5f9; /* Papan abu-abu lembut terstruktur */
+            padding: 4px;
+            border-radius: 20px;
+            width: max-content;
+            gap: 4px;
+            border: 1px solid var(--border-color);
+        }
+        .duration-tab-btn {
+            background: #e2e8f0 !important; /* Kontras abu-abu lembut agar tidak menyatu putih */
+            border: none !important;
+            box-shadow: none !important;
+            padding: 6px 14px !important;
+            border-radius: 16px !important;
+            font-size: 0.78rem !important;
+            font-weight: 800 !important;
+            color: var(--text-secondary) !important;
+            width: auto !important; /* Batalkan paksaan lebar 100% dari CSS global */
+            height: auto !important;
+            cursor: pointer;
+            transition: var(--transition);
+            white-space: nowrap;
+            display: inline-block !important;
+            text-align: center;
+            outline: none !important;
+        }
+        .duration-tab-btn.active {
+            background: var(--accent-color) !important; /* Biru royal Kreaverse */
+            color: #ffffff !important;
+            box-shadow: 0 4px 10px rgba(0, 122, 255, 0.2) !important;
+        }
+
+        /* PREMIUM DYNAMIC RECOMMENDATION BOX STYLE (SINKRON DENGAN TEMA BIRU KREAVERSE) */
+        .recommendation-info-box {
+            background: #f0f7ff !important; /* Biru es lembut senada dengan kustom select */
+            border-left: 4px solid var(--accent-color) !important; /* Aksen kiri biru royal Kreaverse */
+            padding: 10px 14px;
+            border-radius: 12px;
+            font-size: 0.74rem; /* Diperkecil agar ramping & sangat rapi */
+            margin-top: 10px;
+            color: #1e3a8a !important; /* Navy gelap kontras tinggi */
+            font-weight: 600;
+            line-height: 1.45;
+            text-align: left;
+            box-shadow: 0 2px 6px rgba(0, 122, 255, 0.02);
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            display: none; /* Sembunyikan secara bawaan (hanya muncul saat durasi diklik) */
+        }
+
+        /* SINKRONISASI PANEL ATRIBUT UNIVERSAL DENGAN TEMA BIRU ES LEMBUT */
+        #universalUploads {
+            background: transparent !important;
+            border: none !important;
+            border-radius: 0 !important;
+            padding: 0 !important;
+            margin-bottom: 24px !important;
+            box-shadow: none !important;
+            transition: var(--transition) !important;
+        }
+
+        /* COMPACT FLAT LIST ROWS (RAMPING, BERANGKA, & MEWAH) */
+        .file-input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            background: transparent !important;
+            padding: 0 0 14px 0 !important;
+            border-bottom: 1px solid #edf2f7 !important;
+            border-radius: 0 !important;
+            border-top: none !important;
+            border-left: none !important;
+            border-right: none !important;
+            transition: var(--transition) !important;
+        }
+        .file-input-group:last-child {
+            border-bottom: none !important;
+            padding-bottom: 0 !important;
+        }
+        .compact-upload-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        .upload-label-col {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            flex: 1;
+            min-width: 0;
+            text-align: left;
+        }
+        .upload-title {
+            font-size: 0.8rem !important;
+            font-weight: 800 !important;
+            color: var(--text-primary) !important;
+            font-family: 'Plus Jakarta Sans', sans-serif !important;
+        }
+        .upload-desc {
+            font-size: 0.65rem !important;
+            font-weight: 500 !important;
+            color: var(--text-light) !important;
+            line-height: 1.35 !important;
+            font-family: 'Plus Jakarta Sans', sans-serif !important;
+        }
+        .btn-custom-upload-compact {
+            background: #ffffff !important;
+            color: var(--accent-color) !important;
+            border: 1.5px solid rgba(0, 122, 255, 0.25) !important;
+            padding: 8px 14px !important;
+            font-size: 0.75rem !important;
+            font-weight: 800 !important;
+            border-radius: 10px !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            gap: 6px !important;
+            cursor: pointer;
+            transition: var(--transition) !important;
+            width: auto !important;
+            height: auto !important;
+            flex-shrink: 0;
+            box-shadow: none !important;
+            font-family: 'Plus Jakarta Sans', sans-serif !important;
+        }
+        .btn-custom-upload-compact:hover {
+            background: var(--accent-color) !important;
+            color: #ffffff !important;
+            border-color: var(--accent-color) !important;
+            box-shadow: 0 4px 10px rgba(0, 122, 255, 0.15) !important;
+        }
+        
+        /* REAL-TIME PROGRESS BAR & SPEED METER CSS */
+        .upload-progress-container {
+            margin-top: 8px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            background: #ffffff;
+            padding: 12px;
+            border-radius: 10px;
+            border: 1px solid #e2e8f0;
+        }
+        .upload-progress-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.72rem;
+            font-weight: 700;
+        }
+        .upload-progress-info .file-name {
+            color: var(--text-primary);
+            max-width: 180px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .upload-progress-info .file-speed {
+            color: var(--accent-color);
+        }
+        .upload-progress-container .progress-bar {
+            width: 100%;
+            height: 4px;
+            background: #e2e8f0;
+            border-radius: 99px;
+            overflow: hidden;
+        }
+        .upload-progress-container .progress-fill {
+            height: 100%;
+            width: 0%;
+            background: var(--accent-color);
+            border-radius: 99px;
+            transition: width 0.1s linear;
+        }
+        .upload-progress-status {
+            font-size: 0.7rem;
+            font-weight: 700;
+            color: var(--text-secondary);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- NAVBAR PREMIUM -->
+    <nav class="navbar">
+        <a href="/" class="back-btn" title="Kembali"><i class="fa-solid fa-chevron-left"></i></a>
+        <!-- Logo navbar atas aktif menuju beranda dan dikembalikan ke gradasi warna asli logo Kreaverse -->
+        <a href="/" class="logo-container" title="Kembali ke Beranda" style="text-decoration: none; pointer-events: auto;">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 60" class="krea-logo-svg">
+                <defs>
+                    <linearGradient id="kreaGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stop-color="#D97757" />
+                        <stop offset="50%" stop-color="#AF52DE" />
+                        <stop offset="100%" stop-color="#007AFF" />
+                    </linearGradient>
+                </defs>
+                <g>
+                    <path d="M 30,10 Q 30,30 50,30 Q 30,30 30,50 Q 30,30 10,30 Q 30,30 30,10 Z" fill="url(#kreaGrad)" />
+                    <path d="M 30,17 Q 30,30 43,30 Q 30,30 30,43 Q 30,30 17,30 Q 30,30 30,17 Z" fill="url(#kreaGrad)" transform="rotate(45, 30, 30)" opacity="0.85" />
+                </g>
+                <text x="65" y="38" font-family="'Plus Jakarta Sans', sans-serif" font-weight="800" font-size="21" fill="currentColor" letter-spacing="-0.5px">Kreaverse<tspan font-weight="500" fill="#D97757"> AI</tspan></text>
+            </svg>
+        </a>
+        <div class="nav-right"></div>
+    </nav>
+
+    <div class="container">
+        <!-- HEADER DENGAN REVISI TULISAN PREMIUM -->
+        <header>
+            <h1 class="hero-title">LyricShot AI - Premium <span>🎬</span></h1>
+            <p class="subtitle">Ubah baris lirik lagu Anda menjadi rancangan adegan storyboard video klip (MV) sinematik berkualitas tinggi secara instan.</p>
+        </header>
+
+        <div class="input-section">
+            <div class="option-group" style="margin-bottom: 16px;">
+                <label for="lyricsInput" style="font-family: 'Plus Jakarta Sans', sans-serif; font-size: 0.8rem; color: var(--text-secondary); font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px;">Masukkan Lirik Lagu Mentah:</label>
+                <textarea id="lyricsInput" placeholder="Masukkan lirik lagu Anda di sini...&#10;Contoh: Kuberjalan di bawah rintik hujan, mencari bayangmu yang perlahan sirna..." oninput="calculateDuration()"></textarea>
+            </div>
+
+            <div class="option-group" style="margin-bottom: 16px;">
+                <label for="youtubeUrlInput" style="font-family: 'Plus Jakarta Sans', sans-serif; font-size: 0.8rem; color: var(--text-secondary); font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px;">Link Video YouTube Lagu (Opsional - Untuk Auto-Match Durasi):</label>
+                <input type="text" id="youtubeUrlInput" placeholder="Contoh: https://www.youtube.com/watch?v=qX4QO0X4I9E" style="width: 100%; background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 12px; color: var(--text-primary); padding: 12px 16px; font-size: 0.92rem; font-family: inherit; transition: var(--transition); box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.02);" oninput="calculateDuration()">
+            </div>
+            
+            <div id="durationDisplay" class="duration-info hidden"></div>
+
+            <!-- Tab Durasi Universal Ramping dengan Panduan Deskripsi -->
+            <div class="duration-tabs-container">
+                <label style="font-family: 'Plus Jakarta Sans', sans-serif; font-size: 0.8rem; color: var(--text-secondary); font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px;">Durasi per Klip Video:</label>
+                <div class="duration-tabs">
+                    <button class="duration-tab-btn" onclick="selectDuration(5)" id="duration-btn-5">5 Detik</button>
+                    <button class="duration-tab-btn" onclick="selectDuration(8)" id="duration-btn-8">8 Detik</button>
+                    <button class="duration-tab-btn active" onclick="selectDuration(10)" id="duration-btn-10">10 Detik</button>
+                </div>
+                <div class="recommendation-info-box" id="rec-box">
+                    <span>💡 <strong>Rekomendasi:</strong> 10 Detik adalah durasi maksimal terbaik saat ini untuk kestabilan gerakan model AI [1].</span>
+                    <span id="rec-more" class="hidden"> Gunakan 5 atau 8 Detik khusus untuk variasi klip pendek (seperti bagian Chorus).</span>
+                    <button onclick="toggleRecBox()" id="rec-toggle-btn" style="background:none; border:none; color:var(--accent-color); font-weight:800; font-size:0.72rem; cursor:pointer; padding:0; margin-left:4px; display:inline-block; outline:none; width:auto; height:auto; box-shadow:none;"><i class="fa-solid fa-chevron-down"></i> Lihat Semua</button>
+                </div>
+            </div>
+
+            <div class="options-bar">
+                <div class="option-group">
+                    <label for="providerNaskahSelect">Provider AI (Naskah/Lirik):</label>
+                    <div class="custom-select-wrapper">
+                        <select id="providerNaskahSelect" onchange="updateNaskahModels()">
+                            <option value="">Memuat...</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="option-group">
+                    <label for="modelNaskahSelect">Model AI (Naskah):</label>
+                    <div class="custom-select-wrapper">
+                        <select id="modelNaskahSelect">
+                            <option value="">Memuat...</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="option-group">
+                    <label for="providerSelect">Provider AI (Video):</label>
+                    <div class="custom-select-wrapper">
+                        <select id="providerSelect" onchange="updateVideoModels(); validateResolutionChoice();">
+                            <option value="">Memuat...</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="option-group">
+                    <label for="modelVideoSelect">Model AI (Video):</label>
+                    <div class="custom-select-wrapper">
+                        <select id="modelVideoSelect">
+                            <option value="">Memuat...</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="option-group">
+                    <label for="timeOfDaySelect">Suasana Waktu:</label>
+                    <div class="custom-select-wrapper">
+                        <select id="timeOfDaySelect">
+                            <option value="otomatis">Otomatis (Sesuai Alur Lirik)</option>
+                            <option value="pagi">Pagi (Matahari Terbit Hangat)</option>
+                            <option value="siang">Siang (Cahaya Terang Benderang)</option>
+                            <option value="sore">Sore (Golden Hour Romantis)</option>
+                            <option value="malam">Malam (Sinematik Remang-Remang)</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="option-group">
+                    <label for="audioSelect">Audio Klip Video:</label>
+                    <div class="custom-select-wrapper">
+                        <select id="audioSelect">
+                            <option value="false">Tanpa Suara (Hening / Mute)</option>
+                            <option value="true">Dengan Efek Suara (Ambient Sound)</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="option-group ratio-group-span" style="grid-column: span 2;">
+                    <label for="ratioSelect">Resolusi & Rasio Video:</label>
+                    <div class="custom-select-wrapper">
+                        <select id="ratioSelect" onchange="validateResolutionChoice()">
+                            <option value="9:16|480p">TikTok / Shorts (Vertikal 9:16 - 480p)</option>
+                            <option value="16:9|480p">YouTube (Horizontal 16:9 - 480p)</option>
+                            <option value="9:16|720p">TikTok / Shorts (Vertikal 9:16 - 720p HD)</option>
+                            <option value="16:9|720p" selected>YouTube (Horizontal 16:9 - 720p HD)</option>
+                            <option value="9:16|1080p">TikTok / Shorts (Vertikal 9:16 - 1080p FHD)</option>
+                            <option value="16:9|1080p">YouTube (Horizontal 16:9 - 1080p FHD)</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Upload Atribut Karakter Kreaverse Universal (Cukup 1 Foto Utama untuk Konsistensi Sempurna) -->
+            <div id="universalUploads" class="upload-section">
+                <!-- ACCORDION HEADER SINKRON DENGAN TRIGGER DROPDOWN LAINNYA -->
+                <div class="custom-dropdown-trigger" style="background: #f8fafc !important; cursor: pointer; user-select: none;" onclick="toggleUploadAccordion()">
+                    <span class="model-name-text" style="font-weight: 700; font-size: 0.92rem; display: flex; align-items: center; gap: 8px;">
+                        <i class="fa-solid fa-user-gear" style="color: var(--accent-color);"></i> Kunci Karakter & Baju Utama AI
+                    </span>
+                    <i id="upload-toggle-icon" class="fa-solid fa-chevron-down" style="transition: var(--transition);"></i>
+                </div>
+                
+                <div id="upload-content-body" class="hidden" style="margin-top: 8px; background: #ffffff; border: 1px solid rgba(0, 122, 255, 0.15); border-radius: 16px; box-shadow: var(--shadow-xl); padding: 18px; display: flex; flex-direction: column; gap: 14px; animation: dropdownFadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1);">
+                    <div style="font-size: 0.72rem; font-weight: 600; color: var(--text-secondary); text-align: left; padding-bottom: 8px; border-bottom: 1px solid #edf2f7; line-height: 1.4;">
+                        💡 <strong>SOP Konsistensi Sempurna:</strong> Unggah 1 foto model utama Anda yang sudah mengenakan gaya baju & hijab target secara jelas. Foto ini akan menjadi jangkar visual permanen dari adegan pertama hingga terakhir.
+                    </div>
+                    <div class="upload-grid" style="display: flex; flex-direction: column; gap: 12px; margin-top: 0;">
+                        <!-- BARIS TUNGGAL: MODEL & OUTFIIT ACUAN -->
+                        <div class="file-input-group">
+                            <div class="compact-upload-row">
+                                <div class="upload-label-col">
+                                    <span class="upload-title">Foto Karakter (Wajah, Baju & Hijab)</span>
+                                    <span class="upload-desc">Kunci kemiripan wajah, warna baju, dan jenis hijab karakter agar stabil 100%</span>
+                                </div>
+                                <input type="file" id="characterInput" accept="image/*" style="display: none;" onchange="handleLocalFileSelect('characterInput', 'characterProgressBox', 'characterProgressFill', 'characterSpeed', 'characterStatus', 'characterFileName', 'characterBtnText')">
+                                <button type="button" class="btn-custom-upload-compact" onclick="document.getElementById('characterInput').click()">
+                                    <i class="fa-solid fa-cloud-arrow-up"></i> <span id="characterBtnText">Pilih Foto</span>
+                                </button>
+                            </div>
+                            <div class="upload-progress-container hidden" id="characterProgressBox">
+                                <div class="upload-progress-info">
+                                    <span class="file-name" id="characterFileName">-</span>
+                                    <span class="file-speed" id="characterSpeed">0 KB/s</span>
+                                </div>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" id="characterProgressFill"></div>
+                                </div>
+                                <div class="upload-progress-status" id="characterStatus">Menunggu...</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <button id="generateBtn" onclick="generateStoryboard()">Buat Storyboard & Video</button>
+        </div>
+
+        <!-- Pemuatan Naskah Cerdas Menggunakan Visual Baru Dremina/Folow -->
+        <div id="loading" class="hidden">
+            <div class="cinematic-loader-card">
+                <div class="loader-icon-wrap">
+                    <i class="fa-solid fa-clapperboard fa-spin-pulse"></i>
+                </div>
+                <h3 class="cinematic-loader-title">Kreaverse AI Naskah</h3>
+                <div class="cinematic-progress-bar">
+                    <div class="cinematic-progress-fill" id="naskah-progress-fill"></div>
+                </div>
+                <p class="cinematic-loader-status" id="naskah-loader-status">Mempersiapkan analisis lirik...</p>
+            </div>
+        </div>
+
+        <div id="resultContainer" class="hidden">
+            <h2>Daftar Klip Video Hasil Render</h2>
+            <div id="storyboardGrid"></div>
+        </div>
+
+        <!-- TANYA JAWAB FAQ SECTION (PRESISI SINKRON DENGAN EMAIL PAGE) -->
+        <section class="faq-section">
+            <h2 class="faq-title">Tanya Jawab Kreaverse AI</h2>
+            <div class="faq-container">
+                <div class="faq-card">
+                    <div class="faq-trigger" onclick="toggleFaq(this)">
+                        <span>Apa tujuan utama dari layanan LyricShot AI?</span>
+                        <i class="fa-solid fa-chevron-down"></i>
+                    </div>
+                    <div class="faq-content">
+                        <div class="faq-inner-text">
+                            LyricShot AI dirancang untuk mempermudah musisi, produser, dan pembuat konten membuat video klip (MV) sinematik berkualitas tinggi secara instan langsung dari lirik lagu mentah. Dengan teknologi ini, Anda dapat memproduksi video musik berkualitas studio tanpa perlu menyewa kamera mahal (seperti Sony/ARRI), menyewa model aktor, atau menyewa tempat syuting, sehingga menghemat jutaan biaya produksi. Fitur render video premium ini khusus tersedia bagi pengguna <a href="/" class="shimmer-orange-text">Kreaverse AI</a> yang sudah masuk (logged in) ke akun mereka.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="faq-card">
+                    <div class="faq-trigger" onclick="toggleFaq(this)">
+                        <span>Bagaimana cara menggunakan tool ini untuk membuat video musik utuh?</span>
+                        <i class="fa-solid fa-chevron-down"></i>
+                    </div>
+                    <div class="faq-content">
+                        <div class="faq-inner-text">
+                            Caranya sangat mudah! Anda cukup menyalin (copy) lirik lagu secara utuh dari Google Search, lalu tempel (paste) lirik tersebut ke kolom masukan lirik di atas. Pilih rasio kualitas, model AI, dan durasi per-klip yang Anda inginkan, lalu klik "Buat Storyboard & Video". AI di VPS server Kreaverse akan secara otomatis mendeteksi struktur lagu (Intro, Verse, Chorus, Outro), mengelompokkannya secara cerdas, dan merender video klip sinematik yang tersusun rapi.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="faq-card">
+                    <div class="faq-trigger" onclick="toggleFaq(this)">
+                        <span>Siapa saja yang cocok menggunakan layanan premium ini?</span>
+                        <i class="fa-solid fa-chevron-down"></i>
+                    </div>
+                    <div class="faq-content">
+                        <div class="faq-inner-text">
+                            Layanan premium ini sangat cocok untuk musisi independen, konten kreator YouTube/TikTok, produser musik yang mengaransemen lagu di FL Studio, maupun siapa saja yang ingin memiliki video musik dengan visual model berhijab cantik, anggun, dan sholehah. Dengan menggunakan tool ini, Anda dapat memangkas seluruh pengeluaran produksi karena tidak perlu menyewa model cewek, membeli kamera DSLR mahal, atau menyewa lokasi syuting.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="faq-card">
+                    <div class="faq-trigger" onclick="toggleFaq(this)">
+                        <span>Bagaimana sistem VPS Kreaverse AI mengelola server pengerjaan ini?</span>
+                        <i class="fa-solid fa-chevron-down"></i>
+                    </div>
+                    <div class="faq-content">
+                        <div class="faq-inner-text">
+                            Seluruh pemrosesan video klip LyricShot AI dihubungkan langsung ke model-model AI visual tercanggih yang berjalan di atas VPS (Virtual Private Server) berkecepatan tinggi milik Kreaverse AI. Ini menjamin kestabilan rotasi kunci API cadangan serta kecepatan render video klip yang sangat optimal.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="faq-card">
+                    <div class="faq-trigger" onclick="toggleFaq(this)">
+                        <span>Apakah pilihan model visual video AI akan terus bertambah?</span>
+                        <i class="fa-solid fa-chevron-down"></i>
+                    </div>
+                    <div class="faq-content">
+                        <div class="faq-inner-text">
+                            Ya, <a href="/" class="shimmer-orange-text">Kreaverse AI</a> berkomitmen untuk terus menyajikan teknologi visual terdepan. Model-model AI Video generasi berikutnya dengan kemampuan gerak yang jauh lebih stabil dan realis akan terus ditambahkan secara berkala ke dalam daftar pilihan sistem guna menyajikan variasi model dan latar belakang sinematik yang tak terbatas.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- FOOTER PREMIUM (PRESISI SINKRON DENGAN EMAIL PAGE + EFEK SHIMMER KILAU 10 DETIK & BEBAS BIAS HITAM) -->
+        <footer class="footer">
+            <div class="footer-logo" style="width: 120px; height: 32px;"> <!-- Ukuran pembungkus disesuaikan proporsional dengan rasio baru -->
+                <a href="/" style="display: block; width: 100%; height: 100%; text-decoration: none;" title="Kembali ke Beranda">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 60" style="width: 100%; height: 100%;">
+                        <defs>
+                            <linearGradient id="kreaGradFooterPage" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" stop-color="#D97757" />
+                                <stop offset="50%" stop-color="#AF52DE" />
+                                <stop offset="100%" stop-color="#007AFF" />
+                            </linearGradient>
+                            <linearGradient id="shimmerGlowFooter" x1="-100%" y1="0%" x2="0%" y2="0%">
+                                <stop offset="0%" stop-color="rgba(255,255,255,0)" />
+                                <stop offset="45%" stop-color="rgba(255,255,255,0)" />
+                                <stop offset="50%" stop-color="rgba(255,255,255,0.9)" />
+                                <stop offset="55%" stop-color="rgba(255,255,255,0)" />
+                                <stop offset="100%" stop-color="rgba(255,255,255,0)" />
+                                <animate attributeName="x1" values="-100%; 200%" dur="10s" repeatCount="indefinite" />
+                                <animate attributeName="x2" values="0%; 300%" dur="10s" repeatCount="indefinite" />
+                            </linearGradient>
+                        </defs>
+                        <!-- Lapisan Dasar Gradasi Oranye/Ungu/Biru Kreaverse Asli -->
+                        <g>
+                            <g class="star-glow">
+                                <path d="M 30,10 Q 30,30 50,30 Q 30,30 30,50 Q 30,30 10,30 Q 30,30 30,10 Z" fill="url(#kreaGradFooterPage)" />
+                                <path d="M 30,17 Q 30,30 43,30 Q 30,30 30,43 Q 30,30 17,30 Q 30,30 30,17 Z" fill="url(#kreaGradFooterPage)" transform="rotate(45, 30, 30)" opacity="0.85" />
+                            </g>
+                            <text x="65" y="38" font-family="'Plus Jakarta Sans', sans-serif" font-weight="800" font-size="21" fill="url(#kreaGradFooterPage)" letter-spacing="-0.5px">Kreaverse<tspan font-weight="500" fill="#D97757"> AI</tspan></text>
+                        </g>
+                        <!-- Lapisan Efek Shimmer Kilau Berjalan Alami -->
+                        <g style="mix-blend-mode: overlay;">
+                            <g class="star-shimmer">
+                                <path d="M 30,10 Q 30,30 50,30 Q 30,30 30,50 Q 30,30 10,30 Q 30,30 30,10 Z" fill="url(#shimmerGlowFooter)" />
+                                <path d="M 30,17 Q 30,30 43,30 Q 30,30 30,43 Q 30,30 17,30 Q 30,30 30,17 Z" fill="url(#shimmerGlowFooter)" transform="rotate(45, 30, 30)" />
+                            </g>
+                            <text x="65" y="38" font-family="'Plus Jakarta Sans', sans-serif" font-weight="800" font-size="21" fill="url(#shimmerGlowFooter)" letter-spacing="-0.5px">Kreaverse<tspan font-weight="500" fill="#D97757"> AI</tspan></text>
+                        </g>
+                    </svg>
+                </a>
+            </div>
+            <div class="footer-links">
+                <div class="footer-links-row">
+                    <a href="/">Beranda</a>
+                    <a href="/media-ai/">Studio Media</a>
+                </div>
+                <div class="footer-links-row">
+                    <a href="/ketentuan">Syarat & Ketentuan</a>
+                    <a href="/privasi">Kebijakan Privasi</a>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2026 Kreaverse AI. All rights reserved.</p>
+                <div id="live-clock-footer" style="font-family: inherit; color: var(--text-secondary); font-weight:700; line-height: 1.5; font-size: 0.85rem;"></div>
+            </div>
+        </footer>
+    </div>
+    
+    <!-- Inisialisasi Firebase untuk Komunikasi Database Langsung -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+        import { getFirestore, collection, addDoc, doc, updateDoc, getDoc, getDocs } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyAO8JV4jkJmbHChYvjUCS7wqfVbKr94tHM",
+            authDomain: "kreaverse-ai0107.firebaseapp.com",
+            databaseURL: "https://kreaverse-ai0107-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "kreaverse-ai0107",
+            storageBucket: "kreaverse-ai0107.firebasestorage.app",
+            messagingSenderId: "1048550433011",
+            appId: "1:1048550433011:web:0cf2e4074b20fe09909786",
+            measurementId: "G-CJHMKKYQ4C"
+        };
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        
+        // Ekspos ke window agar dibaca oleh logika script
+        window.db = db;
+        window.collection = collection;
+        window.addDoc = addDoc;
+        window.doc = doc;
+        window.updateDoc = updateDoc;
+        window.getDoc = getDoc;
+        window.getDocs = getDocs;
+    </script>
+    <script>
+        let activeProviders = [];
+
+        // AUTOMATIC HTML -> CUSTOM PREMIUM UI SELECTS BYPASSING NATIVE PICKERS
+        window.syncCustomDropdowns = function() {
+            const nativeSelects = document.querySelectorAll('.options-bar select');
+            nativeSelects.forEach(select => {
+                // Sembunyikan elemen bawaan browser secara aman
+                select.classList.add('hidden-native-select');
+
+                let wrapper = select.parentElement;
+                if (!wrapper.classList.contains('custom-select-wrapper')) {
+                    const newWrapper = document.createElement('div');
+                    newWrapper.className = 'custom-select-wrapper';
+                    select.parentNode.insertBefore(newWrapper, select);
+                    newWrapper.appendChild(select);
+                    wrapper = newWrapper;
+                }
+
+                // Cari atau bentuk pembungkus kustom UI baru
+                let customDropdown = wrapper.querySelector('.custom-dropdown');
+                if (!customDropdown) {
+                    customDropdown = document.createElement('div');
+                    customDropdown.className = 'custom-dropdown';
+                    customDropdown.setAttribute('data-select-id', select.id);
+                    
+                    customDropdown.innerHTML = `
+                        <div class="custom-dropdown-trigger">
+                            <span class="custom-dropdown-value">Pilih...</span>
+                            <i class="fa-solid fa-chevron-down"></i>
+                        </div>
+                        <div class="custom-dropdown-options"></div>
+                    `;
+                    wrapper.appendChild(customDropdown);
+
+                    // Pemicu buka-tutup dropdown kustom
+                    const trigger = customDropdown.querySelector('.custom-dropdown-trigger');
+                    trigger.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        // Tutup dropdown kustom lainnya yang sedang terbuka
+                        document.querySelectorAll('.custom-dropdown').forEach(d => {
+                            if (customDropdown !== d) {
+                                d.classList.remove('active');
+                                d.parentElement.classList.remove('active-wrapper');
+                                const g = d.closest('.option-group');
+                                if (g) g.classList.remove('active-group');
+                            }
+                        });
+                        customDropdown.classList.toggle('active');
+                        wrapper.classList.toggle('active-wrapper', customDropdown.classList.contains('active'));
+                        const parentGroup = wrapper.closest('.option-group');
+                        if (parentGroup) {
+                            parentGroup.classList.toggle('active-group', customDropdown.classList.contains('active'));
+                        }
+                    });
+                }
+
+                const valueSpan = customDropdown.querySelector('.custom-dropdown-value');
+                const optionsContainer = customDropdown.querySelector('.custom-dropdown-options');
+                
+                const isModelSelect = select.id === 'modelVideoSelect';
+                // Pembersih otomatis nama model yang panjang (grok-imagine/text-to-video -> Grok Imagine)
+                const formatModelDisplayName = (modelId) => {
+                    if (!modelId) return "Default Model";
+                    const parts = modelId.split('/');
+                    let brand = parts[0];
+                    let sub = parts[1] || "";
+                    
+                    brand = brand.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+                    
+                    if (brand === "Happyhorse") brand = "Luma Dream Machine";
+                    if (brand === "Bytedance") brand = "Seedance AI";
+                    if (brand === "Google") brand = "Google Gemini";
+
+                    let version = "";
+                    const verMatch = sub.match(/v[0-9.]+/i);
+                    if (verMatch) {
+                        version = " " + verMatch[0].toUpperCase();
+                    } else {
+                        const brandVerMatch = parts[0].match(/[0-9.]+/);
+                        if (brandVerMatch && !brand.includes(brandVerMatch[0])) {
+                            version = " " + brandVerMatch[0];
+                        }
+                    }
+
+                    let finalName = brand + version;
+                    return finalName.trim();
+                };
+
+                // Set nilai & teks terpilih saat ini dengan membaca data-badge dari option
+                const selectedOpt = select.options[select.selectedIndex];
+                if (selectedOpt) {
+                    if (isModelSelect) {
+                        const type = selectedOpt.getAttribute('data-badge') || "Text to Video";
+                        const badgeClass = type === "Photo to Video" ? "photo-to-video" : "text-to-video";
+                        valueSpan.innerHTML = `${selectedOpt.textContent} <span class="model-type-badge-trigger ${badgeClass}">${type}</span>`;
+                    } else {
+                        valueSpan.textContent = selectedOpt.textContent;
+                    }
+                } else {
+                    valueSpan.textContent = 'Pilih...';
+                }
+
+                // Isi daftar pilihan kustom
+                optionsContainer.innerHTML = '';
+                Array.from(select.options).forEach(opt => {
+                    const optDiv = document.createElement('div');
+                    optDiv.className = 'custom-dropdown-option';
+                    if (opt.selected) optDiv.classList.add('selected');
+                    optDiv.setAttribute('data-value', opt.value);
+                    
+                    if (isModelSelect) {
+                        const type = opt.getAttribute('data-badge') || "Text to Video";
+                        const badgeClass = type === "Photo to Video" ? "photo-to-video" : "text-to-video";
+                        optDiv.innerHTML = `<span>${opt.textContent}</span> <span class="model-type-badge ${badgeClass}">${type}</span>`;
+                    } else {
+                        optDiv.textContent = opt.textContent;
+                    }
+
+                    optDiv.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        // Set nilai ke elemen bawaan asli
+                        select.value = opt.value;
+                        // Picu event onchange aslinya agar logika model/kamera sinkron otomatis
+                        select.dispatchEvent(new Event('change'));
+                        
+                        // Tutup daftar kustom
+                        customDropdown.classList.remove('active');
+                        
+                        // Sinkronkan kembali visual UI kustom
+                        window.syncCustomDropdowns();
+                    });
+
+                    optionsContainer.appendChild(optDiv);
+                });
+            });
+        };
+
+        // Tutup dropdown jika pengguna menekan area luar layar
+        document.addEventListener('click', () => {
+            document.querySelectorAll('.custom-dropdown').forEach(d => {
+                d.classList.remove('active');
+                d.parentElement.classList.remove('active-wrapper');
+                const g = d.closest('.option-group');
+                if (g) g.classList.remove('active-group');
+            });
+        });
+
+        // Penampung URL Cloudinary yang berhasil diunggah di sisi klien
+        window.uploadedCloudinaryUrls = {
+            characterInput: null
+        };
+
+        // Fungsi Memuat Akun Cloudinary Aktif Langsung dari Firestore Klien
+        async function getCloudinaryAccounts() {
+            let activeCloudinaries = [];
+            const collections = ["cloudinary_accounts", "cloudinary", "cloudinary_db"];
+            for (const col of collections) {
+                try {
+                    const snap = await window.getDocs(window.collection(window.db, col));
+                    if (!snap.empty) {
+                        snap.forEach(doc => {
+                            const d = doc.data();
+                            const status = (d.status || d.state || "").toLowerCase().trim();
+                            if (status === "aktif" || status === "active" || !status) {
+                                activeCloudinaries.push({
+                                    cloudName: d.cloudName || d.cloud_name || "",
+                                    uploadPreset: d.uploadPreset || d.upload_preset || ""
+                                });
+                            }
+                        });
+                        if (activeCloudinaries.length > 0) break;
+                    }
+                } catch (e) {
+                    console.error("Gagal load " + col, e);
+                }
+            }
+            return activeCloudinaries;
+        }
+
+        // Fungsi Unggah Berkas Klien secara Real-Time dengan Rotasi & Kalkulasi Kecepatan
+        async function handleLocalFileSelect(inputId, boxId, fillId, speedId, statusId, nameId, btnTextId) {
+            const input = document.getElementById(inputId);
+            if (!input || !input.files || input.files.length === 0) return;
+
+            const file = input.files[0];
+            const box = document.getElementById(boxId);
+            const fill = document.getElementById(fillId);
+            const speedEl = document.getElementById(speedId);
+            const statusEl = document.getElementById(statusId);
+            const nameEl = document.getElementById(nameId);
+            const btnText = document.getElementById(btnTextId);
+
+            nameEl.innerText = file.name;
+            box.classList.remove('hidden');
+            fill.style.width = '0%';
+            statusEl.innerText = 'Menyiapkan koneksi...';
+            statusEl.style.color = 'var(--text-secondary)';
+
+            const clAccounts = await getCloudinaryAccounts();
+            if (clAccounts.length === 0) {
+                statusEl.innerText = 'Gagal: Penyimpanan (Cloudinary) tidak aktif di Firestore!';
+                statusEl.style.color = 'var(--danger-color)';
+                return;
+            }
+
+            let successUrl = null;
+
+            for (const account of clAccounts) {
+                try {
+                    const formData = new FormData();
+                    formData.append('file', file);
+                    formData.append('upload_preset', account.uploadPreset);
+
+                    const xhr = new XMLHttpRequest();
+                    const uploadPromise = new Promise((resolve, reject) => {
+                        let startTime = Date.now();
+
+                        xhr.upload.addEventListener('progress', (e) => {
+                            if (e.lengthComputable) {
+                                let percent = Math.round((e.loaded / e.total) * 100);
+                                fill.style.width = `${percent}%`;
+                                
+                                let elapsedSeconds = (Date.now() - startTime) / 1000;
+                                let speed = elapsedSeconds > 0 ? (e.loaded / elapsedSeconds) : 0;
+                                let speedStr = speed > 1024 * 1024 
+                                    ? (speed / (1024 * 1024)).toFixed(1) + " MB/s" 
+                                    : (speed / 1024).toFixed(1) + " KB/s";
+                                
+                                speedEl.innerText = `${speedStr} (${(e.loaded / (1024 * 1024)).toFixed(1)}MB / ${(e.total / (1024 * 1024)).toFixed(1)}MB)`;
+                                statusEl.innerText = `Mengunggah berkas... ${percent}%`;
+                            }
+                        });
+
+                        xhr.addEventListener('load', () => {
+                            if (xhr.status >= 200 && xhr.status < 300) {
+                                try {
+                                    const response = JSON.parse(xhr.responseText);
+                                    if (response.secure_url) resolve(response.secure_url);
+                                    else reject(new Error("No URL"));
+                                } catch (err) { reject(err); }
+                            } else { reject(new Error(`Status ${xhr.status}`)); }
+                        });
+
+                        xhr.addEventListener('error', () => reject(new Error("Network error")));
+                    });
+
+                    xhr.open('POST', `https://api.cloudinary.com/v1_1/${account.cloudName}/image/upload`);
+                    xhr.send(formData);
+
+                    successUrl = await uploadPromise;
+                    if (successUrl) {
+                        statusEl.innerText = 'Sukses Terunggah!';
+                        statusEl.style.color = 'var(--success-color)';
+                        btnText.innerText = 'Ganti Berkas';
+                        window.uploadedCloudinaryUrls[inputId] = successUrl;
+                        break;
+                    }
+                } catch (err) {
+                    console.warn(`Akun Cloudinary ${account.cloudName} penuh/gagal, memutar penyimpanan...`, err);
+                    statusEl.innerText = 'Akun penuh, mengalihkan...';
+                }
+            }
+
+            if (!successUrl) {
+                statusEl.innerText = 'Gagal: Semua penyimpanan Cloudinary limit/penuh!';
+                statusEl.style.color = 'var(--danger-color)';
+            }
+
+            // Picu auto-detect saringan fisik menu model video
+            handleUploadAutoDetect();
+        }
+
+        // Fungsi inisiasi utama dengan penanganan perlindungan balapan jaringan (Race Condition)
+        async function initProviders() {
+            const providerNaskahSelect = document.getElementById('providerNaskahSelect');
+            const providerSelect = document.getElementById('providerSelect');
+            if (!providerNaskahSelect || !providerSelect) return;
+
+            try {
+                let data = [];
+                // Cek apakah database Firebase siap diakses langsung di sisi klien
+                if (window.db && window.doc && window.getDoc) {
+                    try {
+                        const docSnap = await window.getDoc(window.doc(window.db, "settings", "api_providers"));
+                        if (docSnap.exists() && docSnap.data().list) {
+                            data = docSnap.data().list;
+                        }
+                    } catch (dbErr) {
+                        console.warn("Gagal mengambil provider dari Firestore, beralih ke API fallback:", dbErr);
+                    }
+                }
+
+                // Jika data kosong, gunakan fallback API internal
+                if (!data || data.length === 0) {
+                    const res = await fetch('/api/providers');
+                    if (res.ok) {
+                        data = await res.json();
+                    }
+                }
+
+                if (Array.isArray(data) && data.length > 0) {
+                    // Konversi skema agar kompatibel dengan sistem pemilihan model dinamis
+                    activeProviders = data.map(p => ({
+                        id: p.value || p.id,
+                        name: p.label || p.name,
+                        serviceType: p.serviceType || "",
+                        models: p.models ? (Array.isArray(p.models) ? p.models : String(p.models).split(',').map(m => m.trim())) : []
+                    }));
+
+                    providerNaskahSelect.innerHTML = '';
+                    providerSelect.innerHTML = '';
+
+                    activeProviders.forEach(p => {
+                        const type = (p.serviceType || '').toUpperCase();
+                        const nameLower = (p.name || '').toLowerCase();
+
+                        // Filter SUPER KETAT berdasarkan Tipe Layanan dari Dashboard Admin
+                        if (type === 'LLM' || type === 'TEXT' || nameLower.includes('gemini') || nameLower.includes('openrouter') || nameLower.includes('openai') || nameLower.includes('claude')) {
+                            // 1. Masuk ke Dropdown Naskah/Lirik
+                            const opt = document.createElement('option');
+                            opt.value = p.id;
+                            opt.textContent = p.name;
+                            providerNaskahSelect.appendChild(opt);
+                        } else if (type === 'VIDEO' || type === 'IMAGE') {
+                            // 2. Masuk ke Dropdown Video AI
+                            const opt = document.createElement('option');
+                            opt.value = p.id;
+                            opt.textContent = p.name;
+                            providerSelect.appendChild(opt);
+                        }
+                        // 3. Jika type === 'AUDIO', sistem akan MENGABAIKANNYA.
+                        // Sehingga Suno/Udio tidak akan pernah nyasar lagi ke halaman Video ini.
+                    });
+
+                    updateNaskahModels();
+                    updateVideoModels();
+                } else {
+                    providerNaskahSelect.innerHTML = '<option value="">Gagal memuat</option>';
+                    providerSelect.innerHTML = '<option value="">Gagal memuat</option>';
+                }
+            } catch (err) {
+                console.error("Gagal melakukan inisiasi provider:", err);
+                providerNaskahSelect.innerHTML = '<option value="">Koneksi API Error</option>';
+                providerSelect.innerHTML = '<option value="">Koneksi API Error</option>';
+            } finally {
+                // Selaraskan ke UI Kustom premium
+                window.syncCustomDropdowns();
+            }
+        }
+
+        // Menangani eksekusi instan dengan jeda aman demi kelancaran inisialisasi modul Firebase SDK
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', () => setTimeout(initProviders, 500));
+        } else {
+            setTimeout(initProviders, 500);
+        }
+
+        function updateNaskahModels() {
+            const providerSelect = document.getElementById('providerNaskahSelect');
+            const modelSelect = document.getElementById('modelNaskahSelect');
+            if (!providerSelect || !modelSelect) return;
+            const selectedId = providerSelect.value;
+            modelSelect.innerHTML = '';
+            const p = activeProviders.find(item => item.id === selectedId);
+            if (p && p.models && p.models.length > 0) {
+                p.models.forEach(m => {
+                    const opt = document.createElement('option');
+                    opt.value = m;
+                    opt.textContent = formatModelDisplayName(m);
+                    modelSelect.appendChild(opt);
+                });
+            }
+            window.syncCustomDropdowns();
+        }
+
+        // Pembersih otomatis nama model yang panjang (grok-imagine/text-to-video -> Grok Imagine)
+        const formatModelDisplayName = (modelId) => {
+            if (!modelId) return "Default Model";
+            const parts = modelId.split('/');
+            let brand = parts[0];
+            let sub = parts[1] || "";
+            
+            brand = brand.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+            
+            if (brand === "Happyhorse") brand = "Luma Dream Machine";
+            if (brand === "Bytedance") brand = "Seedance AI";
+            if (brand === "Google") brand = "Google Gemini";
+
+            let version = "";
+            const verMatch = sub.match(/v[0-9.]+/i);
+            if (verMatch) {
+                version = " " + verMatch[0].toUpperCase();
+            } else {
+                const brandVerMatch = parts[0].match(/[0-9.]+/);
+                if (brandVerMatch && !brand.includes(brandVerMatch[0])) {
+                    version = " " + brandVerMatch[0];
+                }
+            }
+
+            let finalName = brand + version;
+            return finalName.trim();
+        };
+
+        function updateVideoModels() {
+            const providerSelect = document.getElementById('providerSelect');
+            const modelSelect = document.getElementById('modelVideoSelect');
+            if (!providerSelect || !modelSelect) return;
+            const selectedId = providerSelect.value;
+            modelSelect.innerHTML = '';
+            
+            // Deteksi apakah pengguna mengunggah foto
+            let hasFiles = false;
+            const charInput = document.getElementById('characterInput');
+            if (charInput && charInput.files && charInput.files.length > 0) hasFiles = true;
+
+            const p = activeProviders.find(item => item.id === selectedId);
+            if (p && p.models && p.models.length > 0) {
+                p.models.forEach(m => {
+                    const val = m.toLowerCase();
+                    const txt = formatModelDisplayName(m).toLowerCase();
+                    const str = val + " " + txt;
+                    
+                    // Deteksi Cerdas Tipe Model berdasarkan kata kunci
+                    let caps = "hybrid"; // Asumsi awal: Model bisa Teks dan Foto (seperti Grok, Seedance)
+                    if (str.includes("i2v") || str.includes("image-to-video") || str.includes("img2vid") || str.includes("photo-only")) {
+                        caps = "strict_photo"; // Model ini KHUSUS foto
+                    } else if (str.includes("t2v") || str.includes("text-to-video") || str.includes("txt2vid") || str.includes("text-only")) {
+                        caps = "strict_text"; // Model ini KHUSUS teks
+                    }
+                    
+                    // FILTERING LOGIC ANTI-KEBALIK:
+                    if (hasFiles && caps === "strict_text") return; // Sembunyikan model khusus teks jika pengguna upload foto
+                    if (!hasFiles && caps === "strict_photo") return; // Sembunyikan model khusus foto jika pengguna TIDAK upload foto
+                    
+                    // Tentukan warna lencana (Badge) yang akan muncul
+                    let badgeType = hasFiles ? "Photo to Video" : "Text to Video";
+                    if (caps === "strict_photo") badgeType = "Photo to Video";
+                    if (caps === "strict_text") badgeType = "Text to Video";
+
+                    const opt = document.createElement('option');
+                    opt.value = m;
+                    opt.textContent = formatModelDisplayName(m);
+                    opt.setAttribute('data-badge', badgeType); // Simpan info lencana ke dalam elemen
+                    modelSelect.appendChild(opt);
+                });
+            }
+            
+            window.syncCustomDropdowns();
+        }
+
+        // Menyelaraskan model secara cerdas jika mendeteksi adanya pengunggahan file gambar karakter (Universal & Dinamis)
+        window.handleUploadAutoDetect = function() {
+            // Saring ulang model secara dinamis berdasarkan keberadaan file foto
+            updateVideoModels();
+            
+            const modelVideoSelect = document.getElementById('modelVideoSelect');
+            if (modelVideoSelect && modelVideoSelect.options.length > 0) {
+                modelVideoSelect.selectedIndex = 0; // Pilih opsi Photo to Video pertama yang lolos saringan
+                window.showIphoneNotif("Model AI Diselaraskan", `Otomatis mengaktifkan model Photo to Video: ${modelVideoSelect.options[0].text}`, "fa-wand-magic-sparkles");
+            } else {
+                window.showIphoneNotif("Informasi Atribut", "Provider aktif tidak memiliki model Photo to Video terdaftar di database.", "fa-circle-exclamation");
+            }
+            
+            window.syncCustomDropdowns();
+        };
+
+        // Menyelaraskan batasan resolusi & durasi universal berdasarkan limitasi provider (Sangat future-proof)
+        window.validateResolutionChoice = function() {
+            const ratioSelect = document.getElementById('ratioSelect');
+            const providerSelect = document.getElementById('providerSelect');
+            if (!ratioSelect || !providerSelect || providerSelect.selectedIndex === -1) return;
+
+            const val = ratioSelect.value;
+            const [ratio, quality] = val.split('|');
+            const providerId = providerSelect.value;
+
+            const providerLimits = {
+                "magichour": { maxQuality: "480p", maxDuration: 5 },
+                "leonardoai": { maxQuality: "1080p", maxDuration: 5 }
+            };
+
+            // Gunakan batasan provider, default UNLOCKED 1080p untuk provider baru seperti Kie AI
+            const limit = providerLimits[providerId] || { maxQuality: "1080p", maxDuration: 10 };
+
+            if (quality === '720p' && limit.maxQuality === '480p' || quality === '1080p' && (limit.maxQuality === '480p' || limit.maxQuality === '720p')) {
+                window.showIphoneNotif("Resolusi Disesuaikan", `Provider saat ini hanya mendukung kualitas maksimal ${limit.maxQuality}.`, "fa-circle-exclamation");
+                ratioSelect.value = `${ratio}|${limit.maxQuality}`;
+            }
+
+            if (window.selectedDuration > limit.maxDuration) {
+                window.showIphoneNotif("Durasi Disesuaikan", `Provider saat ini hanya mendukung durasi maksimal ${limit.maxDuration} detik.`, "fa-circle-exclamation");
+                window.selectDuration(limit.maxDuration);
+            }
+            
+            window.syncCustomDropdowns();
+        };
+
+        window.selectedDuration = 10; // Default awal 10 detik
+
+        window.selectDuration = function(seconds) {
+            window.selectedDuration = seconds;
+            document.querySelectorAll('.duration-tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            const activeBtn = document.getElementById(`duration-btn-${seconds}`);
+            if (activeBtn) activeBtn.classList.add('active');
+            
+            // Tampilkan kotak rekomendasi secara dinamis saat tombol durasi diklik
+            const recBox = document.getElementById('rec-box');
+            if (recBox) {
+                recBox.style.display = 'block';
+            }
+
+            // Lakukan validasi limitasi provider/resolusi secara dinamis
+            validateResolutionChoice();
+            calculateDuration();
+        };
+
+        // Fungsi akordeon buka-tutup kotak rekomendasi secara kustom ramping
+        window.toggleRecBox = function() {
+            const moreText = document.getElementById('rec-more');
+            const btn = document.getElementById('rec-toggle-btn');
+            if (!moreText || !btn) return;
+            
+            const isHidden = moreText.classList.contains('hidden');
+            if (isHidden) {
+                moreText.classList.remove('hidden');
+                btn.innerHTML = `<i class="fa-solid fa-chevron-up"></i> Tutup`;
+            } else {
+                moreText.classList.add('hidden');
+                btn.innerHTML = `<i class="fa-solid fa-chevron-down"></i> Lihat Semua`;
+            }
+        };
+
+        function calculateDuration() {
+            const lyrics = document.getElementById('lyricsInput').value.trim();
+            const durationDisplay = document.getElementById('durationDisplay');
+            if (!lyrics) {
+                durationDisplay.classList.add('hidden');
+                return;
+            }
+            const lines = lyrics.split(/(?:\r?\n|(?<=[a-z\.\s])(?=[A-Z])|(?=\([A-Za-z]))/g)
+                                .map(line => line.trim())
+                                .filter(line => line.length > 0);
+                                
+            const totalLines = lines.length;
+            const clipDur = window.selectedDuration || 10;
+            
+            // Batas maksimal total durasi video klip (Standard FL Studio 3 s/d 4 Menit)
+            let maxDurationLimit = 180; // 3 menit (180 detik)
+            if (totalLines > 30) {
+                maxDurationLimit = 240; // 4 menit (240 detik) jika lirik sangat panjang
+            }
+            
+            let optimalClips = totalLines;
+            const maxClipsAllowed = Math.floor(maxDurationLimit / clipDur);
+            if (optimalClips > maxClipsAllowed) {
+                optimalClips = maxClipsAllowed;
+            }
+
+            const totalDuration = optimalClips * clipDur;
+            const minutes = Math.floor(totalDuration / 60);
+            const seconds = totalDuration % 60;
+            
+            let timeString = `<strong>${totalDuration} detik</strong>`;
+            if (minutes > 0) {
+                timeString += ` (sekitar <strong>${minutes} menit ${seconds > 0 ? seconds + ' detik' : ''}</strong>)`;
+            }
+            
+            durationDisplay.classList.remove('hidden');
+            
+            if (optimalClips < totalLines) {
+                durationDisplay.innerHTML = `📊 <strong>Informasi Video Musik:</strong> Terdeteksi ${totalLines} baris lirik. Agar durasi video sesuai standar musik (maksimal 3-4 menit), AI akan mengelompokkan lirik ke dalam <strong>${optimalClips} adegan</strong> (${optimalClips} klip x ${clipDur} detik = ${timeString}).`;
+            } else {
+                durationDisplay.innerHTML = `📊 <strong>Informasi Video Musik:</strong> Terdeteksi ${totalLines} baris lirik. Total durasi video otomatis disesuaikan menjadi ${timeString} (${totalLines} klip video x ${clipDur} detik).`;
+            }
+        }
+
+        function toggleUploadFields() {
+            const providerSelect = document.getElementById('providerSelect');
+            const magicHourUploads = document.getElementById('magicHourUploads');
+            const leonardoUploads = document.getElementById('leonardoUploads');
+            
+            if (providerSelect.selectedIndex === -1) return;
+            const providerName = providerSelect.options[providerSelect.selectedIndex].text.toLowerCase();
+
+            if (providerName.includes('magic')) {
+                magicHourUploads.classList.remove('hidden');
+                leonardoUploads.classList.add('hidden');
+            } else if (providerName.includes('leonardo')) {
+                leonardoUploads.classList.remove('hidden');
+                magicHourUploads.classList.add('hidden');
+            } else {
+                magicHourUploads.classList.add('hidden');
+                leonardoUploads.classList.add('hidden');
+            }
+        }
+
+        async function getBase64(file) {
+            if (!file) return null;
+            if (file.type && file.type.startsWith('image/')) {
+                return new Promise((resolve) => {
+                    const reader = new FileReader();
+                    reader.readAsDataURL(file);
+                    reader.onload = (event) => {
+                        const img = new Image();
+                        img.src = event.target.result;
+                        img.onload = () => {
+                            const canvas = document.createElement('canvas');
+                            const maxW = 1024;
+                            const maxH = 1024;
+                            let width = img.width;
+                            let height = img.height;
+
+                            if (width > height) {
+                                if (width > maxW) {
+                                    height = Math.round((height * maxW) / width);
+                                    width = maxW;
+                                }
+                            } else {
+                                if (height > maxH) {
+                                    width = Math.round((width * maxH) / height);
+                                    height = maxH;
+                                }
+                            }
+
+                            canvas.width = width;
+                            canvas.height = height;
+                            const ctx = canvas.getContext('2d');
+                            ctx.drawImage(img, 0, 0, width, height);
+                            resolve(canvas.toDataURL('image/jpeg', 0.8));
+                        };
+                        img.onerror = () => {
+                            const rawReader = new FileReader();
+                            rawReader.readAsDataURL(file);
+                            rawReader.onload = () => resolve(rawReader.result);
+                            rawReader.onerror = () => resolve(null);
+                        };
+                    };
+                    reader.onerror = () => resolve(null);
+                });
+            }
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = error => reject(error);
+            });
+        }
+
+        async function generateStoryboard() {
+    const lyrics = document.getElementById('lyricsInput').value;
+    const providerId = document.getElementById('providerSelect').value;
+    const ratioVal = document.getElementById('ratioSelect').value;
+    const [ratio, quality] = ratioVal.split('|'); // Pisahkan data rasio dan kualitas resolusi secara aman
+    const generateBtn = document.getElementById('generateBtn');
+    const loading = document.getElementById('loading');
+    const resultContainer = document.getElementById('resultContainer');
+    const storyboardGrid = document.getElementById('storyboardGrid');
+
+    if (!lyrics.trim()) {
+        window.showIphoneNotif("Lirik Kosong", "Harap masukkan lirik lagu terlebih dahulu.", "fa-circle-exclamation");
+        return;
+    }
+
+    const lines = lyrics.split(/(?:\r?\n|(?<=[a-z\.\s])(?=[A-Z])|(?=\([A-Za-z]))/g)
+                        .map(line => line.trim())
+                        .filter(line => line.length > 0);
+                        
+    const totalLines = lines.length;
+    const clipDur = window.selectedDuration || 10;
+    
+    // Perhitungan kalkulasi jumlah klip optimal agar durasi klip total tidak melebihi 3-4 menit
+    let maxDurationLimit = 180; 
+    if (totalLines > 30) {
+        maxDurationLimit = 240; 
+    }
+    
+    let optimalClipsCount = totalLines;
+    const maxClipsAllowed = Math.floor(maxDurationLimit / clipDur);
+    if (optimalClipsCount > maxClipsAllowed) {
+        optimalClipsCount = maxClipsAllowed;
+    }
+
+    generateBtn.disabled = true;
+    loading.classList.remove('hidden');
+    resultContainer.classList.add('hidden');
+    storyboardGrid.innerHTML = '';
+
+    // Simulasi visualisasi persentase naskah riil (Menyelaraskan kemajuan request backend secara aman)
+    let naskahProgress = 0;
+    const naskahFill = document.getElementById('naskah-progress-fill');
+    const naskahStatus = document.getElementById('naskah-loader-status');
+    if (naskahFill) naskahFill.style.width = '0%';
+    
+    const naskahInterval = setInterval(() => {
+        if (naskahProgress < 95) {
+            naskahProgress += Math.floor(Math.random() * 8) + 4;
+            if (naskahProgress > 95) naskahProgress = 95;
+            if (naskahFill) naskahFill.style.width = `${naskahProgress}%`;
+            
+            if (naskahStatus) {
+                if (naskahProgress <= 25) naskahStatus.textContent = "Menghubungkan ke Mesin Sinematik Kreaverse... (" + naskahProgress + "%)";
+                else if (naskahProgress <= 50) naskahStatus.textContent = "Menganalisis Makna & Alur Emosi Lagu... (" + naskahProgress + "%)";
+                else if (naskahProgress <= 75) naskahStatus.textContent = "Menyusun Pembagi Adegan [VERSE/CHORUS]... (" + naskahProgress + "%)";
+                else naskahStatus.textContent = "Merumuskan Format Lensa DSLR Sony FX3... (" + naskahProgress + "%)";
+            }
+        }
+    }, 500);
+
+    try {
+        const providerNaskahSelect = document.getElementById('providerNaskahSelect');
+        const providerSelect = document.getElementById('providerSelect');
+
+        if (providerNaskahSelect.selectedIndex === -1) {
+            window.showIphoneNotif("Pilih Provider", "Harap pilih Provider AI (Naskah/Lirik) terlebih dahulu.", "fa-circle-exclamation");
+            generateBtn.disabled = false;
+            loading.classList.add('hidden');
+            return;
+        }
+        if (providerSelect.selectedIndex === -1) {
+            window.showIphoneNotif("Pilih Provider", "Harap pilih Provider AI (Video) terlebih dahulu.", "fa-circle-exclamation");
+            generateBtn.disabled = false;
+            loading.classList.add('hidden');
+            return;
+        }
+
+        const providerNaskahId = providerNaskahSelect.value;
+        const modelNaskah = document.getElementById('modelNaskahSelect').value;
+        const modelVideo = document.getElementById('modelVideoSelect').value;
+        const timeOfDay = document.getElementById('timeOfDaySelect').value;
+        const audio = document.getElementById('audioSelect').value === "true";
+
+        const payload = {
+            email: localStorage.getItem('kreaverse_user_email') || "anon@kreaverse.ai",
+            lyrics,
+            providerId,
+            providerNaskahId,
+            modelNaskah,
+            modelVideo,
+            ratio,
+            quality,
+            duration: clipDur, 
+            optimalClipsCount: optimalClipsCount, // Mengirimkan jumlah klip target ke backend
+            timeOfDay, // Mengirimkan preferensi suasana waktu yang dipilih ke backend
+            audio, // Mengirimkan pengaturan mute/sound ke backend
+            style: "Cinematic Moody",
+            youtubeUrl: document.getElementById('youtubeUrlInput').value.trim(),
+            characterImage: await getBase64(document.getElementById('characterInput').files[0])
+        };
+
+                const response = await fetch('/api/lyricshot', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+
+        // Selesaikan indikator ke 100% secara instan begitu naskah sukses diterima dari server
+        clearInterval(naskahInterval);
+        if (naskahFill) naskahFill.style.width = '100%';
+        if (naskahStatus) naskahStatus.textContent = "Storyboard Berhasil Disusun! (100%)";
+
+        let data = {};
+        const contentType = response.headers.get("content-type");
+        if (contentType && contentType.includes("application/json")) {
+            data = await response.json();
+        } else {
+            const rawText = await response.text();
+            if (rawText.includes("504") || response.status === 504) {
+                throw new Error("Timeout Server Vercel (Proses pembuatan storyboard/video memakan waktu terlalu lama).");
+            } else if (rawText.includes("413") || response.status === 413) {
+                throw new Error("Berkas terlalu besar, mohon gunakan gambar dengan resolusi yang lebih rendah.");
+            } else {
+                throw new Error(`Sistem Error (${response.status})`);
+            }
+        }
+
+        if (response.ok) {
+            const scenes = Array.isArray(data) ? data : [];
+            
+            // Format tanggal lengkap dengan hari, tanggal, bulan, tahun, dan waktu indonesia format 12 jam (Siang/Sore/Malam) sesuai perbaikan
+            const now = new Date();
+            const days = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+            const months = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+            
+            let hours = now.getHours();
+            const minutes = now.getMinutes().toString().padStart(2, '0');
+            
+            let timePeriod = "Pagi";
+            if (hours >= 10 && hours < 15) {
+                timePeriod = "Siang";
+            } else if (hours >= 15 && hours < 18) {
+                timePeriod = "Sore";
+            } else if (hours >= 18 || hours < 4) {
+                timePeriod = "Malam";
+            } else {
+                timePeriod = "Pagi";
+            }
+            
+            const displayHours = hours % 12 || 12;
+            const fullDateStr = `${days[now.getDay()]} • ${now.getDate()} ${months[now.getMonth()]} ${now.getFullYear()} • ${displayHours}:${minutes} ${timePeriod}`;
+
+                    let lastPart = "";
+                    scenes.forEach(async (item) => {
+                        let firestoreId = item.firestore_id || "";
+                        
+                        // Fallback cerdas: Jika AI lupa melabeli, frontend otomatis menetapkan struktur lagu secara presisi berdasarkan urutan adegan
+                        let currentPart = (item.song_part || "").trim().toUpperCase();
+                        if (!currentPart) {
+                            if (item.scene === 1) currentPart = "INTRO";
+                            else if (item.scene >= 2 && item.scene <= 4) currentPart = "VERSE 1";
+                            else if (item.scene >= 5 && item.scene <= 7) currentPart = "CHORUS";
+                            else if (item.scene >= 8 && item.scene <= 11) currentPart = "VERSE 2";
+                            else if (item.scene >= 12 && item.scene <= 14) currentPart = "BRIDGE";
+                            else currentPart = "OUTRO";
+                        }
+
+                        if (currentPart && currentPart !== lastPart) {
+                            lastPart = currentPart;
+                            const sectionHeader = document.createElement('div');
+                            sectionHeader.style.cssText = "grid-column: 1 / -1; margin: 24px 0 10px; text-align: left;";
+                            sectionHeader.innerHTML = `
+                                <div style="display:inline-flex; align-items:center; gap:8px; background:rgba(0, 122, 255, 0.08); border:1px solid rgba(0, 122, 255, 0.15); color:var(--accent-color); padding:6px 16px; border-radius:30px; font-size:0.8rem; font-weight:800; letter-spacing:0.8px;">
+                                    <i class="fa-solid fa-music"></i> [${currentPart}]
+                                </div>
+                            `;
+                            storyboardGrid.appendChild(sectionHeader);
+                        }
+
+                        // Mendaftarkan berkas secara instan di sisi frontend menggunakan hak otorisasi user yang aktif
+                        if (!firestoreId && window.db && window.collection && window.addDoc) {
+                            try {
+                                const docRef = await window.addDoc(window.collection(window.db, "render_gallery"), {
+                                    email: localStorage.getItem('kreaverse_user_email') || "anon@kreaverse.ai",
+                                    tool: "LyricShot AI",
+                                    status: item.status || "pending",
+                                    task_id: item.task_id || "",
+                                    provider: item.provider || "",
+                                    model: modelVideo || "default",
+                                    lyrics_segment: item.lyrics_segment || "",
+                                    prompt: item.visual_description || "",
+                                    url: item.video_url || "",
+                                    timestamp: Date.now(),
+                                    type: "video"
+                                });
+                                firestoreId = docRef.id;
+                                item.firestore_id = firestoreId;
+                            } catch (e) {
+                                console.error("Gagal mendaftarkan tugas ke database:", e);
+                            }
+                        }
+
+                        const card = document.createElement('div');
+                        card.className = 'storyboard-card';
+                        
+                        let mediaElement = "";
+                        let downloadClass = "download-btn";
+                        // Sesuaikan rasio kotak pembungkus secara dinamis sesuai resolusi pilihan
+                        let boxClass = "video-box " + (ratio === "9:16" ? "ratio-9-16" : "ratio-16-9");
+                        
+                        if (item.status === "pending" && item.task_id) {
+                            boxClass += " loading-state";
+                            mediaElement = `
+                                <div class="video-loader-container" id="loader-${item.scene}" data-scene="${item.scene}" data-task-id="${item.task_id}" data-provider="${item.provider}" data-firestore-id="${firestoreId}">
+                                    <div class="ai-glow-ring"></div>
+                                    <div class="ai-glow-orb">
+                                        <i class="fa-solid fa-wand-magic-sparkles"></i>
+                                    </div>
+                                    <div class="loader-title">Melukis Adegan ${item.scene}</div>
+                                    <div class="loader-progress-box">
+                                        <div class="loader-progress-bar">
+                                            <div class="loader-progress-fill" id="progress-fill-${item.scene}" style="width: 15%;"></div>
+                                        </div>
+                                        <div class="loader-progress-label" id="progress-label-${item.scene}">Mempersiapkan... (15%)</div>
+                                    </div>
+                                    <div class="loader-subtitle"><i class="fa-solid fa-circle-notch fa-spin"></i> Polling server...</div>
+                                    <button class="btn-cancel-render" onclick="window.batalPolling(${item.scene})"><i class="fa-solid fa-circle-stop"></i> Batalkan Pemantauan</button>
+                                </div>
+                            `;
+                            downloadClass += " hidden";
+                        } else if (item.status === "failed" || !item.video_url) {
+                            // TAMPILKAN ERROR ASLI DARI API FRAME
+                            const realErrorMsg = item.error || "Koneksi antrean padat di server API. Silakan coba beberapa saat lagi.";
+                            mediaElement = `
+                                <div class="premium-error-card">
+                                    <div class="error-card-icon">
+                                        <i class="fa-solid fa-triangle-exclamation"></i>
+                                    </div>
+                                    <div class="error-card-content">
+                                        <h4 class="error-card-title">GAGAL MEMPROSES VIDEO</h4>
+                                        <p class="error-card-text" style="color: #fca5a5; font-family: monospace; font-size: 0.65rem; word-break: break-word;">${realErrorMsg}</p>
+                                    </div>
+                                </div>
+                            `;
+                            downloadClass += " hidden";
+                        } else {
+                            mediaElement = `<video controls preload="metadata" src="${item.video_url}"></video>`;
+                        }
+
+                        // Buat fungsionalitas buka-tutup dan salin prompt visual secara elegan
+                        const descText = item.visual_description || "";
+                        const isLong = descText.length > 100;
+                        const shortDesc = isLong ? descText.substring(0, 100) + "..." : descText;
+                        
+                        let visualHtml = "";
+                        if (isLong) {
+                            visualHtml = `
+                                <div class="description" style="font-size: 0.9rem; line-height: 1.6; color: var(--text-secondary); font-weight: 500;">
+                                    <strong>Visual:</strong> 
+                                    <span id="desc-short-${item.scene}">${shortDesc}</span>
+                                    <span id="desc-full-${item.scene}" class="hidden">${descText}</span>
+                                    <button class="toggle-desc-btn" onclick="togglePrompt(${item.scene})" id="btn-toggle-${item.scene}" style="background:none; border:none; color:var(--accent-color); font-weight:700; cursor:pointer; font-size:0.8rem; margin-left:6px; padding:0; display:inline;"><i class="fa-solid fa-chevron-down"></i> Lihat Semua Prompt</button>
+                                </div>
+                            `;
+                        } else {
+                            visualHtml = `
+                                <div class="description" style="font-size: 0.9rem; line-height: 1.6; color: var(--text-secondary); font-weight: 500;"><strong>Visual:</strong> <span>${descText}</span></div>
+                            `;
+                        }
+
+                        const base64Prompt = btoa(unescape(encodeURIComponent(descText)));
+
+                        card.innerHTML = `
+                            <div class="card-header">
+                                <span class="scene-badge">Klip ${item.scene}</span>
+                                <span class="shot-type">${item.shot_type || 'Cinematic'}</span>
+                                <span style="font-size: 0.72rem; color: var(--text-light); font-weight: 700; margin-left: auto;"><i class="fa-regular fa-clock"></i> ${fullDateStr}</span>
+                            </div>
+                            <div class="card-body">
+                                <p class="lyrics-quote">"<em>${item.lyrics_segment}</em>"</p>
+                                ${visualHtml}
+                                <button class="copy-prompt-btn" onclick="copyPrompt('${base64Prompt}')" style="background:rgba(99,102,241,0.06); border:1px solid rgba(99,102,241,0.12); color:var(--accent-color); padding:6px 12px; border-radius:8px; font-size:0.75rem; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:6px; transition:var(--transition); margin-top:8px; width:max-content;">
+                                    <i class="fa-solid fa-copy"></i> Salin Prompt Visual
+                                </button>
+                                <hr style="border:0; border-top:1px solid var(--border-color); margin:12px 0;">
+                                <div class="${boxClass}" id="video-box-${item.scene}">
+                                    ${mediaElement}
+                                </div>
+                                <a href="${item.video_url || '#'}" target="_blank" download="Klip-${item.scene}.mp4" id="download-btn-${item.scene}" class="${downloadClass}">Unduh Klip ${item.scene}</a>
+                            </div>
+                        `;
+                        storyboardGrid.appendChild(card);
+                    });
+                    resultContainer.classList.remove('hidden');
+                    window.showIphoneNotif("Storyboard Sukses", "Berhasil menyusun adegan storyboard lagu.", "fa-circle-check");
+                    
+                    // Mulai sistem pemantauan latar belakang (Polling)
+                    startStatusPolling();
+                } else {
+                    window.showIphoneNotif("Gagal", (data.error || "Gagal memproses naskah."), "fa-triangle-exclamation");
+                }
+            } catch (err) {
+                console.error(err);
+                clearInterval(naskahInterval);
+                window.showIphoneNotif("Koneksi Error", "Tidak Terhubung ke VPS Kreaverse AI.", "fa-triangle-exclamation");
+            } finally {
+                generateBtn.disabled = false;
+                loading.classList.add('hidden');
+            }
+        }
+
+        // FUNGSI HELPER BARU UNTUK PROMPT DAN IPHONE TOAST NOTIFIKASI
+        window.toggleUploadAccordion = function() {
+            const content = document.getElementById('upload-content-body');
+            const icon = document.getElementById('upload-toggle-icon');
+            if (!content || !icon) return;
+
+            const isHidden = content.classList.contains('hidden');
+            if (isHidden) {
+                content.classList.remove('hidden');
+                icon.className = "fa-solid fa-chevron-up";
+                icon.style.transform = "rotate(180deg)";
+                window.showIphoneNotif("Kunci Atribut", "Form penguncian wajah & baju diaktifkan.", "fa-user-gear");
+            } else {
+                content.classList.add('hidden');
+                icon.className = "fa-solid fa-chevron-down";
+                icon.style.transform = "rotate(0deg)";
+            }
+        };
+
+        window.togglePrompt = function(scene) {
+            const shortEl = document.getElementById(`desc-short-${scene}`);
+            const fullEl = document.getElementById(`desc-full-${scene}`);
+            const btnEl = document.getElementById(`btn-toggle-${scene}`);
+            if (!shortEl || !fullEl || !btnEl) return;
+
+            if (fullEl.classList.contains('hidden')) {
+                fullEl.classList.remove('hidden');
+                shortEl.classList.add('hidden');
+                btnEl.innerHTML = `<i class="fa-solid fa-chevron-up"></i> Tutup Prompt`;
+            } else {
+                fullEl.classList.add('hidden');
+                shortEl.classList.remove('hidden');
+                btnEl.innerHTML = `<i class="fa-solid fa-chevron-down"></i> Lihat Semua Prompt`;
+            }
+        };
+
+        window.copyPrompt = function(base64Text) {
+            try {
+                const decoded = decodeURIComponent(escape(atob(base64Text)));
+                navigator.clipboard.writeText(decoded);
+                window.showIphoneNotif("Salin Sukses", "Prompt visual berhasil disalin ke clipboard.", "fa-copy");
+            } catch (e) {
+                console.error("Gagal menyalin prompt:", e);
+            }
+        };
+
+        window.showIphoneNotif = function(title, desc, iconClass = 'fa-circle-info') {
+            const existing = document.getElementById('iphone-island-toast');
+            if (existing) existing.remove();
+            
+            const toast = document.createElement('div');
+            toast.id = 'iphone-island-toast';
+            toast.className = 'iphone-toast-container';
+            
+            let iconColor = '#6366F1'; 
+            if (iconClass.includes('fa-trash') || iconClass.includes('fa-triangle-exclamation') || iconClass.includes('fa-circle-exclamation')) {
+                iconColor = '#EF4444';
+            } else if (iconClass.includes('fa-check') || iconClass.includes('fa-download') || iconClass.includes('fa-wand-magic-sparkles')) {
+                iconColor = '#10B981';
+            }
+            
+            toast.innerHTML = `
+                <div class="iphone-toast-icon" style="color: ${iconColor};"><i class="fa-solid ${iconClass}"></i></div>
+                <div class="iphone-toast-content">
+                    <span class="iphone-toast-title">${title}</span>
+                    <span class="iphone-toast-desc">${desc}</span>
+                </div>
+            `;
+            document.body.appendChild(toast);
+            setTimeout(() => { toast.classList.add('show'); }, 50);
+            setTimeout(() => { 
+                toast.classList.remove('show'); 
+                setTimeout(() => toast.remove(), 400); 
+            }, 4000);
+        };
+
+window.pollingIntervals = window.pollingIntervals || {};
+window.batalPolling = function(scene) {
+    if (window.pollingIntervals && window.pollingIntervals[scene]) {
+        clearInterval(window.pollingIntervals[scene]);
+        delete window.pollingIntervals[scene];
+    }
+    const videoBox = document.getElementById(`video-box-${scene}`);
+    if (videoBox) {
+        videoBox.innerHTML = `<div style="padding: 40px 20px; text-align: center; color: var(--text-secondary); font-size: 0.82rem; font-weight: 700; background: #f3f4f6; border-radius: 12px; border: 1px solid var(--border-color);"><i class="fa-solid fa-circle-stop"></i> Pemantauan dibatalkan. Anda dapat melihat hasil video ini nanti melalui halaman Berkas AI.</div>`;
+    }
+};
+
+function startStatusPolling() {
+            const loaders = document.querySelectorAll('.video-loader-container');
+            loaders.forEach(loader => {
+                const taskId = loader.getAttribute('data-task-id');
+                const provider = loader.getAttribute('data-provider');
+                const scene = loader.getAttribute('data-scene');
+                const firestoreId = loader.getAttribute('data-firestore-id');
+                if (!taskId) return;
+
+                let mockProgress = 15;
+                const interval = setInterval(async () => {
+                    try {
+                        const res = await fetch(`/api/check-status?taskId=${taskId}&provider=${provider}&_cb=${Date.now()}`);
+                        const data = await res.json();
+                        
+                        const fillEl = document.getElementById(`progress-fill-${scene}`);
+                        const labelEl = document.getElementById(`progress-label-${scene}`);
+
+                        if (res.ok) {
+                            if (data.status === "complete" && data.video_url) {
+                                clearInterval(interval);
+                                
+                                if (fillEl && labelEl) {
+                                    fillEl.style.width = `100%`;
+                                    labelEl.innerHTML = `Selesai! (100%)`;
+                                }
+
+                                setTimeout(() => {
+                                    const videoBox = document.getElementById(`video-box-${scene}`);
+                                    if (videoBox) {
+                                        videoBox.classList.remove('loading-state');
+                                        videoBox.innerHTML = `<video controls autoplay loop src="${data.video_url}"></video>`;
+                                    }
+                                    
+                                    const downloadBtn = document.getElementById(`download-btn-${scene}`);
+                                    if (downloadBtn) {
+                                        downloadBtn.href = data.video_url;
+                                        downloadBtn.classList.remove('hidden');
+                                    }
+                                }, 800);
+
+                                if (firestoreId && window.db && window.doc && window.updateDoc) {
+                                    try {
+                                        await window.updateDoc(window.doc(window.db, "render_gallery", firestoreId), {
+                                            status: "complete",
+                                            url: data.video_url
+                                        });
+                                    } catch (e) {
+                                        console.error("Gagal update status selesai di firestore:", e);
+                                    }
+                                }
+                            } else if (data.status === "failed") {
+                                clearInterval(interval);
+                                const videoBox = document.getElementById(`video-box-${scene}`);
+                                if (videoBox) {
+                                    videoBox.classList.remove('loading-state');
+                                    videoBox.innerHTML = `<div style="padding: 40px 20px; text-align: center; color: var(--danger-color); font-size: 0.85rem; font-weight: 700; background: #fff0f0; border-radius: 12px; width: 100%; border: 1px solid #fca5a5; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; height: 100%;"><i class="fa-solid fa-circle-exclamation" style="font-size: 1.5rem;"></i> Gagal merender adegan ini.</div>`;
+                                }
+
+                                if (firestoreId && window.db && window.doc && window.updateDoc) {
+                                    try {
+                                        await window.updateDoc(window.doc(window.db, "render_gallery", firestoreId), {
+                                            status: "failed"
+                                        });
+                                    } catch (e) {
+                                        console.error("Gagal update status gagal di firestore:", e);
+                                    }
+                                }
+                            } else {
+                                // Tampilkan penanda progress dinamis yang selaras dengan status asli API eksternal
+                                if (data.status === "queued") {
+                                    mockProgress = 15;
+                                    if (fillEl && labelEl) {
+                                        fillEl.style.width = `15%`;
+                                        labelEl.innerHTML = `Mengantre di Server... (15%)`;
+                                    }
+                                } else if (data.status === "rendering" || data.status === "processing") {
+                                    if (mockProgress < 30) mockProgress = 30;
+                                    if (mockProgress < 95) {
+                                        mockProgress += Math.floor(Math.random() * 4) + 2; // Bertambah 2-5% per 5 detik secara alami
+                                        if (mockProgress > 95) mockProgress = 95;
+                                    }
+                                    if (fillEl && labelEl) {
+                                        fillEl.style.width = `${mockProgress}%`;
+                                        labelEl.innerHTML = `Sedang Melukis Adegan... (${mockProgress}%)`;
+                                    }
+                                }
+                            }
+                        } else {
+                            // Penanganan toleransi kegagalan (fallback) jika API membalas non-200 (misal delay propagasi antrean kunci)
+                            if (mockProgress < 95) {
+                                mockProgress += Math.floor(Math.random() * 3) + 1;
+                                if (mockProgress > 95) mockProgress = 95;
+                            }
+                            if (fillEl && labelEl) {
+                                fillEl.style.width = `${mockProgress}%`;
+                                labelEl.innerHTML = `Menghubungkan ke server AI... (${mockProgress}%)`;
+                            }
+                        }
+                    } catch (err) {
+                        console.error("Polling error:", err);
+                    }
+                }, 5000);
+                window.pollingIntervals[scene] = interval;
+            });
+        }
+
+// FUNGSI AKORDEON FAQ (SINKRON PRESISI DENGAN EMAIL PAGE)
+        window.toggleFaq = function(element) {
+            const card = element.parentElement;
+            const isActive = card.classList.contains('active');
+            
+            // Tutup semua kartu FAQ yang lain terlebih dahulu
+            document.querySelectorAll('.faq-card').forEach(c => {
+                c.classList.remove('active');
+                c.querySelector('.faq-content').style.maxHeight = null;
+            });
+            
+            if (!isActive) {
+                card.classList.add('active');
+                const content = card.querySelector('.faq-content');
+                content.style.maxHeight = content.scrollHeight + "px";
+            }
+        };
+
+        // Jam server real-time dinamis beserta hari, tanggal, bulan, tahun (PRESISI SINKRON DENGAN FORMAT TANYA JAWAB EMAIL PAGE)
+        function updateLiveClock() {
+            const d = new Date();
+            
+            // Format Jam, Menit, Detik
+            let hours = d.getHours(); 
+            let minutes = d.getMinutes(); 
+            let seconds = d.getSeconds(); 
+            
+            let period = "Pagi";
+            if (hours >= 10 && hours < 15) {
+                period = "Siang";
+            } else if (hours >= 15 && hours < 18) {
+                period = "Sore";
+            } else if (hours >= 18 || hours < 4) {
+                period = "Malam";
+            } else {
+                period = "Pagi";
+            }
+            
+            const displayHours = hours % 12 || 12;
+            const displayMinutes = minutes < 10 ? '0' + minutes : minutes;
+            const displaySeconds = seconds < 10 ? '0' + seconds : seconds;
+            
+            // Format Hari Ini
+            const days = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+            const months = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+            const dayName = days[d.getDay()];
+            const dayNum = d.getDate();
+            const monthName = months[d.getMonth()];
+            const year = d.getFullYear();
+            
+            const dateString = `${dayName}, ${dayNum} ${monthName} ${year}`;
+            
+            const footerEl = document.getElementById('live-clock-footer');
+            if (footerEl) {
+                footerEl.innerHTML = `
+                    <div style="margin-bottom: 6px; font-weight: 500;">Waktu Server: <span style="font-weight: 700; color: var(--text-primary);">${displayHours}:${displayMinutes}:${displaySeconds} ${period}</span></div>
+                    <div style="font-weight: 500; color: var(--text-secondary);">${dateString}</div>
+                `;
+            }
+        }
+        setInterval(updateLiveClock, 1000); 
+        updateLiveClock();
+    </script>
+</body>
+</html>
