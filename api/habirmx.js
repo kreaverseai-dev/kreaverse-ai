@@ -434,7 +434,20 @@ ATURAN MUTLAK:
                         const headerValueTemplate = currentProvider.headerValue || "Bearer {apiKey}";
                         headers[headerName] = headerValueTemplate.replace("{apiKey}", activeApiKey);
 
-                        const response = await fetch(providerUrl, { method: 'POST', headers: headers, body: JSON.stringify(finalPayload) });
+                        let fetchBody = JSON.stringify(finalPayload);
+                        
+                        // FIX FASTAPI: Auto-Convert JSON ke URL-Encoded Form (Khusus untuk endpoint yang menolak JSON murni)
+                        if (finalPayload._send_as_form) {
+                            delete finalPayload._send_as_form;
+                            headers["Content-Type"] = "application/x-www-form-urlencoded";
+                            const formParams = new URLSearchParams();
+                            for (const key in finalPayload) {
+                                formParams.append(key, finalPayload[key]);
+                            }
+                            fetchBody = formParams.toString();
+                        }
+
+                        const response = await fetch(providerUrl, { method: 'POST', headers: headers, body: fetchBody });
 
                         let resData = {};
                         const contentType = response.headers.get("content-type");
