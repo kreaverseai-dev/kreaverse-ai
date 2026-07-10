@@ -88,12 +88,14 @@ module.exports = async function handler(req, res) {
       const jwtClient = getJwtClient(selectedAccount.adminEmail);
       const directory = google.admin({ version: 'directory_v1', auth: jwtClient });
 
+      // PROSES PEMBUATAN AKUN + EMAIL PEMULIHAN
       await directory.users.insert({
         requestBody: {
           primaryEmail: email,
           name: { givenName: firstName, familyName: lastName },
           password: password,
-          changePasswordAtNextLogin: false
+          changePasswordAtNextLogin: false,
+          recoveryEmail: selectedAccount.adminEmail // Mencegah blokir / permintaan nomor HP
         }
       });
 
