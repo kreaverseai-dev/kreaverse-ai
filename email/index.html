@@ -2316,5 +2316,146 @@
             loadFirebaseConfigurations();
         });
     </script>
+<!-- ============================================================ -->
+<!-- KREAVERSE SMART SYSTEM: POP-UP BANNER & KILL-SWITCH API      -->
+<!-- ============================================================ -->
+<style>
+    #krea-mt-overlay { position: fixed; inset: 0; background: rgba(17,17,17,0.85); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); z-index: 99999999; display: flex; align-items: center; justify-content: center; opacity: 0; visibility: hidden; transition: all 0.4s ease; padding: 20px; text-align: center; }
+    #krea-mt-overlay.active { opacity: 1; visibility: visible; }
+    .krea-mt-box { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); padding: 40px 30px; border-radius: 28px; max-width: 420px; width: 100%; transform: scale(0.9); transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); box-shadow: 0 20px 40px rgba(0,0,0,0.5); }
+    #krea-mt-overlay.active .krea-mt-box { transform: scale(1); }
+    #krea-banner-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 999999999; display: flex; align-items: center; justify-content: center; opacity: 0; visibility: hidden; transition: all 0.3s ease; padding: 20px; }
+    #krea-banner-overlay.active { opacity: 1; visibility: visible; }
+    .krea-banner-box { position: relative; max-width: 90vw; max-height: 80vh; transform: scale(0.8); transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); border-radius: 20px; box-shadow: 0 25px 50px rgba(0,0,0,0.5); display:flex; justify-content:center; }
+    #krea-banner-overlay.active .krea-banner-box { transform: scale(1); }
+    .krea-banner-img { max-width: 100%; max-height: 80vh; object-fit: contain; border-radius: 20px; cursor: pointer; }
+    .krea-banner-close { position: absolute; top: -15px; right: -15px; width: 35px; height: 35px; background: #FF3B30; color: white; border: 2px solid #FFF; border-radius: 50%; font-weight: bold; font-family: sans-serif; cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 10px rgba(0,0,0,0.3); transition: 0.2s; }
+    .krea-banner-close:hover { transform: scale(1.1); background: #D32F2F; }
+</style>
+
+<div id="krea-mt-overlay">
+    <div class="krea-mt-box">
+        <i class="fa-solid fa-triangle-exclamation" style="font-size: 4rem; color: #FF9500; margin-bottom: 20px; filter: drop-shadow(0 0 20px rgba(255,149,0,0.5));"></i>
+        <h2 style="color: #FFF; font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 800; font-size: 1.6rem; margin-bottom: 10px;">Layanan Sedang Perbaikan</h2>
+        <p id="krea-mt-msg" style="color: #CCC; font-family: 'Plus Jakarta Sans', sans-serif; font-size: 0.95rem; line-height: 1.6; margin-bottom: 20px;">Mohon maaf, layanan ini sedang kami tingkatkan untuk memberikan performa yang lebih baik.</p>
+        <div style="background: rgba(255,149,0,0.1); border: 1px solid rgba(255,149,0,0.3); color: #FF9500; padding: 12px 20px; border-radius: 12px; font-weight: 700; font-size: 0.9rem; display: inline-flex; align-items: center; gap: 8px;">
+            <i class="fa-solid fa-clock"></i> Estimasi Pulih: <span id="krea-mt-time">Secepatnya</span>
+        </div>
+    </div>
+</div>
+
+<div id="krea-banner-overlay">
+    <div class="krea-banner-box">
+        <button class="krea-banner-close" onclick="closeKreaBanner()">&times;</button>
+        <a id="krea-banner-link" href="#" target="_blank" style="display:block; text-decoration:none; max-height:80vh;">
+            <img id="krea-banner-img" class="krea-banner-img" src="" alt="Promo Banner">
+        </a>
+    </div>
+</div>
+
+<script type="module">
+    import { getApps, initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+    import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+
+    const CURRENT_TOOL_NAME = "TEMP EMAIL"; 
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyAO8JV4jkJmbHChYvjUCS7wqfVbKr94tHM",
+        authDomain: "kreaverse-ai0107.firebaseapp.com",
+        databaseURL: "https://kreaverse-ai0107-default-rtdb.asia-southeast1.firebasedatabase.app",
+        projectId: "kreaverse-ai0107",
+        storageBucket: "kreaverse-ai0107.firebasestorage.app",
+        messagingSenderId: "1048550433011",
+        appId: "1:1048550433011:web:0cf2e4074b20fe09909786"
+    };
+
+    const app = !getApps().length ? initializeApp(firebaseConfig) : getApps()[0];
+    const rtdb = getDatabase(app);
+    const auth = getAuth(app);
+
+    const ALLOWED_ADMINS = ["holifhidayah@gmail.com", "alluraveylia@gmail.com", "kreaverse.ai@gmail.com", "admin@habisuno.my.id", "habigeneratewebsite@gmail.com", "habiwebsite@gmail.com"];
+    let isAdminLogin = false;
+    let bannerTimer = null;
+
+    onAuthStateChanged(auth, user => {
+        if (user && ALLOWED_ADMINS.includes(user.email.toLowerCase())) {
+            isAdminLogin = true;
+            const mtOverlay = document.getElementById('krea-mt-overlay');
+            if(mtOverlay) mtOverlay.classList.remove('active');
+            document.body.style.overflow = "auto";
+        }
+    });
+
+    onValue(ref(rtdb, "settings/layanan"), snap => {
+        if(!snap.exists()) return;
+        const d = snap.val();
+
+        if (d.maintenance && !isAdminLogin) {
+            let isCurrentToolDown = false;
+            if(CURRENT_TOOL_NAME === "CHAT AI" && d.maintenance.chatAi) isCurrentToolDown = true;
+            if(CURRENT_TOOL_NAME === "STUDIO MEDIA" && d.maintenance.studioMedia) isCurrentToolDown = true;
+            if(CURRENT_TOOL_NAME === "LYRICSHOT" && d.maintenance.lyricshot) isCurrentToolDown = true;
+            if(CURRENT_TOOL_NAME === "HABI RMX" && d.maintenance.habiRmx) isCurrentToolDown = true;
+            if(CURRENT_TOOL_NAME === "OTP MURAH" && d.maintenance.otpMurah) isCurrentToolDown = true;
+            if(CURRENT_TOOL_NAME === "DOWNLOADER" && d.maintenance.downloader) isCurrentToolDown = true;
+            if(CURRENT_TOOL_NAME === "TEMP EMAIL" && d.maintenance.tempEmail) isCurrentToolDown = true;
+
+            const mtOverlay = document.getElementById('krea-mt-overlay');
+            if (isCurrentToolDown) {
+                mtOverlay.classList.add('active');
+                if (d.maintenance.message) document.getElementById('krea-mt-msg').innerText = d.maintenance.message;
+                if (d.maintenance.time) document.getElementById('krea-mt-time').innerText = d.maintenance.time;
+                document.body.style.overflow = "hidden";
+            } else {
+                mtOverlay.classList.remove('active');
+                document.body.style.overflow = "auto";
+            }
+        } else if (isAdminLogin) {
+            const mtOverlay = document.getElementById('krea-mt-overlay');
+            if(mtOverlay) mtOverlay.classList.remove('active');
+            document.body.style.overflow = "auto";
+        }
+
+        if (d.banner && d.banner.active && d.banner.url) {
+            checkAndShowBanner(d.banner);
+        }
+    });
+
+    function checkAndShowBanner(bannerData) {
+        const lastSeenStr = localStorage.getItem('krea_banner_last_seen');
+        const lastSeen = lastSeenStr ? parseInt(lastSeenStr) : 0;
+        const now = Date.now();
+        let shouldShow = false;
+
+        if (bannerData.freq === 'always') shouldShow = true;
+        else if (bannerData.freq === 'once') { if (!localStorage.getItem('krea_banner_once_shown')) shouldShow = true; }
+        else if (bannerData.freq === 'daily') { if (now - lastSeen > 24 * 60 * 60 * 1000) shouldShow = true; }
+        else if (bannerData.freq === 'weekly') { if (now - lastSeen > 7 * 24 * 60 * 60 * 1000) shouldShow = true; }
+
+        if (shouldShow) {
+            document.getElementById('krea-banner-img').src = bannerData.url;
+            const linkEl = document.getElementById('krea-banner-link');
+            if (bannerData.link) { linkEl.href = bannerData.link; linkEl.style.cursor = "pointer"; } 
+            else { linkEl.removeAttribute("href"); linkEl.style.cursor = "default"; }
+
+            setTimeout(() => {
+                document.getElementById('krea-banner-overlay').classList.add('active');
+                localStorage.setItem('krea_banner_last_seen', now.toString());
+                if (bannerData.freq === 'once') localStorage.setItem('krea_banner_once_shown', 'true');
+
+                if (bannerData.duration && bannerData.duration > 0) {
+                    if (bannerTimer) clearTimeout(bannerTimer);
+                    bannerTimer = setTimeout(() => { window.closeKreaBanner(); }, bannerData.duration * 1000);
+                }
+            }, (bannerData.delay || 0) * 1000);
+        }
+    }
+
+    window.closeKreaBanner = function() {
+        document.getElementById('krea-banner-overlay').classList.remove('active');
+        if (bannerTimer) clearTimeout(bannerTimer);
+    };
+</script>
 </body>
 </html>
