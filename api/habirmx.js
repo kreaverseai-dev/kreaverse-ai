@@ -632,8 +632,11 @@ ATURAN MUTLAK:
                         try {
                             const refundQuery = await db.collection("users").where("email", "==", email).get();
                             if (!refundQuery.empty) {
-                                await refundQuery.docs[0].ref.update({ generateCount: FieldValue.increment(-1) });
-                                console.log(`[REFUND SUKSES] Saldo dikembalikan (HTTP Error) untuk email: ${email}`);
+                                await refundQuery.docs[0].ref.update({ 
+                                    generateCount: FieldValue.increment(-1),
+                                    kredit: FieldValue.increment(50)
+                                });
+                                console.log(`[REFUND SUKSES] Saldo dikembalikan 50 Kredit (HTTP Error) untuk email: ${email}`);
                             }
                         } catch (refundErr) { console.error("Gagal melakukan refund:", refundErr); }
                     }
@@ -776,8 +779,11 @@ ATURAN MUTLAK:
                     try {
                         const refundQuery = await db.collection("users").where("email", "==", email).get();
                         if (!refundQuery.empty) {
-                            await refundQuery.docs[0].ref.update({ generateCount: FieldValue.increment(-1) });
-                            console.log(`[REFUND SUKSES] Saldo dikembalikan (Polling Failed) untuk email: ${email} pada task: ${taskId}`);
+                            await refundQuery.docs[0].ref.update({ 
+                                generateCount: FieldValue.increment(-1),
+                                kredit: FieldValue.increment(50)
+                            });
+                            console.log(`[REFUND SUKSES] Saldo dikembalikan 50 Kredit (Polling Failed) untuk email: ${email} pada task: ${taskId}`);
                         }
                     } catch (refundErr) {
                         console.error("Gagal melakukan refund:", refundErr);
