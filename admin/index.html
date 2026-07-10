@@ -1280,6 +1280,9 @@
                 <div class="panel">
                     <div class="panel-head">
                         <div class="panel-title"><i class="fa-solid fa-power-off" style="color:var(--danger);"></i> Mode Gangguan (Kill-Switch)</div>
+                        <button type="button" class="btn btn-sm btn-success" style="display:none;" id="btnCabutMaintenance" onclick="window.cabutMaintenance()">
+                            <i class="fa-solid fa-power-off"></i> Cabut & Normalkan Semua
+                        </button>
                     </div>
                     <div class="panel-body">
                         <form id="formMaintenance" onsubmit="window.saveMaintenance(event)">
@@ -1290,45 +1293,59 @@
                             <div class="form-row col-3" style="grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));">
                                 <div style="display:flex; align-items:center; gap:10px; background:var(--surface); padding:10px; border-radius:10px; border:1px solid var(--border);">
                                     <div class="switch">
-                                        <input type="checkbox" id="mtAudio" checked>
+                                        <input type="checkbox" id="mtChatAi" checked>
                                         <span class="slider"></span>
                                     </div>
-                                    <label style="margin:0; cursor:pointer;" for="mtAudio">Audio AI</label>
+                                    <label style="margin:0; cursor:pointer; font-weight:700;" for="mtChatAi">CHAT AI</label>
                                 </div>
                                 <div style="display:flex; align-items:center; gap:10px; background:var(--surface); padding:10px; border-radius:10px; border:1px solid var(--border);">
                                     <div class="switch">
-                                        <input type="checkbox" id="mtVideo" checked>
+                                        <input type="checkbox" id="mtStudioMedia" checked>
                                         <span class="slider"></span>
                                     </div>
-                                    <label style="margin:0; cursor:pointer;" for="mtVideo">Video AI</label>
+                                    <label style="margin:0; cursor:pointer; font-weight:700;" for="mtStudioMedia">STUDIO MEDIA</label>
                                 </div>
                                 <div style="display:flex; align-items:center; gap:10px; background:var(--surface); padding:10px; border-radius:10px; border:1px solid var(--border);">
                                     <div class="switch">
-                                        <input type="checkbox" id="mtImage" checked>
+                                        <input type="checkbox" id="mtLyricshot" checked>
                                         <span class="slider"></span>
                                     </div>
-                                    <label style="margin:0; cursor:pointer;" for="mtImage">Image AI</label>
+                                    <label style="margin:0; cursor:pointer; font-weight:700;" for="mtLyricshot">LYRICSHOT</label>
                                 </div>
                                 <div style="display:flex; align-items:center; gap:10px; background:var(--surface); padding:10px; border-radius:10px; border:1px solid var(--border);">
                                     <div class="switch">
-                                        <input type="checkbox" id="mtChat" checked>
+                                        <input type="checkbox" id="mtHabiRmx" checked>
                                         <span class="slider"></span>
                                     </div>
-                                    <label style="margin:0; cursor:pointer;" for="mtChat">Chat / LLM</label>
+                                    <label style="margin:0; cursor:pointer; font-weight:700;" for="mtHabiRmx">HABI RMX</label>
                                 </div>
                                 <div style="display:flex; align-items:center; gap:10px; background:var(--surface); padding:10px; border-radius:10px; border:1px solid var(--border);">
                                     <div class="switch">
-                                        <input type="checkbox" id="mtGsuite" checked>
+                                        <input type="checkbox" id="mtOtpMurah" checked>
                                         <span class="slider"></span>
                                     </div>
-                                    <label style="margin:0; cursor:pointer;" for="mtGsuite">G Suite & TempMail</label>
+                                    <label style="margin:0; cursor:pointer; font-weight:700;" for="mtOtpMurah">OTP MURAH</label>
+                                </div>
+                                <div style="display:flex; align-items:center; gap:10px; background:var(--surface); padding:10px; border-radius:10px; border:1px solid var(--border);">
+                                    <div class="switch">
+                                        <input type="checkbox" id="mtDownloader" checked>
+                                        <span class="slider"></span>
+                                    </div>
+                                    <label style="margin:0; cursor:pointer; font-weight:700;" for="mtDownloader">DOWNLOADER</label>
+                                </div>
+                                <div style="display:flex; align-items:center; gap:10px; background:var(--surface); padding:10px; border-radius:10px; border:1px solid var(--border);">
+                                    <div class="switch">
+                                        <input type="checkbox" id="mtTempEmail" checked>
+                                        <span class="slider"></span>
+                                    </div>
+                                    <label style="margin:0; cursor:pointer; font-weight:700;" for="mtTempEmail">TEMP EMAIL</label>
                                 </div>
                             </div>
 
                             <div class="form-row">
                                 <div>
-                                    <label>Pesan Gangguan (Opsional)</label>
-                                    <textarea id="mtMessage" rows="2" placeholder="Contoh: Layanan Audio sedang dalam perbaikan API dari pusat."></textarea>
+                                    <label>Pesan Gangguan Khusus (Opsional)</label>
+                                    <textarea id="mtMessage" rows="2" placeholder="Contoh: Layanan Habi RMX sedang dalam perbaikan API dari pusat."></textarea>
                                 </div>
                                 <div>
                                     <label>Estimasi Waktu Pulih (Opsional)</label>
@@ -1339,6 +1356,25 @@
                                 <i class="fa-solid fa-triangle-exclamation"></i> Terapkan Mode Gangguan
                             </button>
                         </form>
+
+                        <div style="margin-top:25px; border-top:1px solid var(--border); padding-top:15px;">
+                            <strong style="font-size:0.95rem; color:var(--text);"><i class="fa-solid fa-clock-rotate-left"></i> Histori Mode Gangguan</strong>
+                            <div class="table-responsive" style="margin-top:10px;">
+                                <table style="min-width:100%;">
+                                    <thead>
+                                        <tr>
+                                            <th>Waktu Diterapkan</th>
+                                            <th>Tool Terkena Dampak</th>
+                                            <th>Status</th>
+                                            <th style="text-align:right;">Aksi</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="maintenanceHistoryTable">
+                                        <tr><td colspan="4" style="text-align:center; color:var(--text-sec);">Memuat histori...</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -1353,13 +1389,22 @@
                                     <input type="checkbox" id="bannerActive">
                                     <span class="slider"></span>
                                 </div>
-                                <label style="margin:0; font-weight:700;">Aktifkan Banner Promosi</label>
+                                <label style="margin:0; font-weight:700;">Aktifkan Banner Promosi (Muncul di semua tool)</label>
+                            </div>
+                            <div class="form-row" style="grid-template-columns:1fr;">
+                                <div>
+                                    <label>Upload Gambar / Paste URL Gambar</label>
+                                    <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+                                        <input type="url" id="bannerUrl" placeholder="https://res.cloudinary.com/..." style="flex:1; min-width:200px;">
+                                        <input type="file" id="bannerFile" accept="image/*" style="display:none;" onchange="window.uploadBannerImage(event)">
+                                        <button type="button" class="btn btn-info" onclick="document.getElementById('bannerFile').click()"><i class="fa-solid fa-upload"></i> Upload Foto</button>
+                                    </div>
+                                    <div id="bannerPreviewContainer" style="margin-top:15px; display:none; background:#FAFAFC; padding:10px; border-radius:12px; border:1px dashed var(--border); text-align:center;">
+                                        <img id="bannerPreviewImg" src="" style="max-height:160px; max-width:100%; object-fit:contain; border-radius:8px;">
+                                    </div>
+                                </div>
                             </div>
                             <div class="form-row">
-                                <div>
-                                    <label>URL Gambar Banner (Wajib)</label>
-                                    <input type="url" id="bannerUrl" placeholder="https://res.cloudinary.com/xxx/image/upload/xxx.jpg">
-                                </div>
                                 <div>
                                     <label>Frekuensi Kemunculan</label>
                                     <div class="custom-select-trigger" id="bannerFreq-trigger" onclick="openCustomSelect('bannerFreq')">
@@ -1367,6 +1412,10 @@
                                         <i class="fa-solid fa-chevron-down"></i>
                                     </div>
                                     <input type="hidden" id="bannerFreq" value="daily">
+                                </div>
+                                <div>
+                                    <label>URL Tujuan Saat Gambar Diklik (Opsional)</label>
+                                    <input type="url" id="bannerLink" placeholder="Contoh: https://kreaverse-ai.biz.id/premium">
                                 </div>
                             </div>
                             <div class="form-row">
@@ -1379,16 +1428,29 @@
                                     <input type="number" id="bannerDuration" value="10" min="0" placeholder="Isi 0 jika tidak ditutup otomatis">
                                 </div>
                             </div>
-                            <div class="form-row" style="grid-template-columns:1fr;">
-                                <div>
-                                    <label>URL Tujuan Saat Gambar Diklik (Opsional)</label>
-                                    <input type="url" id="bannerLink" placeholder="Contoh: https://kreaverse-ai.biz.id/premium">
-                                </div>
-                            </div>
                             <button type="submit" class="btn btn-primary" style="width:100%;">
                                 <i class="fa-solid fa-floppy-disk"></i> Simpan Konfigurasi Banner
                             </button>
                         </form>
+
+                        <div style="margin-top:25px; border-top:1px solid var(--border); padding-top:15px;">
+                            <strong style="font-size:0.95rem; color:var(--text);"><i class="fa-solid fa-images"></i> Histori Gambar Banner</strong>
+                            <div class="table-responsive" style="margin-top:10px;">
+                                <table style="min-width:100%;">
+                                    <thead>
+                                        <tr>
+                                            <th>Preview</th>
+                                            <th>Waktu Upload</th>
+                                            <th>URL Tautan</th>
+                                            <th style="text-align:right;">Aksi</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="bannerHistoryTable">
+                                        <tr><td colspan="4" style="text-align:center; color:var(--text-sec);">Memuat histori...</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -5451,18 +5513,26 @@ window.openHfHelpModal = () => document.getElementById('hf-help-modal').classLis
             });
         };
 
+        let unsubLayananHist = null;
+
         window.setupRealtimeLayanan = async () => {
             onValue(ref(rtdb, "settings/layanan"), snap => {
                 if(snap.exists()){
                     const d = snap.val();
                     if(d.maintenance) {
-                        document.getElementById('mtAudio').checked = !d.maintenance.audio;
-                        document.getElementById('mtVideo').checked = !d.maintenance.video;
-                        document.getElementById('mtImage').checked = !d.maintenance.image;
-                        document.getElementById('mtChat').checked = !d.maintenance.chat;
-                        document.getElementById('mtGsuite').checked = !d.maintenance.gsuite;
+                        document.getElementById('mtChatAi').checked = !d.maintenance.chatAi;
+                        document.getElementById('mtStudioMedia').checked = !d.maintenance.studioMedia;
+                        document.getElementById('mtLyricshot').checked = !d.maintenance.lyricshot;
+                        document.getElementById('mtHabiRmx').checked = !d.maintenance.habiRmx;
+                        document.getElementById('mtOtpMurah').checked = !d.maintenance.otpMurah;
+                        document.getElementById('mtDownloader').checked = !d.maintenance.downloader;
+                        document.getElementById('mtTempEmail').checked = !d.maintenance.tempEmail;
                         document.getElementById('mtMessage').value = d.maintenance.message || '';
                         document.getElementById('mtTime').value = d.maintenance.time || '';
+                        
+                        // Tampilkan tombol Cabut jika ada layanan yang di-off-kan
+                        const isAnyDown = Object.values(d.maintenance).some(val => val === true && typeof val === 'boolean');
+                        document.getElementById('btnCabutMaintenance').style.display = isAnyDown ? 'inline-flex' : 'none';
                     }
                     if(d.banner) {
                         document.getElementById('bannerActive').checked = d.banner.active || false;
@@ -5471,11 +5541,55 @@ window.openHfHelpModal = () => document.getElementById('hf-help-modal').classLis
                         document.getElementById('bannerDuration').value = d.banner.duration || 10;
                         document.getElementById('bannerLink').value = d.banner.link || '';
                         document.getElementById('bannerFreq').value = d.banner.freq || 'daily';
+                        
+                        if(d.banner.url) {
+                            document.getElementById('bannerPreviewContainer').style.display = 'block';
+                            document.getElementById('bannerPreviewImg').src = d.banner.url;
+                        }
+
                         const freqMap = { always: "Setiap Buka Website (Selalu)", daily: "1 Kali Sehari (Per Pengguna)", weekly: "1 Kali Seminggu (Per Pengguna)", once: "Hanya 1 Kali Seumur Hidup" };
                         const trigger = document.getElementById('bannerFreq-label');
                         if(trigger) trigger.innerText = freqMap[d.banner.freq || 'daily'];
                     }
                 }
+            });
+
+            if(unsubLayananHist) unsubLayananHist();
+            unsubLayananHist = onSnapshot(query(collection(db, "layanan_history"), orderBy("timestamp", "desc"), limit(20)), snap => {
+                let mtHtml = '';
+                let bnHtml = '';
+                snap.forEach(docSnap => {
+                    const data = docSnap.data();
+                    const timeStr = new Date(data.timestamp).toLocaleString('id-ID');
+                    
+                    if(data.type === 'maintenance') {
+                        const isRevoked = data.revoked;
+                        const statusBadge = isRevoked ? '<span class="badge badge-green">Dinormalkan</span>' : '<span class="badge badge-red">Mode Aktif</span>';
+                        mtHtml += `
+                            <tr>
+                                <td style="font-size:0.8rem; color:var(--text-sec);">${timeStr}</td>
+                                <td style="font-size:0.8rem; color:var(--danger); font-weight:700;">${data.impactedTools || '-'}</td>
+                                <td>${statusBadge}</td>
+                                <td style="text-align:right;">
+                                    ${!isRevoked ? `<button class="btn btn-sm btn-success" onclick="window.cabutMaintenanceSpecific('${docSnap.id}')">Cabut</button>` : '-'}
+                                </td>
+                            </tr>
+                        `;
+                    } else if(data.type === 'banner') {
+                        bnHtml += `
+                            <tr>
+                                <td><img src="${data.url}" style="max-height:40px; border-radius:6px; border:1px solid var(--border);"></td>
+                                <td style="font-size:0.8rem; color:var(--text-sec);">${timeStr}</td>
+                                <td style="max-width:200px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:0.8rem;"><a href="${data.url}" target="_blank" style="color:var(--info);">${data.url}</a></td>
+                                <td style="text-align:right;">
+                                    <button class="btn btn-sm btn-info" onclick="navigator.clipboard.writeText('${data.url}'); window.showToast('URL disalin!', 'success');"><i class="fa-solid fa-copy"></i> Copy</button>
+                                </td>
+                            </tr>
+                        `;
+                    }
+                });
+                document.getElementById('maintenanceHistoryTable').innerHTML = mtHtml || `<tr><td colspan="4" style="text-align:center; color:var(--text-sec);">Belum ada histori gangguan.</td></tr>`;
+                document.getElementById('bannerHistoryTable').innerHTML = bnHtml || `<tr><td colspan="4" style="text-align:center; color:var(--text-sec);">Belum ada histori banner terupload.</td></tr>`;
             });
         };
 
@@ -5484,22 +5598,111 @@ window.openHfHelpModal = () => document.getElementById('hf-help-modal').classLis
             const btn = e.target.querySelector('button[type="submit"]');
             btn.disabled = true; btn.innerHTML = `<div class="loading-spinner sm"></div> Menerapkan...`;
             try {
-                await set(ref(rtdb, "settings/layanan/maintenance"), {
-                    audio: !document.getElementById('mtAudio').checked,
-                    video: !document.getElementById('mtVideo').checked,
-                    image: !document.getElementById('mtImage').checked,
-                    chat: !document.getElementById('mtChat').checked,
-                    gsuite: !document.getElementById('mtGsuite').checked,
+                const mtData = {
+                    chatAi: !document.getElementById('mtChatAi').checked,
+                    studioMedia: !document.getElementById('mtStudioMedia').checked,
+                    lyricshot: !document.getElementById('mtLyricshot').checked,
+                    habiRmx: !document.getElementById('mtHabiRmx').checked,
+                    otpMurah: !document.getElementById('mtOtpMurah').checked,
+                    downloader: !document.getElementById('mtDownloader').checked,
+                    tempEmail: !document.getElementById('mtTempEmail').checked,
                     message: document.getElementById('mtMessage').value.trim(),
                     time: document.getElementById('mtTime').value.trim(),
                     updatedAt: Date.now()
-                });
+                };
+                
+                await set(ref(rtdb, "settings/layanan/maintenance"), mtData);
+                
+                const toolsDown = [];
+                if(mtData.chatAi) toolsDown.push("CHAT AI");
+                if(mtData.studioMedia) toolsDown.push("STUDIO MEDIA");
+                if(mtData.lyricshot) toolsDown.push("LYRICSHOT");
+                if(mtData.habiRmx) toolsDown.push("HABI RMX");
+                if(mtData.otpMurah) toolsDown.push("OTP MURAH");
+                if(mtData.downloader) toolsDown.push("DOWNLOADER");
+                if(mtData.tempEmail) toolsDown.push("TEMP EMAIL");
+
+                if(toolsDown.length > 0) {
+                    await addDoc(collection(db, "layanan_history"), {
+                        type: 'maintenance',
+                        message: mtData.message,
+                        time: mtData.time,
+                        impactedTools: toolsDown.join(', '),
+                        revoked: false,
+                        timestamp: Date.now()
+                    });
+                }
+
                 showToast("Mode Gangguan berhasil diterapkan!", "success");
-                await createLog({ type: 'warning', host: 'Admin', request: 'MAINTENANCE_UPDATE', message: `Merubah status Kill-Switch API` });
+                await createLog({ type: 'warning', host: 'Admin', request: 'MAINTENANCE_UPDATE', message: `Kill-Switch aktif untuk: ` + (toolsDown.length > 0 ? toolsDown.join(', ') : 'Tidak ada') });
             } catch(err) {
                 showToast("Gagal menyimpan", "danger");
             } finally {
                 btn.disabled = false; btn.innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i> Terapkan Mode Gangguan`;
+            }
+        };
+
+        window.cabutMaintenance = async () => {
+            confirmAction("Cabut semua mode gangguan dan normalkan sistem?", async () => {
+                try {
+                    await set(ref(rtdb, "settings/layanan/maintenance"), {
+                        chatAi: false, studioMedia: false, lyricshot: false, habiRmx: false, otpMurah: false, downloader: false, tempEmail: false,
+                        message: '', time: '', updatedAt: Date.now()
+                    });
+                    showToast("Sistem dinormalkan!", "success");
+                } catch(e) {
+                    showToast("Gagal menormalkan", "danger");
+                }
+            });
+        };
+
+        window.cabutMaintenanceSpecific = async (docId) => {
+            try {
+                await updateDoc(doc(db, "layanan_history", docId), { revoked: true });
+                await window.cabutMaintenance(); 
+            } catch(e) {
+                showToast("Gagal mencabut", "danger");
+            }
+        };
+
+        window.uploadBannerImage = async (e) => {
+            const file = e.target.files[0];
+            if(!file) return;
+
+            showToast("Mengupload gambar ke server...", "info");
+            try {
+                const snap = await getDocs(query(collection(db, "cloudinary_accounts"), limit(1)));
+                if(snap.empty) {
+                    showToast("Belum ada akun Cloudinary disetting! Harap isi di tab Cloudinary DB.", "warning");
+                    return;
+                }
+                const cData = snap.docs[0].data();
+                
+                const formData = new FormData();
+                formData.append('file', file);
+                formData.append('upload_preset', cData.uploadPreset);
+
+                const res = await fetch(`https://api.cloudinary.com/v1_1/${cData.cloudName}/image/upload`, {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                if(!res.ok) throw new Error("Gagal upload ke Cloudinary");
+                const result = await res.json();
+                
+                document.getElementById('bannerUrl').value = result.secure_url;
+                document.getElementById('bannerPreviewContainer').style.display = 'block';
+                document.getElementById('bannerPreviewImg').src = result.secure_url;
+                
+                await addDoc(collection(db, "layanan_history"), {
+                    type: 'banner',
+                    url: result.secure_url,
+                    timestamp: Date.now()
+                });
+                
+                showToast("Gambar berhasil diupload!", "success");
+            } catch(err) {
+                showToast("Upload gagal: " + err.message, "danger");
             }
         };
 
@@ -5517,6 +5720,12 @@ window.openHfHelpModal = () => document.getElementById('hf-help-modal').classLis
                     link: document.getElementById('bannerLink').value.trim(),
                     updatedAt: Date.now()
                 });
+                
+                if(document.getElementById('bannerUrl').value.trim()) {
+                    document.getElementById('bannerPreviewContainer').style.display = 'block';
+                    document.getElementById('bannerPreviewImg').src = document.getElementById('bannerUrl').value.trim();
+                }
+
                 showToast("Banner Promo berhasil disimpan!", "success");
                 await createLog({ type: 'info', host: 'Admin', request: 'BANNER_UPDATE', message: `Merubah status Pop-up Banner Promosi` });
             } catch(err) {
