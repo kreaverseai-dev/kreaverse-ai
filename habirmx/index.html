@@ -2486,6 +2486,55 @@
         <button onclick="window.scrollToGenerate()" style="background: var(--accent-color); color: #fff; border: none; padding: 6px 12px; border-radius: 99px; font-size: 0.75rem; font-weight: 800; cursor: pointer; box-shadow: 0 2px 8px rgba(0, 122, 255, 0.3); display: flex; align-items: center; gap: 6px;">Ke Tombol Buat <i class="fa-solid fa-arrow-down"></i></button>
     </div>
 
+    <!-- UI MAINTENANCE BERGAYA myXL -->
+    <div id="maintenanceOverlay" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #ffffff; z-index: 999999999; display: flex; flex-direction: column; justify-content: space-between; opacity: 0; pointer-events: none; transition: opacity 0.3s ease;">
+        <div style="padding: 60px 24px; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; flex: 1;">
+            
+            <!-- Ilustrasi Orang Pegang Kunci Inggris (Bisa diganti link gambar pakai tag <img> jika punya) -->
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" style="width: 180px; height: 180px; margin-bottom: 24px;">
+                <!-- Sparkles -->
+                <path d="M 40 80 L 45 65 L 60 60 L 45 55 L 40 40 L 35 55 L 20 60 L 35 65 Z" fill="#38bdf8"/>
+                <path d="M 150 110 L 153 100 L 163 97 L 153 94 L 150 84 L 147 94 L 137 97 L 147 100 Z" fill="#94a3b8"/>
+                <!-- Character Body -->
+                <path d="M 50 200 Q 50 140 100 140 Q 150 140 150 200 Z" fill="#002dbb"/>
+                <!-- Head & Face -->
+                <circle cx="100" cy="90" r="35" fill="#fde0c6"/>
+                <path d="M 70 80 Q 100 30 130 80 Q 135 110 100 125 Q 65 110 70 80 Z" fill="#fde0c6"/>
+                <!-- Hair -->
+                <path d="M 65 85 Q 70 40 100 40 Q 130 40 135 85 Q 130 50 100 50 Q 70 50 65 85 Z" fill="#0f172a"/>
+                <path d="M 100 40 Q 130 35 135 70 Q 140 40 100 40 Z" fill="#0f172a"/>
+                <path d="M 65 70 Q 60 40 100 40 Q 70 35 65 70 Z" fill="#0f172a"/>
+                <circle cx="100" cy="45" r="25" fill="#0f172a"/>
+                <!-- Eyes & Smile -->
+                <circle cx="85" cy="85" r="4" fill="#0f172a"/>
+                <circle cx="115" cy="85" r="4" fill="#0f172a"/>
+                <path d="M 90 105 Q 100 115 110 105" fill="none" stroke="#0f172a" stroke-width="3" stroke-linecap="round"/>
+                <!-- Hand & Wrench -->
+                <path d="M 90 140 L 50 100 L 70 80 L 110 120 Z" fill="#10b981" rx="10"/> <!-- Wrench Handle -->
+                <path d="M 40 90 A 20 20 0 1 1 80 70 A 20 20 0 0 0 40 90 Z" fill="#10b981"/> <!-- Wrench Head -->
+                <circle cx="85" cy="150" r="20" fill="#fde0c6"/> <!-- Hand -->
+                <path d="M 65 155 Q 85 170 105 155" fill="none" stroke="#0f172a" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+
+            <h2 style="font-size: 1.4rem; font-weight: 900; color: #000000; margin-bottom: 12px; font-family: 'Plus Jakarta Sans', sans-serif;">Kreaverse AI akan segera kembali!</h2>
+            <p style="font-size: 0.9rem; color: #475569; line-height: 1.6; max-width: 400px; margin-bottom: 24px; font-weight: 500;">Saat ini server sedang dalam perbaikan untuk memberikan Anda pengalaman terbaik. Silakan coba kembali beberapa saat lagi.</p>
+
+            <!-- Box Estimasi (Data dari Admin) -->
+            <div style="background: #f8fafc; border: 1px solid #e2e8f0; padding: 12px 20px; border-radius: 12px; display: inline-flex; align-items: center; gap: 12px;">
+                <i class="fa-solid fa-clock-rotate-left" style="color: #f59e0b; font-size: 1.2rem;"></i>
+                <div style="text-align: left;">
+                    <div style="font-size: 0.7rem; color: #64748b; font-weight: 700; text-transform: uppercase;">Estimasi Pulih:</div>
+                    <div id="maintenanceEstText" style="font-size: 0.95rem; font-weight: 800; color: #0f172a;">Menunggu info...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tombol Bawah -->
+        <div style="padding: 24px;">
+            <button onclick="window.closeMaintenanceScreen()" style="width: 100%; background: #002dbb; color: #fff; border: none; padding: 16px; border-radius: 99px; font-weight: 800; font-size: 1rem; cursor: pointer; box-shadow: 0 8px 20px rgba(0, 45, 187, 0.2); transition: transform 0.2s;">Tutup Aplikasi</button>
+        </div>
+    </div>
+
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
@@ -2507,6 +2556,41 @@
         const auth = getAuth(app);
         const db = getFirestore(app);
         const rtdb = getDatabase(app);
+
+        // --- SISTEM MAINTENANCE GLOBAL ---
+        window.isMaintenanceModeActive = false;
+
+        window.showMaintenanceScreen = function() {
+            const overlay = document.getElementById('maintenanceOverlay');
+            if(overlay) {
+                overlay.style.opacity = '1';
+                overlay.style.pointerEvents = 'auto';
+            }
+        };
+
+        window.closeMaintenanceScreen = function() {
+            const overlay = document.getElementById('maintenanceOverlay');
+            if(overlay) {
+                overlay.style.opacity = '0';
+                overlay.style.pointerEvents = 'none';
+            }
+        };
+
+        // Dengarkan perubahan data Maintenance dari Dashboard Admin secara Realtime
+        onSnapshot(doc(db, "settings", "maintenance"), (docSnap) => {
+            if (docSnap.exists()) {
+                const data = docSnap.data();
+                window.isMaintenanceModeActive = data.isActive || false;
+                
+                if (window.isMaintenanceModeActive) {
+                    document.getElementById('maintenanceEstText').innerText = data.estimatedTime || "Segera pulih...";
+                    window.showMaintenanceScreen();
+                } else {
+                    window.closeMaintenanceScreen();
+                }
+            }
+        });
+        // ---------------------------------
 
         // Fungsi untuk melapor ke Dashboard Admin bahwa Klien sedang Online
         function manageUserPresence(uid) {
@@ -6111,6 +6195,12 @@ progressBar.style.width = "100%"; percentText.innerText = "100%";
         // PROSES PEMICU PEMBUATAN ARANSEMEN LAGU (GENERATE SONG)
         // ============================================================
         window.generateAudioSong = async function() {
+            // BLOKIR JIKA MAINTENANCE AKTIF
+            if (window.isMaintenanceModeActive) {
+                window.showMaintenanceScreen();
+                return; // Hentikan fungsi disini, lagu tidak akan di-generate
+            }
+
             if (!isLoggedIn || !currentUser) {
                 showIphoneToast("Akses Ditolak", "Silakan login terlebih dahulu untuk membuat lagu.", "fa-lock");
                 setTimeout(() => { window.location.href = "/login/index.html"; }, 2000);
