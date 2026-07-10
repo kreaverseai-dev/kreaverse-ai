@@ -552,7 +552,7 @@ ATURAN MUTLAK:
     // METODE GET: ASYNCHRONOUS STATUS CHECK (POLLING STATUS)
     // ============================================================
     if (req.method === 'GET') {
-        const { taskId, provider } = req.query;
+        const { taskId, provider, email } = req.query; // FITUR REFUND: Email ditangkap di sini
         if (!taskId || !provider) return res.status(400).json({ error: 'taskId dan provider wajib dilampirkan!' });
 
         try {
@@ -626,6 +626,19 @@ ATURAN MUTLAK:
                 
                 // Jika error bersifat permanen, return 200 dengan status failed agar frontend stop polling
                 if (resData.code === 413 || resData.code === 400 || resData.code === 403 || lowerErr.includes('artist name') || lowerErr.includes('copyright') || lowerErr.includes('fail') || lowerErr.includes('error') || lowerErr.includes('reject') || lowerErr.includes('tags') || lowerErr.includes('matches an existing') || lowerErr.includes('catalog') || lowerErr.includes('insufficient') || lowerErr.includes('balance') || isKieFailed) {
+                    
+                    // --- SISTEM REFUND OTOMATIS: JIKA GAGAL DI AWAL (HTTP STATUS) ---
+                    if (email) {
+                        try {
+                            const refundQuery = await db.collection("users").where("email", "==", email).get();
+                            if (!refundQuery.empty) {
+                                await refundQuery.docs[0].ref.update({ generateCount: FieldValue.increment(-1) });
+                                console.log(`[REFUND SUKSES] Saldo dikembalikan (HTTP Error) untuk email: ${email}`);
+                            }
+                        } catch (refundErr) { console.error("Gagal melakukan refund:", refundErr); }
+                    }
+                    // -----------------------------------------------------------------
+
                     return res.status(200).json({ status: "failed", audioUrl: null, reason: translatedError, raw: resData });
                 }
                 
@@ -757,6 +770,20 @@ ATURAN MUTLAK:
                     rawError: JSON.stringify(resData, null, 2),
                     timestamp: Date.now()
                 });
+                
+                // --- SISTEM REFUND OTOMATIS: JIKA GAGAL DI TENGAH JALAN (POLLING FAILED) ---
+                if (email) {
+                    try {
+                        const refundQuery = await db.collection("users").where("email", "==", email).get();
+                        if (!refundQuery.empty) {
+                            await refundQuery.docs[0].ref.update({ generateCount: FieldValue.increment(-1) });
+                            console.log(`[REFUND SUKSES] Saldo dikembalikan (Polling Failed) untuk email: ${email} pada task: ${taskId}`);
+                        }
+                    } catch (refundErr) {
+                        console.error("Gagal melakukan refund:", refundErr);
+                    }
+                }
+                // -----------------------------------------------------------------------------
             }
 
             return res.status(200).json({ 
