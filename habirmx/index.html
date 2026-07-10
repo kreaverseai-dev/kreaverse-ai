@@ -6262,9 +6262,31 @@ progressBar.style.width = "100%"; percentText.innerText = "100%";
             }
 
             const currentMode = document.getElementById('modeGenerateBtn').classList.contains('active') ? 'generate' : 'cover';
-            if (currentMode === 'cover' && !selectedAudioUrl) {
-                showIphoneToast("Error", "Mode Cover memerlukan file audio referensi. Silakan unggah audio terlebih dahulu!", "fa-triangle-exclamation");
-                return;
+            
+            if (currentMode === 'cover') {
+                if (!selectedAudioUrl && !rawAudioFile) {
+                    showIphoneToast("Error", "Mode Cover memerlukan file audio referensi. Silakan unggah audio terlebih dahulu!", "fa-triangle-exclamation");
+                    return;
+                }
+                
+                if (!selectedAudioUrl && rawAudioFile) {
+                    const tempBtnHtml = generateBtn.innerHTML;
+                    generateBtn.disabled = true;
+                    generateBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Mengunggah Audio...';
+                    try {
+                        let finalDurStr = "0:00";
+                        const origPlayer = document.getElementById('originalAudioPlayer');
+                        if (origPlayer && isFinite(origPlayer.duration) && origPlayer.duration > 0) {
+                            finalDurStr = formatTime(origPlayer.duration);
+                        }
+                        await uploadBlobToCloudinary(rawAudioFile, rawAudioFile.name, false, finalDurStr);
+                    } catch (uploadErr) {
+                        showIphoneToast("Error", "Gagal mengunggah audio ke server. Silakan coba lagi.", "fa-triangle-exclamation");
+                        generateBtn.disabled = false;
+                        generateBtn.innerHTML = tempBtnHtml;
+                        return;
+                    }
+                }
             }
 
             if (!isAdmin && currentUserData && currentUserData.tier !== 'max_lifetime' && currentUserData.tier !== 'max_monthly' && currentUserData.tier !== 'max') {
