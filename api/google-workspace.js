@@ -95,10 +95,10 @@ module.exports = async function handler(req, res) {
           name: { givenName: firstName, familyName: lastName },
           password: password,
           changePasswordAtNextLogin: false,
-          externalIds: [
+          organizations: [
             {
-              type: 'organization',
-              value: '123456' // Kode Sakti ID Karyawan
+              primary: true,
+              employeeId: '123456' // STRUKTUR YANG BENAR: Kode Sakti ID Karyawan
             }
           ]
         }
