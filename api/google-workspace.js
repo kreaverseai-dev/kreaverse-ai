@@ -88,14 +88,19 @@ module.exports = async function handler(req, res) {
       const jwtClient = getJwtClient(selectedAccount.adminEmail);
       const directory = google.admin({ version: 'directory_v1', auth: jwtClient });
 
-      // PROSES PEMBUATAN AKUN + INJEKSI EMAIL PEMULIHAN PRIBADI
+      // PROSES PEMBUATAN AKUN + INJEKSI ID KARYAWAN UNTUK BYPASS LOGIN
       await directory.users.insert({
         requestBody: {
           primaryEmail: email,
           name: { givenName: firstName, familyName: lastName },
           password: password,
           changePasswordAtNextLogin: false,
-          recoveryEmail: 'kreaverse.ai@gmail.com' // Disuntikkan otomatis agar Google tidak minta nomor HP
+          externalIds: [
+            {
+              type: 'organization',
+              value: '123456' // Kode Sakti ID Karyawan
+            }
+          ]
         }
       });
 
