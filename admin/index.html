@@ -2961,12 +2961,17 @@ window.deleteAllLogs = async () => { try { let total = 0; while(true) { const sn
 // MODUL DYNAMIC API PROVIDERS (DIPERBAIKI)
 // ============================================================
 let customApiProviders = [];
-let currentEngineTab = 'llm';
+let currentEngineTab = localStorage.getItem('kreaverse_engine_tab') || 'llm';
 
 window.filterEngine = function(tab) {
     currentEngineTab = tab;
-    document.querySelectorAll('#engine-tabs .tab-sort-btn').forEach(btn => btn.classList.remove('active'));
-    event.target.classList.add('active');
+    localStorage.setItem('kreaverse_engine_tab', tab);
+    document.querySelectorAll('#engine-tabs .tab-sort-btn').forEach(btn => {
+        btn.classList.remove('active');
+        if (btn.getAttribute('onclick') && btn.getAttribute('onclick').includes("'" + tab + "'")) {
+            btn.classList.add('active');
+        }
+    });
     window.renderEngineTable();
 };
 
@@ -3031,9 +3036,9 @@ function setupRealtimeApiProviders() {
             document.getElementById('apiProvider').value = "";
         }
 
-        window.renderEngineTable();
+        window.filterEngine(currentEngineTab);
         // Trigger re-render API Keys table if it's already loaded to sync provider types
-        if (globalApiKeysData && globalApiKeysData.length > 0) window.renderApiKeysTable();
+        if (globalApiKeysData && globalApiKeysData.length > 0) window.filterApiKeys(currentApiKeyTab);
     });
 }
 
@@ -3313,12 +3318,17 @@ window.deleteAllProviders = function() {
 // MODUL API KEY
 // ============================================================
 let globalApiKeysData = [];
-let currentApiKeyTab = 'all';
+let currentApiKeyTab = localStorage.getItem('kreaverse_apikey_tab') || 'llm';
 
 window.filterApiKeys = function(tab) {
     currentApiKeyTab = tab;
-    document.querySelectorAll('#apikey-tabs .tab-sort-btn').forEach(btn => btn.classList.remove('active'));
-    event.target.classList.add('active');
+    localStorage.setItem('kreaverse_apikey_tab', tab);
+    document.querySelectorAll('#apikey-tabs .tab-sort-btn').forEach(btn => {
+        btn.classList.remove('active');
+        if (btn.getAttribute('onclick') && btn.getAttribute('onclick').includes("'" + tab + "'")) {
+            btn.classList.add('active');
+        }
+    });
     window.renderApiKeysTable();
 };
 
@@ -3421,7 +3431,7 @@ function setupRealtimeApis() {
             if (d.status !== "mati" && d.status !== "nonaktif") countOn++; else countOff++;
         });
 
-        window.renderApiKeysTable();
+        window.filterApiKeys(currentApiKeyTab);
 
         document.getElementById('valApiTotal').innerText = total; 
         document.getElementById('valApiOn').innerText = countOn; 
@@ -5204,6 +5214,7 @@ window.openHfHelpModal = () => document.getElementById('hf-help-modal').classLis
                 // Urutkan dari yang terbaru
                 gwUsersDataGlobal.sort((a, b) => b.createdAt - a.createdAt);
                 window.renderGwUsersTable();
+                window.renderGwAccountsTable(); // UPDATE: Menyinkronkan ulang angka Kapasitas Terpakai (0/30) secara realtime
             });
         }
 
