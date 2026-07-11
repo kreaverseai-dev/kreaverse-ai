@@ -628,6 +628,13 @@ ATURAN MUTLAK:
                 const errMsg = actualErrorMessage || resData.msg || resData.message || resData.error || "API Error";
                 const lowerErr = String(errMsg).toLowerCase();
                 
+                // --- SISTEM ANTI-PANIK UNIVERSAL (UNTUK SEMUA PROVIDER) ---
+                // Mengatasi "Race Condition" / Delay Sinkronisasi Database di server pusat.
+                if (lowerErr.includes('not found') || response.status === 404 || resData.code === 404) {
+                     return res.status(200).json({ status: "processing", audioUrl: null, reason: "Sinkronisasi antrean server AI...", raw: resData });
+                }
+                // -----------------------------------------------------------
+                
                 let translatedError = errMsg;
                 if (lowerErr.includes('copyright') || lowerErr.includes('lyrics contain') || lowerErr.includes('artist name') || lowerErr.includes('catalog') || lowerErr.includes('matches an existing')) {
                     translatedError = "Hak Cipta Terdeteksi: Lirik atau audio melanggar hak cipta. Silakan ubah lirik atau gunakan fitur DSP Bypass.";
