@@ -642,15 +642,23 @@
             }
         });
 
-        // 5. LYRIC ENCRYPTOR
+        // 5. LYRIC ENCRYPTOR (UPGRADE: Zero-Width Space Injection)
         btnEncrypt.addEventListener('click', async () => {
             const input = document.getElementById('lyricInput');
             if (!input.value) return;
-            const map = {
-                'a': 'а', 'c': 'с', 'e': 'е', 'o': 'о', 'p': 'р', 'x': 'х', 'y': 'у',
-                'A': 'А', 'B': 'В', 'C': 'С', 'E': 'Е', 'H': 'Н', 'M': 'М', 'O': 'О', 'P': 'Р', 'T': 'Т', 'X': 'Х', 'Y': 'Ү'
-            };
-            const encryptedText = input.value.split('').map(char => map[char] || char).join('');
+            
+            // Menggunakan Zero-Width Space (\u200B)
+            let encryptedText = "";
+            const text = input.value;
+            for (let i = 0; i < text.length; i++) {
+                // Jangan sisipkan spasi hantu setelah spasi asli atau baris baru (enter)
+                if (text[i] === ' ' || text[i] === '\n') {
+                    encryptedText += text[i];
+                } else {
+                    encryptedText += text[i] + '\u200B';
+                }
+            }
+            
             input.value = encryptedText;
 
             try {
