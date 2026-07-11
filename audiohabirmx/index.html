@@ -3,37 +3,60 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Audio Habirmx Studio</title>
+    <title>HABI RMX × KREAVERSE AI</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Library untuk Export MP3 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lamejs/1.2.1/lame.min.js"></script>
     <style>
-        body { background-color: #0a0a0a; color: #e5e5e5; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        .panel { background-color: #111111; border: 1px solid #222; border-radius: 0.75rem; padding: 1.5rem; }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
         
-        /* Custom Range Slider */
+        body { 
+            background-color: #f8fafc; /* Light slate background */
+            color: #0f172a; 
+            font-family: 'Inter', sans-serif; 
+        }
+        .panel { 
+            background-color: #ffffff; 
+            border: 1px solid #e2e8f0; 
+            border-radius: 1.5rem; /* Lebih rounded seperti Kreaverse */
+            padding: 1.5rem; 
+            box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+        }
+        
+        /* Custom Range Slider (Blue Theme) */
         input[type=range] { -webkit-appearance: none; width: 100%; background: transparent; }
-        input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 16px; width: 16px; border-radius: 50%; background: #ef4444; cursor: pointer; margin-top: -6px; box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.2); }
-        input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 4px; cursor: pointer; background: #333; border-radius: 2px; }
+        input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 16px; width: 16px; border-radius: 50%; background: #2563eb; cursor: pointer; margin-top: -6px; box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.2); }
+        input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 4px; cursor: pointer; background: #cbd5e1; border-radius: 2px; }
         
-        /* Custom Toggle Switch */
-        .toggle-checkbox:checked { right: 0; border-color: #ef4444; }
-        .toggle-checkbox:checked + .toggle-label { background-color: #ef4444; }
-        .toggle-checkbox { right: 4px; z-index: 1; border-color: #e5e5e5; transition: all 0.3s; }
-        .toggle-label { width: 44px; height: 24px; background-color: #444; border-radius: 9999px; transition: all 0.3s; }
+        /* Custom Toggle Switch (Blue Theme) */
+        .toggle-checkbox:checked { right: 0; border-color: #2563eb; }
+        .toggle-checkbox:checked + .toggle-label { background-color: #2563eb; }
+        .toggle-checkbox { right: 4px; z-index: 1; border-color: #e2e8f0; transition: all 0.3s; }
+        .toggle-label { width: 44px; height: 24px; background-color: #cbd5e1; border-radius: 9999px; transition: all 0.3s; }
         .toggle-checkbox:checked { transform: translateX(100%); right: auto; left: 4px; }
     </style>
 </head>
 <body class="min-h-screen p-4 md:p-8">
 
-    <div class="max-w-7xl mx-auto">
-        <!-- Header -->
-        <div class="text-center mb-10">
-            <div class="inline-block bg-red-900/30 text-red-500 text-xs font-bold px-3 py-1 rounded-full mb-4 border border-red-900">
-                👑 EXCLUSIVE TOOL BY RATU MELODI
+    <div class="max-w-6xl mx-auto">
+        <!-- Header Kreaverse AI Style -->
+        <div class="text-center mb-10 mt-4">
+            <div class="flex justify-center items-center gap-2 mb-4">
+                <!-- Logo Star Kreaverse -->
+                <svg class="w-5 h-5 text-purple-600" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 2l2.4 7.6h8l-6.4 4.8 2.4 7.6-6.4-4.8-6.4 4.8 2.4-7.6-6.4-4.8h8z"/>
+                </svg>
+                <span class="font-bold text-sm text-gray-800">Kreaverse AI</span>
             </div>
-            <h1 class="text-3xl md:text-4xl font-black text-white tracking-wider flex items-center justify-center gap-3">
-                <span class="text-red-600">🛡️</span> AUDIO HABIRMX STUDIO
+            <h1 class="text-3xl md:text-4xl font-black text-gray-900 tracking-tight mb-3 uppercase">
+                HABI RMX × KREAVERSE AI
             </h1>
-            <p class="text-gray-400 text-xs md:text-sm mt-2 tracking-widest">PROFESSIONAL AUDIO DSP SUITE & AI BYPASS TOOLKIT</p>
+            <p class="text-gray-500 text-sm max-w-2xl mx-auto">
+                Ubah deskripsi musik, lirik, atau referensi audio Anda menjadi aransemen lagu utuh berkualitas premium secara dinamis.
+            </p>
+            <div class="mt-4 inline-block bg-blue-50 border border-blue-100 text-blue-600 text-xs font-semibold px-3 py-1.5 rounded-full">
+                Update Terakhir: Sabtu, 11 Juli 2026 | 16:09 WIB
+            </div>
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
@@ -44,73 +67,102 @@
                 <!-- Upload Panel -->
                 <div class="panel">
                     <div class="flex justify-between items-center mb-4">
-                        <h2 class="text-lg font-bold text-white">Upload File Audio</h2>
-                        <span class="text-[10px] text-red-500 border border-red-900 bg-red-900/20 px-2 py-1 rounded">Input Node</span>
+                        <h2 class="text-base font-bold text-gray-900">Unggah Berkas Audio Referensi</h2>
                     </div>
                     
-                    <div class="flex items-center gap-4 mb-2">
-                        <label class="bg-white text-black hover:bg-gray-200 text-sm font-bold py-2 px-4 rounded-md cursor-pointer transition-colors whitespace-nowrap">
-                            Choose File
-                            <input type="file" id="audioInput" accept="audio/*" class="hidden">
-                        </label>
-                        <span id="fileName" class="text-sm text-gray-500 truncate">No file chosen</span>
+                    <div class="border-2 border-dashed border-gray-300 rounded-xl p-6 text-center hover:bg-gray-50 transition-colors mb-4 relative">
+                        <input type="file" id="audioInput" accept="audio/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
+                        <div class="flex flex-col items-center justify-center gap-2">
+                            <div class="bg-blue-600 text-white p-3 rounded-full">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
+                            </div>
+                            <span class="text-sm font-bold text-gray-700">Pilih File Audio</span>
+                            <span id="fileName" class="text-xs text-gray-500 truncate max-w-full px-4">MP3, WAV, OGG, M4A (Max 50MB)</span>
+                        </div>
                     </div>
-                    <p class="text-xs text-gray-600 mb-6">Ukuran Maks. Rekomendasi: 50 MB demi kestabilan memori.</p>
                     
-                    <div class="bg-[#0a0a0a] p-6 rounded-xl border border-[#222] flex flex-col items-center justify-center">
-                        <div class="flex gap-4 mb-6">
-                            <button id="btnPlay" class="bg-[#222] hover:bg-[#333] text-white rounded-full w-14 h-14 flex items-center justify-center disabled:opacity-30 transition-colors" disabled>
-                                <svg class="w-6 h-6 ml-1" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                    <div class="bg-gray-50 p-5 rounded-xl border border-gray-200 flex flex-col items-center justify-center">
+                        <div class="flex gap-4 mb-4">
+                            <button id="btnPlay" class="bg-white border border-gray-300 hover:bg-gray-100 text-gray-800 rounded-full w-12 h-12 flex items-center justify-center disabled:opacity-50 transition-colors shadow-sm" disabled>
+                                <svg class="w-5 h-5 ml-1" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
                             </button>
-                            <button id="btnStop" class="bg-red-900/50 hover:bg-red-800 text-red-500 rounded-full w-14 h-14 flex items-center justify-center disabled:opacity-30 transition-colors" disabled>
-                                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M6 6h12v12H6z"/></svg>
+                            <button id="btnStop" class="bg-white border border-gray-300 hover:bg-gray-100 text-red-500 rounded-full w-12 h-12 flex items-center justify-center disabled:opacity-50 transition-colors shadow-sm" disabled>
+                                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M6 6h12v12H6z"/></svg>
                             </button>
                         </div>
-                        <div class="w-full text-center text-xs text-red-500 font-mono tracking-widest" id="statusText">
+                        
+                        <!-- Toggle Perbandingan Asli vs Tool -->
+                        <div class="flex items-center justify-center gap-3 mb-4 w-full">
+                            <span class="text-[10px] text-gray-500 font-bold">LAGU ASLI</span>
+                            <div class="relative inline-block w-10 align-middle select-none">
+                                <input type="checkbox" id="tgCompare" class="toggle-checkbox absolute block w-5 h-5 rounded-full bg-white border-4 appearance-none cursor-pointer top-0 left-0" checked/>
+                                <label for="tgCompare" class="toggle-label block overflow-hidden cursor-pointer h-5"></label>
+                            </div>
+                            <span class="text-[10px] text-blue-600 font-bold">HASIL TOOL</span>
+                        </div>
+
+                        <div class="w-full text-center text-xs text-blue-600 font-medium" id="statusText">
                             Menunggu berkas audio...
+                        </div>
+                        
+                        <!-- Progress Bar Render -->
+                        <div id="progressContainer" class="w-full mt-4 hidden">
+                            <div class="w-full bg-gray-200 rounded-full h-1.5">
+                                <div id="progressBar" class="bg-blue-600 h-1.5 rounded-full transition-all duration-300" style="width: 0%"></div>
+                            </div>
+                            <div id="progressText" class="text-[10px] text-gray-500 mt-1 text-right font-medium">0%</div>
                         </div>
                     </div>
                 </div>
 
                 <!-- Engine Dasar -->
                 <div class="panel">
-                    <h2 class="text-sm font-black text-white mb-6 tracking-widest flex items-center gap-2">
-                        <span class="text-red-500">≛</span> ENGINE DASAR
-                    </h2>
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-sm font-bold text-gray-900 flex items-center gap-2">
+                            <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"></path></svg>
+                            Pengaturan Engine
+                        </h2>
+                        <!-- Preset Anti Copyright -->
+                        <select id="presetSelect" class="bg-white text-xs font-medium text-gray-700 border border-gray-300 rounded-lg px-2 py-1.5 outline-none focus:border-blue-500 cursor-pointer shadow-sm">
+                            <option value="manual">⚙️ Manual Setup</option>
+                            <option value="safe1">🛡️ Preset: Safe Bypass</option>
+                            <option value="safe2">🔥 Preset: Extreme Stealth</option>
+                        </select>
+                    </div>
                     
                     <div class="space-y-5">
                         <div>
-                            <div class="flex justify-between text-[10px] font-bold mb-2 text-gray-400">
-                                <span>KECEPATAN (TEMPO)</span>
-                                <span id="valTempo" class="text-red-500">1.00x</span>
+                            <div class="flex justify-between text-[10px] font-bold mb-2 text-gray-500 uppercase">
+                                <span>Kecepatan (Tempo)</span>
+                                <span id="valTempo" class="text-blue-600">1.00x</span>
                             </div>
                             <input type="range" id="sliderTempo" min="0.5" max="1.5" step="0.01" value="1.0">
                         </div>
                         <div>
-                            <div class="flex justify-between text-[10px] font-bold mb-2 text-gray-400">
-                                <span>PITCH SHIFT (CENTS)</span>
-                                <span id="valPitch" class="text-red-500">0</span>
+                            <div class="flex justify-between text-[10px] font-bold mb-2 text-gray-500 uppercase">
+                                <span>Pitch Shift (Cents)</span>
+                                <span id="valPitch" class="text-blue-600">0</span>
                             </div>
                             <input type="range" id="sliderPitch" min="-1200" max="1200" step="100" value="0">
                         </div>
                         <div>
-                            <div class="flex justify-between text-[10px] font-bold mb-2 text-gray-400">
-                                <span>TIMBRE DENSITY ENHANCER</span>
-                                <span id="valTimbre" class="text-red-500">0%</span>
+                            <div class="flex justify-between text-[10px] font-bold mb-2 text-gray-500 uppercase">
+                                <span>Timbre Density Enhancer</span>
+                                <span id="valTimbre" class="text-blue-600">0%</span>
                             </div>
                             <input type="range" id="sliderTimbre" min="0" max="100" step="1" value="0">
                         </div>
                         <div>
-                            <div class="flex justify-between text-[10px] font-bold mb-2 text-gray-400">
-                                <span>STEGANOGRAPHIC AUDIO LAYER</span>
-                                <span id="valStego" class="text-red-500">0%</span>
+                            <div class="flex justify-between text-[10px] font-bold mb-2 text-gray-500 uppercase">
+                                <span>Steganographic Audio Layer</span>
+                                <span id="valStego" class="text-blue-600">0%</span>
                             </div>
                             <input type="range" id="sliderStego" min="0" max="100" step="1" value="0">
                         </div>
                         <div>
-                            <div class="flex justify-between text-[10px] font-bold mb-2 text-gray-400">
-                                <span>DIMENSIONAL VOID REFLECTOR</span>
-                                <span id="valVoid" class="text-red-500">0%</span>
+                            <div class="flex justify-between text-[10px] font-bold mb-2 text-gray-500 uppercase">
+                                <span>Dimensional Void Reflector</span>
+                                <span id="valVoid" class="text-blue-600">0%</span>
                             </div>
                             <input type="range" id="sliderVoid" min="0" max="100" step="1" value="0">
                         </div>
@@ -123,14 +175,15 @@
                 
                 <!-- Advanced Algorithms -->
                 <div class="panel">
-                    <h2 class="text-sm font-black text-white mb-6 tracking-widest flex items-center gap-2">
-                        <span class="text-red-500">⛨</span> R.M. ADVANCED ALGORITHMS
+                    <h2 class="text-sm font-bold text-gray-900 mb-4 flex items-center gap-2">
+                        <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path></svg>
+                        Advanced Algorithms
                     </h2>
                     
                     <div class="space-y-0">
-                        <div class="flex items-center justify-between py-4 border-b border-[#222]">
+                        <div class="flex items-center justify-between py-4 border-b border-gray-100">
                             <div class="pr-4">
-                                <h3 class="text-xs font-bold text-white mb-1">1. TEMPORAL FLUX ENGINE</h3>
+                                <h3 class="text-xs font-bold text-gray-800 mb-1">1. Temporal Flux Engine</h3>
                                 <p class="text-[10px] text-gray-500">Menarik dan mengulur sumbu waktu secara asimetris agar AI gagal mencocokkan durasi sidik jari.</p>
                             </div>
                             <div class="relative inline-block w-11 align-middle select-none">
@@ -138,9 +191,9 @@
                                 <label for="tgTemporal" class="toggle-label block overflow-hidden cursor-pointer"></label>
                             </div>
                         </div>
-                        <div class="flex items-center justify-between py-4 border-b border-[#222]">
+                        <div class="flex items-center justify-between py-4 border-b border-gray-100">
                             <div class="pr-4">
-                                <h3 class="text-xs font-bold text-white mb-1">2. WAVEFORM MIRAGE PROTOCOL</h3>
+                                <h3 class="text-xs font-bold text-gray-800 mb-1">2. Waveform Mirage Protocol</h3>
                                 <p class="text-[10px] text-gray-500">Membiaskan struktur fisik gelombang menjadi ilusi optik pada spektrogram digital.</p>
                             </div>
                             <div class="relative inline-block w-11 align-middle select-none">
@@ -148,9 +201,9 @@
                                 <label for="tgMirage" class="toggle-label block overflow-hidden cursor-pointer"></label>
                             </div>
                         </div>
-                        <div class="flex items-center justify-between py-4 border-b border-[#222]">
+                        <div class="flex items-center justify-between py-4 border-b border-gray-100">
                             <div class="pr-4">
-                                <h3 class="text-xs font-bold text-white mb-1">3. BINAURAL NULLIFIER (ANTI-MONO AI)</h3>
+                                <h3 class="text-xs font-bold text-gray-800 mb-1">3. Binaural Nullifier (Anti-Mono AI)</h3>
                                 <p class="text-[10px] text-gray-500">Memanipulasi fase asimetris agar instrumen hancur saat robot AI mengubahnya ke format Mono.</p>
                             </div>
                             <div class="relative inline-block w-11 align-middle select-none">
@@ -158,9 +211,9 @@
                                 <label for="tgAntiMono" class="toggle-label block overflow-hidden cursor-pointer"></label>
                             </div>
                         </div>
-                        <div class="flex items-center justify-between py-4 border-b border-[#222]">
+                        <div class="flex items-center justify-between py-4 border-b border-gray-100">
                             <div class="pr-4">
-                                <h3 class="text-xs font-bold text-white mb-1">4. SPECTRAL PEAK ERASER</h3>
+                                <h3 class="text-xs font-bold text-gray-800 mb-1">4. Spectral Peak Eraser</h3>
                                 <p class="text-[10px] text-gray-500">Menyapu dan menghapus titik koordinat energi tertinggi yang diincar robot detektor.</p>
                             </div>
                             <div class="relative inline-block w-11 align-middle select-none">
@@ -168,9 +221,9 @@
                                 <label for="tgSpectral" class="toggle-label block overflow-hidden cursor-pointer"></label>
                             </div>
                         </div>
-                        <div class="flex items-center justify-between py-4 border-b border-[#222]">
+                        <div class="flex items-center justify-between py-4 border-b border-gray-100">
                             <div class="pr-4">
-                                <h3 class="text-xs font-bold text-white mb-1">5. QUANTUM PITCH DRIFT</h3>
+                                <h3 class="text-xs font-bold text-gray-800 mb-1">5. Quantum Pitch Drift</h3>
                                 <p class="text-[10px] text-gray-500">Menyuntikkan ketidakstabilan frekuensi mikro agar melodi tidak dapat diindeks secara permanen.</p>
                             </div>
                             <div class="relative inline-block w-11 align-middle select-none">
@@ -180,7 +233,7 @@
                         </div>
                         <div class="flex items-center justify-between py-4">
                             <div class="pr-4">
-                                <h3 class="text-xs font-bold text-red-500 mb-1">6. PHONETIC DECOUPLER (VOCAL FORMANT)</h3>
+                                <h3 class="text-xs font-bold text-blue-600 mb-1">6. Phonetic Decoupler (Vocal Formant)</h3>
                                 <p class="text-[10px] text-gray-500">Distorsi struktur formant akustik untuk menyamarkan pendeteksian pengucapan lirik.</p>
                             </div>
                             <div class="relative inline-block w-11 align-middle select-none">
@@ -193,18 +246,29 @@
 
                 <!-- Lyric Encryptor -->
                 <div class="panel">
-                    <h2 class="text-sm font-black text-white mb-2 tracking-widest flex items-center gap-2">
-                        <span class="bg-red-600 text-white text-[10px] px-1 rounded">ec</span> LYRIC PHONETIC ENCRYPTOR
-                    </h2>
-                    <p class="text-[10px] text-gray-500 mb-4">Bypass filter deteksi lirik NLP. Merubah susunan karakter tanpa merusak pelafalan nyanyian.</p>
-                    <textarea id="lyricInput" rows="3" class="w-full bg-[#0a0a0a] border border-[#333] rounded-md p-3 text-sm text-white focus:outline-none focus:border-red-500 mb-3 resize-none" placeholder="Paste lirik lagu di sini..."></textarea>
-                    <button id="btnEncrypt" class="w-full bg-[#222] hover:bg-[#333] text-white text-xs font-bold py-3 rounded-md transition-all duration-300">Enkripsi & Copy Otomatis</button>
+                    <div class="flex justify-between items-center mb-2">
+                        <h2 class="text-sm font-bold text-gray-900">Lyrics of Music</h2>
+                        <span class="bg-green-100 text-green-700 text-[10px] font-bold px-2 py-1 rounded flex items-center gap-1">
+                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+                            Encrypt
+                        </span>
+                    </div>
+                    <p class="text-[10px] text-gray-500 mb-3">Bypass filter deteksi lirik NLP. Merubah susunan karakter tanpa merusak pelafalan nyanyian.</p>
+                    <textarea id="lyricInput" rows="3" class="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-sm text-gray-800 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 mb-3 resize-none" placeholder="Tuliskan lirik lagu Anda sendiri di sini..."></textarea>
+                    <button id="btnEncrypt" class="w-full bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 text-xs font-bold py-2.5 rounded-xl transition-all duration-300 shadow-sm">Enkripsi & Copy Otomatis</button>
                 </div>
 
-                <!-- Render Button -->
-                <button id="btnRender" class="w-full bg-[#333] hover:bg-red-700 text-white text-sm font-bold py-4 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed" disabled>
-                    ⬇ RENDER & DOWNLOAD WAV (LOSSLESS)
-                </button>
+                <!-- Render Button & Format -->
+                <div class="flex gap-3">
+                    <select id="formatSelect" class="bg-white text-gray-700 text-sm font-bold px-4 rounded-xl border border-gray-300 outline-none focus:border-blue-500 cursor-pointer shadow-sm">
+                        <option value="wav">.WAV</option>
+                        <option value="mp3">.MP3</option>
+                    </select>
+                    <button id="btnRender" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold py-4 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-md flex justify-center items-center gap-2" disabled>
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                        Buat Lagu (Render)
+                    </button>
+                </div>
             </div>
 
         </div>
@@ -216,6 +280,7 @@
         let originalAudioBuffer = null;
         let activeNodes = []; 
         let previewTimeout;
+        let originalFileName = "Audio"; 
 
         // DOM Elements
         const audioInput = document.getElementById('audioInput');
@@ -225,6 +290,12 @@
         const statusText = document.getElementById('statusText');
         const btnRender = document.getElementById('btnRender');
         const btnEncrypt = document.getElementById('btnEncrypt');
+        const tgCompare = document.getElementById('tgCompare');
+        const presetSelect = document.getElementById('presetSelect');
+        const formatSelect = document.getElementById('formatSelect');
+        const progressContainer = document.getElementById('progressContainer');
+        const progressBar = document.getElementById('progressBar');
+        const progressText = document.getElementById('progressText');
 
         // Sliders
         const sliders = {
@@ -259,11 +330,35 @@
         sliders.stego.addEventListener('input', e => vals.stego.innerText = `${e.target.value}%`);
         sliders.void.addEventListener('input', e => vals.void.innerText = `${e.target.value}%`);
 
+        // LOGIKA PRESET ANTI COPYRIGHT
+        presetSelect.addEventListener('change', (e) => {
+            if (e.target.value === 'safe1') {
+                sliders.tempo.value = 1.05; vals.tempo.innerText = "1.05x";
+                sliders.pitch.value = 200; vals.pitch.innerText = "200";
+                sliders.timbre.value = 15; vals.timbre.innerText = "15%";
+                sliders.stego.value = 5; vals.stego.innerText = "5%";
+                sliders.void.value = 10; vals.void.innerText = "10%";
+                toggles.temporal.checked = true; toggles.mirage.checked = true;
+                toggles.antiMono.checked = true; toggles.spectral.checked = false;
+                toggles.quantum.checked = false; toggles.phonetic.checked = true;
+            } else if (e.target.value === 'safe2') {
+                sliders.tempo.value = 1.12; vals.tempo.innerText = "1.12x";
+                sliders.pitch.value = -300; vals.pitch.innerText = "-300";
+                sliders.timbre.value = 30; vals.timbre.innerText = "30%";
+                sliders.stego.value = 15; vals.stego.innerText = "15%";
+                sliders.void.value = 25; vals.void.innerText = "25%";
+                toggles.temporal.checked = true; toggles.mirage.checked = true;
+                toggles.antiMono.checked = true; toggles.spectral.checked = true;
+                toggles.quantum.checked = true; toggles.phonetic.checked = true;
+            }
+        });
+
         // 1. HANDLE UPLOAD
         audioInput.addEventListener('change', function(e) {
             const file = e.target.files[0];
             if (!file) return;
 
+            originalFileName = file.name.replace(/\.[^/.]+$/, "");
             fileNameDisplay.innerText = file.name;
             statusText.innerText = "Membaca file audio...";
             btnPlay.disabled = true;
@@ -272,11 +367,7 @@
             const reader = new FileReader();
             reader.onload = function(ev) {
                 const audioData = ev.target.result;
-                
-                // Inisialisasi AudioContext (Penting untuk browser HP)
-                if (!audioContext) {
-                    audioContext = new (window.AudioContext || window.webkitAudioContext)();
-                }
+                if (!audioContext) audioContext = new (window.AudioContext || window.webkitAudioContext)();
 
                 audioContext.decodeAudioData(audioData, function(buffer) {
                     originalAudioBuffer = buffer;
@@ -291,14 +382,19 @@
         });
 
         // 2. BUILD AUDIO GRAPH (DSP ENGINE)
-        function buildAudioGraph(ctx, buffer) {
+        function buildAudioGraph(ctx, buffer, isPreview = false) {
             let nodesToStart = [];
             
             const source = ctx.createBufferSource();
             source.buffer = buffer;
             nodesToStart.push(source);
 
-            // Engine Dasar: Tempo & Pitch
+            // Jika mode preview dan toggle "Lagu Asli" dipilih, matikan semua efek
+            if (isPreview && !tgCompare.checked) {
+                source.connect(ctx.destination);
+                return nodesToStart;
+            }
+
             source.playbackRate.value = parseFloat(sliders.tempo.value);
             source.detune.value = parseInt(sliders.pitch.value);
 
@@ -432,11 +528,10 @@
             if (!originalAudioBuffer) return;
             stopAudio();
 
-            // Wajib untuk browser HP (iOS/Android)
             if (!audioContext) audioContext = new (window.AudioContext || window.webkitAudioContext)();
             if (audioContext.state === 'suspended') audioContext.resume();
 
-            activeNodes = buildAudioGraph(audioContext, originalAudioBuffer);
+            activeNodes = buildAudioGraph(audioContext, originalAudioBuffer, true);
             activeNodes.forEach(node => node.start(0));
             
             btnPlay.disabled = true;
@@ -463,8 +558,22 @@
             stopAudio();
             
             btnRender.disabled = true;
-            btnRender.innerText = "⏳ MERENDER AUDIO... MOHON TUNGGU";
+            btnRender.innerHTML = `<svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white inline" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Merender Audio...`;
             statusText.innerText = "Proses rendering berjalan...";
+            
+            progressContainer.classList.remove('hidden');
+            let progress = 0;
+            progressBar.style.width = '0%';
+            progressText.innerText = '0%';
+            
+            const progressInterval = setInterval(() => {
+                if (progress < 90) {
+                    progress += Math.random() * 10;
+                    if(progress > 90) progress = 90;
+                    progressBar.style.width = `${progress}%`;
+                    progressText.innerText = `${Math.round(progress)}% (Memproses DSP...)`;
+                }
+            }, 500);
 
             try {
                 const tempo = parseFloat(sliders.tempo.value);
@@ -474,17 +583,34 @@
 
                 const offlineCtx = new OfflineAudioContext(originalAudioBuffer.numberOfChannels, length, sampleRate);
                 
-                const renderNodes = buildAudioGraph(offlineCtx, originalAudioBuffer);
+                const renderNodes = buildAudioGraph(offlineCtx, originalAudioBuffer, false);
                 renderNodes.forEach(node => node.start(0));
 
                 const renderedBuffer = await offlineCtx.startRendering();
-                const wavBlob = audioBufferToWav(renderedBuffer);
                 
-                const url = URL.createObjectURL(wavBlob);
+                clearInterval(progressInterval);
+                progressBar.style.width = '95%';
+                progressText.innerText = '95% (Encoding File...)';
+
+                await new Promise(r => setTimeout(r, 100));
+
+                const format = formatSelect.value;
+                let finalBlob;
+                let fileExtension;
+
+                if (format === 'mp3' && typeof lamejs !== 'undefined') {
+                    finalBlob = audioBufferToMp3(renderedBuffer);
+                    fileExtension = '.mp3';
+                } else {
+                    finalBlob = audioBufferToWav(renderedBuffer);
+                    fileExtension = '.wav';
+                }
+                
+                const url = URL.createObjectURL(finalBlob);
                 const a = document.createElement('a');
                 a.style.display = 'none';
                 a.href = url;
-                a.download = 'Habirmx_Stealth_Audio.wav';
+                a.download = `Kreaverse AI - ${originalFileName} By habi rmx tool${fileExtension}`;
                 document.body.appendChild(a);
                 a.click();
                 
@@ -493,50 +619,48 @@
                     URL.revokeObjectURL(url);
                 }, 100);
 
+                progressBar.style.width = '100%';
+                progressText.innerText = '100% Selesai!';
                 statusText.innerText = "Render selesai! File diunduh.";
             } catch (err) {
                 console.error(err);
-                statusText.innerText = "Gagal merender. File mungkin terlalu besar untuk memori HP.";
+                clearInterval(progressInterval);
+                progressContainer.classList.add('hidden');
+                statusText.innerText = "Gagal merender. File mungkin terlalu besar.";
                 alert("Gagal merender. Jika Anda menggunakan HP, coba gunakan file audio dengan durasi yang lebih pendek.");
             } finally {
                 btnRender.disabled = false;
-                btnRender.innerText = "⬇ RENDER & DOWNLOAD WAV (LOSSLESS)";
+                btnRender.innerHTML = `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg> Buat Lagu (Render)`;
+                setTimeout(() => progressContainer.classList.add('hidden'), 3000);
             }
         });
 
-        // 5. LYRIC ENCRYPTOR (DIPERBAIKI: AUTO COPY & TANPA ALERT MENGGANGGU)
+        // 5. LYRIC ENCRYPTOR
         btnEncrypt.addEventListener('click', async () => {
             const input = document.getElementById('lyricInput');
             if (!input.value) return;
             
-            // Kamus Homoglyph (Latin ke Cyrillic)
             const map = {
                 'a': 'а', 'c': 'с', 'e': 'е', 'o': 'о', 'p': 'р', 'x': 'х', 'y': 'у',
                 'A': 'А', 'B': 'В', 'C': 'С', 'E': 'Е', 'H': 'Н', 'M': 'М', 'O': 'О', 'P': 'Р', 'T': 'Т', 'X': 'Х', 'Y': 'Ү'
             };
             
-            // Proses Enkripsi
             const encryptedText = input.value.split('').map(char => map[char] || char).join('');
             input.value = encryptedText;
 
-            // Proses Auto-Copy ke Clipboard HP/PC
             try {
                 await navigator.clipboard.writeText(encryptedText);
-                
-                // Ubah tampilan tombol jadi sukses
                 const originalText = btnEncrypt.innerText;
                 btnEncrypt.innerText = "✅ Lirik Tersalin ke Clipboard!";
-                btnEncrypt.classList.remove('bg-[#222]', 'hover:bg-[#333]');
-                btnEncrypt.classList.add('bg-green-700', 'hover:bg-green-600');
+                btnEncrypt.classList.remove('text-gray-700');
+                btnEncrypt.classList.add('text-green-600', 'border-green-500', 'bg-green-50');
                 
-                // Kembalikan tombol seperti semula setelah 2.5 detik
                 setTimeout(() => {
                     btnEncrypt.innerText = originalText;
-                    btnEncrypt.classList.remove('bg-green-700', 'hover:bg-green-600');
-                    btnEncrypt.classList.add('bg-[#222]', 'hover:bg-[#333]');
+                    btnEncrypt.classList.remove('text-green-600', 'border-green-500', 'bg-green-50');
+                    btnEncrypt.classList.add('text-gray-700');
                 }, 2500);
             } catch (err) {
-                // Fallback jika browser HP tidak mengizinkan auto-copy
                 alert("Lirik berhasil dienkripsi! Silakan blok teks dan copy secara manual.");
             }
         });
@@ -568,6 +692,40 @@
             return new Blob([bufferArray], { type: 'audio/wav' });
             function setUint16(data) { view.setUint16(pos, data, true); pos += 2; }
             function setUint32(data) { view.setUint32(pos, data, true); pos += 4; }
+        }
+
+        // 7. MP3 ENCODER
+        function audioBufferToMp3(buffer) {
+            const channels = buffer.numberOfChannels;
+            const sampleRate = buffer.sampleRate;
+            const mp3encoder = new lamejs.Mp3Encoder(channels, sampleRate, 128); 
+            const mp3Data = [];
+
+            const left = buffer.getChannelData(0);
+            const right = channels > 1 ? buffer.getChannelData(1) : left;
+            
+            const sampleBlockSize = 1152; 
+            
+            const leftInt16 = new Int16Array(left.length);
+            const rightInt16 = new Int16Array(right.length);
+            for (let i = 0; i < left.length; i++) {
+                leftInt16[i] = left[i] < 0 ? left[i] * 32768 : left[i] * 32767;
+                rightInt16[i] = right[i] < 0 ? right[i] * 32768 : right[i] * 32767;
+            }
+
+            for (let i = 0; i < leftInt16.length; i += sampleBlockSize) {
+                const leftChunk = leftInt16.subarray(i, i + sampleBlockSize);
+                const rightChunk = rightInt16.subarray(i, i + sampleBlockSize);
+                const mp3buf = mp3encoder.encodeBuffer(leftChunk, rightChunk);
+                if (mp3buf.length > 0) {
+                    mp3Data.push(mp3buf);
+                }
+            }
+            const mp3buf = mp3encoder.flush();
+            if (mp3buf.length > 0) {
+                mp3Data.push(mp3buf);
+            }
+            return new Blob(mp3Data, { type: 'audio/mp3' });
         }
     </script>
 </body>
