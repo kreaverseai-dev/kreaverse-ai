@@ -354,7 +354,7 @@
             };
 
             switch(e.target.value) {
-                case 'bypass_lyrics': setValues(1.02, -100, 20, 45, 15, [true, true, true, false, false, true]); break;
+                case 'bypass_lyrics': setValues(1.04, -150, 25, 50, 15, [true, true, true, false, true, true]); break;
                 case 'preset1': setValues(1.03, 100, 10, 2, 5, [true, false, true, false, false, false]); break;
                 case 'preset2': setValues(1.08, -200, 25, 8, 15, [true, true, true, true, false, true]); break;
                 case 'preset3': setValues(1.15, 400, 15, 5, 10, [true, false, true, false, true, false]); break;
@@ -420,16 +420,28 @@
             let currentNode = sourceWet;
 
             if (toggles.temporal.checked) {
-                const fluxLfo = ctx.createOscillator(); fluxLfo.frequency.value = 0.2; 
-                const fluxGain = ctx.createGain(); fluxGain.gain.value = 0.015; 
-                fluxLfo.connect(fluxGain); fluxGain.connect(sourceWet.playbackRate);
-                nodesToStart.push(fluxLfo);
+                // UPGRADE: Asymmetric Time-Warping (Dual LFO untuk Tempo Acak)
+                const fluxLfo1 = ctx.createOscillator(); fluxLfo1.frequency.value = 0.3; 
+                const fluxLfo2 = ctx.createOscillator(); fluxLfo2.frequency.value = 0.77; // Frekuensi ganjil agar acak
+                const fluxGain = ctx.createGain(); fluxGain.gain.value = 0.025; // Ayunan tempo lebih kuat
+                
+                fluxLfo1.connect(fluxGain); 
+                fluxLfo2.connect(fluxGain); 
+                fluxGain.connect(sourceWet.playbackRate);
+                
+                nodesToStart.push(fluxLfo1, fluxLfo2);
             }
             if (toggles.quantum.checked) {
-                const driftLfo = ctx.createOscillator(); driftLfo.frequency.value = 0.1;
-                const driftGain = ctx.createGain(); driftGain.gain.value = 15; 
-                driftLfo.connect(driftGain); driftGain.connect(sourceWet.detune);
-                nodesToStart.push(driftLfo);
+                // UPGRADE: Micro-Pitch Shifting (Dual LFO untuk Pitch Acak)
+                const driftLfo1 = ctx.createOscillator(); driftLfo1.frequency.value = 0.15;
+                const driftLfo2 = ctx.createOscillator(); driftLfo2.frequency.value = 1.2; // Getaran cepat (vibrato mikro)
+                const driftGain = ctx.createGain(); driftGain.gain.value = 25; // Ayunan pitch 25 cents
+                
+                driftLfo1.connect(driftGain); 
+                driftLfo2.connect(driftGain);
+                driftGain.connect(sourceWet.detune);
+                
+                nodesToStart.push(driftLfo1, driftLfo2);
             }
 
             const timbreVal = parseInt(sliders.timbre.value);
