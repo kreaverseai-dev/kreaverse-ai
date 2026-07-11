@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Audio Habirmx Studio</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { background-color: #0a0a0a; color: #e5e5e5; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        .panel { background-color: #151515; border: 1px solid #2a2a2a; border-radius: 0.75rem; padding: 1.5rem; }
+        input[type=range] { accent-color: #ef4444; }
+        /* Toggle Switch CSS */
+        .toggle-checkbox:checked { right: 0; border-color: #ef4444; }
+        .toggle-checkbox:checked + .toggle-label { background-color: #ef4444; }
+    </style>
+</head>
+<body class="min-h-screen p-4 md:p-8">
+
+    <div class="max-w-6xl mx-auto">
+        <div class="text-center mb-8">
+            <h1 class="text-3xl font-bold text-red-500 tracking-wider">🛡️ AUDIO HABIRMX STUDIO</h1>
+            <p class="text-gray-400 text-sm mt-2">PROFESSIONAL AUDIO DSP SUITE & AI BYPASS TOOLKIT</p>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            
+            <!-- KOLOM KIRI -->
+            <div class="space-y-6">
+                <!-- Upload Panel -->
+                <div class="panel">
+                    <h2 class="text-lg font-bold text-white mb-4">Upload File Audio</h2>
+                    <input type="file" id="audioInput" accept="audio/*" class="block w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-red-600 file:text-white hover:file:bg-red-700 cursor-pointer mb-4">
+                    <p class="text-xs text-gray-500 mb-4">Ukuran Maks. Rekomendasi: 50 MB demi kestabilan memori browser.</p>
+                    
+                    <div class="flex items-center gap-4 bg-black p-4 rounded-lg border border-gray-800">
+                        <button id="btnPlay" class="bg-gray-800 hover:bg-gray-700 text-white rounded-full w-12 h-12 flex items-center justify-center disabled:opacity-50 transition-colors" disabled>▶</button>
+                        <button id="btnStop" class="bg-red-900 hover:bg-red-800 text-white rounded-full w-12 h-12 flex items-center justify-center disabled:opacity-50 transition-colors" disabled>■</button>
+                        <div class="flex-1 text-center text-sm text-red-500 font-mono" id="statusText">Menunggu berkas audio...</div>
+                    </div>
+                </div>
+
+                <!-- Engine Dasar -->
+                <div class="panel">
+                    <h2 class="text-lg font-bold text-white mb-6">⚙️ ENGINE DASAR</h2>
+                    
+                    <div class="mb-6">
+                        <div class="flex justify-between text-xs font-bold mb-2">
+                            <span>KECEPATAN (TEMPO & PITCH)</span>
+                            <span id="tempoValue" class="text-red-500">1.00x</span>
+                        </div>
+                        <input type="range" id="tempoSlider" min="0.5" max="1.5" step="0.01" value="1.0" class="w-full">
+                    </div>
+
+                    <div class="mb-6">
+                        <div class="flex justify-between text-xs font-bold mb-2">
+                            <span>TIMBRE DENSITY (LOWPASS FILTER)</span>
+                            <span id="timbreValue" class="text-red-500">Off</span>
+                        </div>
+                        <input type="range" id="timbreSlider" min="0" max="100" step="1" value="0" class="w-full">
+                    </div>
+                </div>
+            </div>
+
+            <!-- KOLOM KANAN -->
+            <div class="space-y-6">
+                <!-- Advanced Algorithms -->
+                <div class="panel">
+                    <h2 class="text-lg font-bold text-white mb-6">🧠 R.M. ADVANCED ALGORITHMS</h2>
+                    
+                    <!-- Anti Mono -->
+                    <div class="flex items-center justify-between mb-6 pb-4 border-b border-gray-800">
+                        <div class="pr-4">
+                            <h3 class="text-sm font-bold text-white">BINAURAL NULLIFIER (ANTI-MONO AI)</h3>
+                            <p class="text-xs text-gray-500 mt-1">Membalikkan fase (phase inversion) pada channel kanan. Jika bot AI mengubah audio ke format Mono, suara akan saling menghilangkan (sunyi).</p>
+                        </div>
+                        <div class="relative inline-block w-10 mr-2 align-middle select-none transition duration-200 ease-in">
+                            <input type="checkbox" id="toggleAntiMono" class="toggle-checkbox absolute block w-5 h-5 rounded-full bg-white border-4 appearance-none cursor-pointer"/>
+                            <label for="toggleAntiMono" class="toggle-label block overflow-hidden h-5 rounded-full bg-gray-600 cursor-pointer"></label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Lyric Encryptor -->
+                <div class="panel">
+                    <h2 class="text-lg font-bold text-white mb-4">🔤 LYRIC PHONETIC ENCRYPTOR</h2>
+                    <p class="text-xs text-gray-500 mb-4">Bypass filter deteksi lirik NLP. Mengganti karakter latin dengan karakter Cyrillic yang bentuknya sama persis tapi tidak terbaca oleh bot.</p>
+                    <textarea id="lyricInput" rows="3" class="w-full bg-black border border-gray-700 rounded-md p-3 text-sm text-white focus:outline-none focus:border-red-500 mb-3" placeholder="Paste lirik lagu di sini..."></textarea>
+                    <button id="btnEncrypt" class="w-full bg-gray-800 hover:bg-gray-700 text-white text-sm font-bold py-2 rounded-md transition-colors">Enkripsi Fonetik</button>
+                </div>
+
+                <!-- Render Button -->
+                <button id="btnRender" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-4 rounded-xl transition-colors shadow-lg shadow-red-900/50 disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+                    ⬇ RENDER & DOWNLOAD WAV (LOSSLESS)
+                </button>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- SCRIPT JAVASCRIPT DIGABUNG DI SINI -->
+    <script>
+        // Inisialisasi Variabel Global
+        let audioContext;
+        let originalAudioBuffer = null;
+        let currentSource = null;
+
+        // Elemen DOM
+        const audioInput = document.getElementById('audioInput');
+        const btnPlay = document.getElementById('btnPlay');
+        const btnStop = document.getElementById('btnStop');
+        const statusText = document.getElementById('statusText');
+        const btnRender = document.getElementById('btnRender');
+
+        const tempoSlider = document.getElementById('tempoSlider');
+        const tempoValue = document.getElementById('tempoValue');
+        const timbreSlider = document.getElementById('timbreSlider');
+        const timbreValue = document.getElementById('timbreValue');
+        const toggleAntiMono = document.getElementById('toggleAntiMono');
+
+        const lyricInput = document.getElementById('lyricInput');
+        const btnEncrypt = document.getElementById('btnEncrypt');
+
+        // 1. HANDLE UPLOAD AUDIO
+        audioInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            statusText.innerText = "Memproses file audio...";
+            btnPlay.disabled = true;
+            btnRender.disabled = true;
+
+            const reader = new FileReader();
+            reader.onload = function(ev) {
+                const audioData = ev.target.result;
+                
+                // Buat AudioContext jika belum ada (Browser butuh interaksi user dulu)
+                if (!audioContext) {
+                    audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                }
+
+                // Decode data audio menjadi AudioBuffer
+                audioContext.decodeAudioData(audioData, function(buffer) {
+                    originalAudioBuffer = buffer;
+                    statusText.innerText = "Audio siap diproses!";
+                    btnPlay.disabled = false;
+                    btnRender.disabled = false;
+                }, function(err) {
+                    statusText.innerText = "Error decoding audio!";
+                    console.error(err);
+                });
+            };
+            reader.readAsArrayBuffer(file);
+        });
+
+        // Update UI Sliders
+        tempoSlider.addEventListener('input', (e) => tempoValue.innerText = `${e.target.value}x`);
+        timbreSlider.addEventListener('input', (e) => timbreValue.innerText = e.target.value > 0 ? `${e.target.value}%` : 'Off');
+
+        // 2. FUNGSI MEMBANGUN GRAFIK AUDIO (DSP ENGINE)
+        function buildAudioGraph(ctx, buffer) {
+            const source = ctx.createBufferSource();
+            source.buffer = buffer;
+
+            // Efek 1: Tempo & Pitch (Playback Rate)
+            source.playbackRate.value = parseFloat(tempoSlider.value);
+
+            // Efek 2: Timbre Density (Menggunakan Biquad Lowpass Filter)
+            const filter = ctx.createBiquadFilter();
+            filter.type = 'lowpass';
+            const filterVal = parseInt(timbreSlider.value);
+            filter.frequency.value = filterVal === 0 ? 24000 : 24000 - (filterVal * 200);
+
+            let finalNode = filter;
+
+            // Efek 3: Binaural Nullifier (Anti-Mono Phase Inversion)
+            if (toggleAntiMono.checked && buffer.numberOfChannels >= 2) {
+                const splitter = ctx.createChannelSplitter(2);
+                const merger = ctx.createChannelMerger(2);
+                
+                const gainL = ctx.createGain();
+                const gainR = ctx.createGain();
+                
+                gainL.gain.value = 1; // Kiri normal
+                gainR.gain.value = -1; // Kanan dibalik fasenya (Inverted Phase)
+
+                filter.connect(splitter);
+                
+                splitter.connect(gainL, 0);
+                splitter.connect(gainR, 1);
+                
+                gainL.connect(merger, 0, 0);
+                gainR.connect(merger, 0, 1);
+                
+                finalNode = merger;
+            } else {
+                filter.connect(ctx.destination);
+            }
+
+            if(finalNode !== filter) {
+                finalNode.connect(ctx.destination);
+            }
+
+            return source;
+        }
+
+        // 3. PLAY & STOP PREVIEW
+        btnPlay.addEventListener('click', () => {
+            if (!originalAudioBuffer) return;
+            if (currentSource) currentSource.stop();
+
+            if (audioContext.state === 'suspended') audioContext.resume();
+
+            currentSource = buildAudioGraph(audioContext, originalAudioBuffer);
+            currentSource.start(0);
+            
+            btnPlay.disabled = true;
+            btnStop.disabled = false;
+            statusText.innerText = "Memutar preview...";
+
+            currentSource.onended = () => {
+                btnPlay.disabled = false;
+                btnStop.disabled = true;
+                statusText.innerText = "Audio siap diproses!";
+            };
+        });
+
+        btnStop.addEventListener('click', () => {
+            if (currentSource) {
+                currentSource.stop();
+                btnPlay.disabled = false;
+                btnStop.disabled = true;
+                statusText.innerText = "Audio siap diproses!";
+            }
+        });
+
+        // 4. RENDER & DOWNLOAD (OFFLINE AUDIO CONTEXT)
+        btnRender.addEventListener('click', async () => {
+            if (!originalAudioBuffer) return;
+            
+            btnRender.disabled = true;
+            btnRender.innerText = "⏳ MERENDER AUDIO... MOHON TUNGGU";
+            statusText.innerText = "Proses rendering berjalan...";
+
+            const tempo = parseFloat(tempoSlider.value);
+            const newDuration = originalAudioBuffer.duration / tempo;
+            const sampleRate = originalAudioBuffer.sampleRate;
+            const length = newDuration * sampleRate;
+
+            const offlineCtx = new OfflineAudioContext(originalAudioBuffer.numberOfChannels, length, sampleRate);
+            
+            const source = buildAudioGraph(offlineCtx, originalAudioBuffer);
+            source.start(0);
+
+            try {
+                const renderedBuffer = await offlineCtx.startRendering();
+                const wavBlob = audioBufferToWav(renderedBuffer);
+                
+                const url = URL.createObjectURL(wavBlob);
+                const a = document.createElement('a');
+                a.style.display = 'none';
+                a.href = url;
+                a.download = 'Habirmx_Rendered_Audio.wav';
+                document.body.appendChild(a);
+                a.click();
+                
+                setTimeout(() => {
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+                }, 100);
+
+                statusText.innerText = "Render selesai! File diunduh.";
+            } catch (err) {
+                console.error("Render gagal:", err);
+                statusText.innerText = "Gagal merender audio.";
+            } finally {
+                btnRender.disabled = false;
+                btnRender.innerText = "⬇ RENDER & DOWNLOAD WAV (LOSSLESS)";
+            }
+        });
+
+        // 5. LYRIC ENCRYPTOR (NLP BYPASS)
+        btnEncrypt.addEventListener('click', () => {
+            let text = lyricInput.value;
+            if (!text) return;
+
+            const map = {
+                'a': 'а', 'c': 'с', 'e': 'е', 'o': 'о', 'p': 'р', 'x': 'х', 'y': 'у',
+                'A': 'А', 'B': 'В', 'C': 'С', 'E': 'Е', 'H': 'Н', 'M': 'М', 'O': 'О', 'P': 'Р', 'T': 'Т', 'X': 'Х', 'Y': 'Ү'
+            };
+
+            let encrypted = text.split('').map(char => map[char] || char).join('');
+            lyricInput.value = encrypted;
+            alert("Lirik berhasil dienkripsi! Silakan copy lirik di atas.");
+        });
+
+        // ============================================================================
+        // FUNGSI HELPER: CONVERT AUDIOBUFFER KE WAV BLOB (REAL ENCODER)
+        // ============================================================================
+        function audioBufferToWav(buffer) {
+            const numOfChan = buffer.numberOfChannels;
+            const length = buffer.length * numOfChan * 2 + 44;
+            const bufferArray = new ArrayBuffer(length);
+            const view = new DataView(bufferArray);
+            const channels = [];
+            let i;
+            let sample;
+            let offset = 0;
+            let pos = 0;
+
+            setUint32(0x46464952); // "RIFF"
+            setUint32(length - 8); // file length - 8
+            setUint32(0x45564157); // "WAVE"
+            setUint32(0x20746d66); // "fmt " chunk
+            setUint32(16); // length = 16
+            setUint16(1); // PCM (uncompressed)
+            setUint16(numOfChan);
+            setUint32(buffer.sampleRate);
+            setUint32(buffer.sampleRate * 2 * numOfChan); // avg. bytes/sec
+            setUint16(numOfChan * 2); // block-align
+            setUint16(16); // 16-bit
+            setUint32(0x61746164); // "data" - chunk
+            setUint32(length - pos - 4); // chunk length
+
+            for (i = 0; i < buffer.numberOfChannels; i++) {
+                channels.push(buffer.getChannelData(i));
+            }
+
+            while (pos < length) {
+                for (i = 0; i < numOfChan; i++) {
+                    sample = Math.max(-1, Math.min(1, channels[i][offset])); // clamp
+                    sample = (0.5 + sample < 0 ? sample * 32768 : sample * 32767) | 0; // scale to 16-bit integer
+                    view.setInt16(pos, sample, true); // write 16-bit sample
+                    pos += 2;
+                }
+                offset++;
+            }
+
+            return new Blob([bufferArray], { type: 'audio/wav' });
+
+            function setUint16(data) {
+                view.setUint16(pos, data, true);
+                pos += 2;
+            }
+
+            function setUint32(data) {
+                view.setUint32(pos, data, true);
+                pos += 4;
+            }
+        }
+    </script>
+</body>
+</html>
