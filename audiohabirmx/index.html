@@ -136,6 +136,7 @@
                         <!-- Preset Anti Copyright -->
                         <select id="presetSelect" class="bg-white text-xs font-medium text-gray-700 border border-gray-300 rounded-lg px-3 py-2 outline-none focus:border-blue-500 cursor-pointer shadow-sm">
                             <option value="manual">Manual Setup</option>
+                            <option value="bypass_lyrics">🔥 Preset: Bypass Copy Lyrics</option>
                             <option value="preset1">Preset 1: Safe Bypass</option>
                             <option value="preset2">Preset 2: Deep Stealth</option>
                             <option value="preset3">Preset 3: Extreme Pitch & Time</option>
@@ -353,6 +354,7 @@
             };
 
             switch(e.target.value) {
+                case 'bypass_lyrics': setValues(1.02, -100, 20, 45, 15, [true, true, true, false, false, true]); break;
                 case 'preset1': setValues(1.03, 100, 10, 2, 5, [true, false, true, false, false, false]); break;
                 case 'preset2': setValues(1.08, -200, 25, 8, 15, [true, true, true, true, false, true]); break;
                 case 'preset3': setValues(1.15, 400, 15, 5, 10, [true, false, true, false, true, false]); break;
@@ -445,8 +447,20 @@
                 currentNode.connect(notch); currentNode = notch;
             }
             if (toggles.phonetic.checked) {
-                const peak = ctx.createBiquadFilter(); peak.type = 'peaking'; peak.frequency.value = 1500; peak.Q.value = 1.5; peak.gain.value = -6; 
-                currentNode.connect(peak); currentNode = peak;
+                // ALGORITMA 1: Consonant Eraser (Mempertahankan Cengkok, Menghapus Huruf Mati)
+                const consonantCut = ctx.createBiquadFilter(); 
+                consonantCut.type = 'lowpass'; 
+                consonantCut.frequency.value = 1200; 
+                
+                const vowelBoost = ctx.createBiquadFilter(); 
+                vowelBoost.type = 'peaking'; 
+                vowelBoost.frequency.value = 500; 
+                vowelBoost.Q.value = 1.5; 
+                vowelBoost.gain.value = 4; 
+                
+                currentNode.connect(consonantCut); 
+                consonantCut.connect(vowelBoost); 
+                currentNode = vowelBoost;
             }
 
             const voidVal = parseInt(sliders.void.value);
@@ -470,11 +484,29 @@
 
             const stegoVal = parseInt(sliders.stego.value);
             if (stegoVal > 0) {
-                const noiseLen = ctx.sampleRate * 2; const noiseBuf = ctx.createBuffer(1, noiseLen, ctx.sampleRate);
-                const output = noiseBuf.getChannelData(0); for (let i = 0; i < noiseLen; i++) output[i] = Math.random() * 2 - 1;
-                const noiseSrc = ctx.createBufferSource(); noiseSrc.buffer = noiseBuf; noiseSrc.loop = true;
-                const noiseGain = ctx.createGain(); noiseGain.gain.value = (stegoVal / 100) * 0.03; 
-                noiseSrc.connect(noiseGain); noiseGain.connect(localWetGain);
+                // ALGORITMA 2: Adversarial ASR Masking (Noise khusus di frekuensi vokal)
+                const noiseLen = ctx.sampleRate * 2; 
+                const noiseBuf = ctx.createBuffer(1, noiseLen, ctx.sampleRate);
+                const output = noiseBuf.getChannelData(0); 
+                for (let i = 0; i < noiseLen; i++) {
+                    output[i] = Math.random() * 2 - 1;
+                }
+                
+                const noiseSrc = ctx.createBufferSource(); 
+                noiseSrc.buffer = noiseBuf; 
+                noiseSrc.loop = true;
+                
+                const noiseFilter = ctx.createBiquadFilter();
+                noiseFilter.type = 'bandpass';
+                noiseFilter.frequency.value = 1000;
+                noiseFilter.Q.value = 0.5;
+                
+                const noiseGain = ctx.createGain(); 
+                noiseGain.gain.value = (stegoVal / 100) * 0.15; 
+                
+                noiseSrc.connect(noiseFilter); 
+                noiseFilter.connect(noiseGain); 
+                noiseGain.connect(localWetGain);
                 nodesToStart.push(noiseSrc);
             }
 
