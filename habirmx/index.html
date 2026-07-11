@@ -1466,11 +1466,129 @@
             <!-- MODE SELECTOR -->
             <div class="input-group" style="margin-bottom: 24px;">
                 <label>Mode Pembuatan Lagu:</label>
-                <div style="display: flex; gap: 10px; background: #f8fafc; padding: 6px; border-radius: 16px; border: 1px solid var(--border-color);">
+                <div style="display: flex; gap: 10px; background: #f8fafc; padding: 6px; border-radius: 16px; border: 1px solid var(--border-color); flex-wrap: wrap;">
                     <button type="button" id="modeGenerateBtn" class="mode-btn active" onclick="switchMode('generate')">Bikin Lagu Sendiri</button>
                     <button type="button" id="modeCoverBtn" class="mode-btn" onclick="switchMode('cover')">Cover Lagu</button>
+                    <button type="button" id="modeVoiceBtn" class="mode-btn" onclick="switchMode('voice')">Pakai SuaraMu</button>
                 </div>
                 <span id="modeDescription" class="helper-text">Buat lagu baru dari awal menggunakan lirik dan gaya musik Anda sendiri.</span>
+            </div>
+
+            <!-- CONTAINER PAKAI SUARAMU -->
+            <div id="voiceModeWrapper" class="hidden" style="background: #ffffff; border: 1px solid var(--border-color); border-radius: 20px; padding: 20px; margin-bottom: 24px; box-shadow: 0 8px 24px rgba(0,0,0,0.04); text-align: left;">
+                
+                <!-- TABS VOICE & PERSONA -->
+                <div class="tab-menu-row" style="margin-bottom: 20px;">
+                    <button class="tab-btn active" id="btnTabVoice" onclick="switchVoiceTab('voice')"><i class="fa-solid fa-microphone-lines"></i> Kloning Voice</button>
+                    <button class="tab-btn" id="btnTabPersona" onclick="switchVoiceTab('persona')"><i class="fa-solid fa-user-astronaut"></i> Ekstrak Persona</button>
+                </div>
+
+                <!-- TAB CONTENT: KLONING VOICE -->
+                <div id="tabContentVoice">
+                    <div style="font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 16px; line-height: 1.5; background: #f8fafc; padding: 12px; border-radius: 12px; border: 1px dashed var(--border-color);">
+                        <i class="fa-solid fa-circle-info" style="color: var(--accent-color);"></i> <b>Kloning Suara (Voice):</b> Buat karakter suara baru dengan mengunggah audio vokal asli Anda, lalu membaca kalimat verifikasi yang diberikan oleh AI.
+                    </div>
+
+                    <div class="input-group">
+                        <label>Nama Suara (Voice Name) *</label>
+                        <input type="text" id="voiceNameInput" placeholder="Contoh: Vokal Pop Melodi">
+                    </div>
+
+                    <div class="input-group">
+                        <label>Gaya Suara (Style)</label>
+                        <input type="text" id="voiceStyleInput" placeholder="Contoh: Pop, Female Vocal">
+                    </div>
+
+                    <div class="input-group">
+                        <label>Deskripsi Karakter</label>
+                        <textarea id="voiceDescInput" placeholder="Deskripsikan karakter suara ini..." style="height: 80px;"></textarea>
+                    </div>
+
+                    <!-- UPLOAD SOURCE AUDIO -->
+                    <div class="input-group">
+                        <label>1. Audio Sumber (Source Audio) *</label>
+                        <div style="display: flex; gap: 10px; align-items: center;">
+                            <button type="button" class="btn-custom-upload-compact" onclick="document.getElementById('voiceSourceInput').click()" style="flex: 1; justify-content: center; padding: 12px !important; border-radius: 12px !important;">
+                                <i class="fa-solid fa-file-audio"></i> Pilih File Audio
+                            </button>
+                            <input type="file" id="voiceSourceInput" accept="audio/*" style="display: none;" onchange="document.getElementById('voiceSourceLabel').innerText = this.files[0] ? this.files[0].name : 'Belum ada file dipilih';">
+                        </div>
+                        <span id="voiceSourceLabel" style="font-size: 0.7rem; color: var(--text-light); margin-top: 6px; font-weight: 600;">Belum ada file dipilih</span>
+                    </div>
+
+                    <!-- GET PHRASE BUTTON -->
+                    <button type="button" id="btnGetPhrase" class="action-btn" style="background: #10b981; padding: 12px; border-radius: 12px; font-size: 0.85rem; margin-bottom: 16px; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);" onclick="getValidationPhrase()">
+                        <i class="fa-solid fa-comment-dots"></i> 2. Dapatkan Teks Verifikasi
+                    </button>
+
+                    <!-- VALIDATION PHRASE DISPLAY -->
+                    <div id="phraseContainer" class="hidden" style="margin-bottom: 16px;">
+                        <label style="font-size: 0.8rem; color: var(--text-secondary); font-weight: 800; text-transform: uppercase; margin-bottom: 6px; display: block;">Teks Verifikasi (Baca Ini):</label>
+                        <div id="validationPhraseText" style="background: #fffbeb; border-left: 4px solid #f59e0b; padding: 12px 16px; border-radius: 0 12px 12px 0; font-size: 0.9rem; color: #92400e; font-weight: 700; line-height: 1.5; margin-bottom: 12px;">
+                            -
+                        </div>
+
+                        <!-- UPLOAD VALIDATION AUDIO -->
+                        <div class="input-group" style="margin-bottom: 0;">
+                            <label>3. Audio Verifikasi (Validation Audio) *</label>
+                            <span class="helper-text" style="margin-bottom: 8px;">Unggah rekaman suara Anda saat membaca teks di atas.</span>
+                            <div style="display: flex; gap: 10px; align-items: center;">
+                                <button type="button" class="btn-custom-upload-compact" onclick="document.getElementById('voiceValidationInput').click()" style="flex: 1; justify-content: center; padding: 12px !important; border-radius: 12px !important; background: #fff !important; border-color: #f59e0b !important; color: #f59e0b !important;">
+                                    <i class="fa-solid fa-microphone"></i> Pilih File Rekaman
+                                </button>
+                                <input type="file" id="voiceValidationInput" accept="audio/*" style="display: none;" onchange="document.getElementById('voiceValidationLabel').innerText = this.files[0] ? this.files[0].name : 'Belum ada file dipilih';">
+                            </div>
+                            <span id="voiceValidationLabel" style="font-size: 0.7rem; color: var(--text-light); margin-top: 6px; font-weight: 600;">Belum ada file dipilih</span>
+                        </div>
+                    </div>
+
+                    <button type="button" id="btnSubmitVoice" class="action-btn" style="width: 100%; margin-top: 10px;" onclick="submitVoiceCloning()">
+                        <i class="fa-solid fa-wand-magic-sparkles"></i> Buat Kloning Suara
+                    </button>
+                </div>
+
+                <!-- TAB CONTENT: EKSTRAK PERSONA -->
+                <div id="tabContentPersona" class="hidden">
+                    <div style="font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 16px; line-height: 1.5; background: #f8fafc; padding: 12px; border-radius: 12px; border: 1px dashed var(--border-color);">
+                        <i class="fa-solid fa-circle-info" style="color: var(--accent-color);"></i> <b>Ekstrak Persona:</b> Ambil karakter vokal dari lagu AI yang sudah pernah Anda buat sebelumnya. Masukkan Task ID dan Audio ID dari lagu tersebut.
+                    </div>
+
+                    <div class="input-group">
+                        <label>Nama Persona *</label>
+                        <input type="text" id="personaNameInput" placeholder="Contoh: Vokal Cowok Rock">
+                    </div>
+
+                    <div class="input-group">
+                        <label>Task ID Lagu *</label>
+                        <input type="text" id="personaTaskIdInput" placeholder="Masukkan Task ID lagu sumber..." style="font-family: monospace;">
+                    </div>
+
+                    <div class="input-group">
+                        <label>Audio ID Lagu *</label>
+                        <input type="text" id="personaAudioIdInput" placeholder="Masukkan Audio ID lagu sumber..." style="font-family: monospace;">
+                    </div>
+
+                    <div style="display: flex; gap: 12px; margin-bottom: 18px;">
+                        <div class="input-group" style="flex: 1; margin-bottom: 0;">
+                            <label>Detik Mulai (Vocal Start) *</label>
+                            <input type="number" id="personaStartInput" placeholder="0" min="0">
+                        </div>
+                        <div class="input-group" style="flex: 1; margin-bottom: 0;">
+                            <label>Detik Akhir (Vocal End) *</label>
+                            <input type="number" id="personaEndInput" placeholder="20" min="1">
+                        </div>
+                    </div>
+
+                    <div class="input-group">
+                        <label>Deskripsi (Opsional)</label>
+                        <textarea id="personaDescInput" placeholder="Deskripsi karakter persona..." style="height: 60px;"></textarea>
+                    </div>
+
+                    <button type="button" id="btnSubmitPersona" class="action-btn" style="width: 100%; margin-top: 10px;" onclick="submitPersonaExtraction()">
+                        <i class="fa-solid fa-user-astronaut"></i> Ekstrak Persona
+                    </button>
+                </div>
+
             </div>
 
             <!-- CUSTOM MODE SWITCH -->
@@ -3707,27 +3825,87 @@
         };
 
         // ============================================================
-        // MODE SELECTOR (GENERATE VS COVER)
+        // MODE SELECTOR (GENERATE VS COVER VS VOICE)
         // ============================================================
         window.switchMode = function(mode) {
             const btnGenerate = document.getElementById('modeGenerateBtn');
             const btnCover = document.getElementById('modeCoverBtn');
+            const btnVoice = document.getElementById('modeVoiceBtn');
             const uploadSection = document.getElementById('uploadSectionWrapper');
+            const voiceSection = document.getElementById('voiceModeWrapper');
             const modeDesc = document.getElementById('modeDescription');
+            
+            // Elemen form standar yang perlu disembunyikan saat mode Voice
+            const customModeToggle = document.getElementById('customModeToggle').closest('.toggle-container');
+            const customModeHelper = customModeToggle.nextElementSibling;
+            const styleWrapper = document.getElementById('styleInput').closest('.input-group');
+            const instrumentalToggle = document.getElementById('instrumentalToggle').closest('.toggle-container');
+            const instrumentalHelper = instrumentalToggle.nextElementSibling;
+            const optParamsWrapper = document.getElementById('optionalParametersWrapper');
+            const generateBtn = document.getElementById('generateBtn');
+            const benefitDesc = generateBtn.nextElementSibling;
 
             localStorage.setItem('kreaverse_last_mode', mode);
 
+            // Reset semua tombol
+            if(btnGenerate) btnGenerate.classList.remove('active');
+            if(btnCover) btnCover.classList.remove('active');
+            if(btnVoice) btnVoice.classList.remove('active');
+
             if (mode === 'generate') {
-                btnGenerate.classList.add('active');
-                btnCover.classList.remove('active');
-                uploadSection.classList.add('hidden');
+                if(btnGenerate) btnGenerate.classList.add('active');
+                if(uploadSection) uploadSection.classList.add('hidden');
+                if(voiceSection) voiceSection.classList.add('hidden');
                 selectedAudioUrl = ""; 
-                modeDesc.innerText = "Buat lagu baru dari awal menggunakan lirik dan gaya musik Anda sendiri.";
-            } else {
-                btnCover.classList.add('active');
-                btnGenerate.classList.remove('active');
-                uploadSection.classList.remove('hidden');
-                modeDesc.innerText = "Unggah audio referensi (maks 8 menit). AI akan mengubah gaya musiknya sesuai prompt Anda.";
+                if(modeDesc) modeDesc.innerText = "Buat lagu baru dari awal menggunakan lirik dan gaya musik Anda sendiri.";
+                
+                // Tampilkan form standar
+                if(customModeToggle) customModeToggle.style.display = 'flex';
+                if(customModeHelper) customModeHelper.style.display = 'block';
+                if(styleWrapper) styleWrapper.style.display = 'flex';
+                if(instrumentalToggle) instrumentalToggle.style.display = 'flex';
+                if(instrumentalHelper) instrumentalHelper.style.display = 'block';
+                if(optParamsWrapper) optParamsWrapper.style.display = 'block';
+                if(generateBtn) generateBtn.style.display = 'flex';
+                if(benefitDesc) benefitDesc.style.display = 'flex';
+                window.toggleCustomFields(); // Menyesuaikan title & lirik
+                
+            } else if (mode === 'cover') {
+                if(btnCover) btnCover.classList.add('active');
+                if(uploadSection) uploadSection.classList.remove('hidden');
+                if(voiceSection) voiceSection.classList.add('hidden');
+                if(modeDesc) modeDesc.innerText = "Unggah audio referensi (maks 8 menit). AI akan mengubah gaya musiknya sesuai prompt Anda.";
+                
+                // Tampilkan form standar
+                if(customModeToggle) customModeToggle.style.display = 'flex';
+                if(customModeHelper) customModeHelper.style.display = 'block';
+                if(styleWrapper) styleWrapper.style.display = 'flex';
+                if(instrumentalToggle) instrumentalToggle.style.display = 'flex';
+                if(instrumentalHelper) instrumentalHelper.style.display = 'block';
+                if(optParamsWrapper) optParamsWrapper.style.display = 'block';
+                if(generateBtn) generateBtn.style.display = 'flex';
+                if(benefitDesc) benefitDesc.style.display = 'flex';
+                window.toggleCustomFields();
+                
+            } else if (mode === 'voice') {
+                if(btnVoice) btnVoice.classList.add('active');
+                if(uploadSection) uploadSection.classList.add('hidden');
+                if(voiceSection) voiceSection.classList.remove('hidden');
+                if(modeDesc) modeDesc.innerText = "Kloning suara Anda sendiri atau ekstrak karakter vokal dari lagu AI sebelumnya.";
+                
+                // Sembunyikan form standar pembuatan lagu
+                if(customModeToggle) customModeToggle.style.display = 'none';
+                if(customModeHelper) customModeHelper.style.display = 'none';
+                const titleWrapper = document.getElementById('titleFieldWrapper');
+                if(titleWrapper) titleWrapper.classList.add('hidden');
+                if(styleWrapper) styleWrapper.style.display = 'none';
+                if(instrumentalToggle) instrumentalToggle.style.display = 'none';
+                if(instrumentalHelper) instrumentalHelper.style.display = 'none';
+                const lyricsWrapper = document.getElementById('lyricsFieldWrapper');
+                if(lyricsWrapper) lyricsWrapper.classList.add('hidden');
+                if(optParamsWrapper) optParamsWrapper.style.display = 'none';
+                if(generateBtn) generateBtn.style.display = 'none';
+                if(benefitDesc) benefitDesc.style.display = 'none';
             }
         };
 
@@ -3743,6 +3921,44 @@
                 if (titleWrapper) titleWrapper.classList.add('hidden');
                 if (lyricsWrapper) lyricsWrapper.classList.add('hidden');
             }
+        };
+
+        // ============================================================
+        // TAB SELECTOR (VOICE VS PERSONA)
+        // ============================================================
+        window.switchVoiceTab = function(tab) {
+            const btnVoice = document.getElementById('btnTabVoice');
+            const btnPersona = document.getElementById('btnTabPersona');
+            const contentVoice = document.getElementById('tabContentVoice');
+            const contentPersona = document.getElementById('tabContentPersona');
+
+            if (tab === 'voice') {
+                btnVoice.classList.add('active');
+                btnPersona.classList.remove('active');
+                contentVoice.classList.remove('hidden');
+                contentPersona.classList.add('hidden');
+            } else {
+                btnPersona.classList.add('active');
+                btnVoice.classList.remove('active');
+                contentPersona.classList.remove('hidden');
+                contentVoice.classList.add('hidden');
+            }
+        };
+
+        // Placeholder fungsi untuk Tahap 3 (Backend)
+        window.getValidationPhrase = async function() {
+            showIphoneToast("Memproses", "Menghubungi server untuk teks verifikasi...", "fa-spinner fa-spin");
+            // Logika fetch ke backend akan ditambahkan di Tahap 3
+        };
+
+        window.submitVoiceCloning = async function() {
+            showIphoneToast("Memproses", "Mengunggah audio dan membuat Voice ID...", "fa-spinner fa-spin");
+            // Logika fetch ke backend akan ditambahkan di Tahap 3
+        };
+
+        window.submitPersonaExtraction = async function() {
+            showIphoneToast("Memproses", "Mengekstrak Persona ID dari lagu...", "fa-spinner fa-spin");
+            // Logika fetch ke backend akan ditambahkan di Tahap 3
         };
 
         window.openUploadOptionsModal = function() {
