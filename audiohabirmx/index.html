@@ -11,24 +11,36 @@
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
         
         body { 
-            background-color: #f8fafc; /* Light slate background */
+            background-color: #f8fafc; 
             color: #0f172a; 
             font-family: 'Inter', sans-serif; 
         }
         .panel { 
             background-color: #ffffff; 
             border: 1px solid #e2e8f0; 
-            border-radius: 1.5rem; /* Lebih rounded seperti Kreaverse */
+            border-radius: 1.5rem; 
             padding: 1.5rem; 
             box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
         }
         
-        /* Custom Range Slider (Blue Theme) */
+        /* Custom Select (Menghilangkan style bawaan browser) */
+        select {
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23475569' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 0.75rem center;
+            background-size: 1em;
+            padding-right: 2.5rem !important;
+        }
+        
+        /* Custom Range Slider */
         input[type=range] { -webkit-appearance: none; width: 100%; background: transparent; }
         input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 16px; width: 16px; border-radius: 50%; background: #2563eb; cursor: pointer; margin-top: -6px; box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.2); }
         input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 4px; cursor: pointer; background: #cbd5e1; border-radius: 2px; }
         
-        /* Custom Toggle Switch (Blue Theme) */
+        /* Custom Toggle Switch */
         .toggle-checkbox:checked { right: 0; border-color: #2563eb; }
         .toggle-checkbox:checked + .toggle-label { background-color: #2563eb; }
         .toggle-checkbox { right: 4px; z-index: 1; border-color: #e2e8f0; transition: all 0.3s; }
@@ -42,7 +54,6 @@
         <!-- Header Kreaverse AI Style -->
         <div class="text-center mb-10 mt-4">
             <div class="flex justify-center items-center gap-2 mb-4">
-                <!-- Logo Star Kreaverse -->
                 <svg class="w-5 h-5 text-purple-600" viewBox="0 0 24 24" fill="currentColor">
                     <path d="M12 2l2.4 7.6h8l-6.4 4.8 2.4 7.6-6.4-4.8-6.4 4.8 2.4-7.6-6.4-4.8h8z"/>
                 </svg>
@@ -55,7 +66,7 @@
                 Ubah deskripsi musik, lirik, atau referensi audio Anda menjadi aransemen lagu utuh berkualitas premium secara dinamis.
             </p>
             <div class="mt-4 inline-block bg-blue-50 border border-blue-100 text-blue-600 text-xs font-semibold px-3 py-1.5 rounded-full">
-                Update Terakhir: Sabtu, 11 Juli 2026 | 16:09 WIB
+                Update Terakhir: Sabtu, 11 Juli 2026 | 16:26 WIB
             </div>
         </div>
 
@@ -91,7 +102,7 @@
                             </button>
                         </div>
                         
-                        <!-- Toggle Perbandingan Asli vs Tool -->
+                        <!-- Toggle Perbandingan Asli vs Tool (Real-time) -->
                         <div class="flex items-center justify-center gap-3 mb-4 w-full">
                             <span class="text-[10px] text-gray-500 font-bold">LAGU ASLI</span>
                             <div class="relative inline-block w-10 align-middle select-none">
@@ -123,10 +134,13 @@
                             Pengaturan Engine
                         </h2>
                         <!-- Preset Anti Copyright -->
-                        <select id="presetSelect" class="bg-white text-xs font-medium text-gray-700 border border-gray-300 rounded-lg px-2 py-1.5 outline-none focus:border-blue-500 cursor-pointer shadow-sm">
-                            <option value="manual">⚙️ Manual Setup</option>
-                            <option value="safe1">🛡️ Preset: Safe Bypass</option>
-                            <option value="safe2">🔥 Preset: Extreme Stealth</option>
+                        <select id="presetSelect" class="bg-white text-xs font-medium text-gray-700 border border-gray-300 rounded-lg px-3 py-2 outline-none focus:border-blue-500 cursor-pointer shadow-sm">
+                            <option value="manual">Manual Setup</option>
+                            <option value="preset1">Preset 1: Safe Bypass</option>
+                            <option value="preset2">Preset 2: Deep Stealth</option>
+                            <option value="preset3">Preset 3: Extreme Pitch & Time</option>
+                            <option value="preset4">Preset 4: Vocal Formant Focus</option>
+                            <option value="preset5">Preset 5: Maximum Scramble</option>
                         </select>
                     </div>
                     
@@ -261,8 +275,8 @@
                 <!-- Render Button & Format -->
                 <div class="flex gap-3">
                     <select id="formatSelect" class="bg-white text-gray-700 text-sm font-bold px-4 rounded-xl border border-gray-300 outline-none focus:border-blue-500 cursor-pointer shadow-sm">
-                        <option value="wav">.WAV</option>
-                        <option value="mp3">.MP3</option>
+                        <option value="wav">Format: .WAV</option>
+                        <option value="mp3">Format: .MP3</option>
                     </select>
                     <button id="btnRender" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold py-4 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-md flex justify-center items-center gap-2" disabled>
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
@@ -281,6 +295,10 @@
         let activeNodes = []; 
         let previewTimeout;
         let originalFileName = "Audio"; 
+        
+        // Gain Nodes untuk Real-time A/B Testing
+        let dryGainNode = null;
+        let wetGainNode = null;
 
         // DOM Elements
         const audioInput = document.getElementById('audioInput');
@@ -297,30 +315,21 @@
         const progressBar = document.getElementById('progressBar');
         const progressText = document.getElementById('progressText');
 
-        // Sliders
+        // Sliders & Toggles
         const sliders = {
-            tempo: document.getElementById('sliderTempo'),
-            pitch: document.getElementById('sliderPitch'),
-            timbre: document.getElementById('sliderTimbre'),
-            stego: document.getElementById('sliderStego'),
+            tempo: document.getElementById('sliderTempo'), pitch: document.getElementById('sliderPitch'),
+            timbre: document.getElementById('sliderTimbre'), stego: document.getElementById('sliderStego'),
             void: document.getElementById('sliderVoid')
         };
         const vals = {
-            tempo: document.getElementById('valTempo'),
-            pitch: document.getElementById('valPitch'),
-            timbre: document.getElementById('valTimbre'),
-            stego: document.getElementById('valStego'),
+            tempo: document.getElementById('valTempo'), pitch: document.getElementById('valPitch'),
+            timbre: document.getElementById('valTimbre'), stego: document.getElementById('valStego'),
             void: document.getElementById('valVoid')
         };
-
-        // Toggles
         const toggles = {
-            temporal: document.getElementById('tgTemporal'),
-            mirage: document.getElementById('tgMirage'),
-            antiMono: document.getElementById('tgAntiMono'),
-            spectral: document.getElementById('tgSpectral'),
-            quantum: document.getElementById('tgQuantum'),
-            phonetic: document.getElementById('tgPhonetic')
+            temporal: document.getElementById('tgTemporal'), mirage: document.getElementById('tgMirage'),
+            antiMono: document.getElementById('tgAntiMono'), spectral: document.getElementById('tgSpectral'),
+            quantum: document.getElementById('tgQuantum'), phonetic: document.getElementById('tgPhonetic')
         };
 
         // Update Slider UI
@@ -330,26 +339,34 @@
         sliders.stego.addEventListener('input', e => vals.stego.innerText = `${e.target.value}%`);
         sliders.void.addEventListener('input', e => vals.void.innerText = `${e.target.value}%`);
 
-        // LOGIKA PRESET ANTI COPYRIGHT
+        // LOGIKA PRESET ANTI COPYRIGHT (5 Pilihan)
         presetSelect.addEventListener('change', (e) => {
-            if (e.target.value === 'safe1') {
-                sliders.tempo.value = 1.05; vals.tempo.innerText = "1.05x";
-                sliders.pitch.value = 200; vals.pitch.innerText = "200";
-                sliders.timbre.value = 15; vals.timbre.innerText = "15%";
-                sliders.stego.value = 5; vals.stego.innerText = "5%";
-                sliders.void.value = 10; vals.void.innerText = "10%";
-                toggles.temporal.checked = true; toggles.mirage.checked = true;
-                toggles.antiMono.checked = true; toggles.spectral.checked = false;
-                toggles.quantum.checked = false; toggles.phonetic.checked = true;
-            } else if (e.target.value === 'safe2') {
-                sliders.tempo.value = 1.12; vals.tempo.innerText = "1.12x";
-                sliders.pitch.value = -300; vals.pitch.innerText = "-300";
-                sliders.timbre.value = 30; vals.timbre.innerText = "30%";
-                sliders.stego.value = 15; vals.stego.innerText = "15%";
-                sliders.void.value = 25; vals.void.innerText = "25%";
-                toggles.temporal.checked = true; toggles.mirage.checked = true;
-                toggles.antiMono.checked = true; toggles.spectral.checked = true;
-                toggles.quantum.checked = true; toggles.phonetic.checked = true;
+            const setValues = (t, p, tm, s, v, tg) => {
+                sliders.tempo.value = t; vals.tempo.innerText = `${t}x`;
+                sliders.pitch.value = p; vals.pitch.innerText = p;
+                sliders.timbre.value = tm; vals.timbre.innerText = `${tm}%`;
+                sliders.stego.value = s; vals.stego.innerText = `${s}%`;
+                sliders.void.value = v; vals.void.innerText = `${v}%`;
+                toggles.temporal.checked = tg[0]; toggles.mirage.checked = tg[1];
+                toggles.antiMono.checked = tg[2]; toggles.spectral.checked = tg[3];
+                toggles.quantum.checked = tg[4]; toggles.phonetic.checked = tg[5];
+            };
+
+            switch(e.target.value) {
+                case 'preset1': setValues(1.03, 100, 10, 2, 5, [true, false, true, false, false, false]); break;
+                case 'preset2': setValues(1.08, -200, 25, 8, 15, [true, true, true, true, false, true]); break;
+                case 'preset3': setValues(1.15, 400, 15, 5, 10, [true, false, true, false, true, false]); break;
+                case 'preset4': setValues(1.00, 0, 40, 10, 20, [false, true, false, true, false, true]); break;
+                case 'preset5': setValues(1.12, -300, 50, 20, 30, [true, true, true, true, true, true]); break;
+            }
+        });
+
+        // REAL-TIME TOGGLE (Asli vs Tool)
+        tgCompare.addEventListener('change', (e) => {
+            if (dryGainNode && wetGainNode) {
+                // Jika dicentang (Hasil Tool), matikan Dry, nyalakan Wet
+                dryGainNode.gain.value = e.target.checked ? 0 : 1;
+                wetGainNode.gain.value = e.target.checked ? 1 : 0;
             }
         });
 
@@ -361,99 +378,75 @@
             originalFileName = file.name.replace(/\.[^/.]+$/, "");
             fileNameDisplay.innerText = file.name;
             statusText.innerText = "Membaca file audio...";
-            btnPlay.disabled = true;
-            btnRender.disabled = true;
+            btnPlay.disabled = true; btnRender.disabled = true;
 
             const reader = new FileReader();
             reader.onload = function(ev) {
                 const audioData = ev.target.result;
                 if (!audioContext) audioContext = new (window.AudioContext || window.webkitAudioContext)();
-
                 audioContext.decodeAudioData(audioData, function(buffer) {
                     originalAudioBuffer = buffer;
                     statusText.innerText = "Audio siap diproses.";
-                    btnPlay.disabled = false;
-                    btnRender.disabled = false;
-                }, function(err) {
-                    statusText.innerText = "Error decoding audio!";
-                });
+                    btnPlay.disabled = false; btnRender.disabled = false;
+                }, () => statusText.innerText = "Error decoding audio!");
             };
             reader.readAsArrayBuffer(file);
         });
 
-        // 2. BUILD AUDIO GRAPH (DSP ENGINE)
+        // 2. BUILD AUDIO GRAPH (DSP ENGINE - DUAL TRACK)
         function buildAudioGraph(ctx, buffer, isPreview = false) {
             let nodesToStart = [];
             
-            const source = ctx.createBufferSource();
-            source.buffer = buffer;
-            nodesToStart.push(source);
+            // TRACK 1: DRY (Lagu Asli)
+            const sourceDry = ctx.createBufferSource();
+            sourceDry.buffer = buffer;
+            const localDryGain = ctx.createGain();
+            sourceDry.connect(localDryGain);
+            localDryGain.connect(ctx.destination);
+            nodesToStart.push(sourceDry);
 
-            // Jika mode preview dan toggle "Lagu Asli" dipilih, matikan semua efek
-            if (isPreview && !tgCompare.checked) {
-                source.connect(ctx.destination);
-                return nodesToStart;
-            }
+            // TRACK 2: WET (Hasil Tool)
+            const sourceWet = ctx.createBufferSource();
+            sourceWet.buffer = buffer;
+            const localWetGain = ctx.createGain();
+            nodesToStart.push(sourceWet);
 
-            source.playbackRate.value = parseFloat(sliders.tempo.value);
-            source.detune.value = parseInt(sliders.pitch.value);
+            // Terapkan efek HANYA ke Track Wet
+            sourceWet.playbackRate.value = parseFloat(sliders.tempo.value);
+            sourceWet.detune.value = parseInt(sliders.pitch.value);
 
-            let currentNode = source;
+            let currentNode = sourceWet;
 
             if (toggles.temporal.checked) {
-                const fluxLfo = ctx.createOscillator();
-                fluxLfo.frequency.value = 0.2; 
-                const fluxGain = ctx.createGain();
-                fluxGain.gain.value = 0.015; 
-                fluxLfo.connect(fluxGain);
-                fluxGain.connect(source.playbackRate);
+                const fluxLfo = ctx.createOscillator(); fluxLfo.frequency.value = 0.2; 
+                const fluxGain = ctx.createGain(); fluxGain.gain.value = 0.015; 
+                fluxLfo.connect(fluxGain); fluxGain.connect(sourceWet.playbackRate);
                 nodesToStart.push(fluxLfo);
             }
-
             if (toggles.quantum.checked) {
-                const driftLfo = ctx.createOscillator();
-                driftLfo.frequency.value = 0.1;
-                const driftGain = ctx.createGain();
-                driftGain.gain.value = 15; 
-                driftLfo.connect(driftGain);
-                driftGain.connect(source.detune);
+                const driftLfo = ctx.createOscillator(); driftLfo.frequency.value = 0.1;
+                const driftGain = ctx.createGain(); driftGain.gain.value = 15; 
+                driftLfo.connect(driftGain); driftGain.connect(sourceWet.detune);
                 nodesToStart.push(driftLfo);
             }
 
             const timbreVal = parseInt(sliders.timbre.value);
             if (timbreVal > 0) {
-                const lpFilter = ctx.createBiquadFilter();
-                lpFilter.type = 'lowpass';
+                const lpFilter = ctx.createBiquadFilter(); lpFilter.type = 'lowpass';
                 lpFilter.frequency.value = 24000 - (timbreVal * 200);
-                currentNode.connect(lpFilter);
-                currentNode = lpFilter;
+                currentNode.connect(lpFilter); currentNode = lpFilter;
             }
-
             if (toggles.mirage.checked) {
-                const allpass = ctx.createBiquadFilter();
-                allpass.type = 'allpass';
-                allpass.frequency.value = 1000;
-                currentNode.connect(allpass);
-                currentNode = allpass;
+                const allpass = ctx.createBiquadFilter(); allpass.type = 'allpass'; allpass.frequency.value = 1000;
+                currentNode.connect(allpass); currentNode = allpass;
             }
-
             if (toggles.spectral.checked) {
-                const notch = ctx.createBiquadFilter();
-                notch.type = 'notch';
-                notch.frequency.value = 3000; 
-                notch.Q.value = 2;
-                currentNode.connect(notch);
-                currentNode = notch;
+                const notch = ctx.createBiquadFilter(); notch.type = 'notch'; notch.frequency.value = 3000; notch.Q.value = 2;
+                currentNode.connect(notch); currentNode = notch;
             }
-
             if (toggles.phonetic.checked) {
-                const peak = ctx.createBiquadFilter();
-                peak.type = 'peaking';
-                peak.frequency.value = 1500; 
-                peak.Q.value = 1.5;
-                peak.gain.value = -6; 
-                currentNode.connect(peak);
-                currentNode = peak;
+                const peak = ctx.createBiquadFilter(); peak.type = 'peaking'; peak.frequency.value = 1500; peak.Q.value = 1.5; peak.gain.value = -6; 
+                currentNode.connect(peak); currentNode = peak;
             }
 
             const voidVal = parseInt(sliders.void.value);
@@ -461,65 +454,52 @@
             currentNode.connect(finalMix);
 
             if (voidVal > 0) {
-                const delay = ctx.createDelay();
-                delay.delayTime.value = 0.15; 
-                const delayGain = ctx.createGain();
-                delayGain.gain.value = (voidVal / 100) * 0.5; 
-                
-                currentNode.connect(delay);
-                delay.connect(delayGain);
-                delayGain.connect(finalMix);
+                const delay = ctx.createDelay(); delay.delayTime.value = 0.15; 
+                const delayGain = ctx.createGain(); delayGain.gain.value = (voidVal / 100) * 0.5; 
+                currentNode.connect(delay); delay.connect(delayGain); delayGain.connect(finalMix);
             }
 
             if (toggles.antiMono.checked && buffer.numberOfChannels >= 2) {
-                const splitter = ctx.createChannelSplitter(2);
-                const merger = ctx.createChannelMerger(2);
-                const gainL = ctx.createGain();
-                const gainR = ctx.createGain();
-                
-                gainL.gain.value = 1;
-                gainR.gain.value = -1; 
-
-                finalMix.connect(splitter);
-                splitter.connect(gainL, 0);
-                splitter.connect(gainR, 1);
-                gainL.connect(merger, 0, 0);
-                gainR.connect(merger, 0, 1);
-                
+                const splitter = ctx.createChannelSplitter(2); const merger = ctx.createChannelMerger(2);
+                const gainL = ctx.createGain(); const gainR = ctx.createGain();
+                gainL.gain.value = 1; gainR.gain.value = -1; 
+                finalMix.connect(splitter); splitter.connect(gainL, 0); splitter.connect(gainR, 1);
+                gainL.connect(merger, 0, 0); gainR.connect(merger, 0, 1);
                 finalMix = merger;
             }
 
             const stegoVal = parseInt(sliders.stego.value);
             if (stegoVal > 0) {
-                const noiseLen = ctx.sampleRate * 2;
-                const noiseBuf = ctx.createBuffer(1, noiseLen, ctx.sampleRate);
-                const output = noiseBuf.getChannelData(0);
-                for (let i = 0; i < noiseLen; i++) output[i] = Math.random() * 2 - 1;
-                
-                const noiseSrc = ctx.createBufferSource();
-                noiseSrc.buffer = noiseBuf;
-                noiseSrc.loop = true;
-                
-                const noiseGain = ctx.createGain();
-                noiseGain.gain.value = (stegoVal / 100) * 0.03; 
-                
-                noiseSrc.connect(noiseGain);
-                noiseGain.connect(ctx.destination);
+                const noiseLen = ctx.sampleRate * 2; const noiseBuf = ctx.createBuffer(1, noiseLen, ctx.sampleRate);
+                const output = noiseBuf.getChannelData(0); for (let i = 0; i < noiseLen; i++) output[i] = Math.random() * 2 - 1;
+                const noiseSrc = ctx.createBufferSource(); noiseSrc.buffer = noiseBuf; noiseSrc.loop = true;
+                const noiseGain = ctx.createGain(); noiseGain.gain.value = (stegoVal / 100) * 0.03; 
+                noiseSrc.connect(noiseGain); noiseGain.connect(localWetGain);
                 nodesToStart.push(noiseSrc);
             }
 
-            finalMix.connect(ctx.destination);
+            finalMix.connect(localWetGain);
+            localWetGain.connect(ctx.destination);
+
+            // Set Volume Awal berdasarkan Toggle UI
+            if (isPreview) {
+                dryGainNode = localDryGain;
+                wetGainNode = localWetGain;
+                dryGainNode.gain.value = tgCompare.checked ? 0 : 1;
+                wetGainNode.gain.value = tgCompare.checked ? 1 : 0;
+            } else {
+                // Jika Render, matikan Dry, full Wet
+                localDryGain.gain.value = 0;
+                localWetGain.gain.value = 1;
+            }
+
             return nodesToStart;
         }
 
         function stopAudio() {
-            activeNodes.forEach(node => {
-                try { node.stop(); } catch(e) {}
-            });
-            activeNodes = [];
-            clearTimeout(previewTimeout);
-            btnPlay.disabled = false;
-            btnStop.disabled = true;
+            activeNodes.forEach(node => { try { node.stop(); } catch(e) {} });
+            activeNodes = []; clearTimeout(previewTimeout);
+            btnPlay.disabled = false; btnStop.disabled = true;
             statusText.innerText = "Audio siap diproses.";
         }
 
@@ -534,46 +514,34 @@
             activeNodes = buildAudioGraph(audioContext, originalAudioBuffer, true);
             activeNodes.forEach(node => node.start(0));
             
-            btnPlay.disabled = true;
-            btnStop.disabled = false;
-            statusText.innerText = "Memutar preview (Maks 30 detik)...";
+            btnPlay.disabled = true; btnStop.disabled = false;
+            statusText.innerText = "Memutar preview (Maks 30 detik)... Coba geser toggle Lagu Asli/Hasil Tool!";
 
             const previewDuration = 30; 
             activeNodes.forEach(node => {
-                node.stop(audioContext.currentTime + previewDuration);
+                if(node.buffer) node.stop(audioContext.currentTime + previewDuration);
             });
 
-            previewTimeout = setTimeout(() => {
-                stopAudio();
-            }, previewDuration * 1000);
-            
+            previewTimeout = setTimeout(() => stopAudio(), previewDuration * 1000);
             activeNodes[0].onended = () => stopAudio();
         });
 
         btnStop.addEventListener('click', stopAudio);
 
-        // 4. RENDER & DOWNLOAD
+        // 4. RENDER & DOWNLOAD (ASYNC CHUNKING AGAR TIDAK LAG)
         btnRender.addEventListener('click', async () => {
             if (!originalAudioBuffer) return;
             stopAudio();
             
             btnRender.disabled = true;
             btnRender.innerHTML = `<svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white inline" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Merender Audio...`;
-            statusText.innerText = "Proses rendering berjalan...";
             
             progressContainer.classList.remove('hidden');
-            let progress = 0;
-            progressBar.style.width = '0%';
-            progressText.innerText = '0%';
-            
-            const progressInterval = setInterval(() => {
-                if (progress < 90) {
-                    progress += Math.random() * 10;
-                    if(progress > 90) progress = 90;
-                    progressBar.style.width = `${progress}%`;
-                    progressText.innerText = `${Math.round(progress)}% (Memproses DSP...)`;
-                }
-            }, 500);
+            progressBar.style.width = '10%';
+            progressText.innerText = '10% (Memproses DSP...)';
+
+            // Beri jeda agar UI sempat update sebelum main thread bekerja
+            await new Promise(r => setTimeout(r, 100));
 
             try {
                 const tempo = parseFloat(sliders.tempo.value);
@@ -582,49 +550,44 @@
                 const length = newDuration * sampleRate;
 
                 const offlineCtx = new OfflineAudioContext(originalAudioBuffer.numberOfChannels, length, sampleRate);
-                
                 const renderNodes = buildAudioGraph(offlineCtx, originalAudioBuffer, false);
                 renderNodes.forEach(node => node.start(0));
 
                 const renderedBuffer = await offlineCtx.startRendering();
                 
-                clearInterval(progressInterval);
-                progressBar.style.width = '95%';
-                progressText.innerText = '95% (Encoding File...)';
-
-                await new Promise(r => setTimeout(r, 100));
+                progressBar.style.width = '50%';
+                progressText.innerText = '50% (Encoding File...)';
 
                 const format = formatSelect.value;
                 let finalBlob;
                 let fileExtension;
 
                 if (format === 'mp3' && typeof lamejs !== 'undefined') {
-                    finalBlob = audioBufferToMp3(renderedBuffer);
+                    // Async MP3 Encoding untuk mencegah Lag
+                    finalBlob = await audioBufferToMp3Async(renderedBuffer, (prog) => {
+                        let p = 50 + (prog * 45);
+                        progressBar.style.width = `${p}%`;
+                        progressText.innerText = `${Math.round(p)}% (Encoding MP3...)`;
+                    });
                     fileExtension = '.mp3';
                 } else {
-                    finalBlob = audioBufferToWav(renderedBuffer);
+                    finalBlob = await audioBufferToWavAsync(renderedBuffer);
                     fileExtension = '.wav';
                 }
                 
                 const url = URL.createObjectURL(finalBlob);
                 const a = document.createElement('a');
-                a.style.display = 'none';
-                a.href = url;
+                a.style.display = 'none'; a.href = url;
                 a.download = `Kreaverse AI - ${originalFileName} By habi rmx tool${fileExtension}`;
-                document.body.appendChild(a);
-                a.click();
+                document.body.appendChild(a); a.click();
                 
-                setTimeout(() => {
-                    document.body.removeChild(a);
-                    URL.revokeObjectURL(url);
-                }, 100);
+                setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(url); }, 100);
 
                 progressBar.style.width = '100%';
                 progressText.innerText = '100% Selesai!';
                 statusText.innerText = "Render selesai! File diunduh.";
             } catch (err) {
                 console.error(err);
-                clearInterval(progressInterval);
                 progressContainer.classList.add('hidden');
                 statusText.innerText = "Gagal merender. File mungkin terlalu besar.";
                 alert("Gagal merender. Jika Anda menggunakan HP, coba gunakan file audio dengan durasi yang lebih pendek.");
@@ -639,12 +602,10 @@
         btnEncrypt.addEventListener('click', async () => {
             const input = document.getElementById('lyricInput');
             if (!input.value) return;
-            
             const map = {
                 'a': 'а', 'c': 'с', 'e': 'е', 'o': 'о', 'p': 'р', 'x': 'х', 'y': 'у',
                 'A': 'А', 'B': 'В', 'C': 'С', 'E': 'Е', 'H': 'Н', 'M': 'М', 'O': 'О', 'P': 'Р', 'T': 'Т', 'X': 'Х', 'Y': 'Ү'
             };
-            
             const encryptedText = input.value.split('').map(char => map[char] || char).join('');
             input.value = encryptedText;
 
@@ -654,7 +615,6 @@
                 btnEncrypt.innerText = "✅ Lirik Tersalin ke Clipboard!";
                 btnEncrypt.classList.remove('text-gray-700');
                 btnEncrypt.classList.add('text-green-600', 'border-green-500', 'bg-green-50');
-                
                 setTimeout(() => {
                     btnEncrypt.innerText = originalText;
                     btnEncrypt.classList.remove('text-green-600', 'border-green-500', 'bg-green-50');
@@ -665,67 +625,80 @@
             }
         });
 
-        // 6. WAV ENCODER
-        function audioBufferToWav(buffer) {
-            const numOfChan = buffer.numberOfChannels;
-            const length = buffer.length * numOfChan * 2 + 44;
-            const bufferArray = new ArrayBuffer(length);
-            const view = new DataView(bufferArray);
-            const channels = [];
-            let i, sample, offset = 0, pos = 0;
+        // 6. ASYNC WAV ENCODER
+        function audioBufferToWavAsync(buffer) {
+            return new Promise(resolve => {
+                setTimeout(() => {
+                    const numOfChan = buffer.numberOfChannels;
+                    const length = buffer.length * numOfChan * 2 + 44;
+                    const bufferArray = new ArrayBuffer(length);
+                    const view = new DataView(bufferArray);
+                    const channels = [];
+                    let i, sample, offset = 0, pos = 0;
 
-            setUint32(0x46464952); setUint32(length - 8); setUint32(0x45564157);
-            setUint32(0x20746d66); setUint32(16); setUint16(1); setUint16(numOfChan);
-            setUint32(buffer.sampleRate); setUint32(buffer.sampleRate * 2 * numOfChan);
-            setUint16(numOfChan * 2); setUint16(16); setUint32(0x61746164); setUint32(length - pos - 4);
+                    setUint32(0x46464952); setUint32(length - 8); setUint32(0x45564157);
+                    setUint32(0x20746d66); setUint32(16); setUint16(1); setUint16(numOfChan);
+                    setUint32(buffer.sampleRate); setUint32(buffer.sampleRate * 2 * numOfChan);
+                    setUint16(numOfChan * 2); setUint16(16); setUint32(0x61746164); setUint32(length - pos - 4);
 
-            for (i = 0; i < buffer.numberOfChannels; i++) channels.push(buffer.getChannelData(i));
+                    for (i = 0; i < buffer.numberOfChannels; i++) channels.push(buffer.getChannelData(i));
 
-            while (pos < length) {
-                for (i = 0; i < numOfChan; i++) {
-                    sample = Math.max(-1, Math.min(1, channels[i][offset]));
-                    sample = (0.5 + sample < 0 ? sample * 32768 : sample * 32767) | 0;
-                    view.setInt16(pos, sample, true); pos += 2;
-                }
-                offset++;
-            }
-            return new Blob([bufferArray], { type: 'audio/wav' });
-            function setUint16(data) { view.setUint16(pos, data, true); pos += 2; }
-            function setUint32(data) { view.setUint32(pos, data, true); pos += 4; }
+                    while (pos < length) {
+                        for (i = 0; i < numOfChan; i++) {
+                            sample = Math.max(-1, Math.min(1, channels[i][offset]));
+                            sample = (0.5 + sample < 0 ? sample * 32768 : sample * 32767) | 0;
+                            view.setInt16(pos, sample, true); pos += 2;
+                        }
+                        offset++;
+                    }
+                    resolve(new Blob([bufferArray], { type: 'audio/wav' }));
+                    function setUint16(data) { view.setUint16(pos, data, true); pos += 2; }
+                    function setUint32(data) { view.setUint32(pos, data, true); pos += 4; }
+                }, 10);
+            });
         }
 
-        // 7. MP3 ENCODER
-        function audioBufferToMp3(buffer) {
-            const channels = buffer.numberOfChannels;
-            const sampleRate = buffer.sampleRate;
-            const mp3encoder = new lamejs.Mp3Encoder(channels, sampleRate, 128); 
-            const mp3Data = [];
-
-            const left = buffer.getChannelData(0);
-            const right = channels > 1 ? buffer.getChannelData(1) : left;
-            
-            const sampleBlockSize = 1152; 
-            
-            const leftInt16 = new Int16Array(left.length);
-            const rightInt16 = new Int16Array(right.length);
-            for (let i = 0; i < left.length; i++) {
-                leftInt16[i] = left[i] < 0 ? left[i] * 32768 : left[i] * 32767;
-                rightInt16[i] = right[i] < 0 ? right[i] * 32768 : right[i] * 32767;
-            }
-
-            for (let i = 0; i < leftInt16.length; i += sampleBlockSize) {
-                const leftChunk = leftInt16.subarray(i, i + sampleBlockSize);
-                const rightChunk = rightInt16.subarray(i, i + sampleBlockSize);
-                const mp3buf = mp3encoder.encodeBuffer(leftChunk, rightChunk);
-                if (mp3buf.length > 0) {
-                    mp3Data.push(mp3buf);
+        // 7. ASYNC MP3 ENCODER (Mencegah Lag/Stuck)
+        function audioBufferToMp3Async(buffer, progressCallback) {
+            return new Promise((resolve) => {
+                const channels = buffer.numberOfChannels;
+                const sampleRate = buffer.sampleRate;
+                const mp3encoder = new lamejs.Mp3Encoder(channels, sampleRate, 128); 
+                const mp3Data = [];
+                const left = buffer.getChannelData(0);
+                const right = channels > 1 ? buffer.getChannelData(1) : left;
+                const sampleBlockSize = 1152; 
+                
+                const leftInt16 = new Int16Array(left.length);
+                const rightInt16 = new Int16Array(right.length);
+                
+                for (let i = 0; i < left.length; i++) {
+                    leftInt16[i] = left[i] < 0 ? left[i] * 32768 : left[i] * 32767;
+                    rightInt16[i] = right[i] < 0 ? right[i] * 32768 : right[i] * 32767;
                 }
-            }
-            const mp3buf = mp3encoder.flush();
-            if (mp3buf.length > 0) {
-                mp3Data.push(mp3buf);
-            }
-            return new Blob(mp3Data, { type: 'audio/mp3' });
+
+                let i = 0;
+                function encodeChunk() {
+                    const end = Math.min(i + sampleBlockSize * 100, leftInt16.length); 
+                    for (; i < end; i += sampleBlockSize) {
+                        const leftChunk = leftInt16.subarray(i, i + sampleBlockSize);
+                        const rightChunk = rightInt16.subarray(i, i + sampleBlockSize);
+                        const mp3buf = mp3encoder.encodeBuffer(leftChunk, rightChunk);
+                        if (mp3buf.length > 0) mp3Data.push(mp3buf);
+                    }
+
+                    if (progressCallback) progressCallback(i / leftInt16.length);
+
+                    if (i < leftInt16.length) {
+                        setTimeout(encodeChunk, 0); // Beri nafas ke browser agar tidak lag
+                    } else {
+                        const mp3buf = mp3encoder.flush();
+                        if (mp3buf.length > 0) mp3Data.push(mp3buf);
+                        resolve(new Blob(mp3Data, { type: 'audio/mp3' }));
+                    }
+                }
+                encodeChunk();
+            });
         }
     </script>
 </body>
