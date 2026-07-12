@@ -302,6 +302,95 @@ ATURAN MUTLAK:
         }
 
         // ============================================================
+        // ROUTE KREAVERSE VOICE & PERSONA (KIE.AI INTEGRATION)
+        // ============================================================
+        if (action === 'generate_phrase' || action === 'create_voice' || action === 'create_persona') {
+            try {
+                const providersDoc = await db.collection("settings").doc("api_providers").get();
+                const allProviders = providersDoc.data().list || [];
+                const kieProvider = allProviders.find(p => p.baseUrl && p.baseUrl.includes('kie.ai'));
+                if (!kieProvider) throw new Error("Provider KIE.ai tidak ditemukan di sistem.");
+
+                const keysQuery = await db.collection("api_keys").where("provider", "==", kieProvider.value).where("status", "==", "aktif").get();
+                const sortedKeysDocs = keysQuery.docs.sort((a, b) => (a.data().priority || 1) - (b.data().priority || 1));
+                if (sortedKeysDocs.length === 0) throw new Error("API Key KIE.ai habis atau tidak aktif.");
+                const activeApiKey = sortedKeysDocs[0].data().key;
+
+                const headers = {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${activeApiKey}`
+                };
+
+                if (action === 'generate_phrase') {
+                    const { voiceUrl, vocalStartS, vocalEndS } = body;
+                    if (!voiceUrl) throw new Error("voiceUrl wajib diisi.");
+                    
+                    const payload = {
+                        voiceUrl: voiceUrl,
+                        vocalStartS: vocalStartS || 0,
+                        vocalEndS: vocalEndS || 30,
+                        language: "id"
+                    };
+
+                    const response = await fetch(`${kieProvider.baseUrl}/api/v1/voice/validate`, {
+                        method: 'POST', headers, body: JSON.stringify(payload)
+                    });
+                    const resData = await response.json();
+                    if (!response.ok || resData.code !== 200) throw new Error(resData.msg || "Gagal generate phrase");
+                    
+                    return res.status(200).json({ success: true, taskId: resData.data.taskId });
+                }
+
+                if (action === 'create_voice') {
+                    const { taskId, verifyUrl, voiceName, description, style } = body;
+                    if (!taskId || !verifyUrl) throw new Error("taskId dan verifyUrl wajib diisi.");
+
+                    const payload = {
+                        taskId: taskId,
+                        verifyUrl: verifyUrl,
+                        voiceName: voiceName || "My Custom Voice",
+                        description: description || "Kreaverse Voice Clone",
+                        style: style || "",
+                        singerSkillLevel: "professional"
+                    };
+
+                    const response = await fetch(`${kieProvider.baseUrl}/api/v1/voice/generate`, {
+                        method: 'POST', headers, body: JSON.stringify(payload)
+                    });
+                    const resData = await response.json();
+                    if (!response.ok || resData.code !== 200) throw new Error(resData.msg || "Gagal create voice");
+                    
+                    return res.status(200).json({ success: true, taskId: resData.data.taskId });
+                }
+
+                if (action === 'create_persona') {
+                    const { taskId, audioId, name, description, vocalStart, vocalEnd } = body;
+                    if (!taskId || !audioId || !name || !description) throw new Error("Parameter persona tidak lengkap.");
+
+                    const payload = {
+                        taskId: taskId,
+                        audioId: audioId,
+                        name: name,
+                        description: description,
+                        vocalStart: vocalStart || 0,
+                        vocalEnd: vocalEnd || 30
+                    };
+
+                    const response = await fetch(`${kieProvider.baseUrl}/api/v1/generate/generate-persona`, {
+                        method: 'POST', headers, body: JSON.stringify(payload)
+                    });
+                    const resData = await response.json();
+                    if (!response.ok || resData.code !== 200) throw new Error(resData.msg || "Gagal create persona");
+                    
+                    return res.status(200).json({ success: true, personaId: resData.data.personaId });
+                }
+
+            } catch (err) {
+                return res.status(500).json({ error: err.message });
+            }
+        }
+
+        // ============================================================
         // ROUTE 2: GENERATE MUSIC (DYNAMIC PROVIDER SUPPORT)
         // ============================================================
         if (!email || !prompt) {
@@ -565,8 +654,43 @@ ATURAN MUTLAK:
     // METODE GET: ASYNCHRONOUS STATUS CHECK (POLLING STATUS)
     // ============================================================
     if (req.method === 'GET') {
-        const { taskId, provider, email } = req.query; // FITUR REFUND: Email ditangkap di sini
-        if (!taskId || !provider) return res.status(400).json({ error: 'taskId dan provider wajib dilampirkan!' });
+        const { taskId, provider, email, action } = req.query; // FITUR REFUND: Email ditangkap di sini
+        if (!taskId) return res.status(400).json({ error: 'taskId wajib dilampirkan!' });
+
+        // ROUTE GET KHUSUS VOICE & PERSONA
+        if (action === 'check_phrase' || action === 'check_voice') {
+            try {
+                const providersDoc = await db.collection("settings").doc("api_providers").get();
+                const allProviders = providersDoc.data().list || [];
+                const kieProvider = allProviders.find(p => p.baseUrl && p.baseUrl.includes('kie.ai'));
+                if (!kieProvider) throw new Error("Provider KIE.ai tidak ditemukan.");
+
+                const keysQuery = await db.collection("api_keys").where("provider", "==", kieProvider.value).where("status", "==", "aktif").get();
+                const sortedKeysDocs = keysQuery.docs.sort((a, b) => (a.data().priority || 1) - (b.data().priority || 1));
+                if (sortedKeysDocs.length === 0) throw new Error("API Key KIE.ai habis.");
+                const activeApiKey = sortedKeysDocs[0].data().key;
+
+                const headers = { "Content-Type": "application/json", "Authorization": `Bearer ${activeApiKey}` };
+                
+                if (action === 'check_phrase') {
+                    const response = await fetch(`${kieProvider.baseUrl}/api/v1/voice/validate-info?taskId=${taskId}`, { method: 'GET', headers });
+                    const resData = await response.json();
+                    if (!response.ok || resData.code !== 200) throw new Error(resData.msg || "Gagal cek phrase");
+                    return res.status(200).json(resData.data);
+                }
+                
+                if (action === 'check_voice') {
+                    const response = await fetch(`${kieProvider.baseUrl}/api/v1/voice/record-info?taskId=${taskId}`, { method: 'GET', headers });
+                    const resData = await response.json();
+                    if (!response.ok || resData.code !== 200) throw new Error(resData.msg || "Gagal cek voice");
+                    return res.status(200).json(resData.data);
+                }
+            } catch (err) {
+                return res.status(500).json({ error: err.message });
+            }
+        }
+
+        if (!provider) return res.status(400).json({ error: 'provider wajib dilampirkan!' });
 
         try {
             const providersDoc = await db.collection("settings").doc("api_providers").get();
