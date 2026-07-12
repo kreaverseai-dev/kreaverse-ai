@@ -3961,6 +3961,44 @@
             // Logika fetch ke backend akan ditambahkan di Tahap 3
         };
 
+        // ============================================================
+        // TAB SELECTOR (VOICE VS PERSONA)
+        // ============================================================
+        window.switchVoiceTab = function(tab) {
+            const btnVoice = document.getElementById('btnTabVoice');
+            const btnPersona = document.getElementById('btnTabPersona');
+            const contentVoice = document.getElementById('tabContentVoice');
+            const contentPersona = document.getElementById('tabContentPersona');
+
+            if (tab === 'voice') {
+                btnVoice.classList.add('active');
+                btnPersona.classList.remove('active');
+                contentVoice.classList.remove('hidden');
+                contentPersona.classList.add('hidden');
+            } else {
+                btnPersona.classList.add('active');
+                btnVoice.classList.remove('active');
+                contentPersona.classList.remove('hidden');
+                contentVoice.classList.add('hidden');
+            }
+        };
+
+        // Placeholder fungsi untuk Tahap 3 (Backend)
+        window.getValidationPhrase = async function() {
+            showIphoneToast("Memproses", "Menghubungi server untuk teks verifikasi...", "fa-spinner fa-spin");
+            // Logika fetch ke backend akan ditambahkan di Tahap 3
+        };
+
+        window.submitVoiceCloning = async function() {
+            showIphoneToast("Memproses", "Mengunggah audio dan membuat Voice ID...", "fa-spinner fa-spin");
+            // Logika fetch ke backend akan ditambahkan di Tahap 3
+        };
+
+        window.submitPersonaExtraction = async function() {
+            showIphoneToast("Memproses", "Mengekstrak Persona ID dari lagu...", "fa-spinner fa-spin");
+            // Logika fetch ke backend akan ditambahkan di Tahap 3
+        };
+
         window.openUploadOptionsModal = function() {
             document.getElementById('uploadOptionsModal').classList.add('show');
         };
