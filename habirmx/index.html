@@ -3983,20 +3983,233 @@
             }
         };
 
-        // Placeholder fungsi untuk Tahap 3 (Backend)
+        // ============================================================
+        // LOGIKA KLONING VOICE & EKSTRAK PERSONA
+        // ============================================================
+        let currentVoiceTaskId = ""; // Menyimpan taskId dari generate phrase
+
+        async function uploadVoiceFileToCloudinary(file) {
+            if (typeof fetchCloudinaryAccounts === 'function') await fetchCloudinaryAccounts();
+            if (!activeCloudinaryAccounts || activeCloudinaryAccounts.length === 0) throw new Error("Storage Cloudinary penuh/limit.");
+            const targetAccount = activeCloudinaryAccounts[0];
+            const formData = new FormData();
+            formData.append("file", file);
+            formData.append("upload_preset", targetAccount.uploadPreset);
+            const res = await fetch(`https://api.cloudinary.com/v1_1/${targetAccount.cloudName}/auto/upload`, { method: 'POST', body: formData });
+            if(!res.ok) throw new Error("Gagal upload file audio ke server.");
+            const data = await res.json();
+            return data.secure_url;
+        }
+
         window.getValidationPhrase = async function() {
-            showIphoneToast("Memproses", "Menghubungi server untuk teks verifikasi...", "fa-spinner fa-spin");
-            // Logika fetch ke backend akan ditambahkan di Tahap 3
+            const fileInput = document.getElementById('voiceSourceInput');
+            const btn = document.getElementById('btnGetPhrase');
+            
+            if (!fileInput.files || fileInput.files.length === 0) {
+                return showIphoneToast("Error", "Silakan pilih Audio Sumber terlebih dahulu!", "fa-triangle-exclamation");
+            }
+
+            const originalBtnHtml = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Mengunggah Audio...';
+
+            try {
+                const voiceUrl = await uploadVoiceFileToCloudinary(fileInput.files[0]);
+                
+                btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Meminta Teks...';
+                
+                const response = await fetch('/api/habirmx', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: 'generate_phrase',
+                        voiceUrl: voiceUrl,
+                        vocalStartS: 0,
+                        vocalEndS: 30
+                    })
+                });
+                
+                const data = await response.json();
+                if (!response.ok) throw new Error(data.error || "Gagal menghubungi server API.");
+                
+                currentVoiceTaskId = data.taskId;
+                
+                // Polling Status
+                btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Menunggu AI...';
+                
+                const pollInterval = setInterval(async () => {
+                    try {
+                        const pollRes = await fetch(`/api/habirmx?action=check_phrase&taskId=${currentVoiceTaskId}`);
+                        const pollData = await pollRes.json();
+                        
+                        if (pollData.status === 'wait_validating' || pollData.status === 'success') {
+                            clearInterval(pollInterval);
+                            document.getElementById('validationPhraseText').innerText = pollData.validateInfo;
+                            document.getElementById('phraseContainer').classList.remove('hidden');
+                            btn.innerHTML = '<i class="fa-solid fa-check"></i> Teks Berhasil Didapat';
+                            showIphoneToast("Sukses", "Teks verifikasi berhasil didapatkan. Silakan rekam suara Anda membaca teks tersebut.", "fa-microphone");
+                        } else if (pollData.status === 'processing_validate_fail' || pollData.status === 'fail') {
+                            clearInterval(pollInterval);
+                            throw new Error(pollData.errorMessage || "Gagal memproses audio sumber.");
+                        }
+                    } catch (pollErr) {
+                        clearInterval(pollInterval);
+                        btn.disabled = false;
+                        btn.innerHTML = originalBtnHtml;
+                        showIphoneToast("Error", pollErr.message, "fa-triangle-exclamation");
+                    }
+                }, 3000);
+
+            } catch (err) {
+                btn.disabled = false;
+                btn.innerHTML = originalBtnHtml;
+                showIphoneToast("Error", err.message, "fa-triangle-exclamation");
+            }
         };
 
         window.submitVoiceCloning = async function() {
-            showIphoneToast("Memproses", "Mengunggah audio dan membuat Voice ID...", "fa-spinner fa-spin");
-            // Logika fetch ke backend akan ditambahkan di Tahap 3
+            const fileInput = document.getElementById('voiceValidationInput');
+            const voiceName = document.getElementById('voiceNameInput').value.trim();
+            const voiceDesc = document.getElementById('voiceDescInput').value.trim();
+            const voiceStyle = document.getElementById('voiceStyleInput').value.trim();
+            const btn = document.getElementById('btnSubmitVoice');
+
+            if (!currentVoiceTaskId) return showIphoneToast("Error", "Dapatkan teks verifikasi terlebih dahulu!", "fa-triangle-exclamation");
+            if (!fileInput.files || fileInput.files.length === 0) return showIphoneToast("Error", "Silakan unggah Audio Verifikasi!", "fa-triangle-exclamation");
+            if (!voiceName) return showIphoneToast("Error", "Nama Suara wajib diisi!", "fa-triangle-exclamation");
+
+            const originalBtnHtml = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Mengunggah Verifikasi...';
+
+            try {
+                const verifyUrl = await uploadVoiceFileToCloudinary(fileInput.files[0]);
+                
+                btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Memproses Kloning...';
+                
+                const response = await fetch('/api/habirmx', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: 'create_voice',
+                        taskId: currentVoiceTaskId,
+                        verifyUrl: verifyUrl,
+                        voiceName: voiceName,
+                        description: voiceDesc,
+                        style: voiceStyle
+                    })
+                });
+                
+                const data = await response.json();
+                if (!response.ok) throw new Error(data.error || "Gagal menghubungi server API.");
+                
+                const newTaskId = data.taskId;
+                
+                // Polling Status
+                btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> AI Sedang Bekerja...';
+                
+                const pollInterval = setInterval(async () => {
+                    try {
+                        const pollRes = await fetch(`/api/habirmx?action=check_voice&taskId=${newTaskId}`);
+                        const pollData = await pollRes.json();
+                        
+                        if (pollData.status === 'success') {
+                            clearInterval(pollInterval);
+                            const finalVoiceId = pollData.voiceId;
+                            
+                            // Auto-fill ke Persona ID Input
+                            document.getElementById('personaIdInput').value = finalVoiceId;
+                            
+                            btn.disabled = false;
+                            btn.innerHTML = originalBtnHtml;
+                            
+                            // Pindah ke mode Generate
+                            window.switchMode('generate');
+                            
+                            // Buka Accordion Optional Parameters agar user lihat ID-nya
+                            const optParamsBody = document.getElementById('optionalParamsBody');
+                            if (optParamsBody && optParamsBody.classList.contains('hidden')) {
+                                window.toggleAccordion('optionalParamsBody');
+                            }
+                            
+                            showIphoneToast("Kloning Sukses!", "Voice ID berhasil dibuat dan otomatis terisi di Optional Parameters.", "fa-wand-magic-sparkles");
+                            
+                        } else if (pollData.status === 'processing_validate_fail' || pollData.status === 'fail') {
+                            clearInterval(pollInterval);
+                            throw new Error(pollData.errorMessage || "Gagal memverifikasi suara.");
+                        }
+                    } catch (pollErr) {
+                        clearInterval(pollInterval);
+                        btn.disabled = false;
+                        btn.innerHTML = originalBtnHtml;
+                        showIphoneToast("Error", pollErr.message, "fa-triangle-exclamation");
+                    }
+                }, 3000);
+
+            } catch (err) {
+                btn.disabled = false;
+                btn.innerHTML = originalBtnHtml;
+                showIphoneToast("Error", err.message, "fa-triangle-exclamation");
+            }
         };
 
         window.submitPersonaExtraction = async function() {
-            showIphoneToast("Memproses", "Mengekstrak Persona ID dari lagu...", "fa-spinner fa-spin");
-            // Logika fetch ke backend akan ditambahkan di Tahap 3
+            const name = document.getElementById('personaNameInput').value.trim();
+            const taskId = document.getElementById('personaTaskIdInput').value.trim();
+            const audioId = document.getElementById('personaAudioIdInput').value.trim();
+            const startS = document.getElementById('personaStartInput').value;
+            const endS = document.getElementById('personaEndInput').value;
+            const desc = document.getElementById('personaDescInput').value.trim();
+            const btn = document.getElementById('btnSubmitPersona');
+
+            if (!name || !taskId || !audioId) {
+                return showIphoneToast("Error", "Nama, Task ID, dan Audio ID wajib diisi!", "fa-triangle-exclamation");
+            }
+
+            const originalBtnHtml = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Mengekstrak Persona...';
+
+            try {
+                const response = await fetch('/api/habirmx', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: 'create_persona',
+                        taskId: taskId,
+                        audioId: audioId,
+                        name: name,
+                        description: desc || "Extracted Persona",
+                        vocalStart: parseFloat(startS) || 0,
+                        vocalEnd: parseFloat(endS) || 30
+                    })
+                });
+                
+                const data = await response.json();
+                if (!response.ok) throw new Error(data.error || "Gagal menghubungi server API.");
+                
+                // Auto-fill ke Persona ID Input
+                document.getElementById('personaIdInput').value = data.personaId;
+                
+                btn.disabled = false;
+                btn.innerHTML = originalBtnHtml;
+                
+                // Pindah ke mode Generate
+                window.switchMode('generate');
+                
+                // Buka Accordion Optional Parameters agar user lihat ID-nya
+                const optParamsBody = document.getElementById('optionalParamsBody');
+                if (optParamsBody && optParamsBody.classList.contains('hidden')) {
+                    window.toggleAccordion('optionalParamsBody');
+                }
+                
+                showIphoneToast("Ekstrak Sukses!", "Persona ID berhasil dibuat dan otomatis terisi di Optional Parameters.", "fa-user-astronaut");
+
+            } catch (err) {
+                btn.disabled = false;
+                btn.innerHTML = originalBtnHtml;
+                showIphoneToast("Error", err.message, "fa-triangle-exclamation");
+            }
         };
 
         window.openUploadOptionsModal = function() {
