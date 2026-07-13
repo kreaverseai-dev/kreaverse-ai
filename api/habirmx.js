@@ -351,7 +351,7 @@ ATURAN MUTLAK:
                         voiceName: voiceName || "My Custom Voice",
                         description: description || "Kreaverse Voice Clone",
                         style: style || "",
-                        singerSkillLevel: "professional"
+                        singerSkillLevel: "beginner"
                     };
 
                     const response = await fetch(`${kieProvider.baseUrl}/api/v1/voice/generate`, {
