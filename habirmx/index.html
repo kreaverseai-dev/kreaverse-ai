@@ -4178,23 +4178,37 @@
             if (!currentVoiceTaskId) return showIphoneToast("Error", "Dapatkan teks verifikasi terlebih dahulu!", "fa-triangle-exclamation");
             if (!voiceName) return showIphoneToast("Error", "Nama Karakter Suara wajib diisi!", "fa-triangle-exclamation");
 
-            // Cek apakah user merekam langsung atau upload file
-            let finalValidationFile = null;
             const isUploadMode = !document.getElementById('cloneUploadArea').classList.contains('hidden');
-
-            if (isUploadMode) {
-                if (!fileInput.files || fileInput.files.length === 0) return showIphoneToast("Error", "Silakan unggah file Audio Verifikasi!", "fa-triangle-exclamation");
-                finalValidationFile = fileInput.files[0];
-            } else {
-                if (!cloneRecordedBlob) return showIphoneToast("Error", "Silakan rekam suara Anda membaca teks verifikasi!", "fa-triangle-exclamation");
-                finalValidationFile = new File([cloneRecordedBlob], `Verification_${Date.now()}.webm`, { type: "audio/webm" });
-            }
+            let finalValidationFile = null;
 
             const originalBtnHtml = btn.innerHTML;
             btn.disabled = true;
-            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Mengunggah Verifikasi...';
 
             try {
+                if (isUploadMode) {
+                    if (!fileInput.files || fileInput.files.length === 0) {
+                        btn.disabled = false;
+                        return showIphoneToast("Error", "Silakan unggah file Audio Verifikasi!", "fa-triangle-exclamation");
+                    }
+                    finalValidationFile = fileInput.files[0];
+                } else {
+                    if (!cloneRecordedBlob) {
+                        btn.disabled = false;
+                        return showIphoneToast("Error", "Silakan rekam suara Anda membaca teks verifikasi!", "fa-triangle-exclamation");
+                    }
+                    
+                    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Mengkonversi ke MP3...';
+                    
+                    // Konversi WebM ke MP3 agar diterima oleh KIE.ai
+                    const arrayBuffer = await cloneRecordedBlob.arrayBuffer();
+                    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                    const audioBuffer = await audioCtx.decodeAudioData(arrayBuffer);
+                    const mp3Blob = await encodeAudioBufferToMp3(audioBuffer, () => {});
+                    
+                    finalValidationFile = new File([mp3Blob], `Verification_${Date.now()}.mp3`, { type: "audio/mp3" });
+                }
+
+                btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Mengunggah Verifikasi...';
                 const verifyUrl = await uploadVoiceFileToCloudinary(finalValidationFile);
                 
                 btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Memproses Kloning...';
