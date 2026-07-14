@@ -1806,177 +1806,323 @@
 
                             <!-- TAB CONTENT V2 STABIL -->
                             <div id="dspTabV2">
-                                <!-- CORE ENGINE CONTROLS (PITCH, TEMPO, TRIM) -->
-                                <div style="margin-bottom: 20px;">
-                                    <span style="font-size: 0.85rem; font-weight: 800; color: #e2e8f0; display: block; margin-bottom: 10px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 5px;">⚡ Audio Adjustments & Trimmer</span>
-                                
-                                <div class="dsp-grid">
-                                    <!-- PANGKAS AUDIO (TRIMMER) -->
-                                    <div class="dsp-control-box" style="border-color: rgba(239, 68, 68, 0.3); background: rgba(239, 68, 68, 0.05);">
-                                        <div class="dsp-row-flex">
-                                            <span class="dsp-control-title" style="color: #fca5a5;"><i class="fa-solid fa-scissors"></i> Pangkas Audio (Akurat)</span>
-                                            <button type="button" id="btnPlayTrim" onclick="window.playTrimPreview()" style="background: #ef4444; color: #fff; border: none; padding: 6px 12px; border-radius: 8px; font-size: 0.75rem; font-weight: 800; cursor: pointer; display: flex; align-items: center; gap: 6px; box-shadow: 0 4px 10px rgba(239, 68, 68, 0.3); transition: 0.2s;">
-                                                <i class="fa-solid fa-play" id="iconPlayTrim"></i> Cek Potongan
-                                            </button>
-                                        </div>
-                                        
-                                        <!-- NEW: DRAGGABLE PLAYER UNTUK HASIL POTONGAN -->
-                                        <div id="trimPlayerUI" class="hidden modern-player-box" style="border-color: rgba(239, 68, 68, 0.3); background: rgba(0,0,0,0.5);">
-                                            <div class="modern-player-top">
-                                                <button class="trim-play-btn" id="trimPlayBtnCore" onclick="window.toggleTrimPlayback()"><i class="fa-solid fa-play"></i></button>
-                                                <div class="modern-player-time" style="color:#fca5a5;"><span id="trimCurrentTime">0:00</span> / <span id="trimTotalTime">0:00</span></div>
-                                            </div>
-                                            <input type="range" id="trimSeekSlider" class="audio-seek-slider red-thumb" style="accent-color:#ef4444;" value="0" min="0" max="100" step="0.1" oninput="window.handleTrimSeekInput()" onchange="window.handleTrimSeekChange()">
-                                        </div>
-
-                                        <div class="trim-inputs-wrapper">
-                                            <div class="trim-col">
-                                                <span class="trim-label">Mulai</span>
-                                                <input type="text" id="trimStartInput" class="trim-input-time" placeholder="00:00" value="00:00" onchange="window.validateTrimInputs()">
-                                            </div>
-                                            <span class="trim-divider"><i class="fa-solid fa-arrow-right-long"></i></span>
-                                            <div class="trim-col">
-                                                <span class="trim-label">Selesai</span>
-                                                <input type="text" id="trimEndInput" class="trim-input-time" placeholder="00:00" value="00:00" onchange="window.validateTrimInputs()">
-                                            </div>
-                                        </div>
-                                        <div style="font-size: 0.65rem; color: #fca5a5; text-align: center; line-height: 1.4;">Format: <b style="color:#fff;">MM:SS</b>. Biarkan 00:00 jika tidak ingin dipotong.</div>
+                                <!-- PANGKAS AUDIO (TRIMMER) - GLOBAL -->
+                            <div style="margin-bottom: 20px;">
+                                <span style="font-size: 0.85rem; font-weight: 800; color: #e2e8f0; display: block; margin-bottom: 10px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 5px;">⚡ Audio Adjustments & Trimmer</span>
+                                <div class="dsp-control-box" style="border-color: rgba(239, 68, 68, 0.3); background: rgba(239, 68, 68, 0.05);">
+                                    <div class="dsp-row-flex">
+                                        <span class="dsp-control-title" style="color: #fca5a5;"><i class="fa-solid fa-scissors"></i> Pangkas Audio (Akurat)</span>
+                                        <button type="button" id="btnPlayTrim" onclick="window.playTrimPreview()" style="background: #ef4444; color: #fff; border: none; padding: 6px 12px; border-radius: 8px; font-size: 0.75rem; font-weight: 800; cursor: pointer; display: flex; align-items: center; gap: 6px; box-shadow: 0 4px 10px rgba(239, 68, 68, 0.3); transition: 0.2s;">
+                                            <i class="fa-solid fa-play" id="iconPlayTrim"></i> Cek Potongan
+                                        </button>
                                     </div>
-
-                                    <!-- PITCH & TEMPO -->
-                                    <div class="dsp-control-box">
-                                        <!-- PITCH -->
-                                        <div class="dsp-row-flex">
-                                            <span class="dsp-control-title"><i class="fa-solid fa-music"></i> Pitch (Nada Dasar)</span>
-                                            <div class="stepper-container">
-                                                <button type="button" class="stepper-btn" onclick="window.adjustStepper('pitchSlider', -1)">-</button>
-                                                <input type="text" id="valStealthPitch" class="stepper-val" value="+0.0" readonly>
-                                                <button type="button" class="stepper-btn" onclick="window.adjustStepper('pitchSlider', 1)">+</button>
-                                            </div>
-                                        </div>
-                                        <input type="range" id="pitchSlider" class="dsp-slider" min="-12" max="12" step="1" value="0" oninput="window.updateStealthVal()">
-                                        <div style="font-size: 0.65rem; color: #38bdf8; margin-top: 4px;">*Biarkan 0. Algoritma 20-Layer di bawah yang akan mengecoh AI.</div>
-                                        
-                                        <div style="height: 1px; background: rgba(255,255,255,0.05); margin: 16px 0;"></div>
-
-                                        <!-- TEMPO -->
-                                        <div class="dsp-row-flex">
-                                            <span class="dsp-control-title"><i class="fa-solid fa-gauge-high"></i> Tempo (Speed)</span>
-                                            <div class="stepper-container">
-                                                <button type="button" class="stepper-btn" onclick="window.adjustStepper('stealthSpeed', -0.01)">-</button>
-                                                <input type="text" id="valStealthSpeed" class="stepper-val" value="100%" readonly>
-                                                <button type="button" class="stepper-btn" onclick="window.adjustStepper('stealthSpeed', 0.01)">+</button>
-                                            </div>
-                                        </div>
-                                        <input type="range" id="stealthSpeed" class="dsp-slider" min="0.5" max="1.5" step="0.01" value="1.0" oninput="window.updateStealthVal()">
-                                        <div id="stealthEstimatedDuration" style="font-size: 0.65rem; color: #94a3b8; margin-top: 8px; font-weight: 600; text-align: right;">Estimasi Durasi: 0:00</div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- ADVANCED ALGORITHMS TOGGLES -->
-                            <div style="margin-bottom: 24px;">
-                                <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 12px; margin-bottom: 12px; flex-wrap: wrap; gap: 12px;">
-                                    <div style="display: flex; align-items: center; gap: 10px; cursor: pointer; flex: 1; min-width: 200px;" onclick="toggleAccordion('advAlgoBody')">
-                                        <span style="font-size: 0.85rem; font-weight: 800; color: #e2e8f0;">🔥 20-Layer Ultimate Bypass DSP</span>
-                                        <i class="fa-solid fa-chevron-down" style="color: #94a3b8; transition: 0.3s;"></i>
-                                    </div>
-                                    <!-- MASTER TOGGLE -->
-                                    <div style="display: flex; align-items: center; gap: 8px; background: rgba(0,0,0,0.25); padding: 6px 12px; border-radius: 99px; border: 1px solid rgba(255,255,255,0.05);">
-                                        <span style="font-size: 0.7rem; font-weight: 800; color: #38bdf8;">ON SEMUA</span>
-                                        <label class="switch" style="transform: scale(0.85); transform-origin: right; margin: 0;"><input type="checkbox" id="masterToggle" onchange="window.toggleAllDSP(event)"><span class="slider-toggle" style="background-color: #475569;"></span></label>
-                                    </div>
-                                </div>
-                                
-                                <div id="advAlgoBody" class="hidden" style="display: flex; flex-direction: column; gap: 12px;">
                                     
-                                    <!-- 20-LAYER ENGINE STATUS DASHBOARD -->
-                                    <div id="dspStatusDashboard" style="background: linear-gradient(145deg, rgba(100, 116, 139, 0.1), rgba(0,0,0,0.2)); border: 1px solid rgba(100, 116, 139, 0.2); padding: 14px; border-radius: 12px; text-align: left; transition: all 0.3s ease;">
-                                        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
-                                            <div id="dspStatusDot" style="width: 8px; height: 8px; background: #64748b; border-radius: 50%; transition: all 0.3s ease;"></div>
-                                            <div id="dspStatusText" style="font-size: 0.85rem; font-weight: 800; color: #64748b; letter-spacing: 0.5px; transition: all 0.3s ease;">ENGINE STATUS: OFFLINE</div>
+                                    <!-- DRAGGABLE PLAYER UNTUK HASIL POTONGAN -->
+                                    <div id="trimPlayerUI" class="hidden modern-player-box" style="border-color: rgba(239, 68, 68, 0.3); background: rgba(0,0,0,0.5);">
+                                        <div class="modern-player-top">
+                                            <button class="trim-play-btn" id="trimPlayBtnCore" onclick="window.toggleTrimPlayback()"><i class="fa-solid fa-play"></i></button>
+                                            <div class="modern-player-time" style="color:#fca5a5;"><span id="trimCurrentTime">0:00</span> / <span id="trimTotalTime">0:00</span></div>
                                         </div>
-                                        <div style="font-size: 0.75rem; color: #cbd5e1; line-height: 1.6;">
-                                            Saat tombol <b>ON SEMUA</b> diaktifkan, algoritma di bawah berjalan serentak untuk menghancurkan sidik jari audio:
-                                            <div style="margin-top: 10px; display: flex; flex-direction: column; gap: 10px;">
-                                                <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; text-transform: none; font-size: 0.75rem; color: #cbd5e1; font-weight: 600;">
-                                                    <input type="checkbox" class="dsp-chk" checked id="chkPhase" onchange="window.updateDSPStatusVisual()" style="width: 16px; height: 16px; accent-color: var(--accent-color);">
-                                                    <span><b>Phase Scrambler:</b> Mengacak fase frekuensi vokal asli</span>
-                                                </label>
-                                                <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; text-transform: none; font-size: 0.75rem; color: #cbd5e1; font-weight: 600;">
-                                                    <input type="checkbox" class="dsp-chk" checked id="chkWarp" onchange="window.updateDSPStatusVisual()" style="width: 16px; height: 16px; accent-color: var(--accent-color);">
-                                                    <span><b>Micro-Time Jitter:</b> Mengacak timeline melodi (Anti-FFT Match)</span>
-                                                </label>
-                                                <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; text-transform: none; font-size: 0.75rem; color: #cbd5e1; font-weight: 600;">
-                                                    <input type="checkbox" class="dsp-chk" checked id="chkFormant" onchange="window.updateDSPStatusVisual()" style="width: 16px; height: 16px; accent-color: var(--accent-color);">
-                                                    <span><b>Spectrogram Formant Shifter:</b> Menggeser pola resonansi vokal asli</span>
-                                                </label>
-                                                <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; text-transform: none; font-size: 0.75rem; color: #cbd5e1; font-weight: 600;">
-                                                    <input type="checkbox" class="dsp-chk" checked id="chkHarmonics" onchange="window.updateDSPStatusVisual()" style="width: 16px; height: 16px; accent-color: var(--accent-color);">
-                                                    <span><b>Harmonics Distortion:</b> Kompresi saturasi lembut (Anti-Fingerprint)</span>
-                                                </label>
-                                                <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; text-transform: none; font-size: 0.75rem; color: #cbd5e1; font-weight: 600;">
-                                                    <input type="checkbox" class="dsp-chk" checked id="chkSpatial" onchange="window.updateDSPStatusVisual()" style="width: 16px; height: 16px; accent-color: var(--accent-color);">
-                                                    <span><b>Spatial 3D Cross-Feed:</b> Pelebaran spasial asimetris</span>
-                                                </label>
-                                                <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; text-transform: none; font-size: 0.75rem; color: #cbd5e1; font-weight: 600;">
-                                                    <input type="checkbox" class="dsp-chk" checked id="chkMasking" onchange="window.updateDSPStatusVisual()" style="width: 16px; height: 16px; accent-color: var(--accent-color);">
-                                                    <span><b>Spectrogram Valley Masking:</b> Menyisipkan desis masking dinamis</span>
-                                                </label>
-                                                <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; text-transform: none; font-size: 0.75rem; color: #fca5a5; font-weight: 800;">
-                                                    <input type="checkbox" class="dsp-chk" checked id="chkObfuscator" onchange="window.updateDSPStatusVisual()" style="width: 16px; height: 16px; accent-color: #ef4444;">
-                                                    <span><b>[UPGRADED] ASR Cognitive Jammer:</b> Menghancurkan deteksi lirik vokal</span>
-                                                </label>
-                                                <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; text-transform: none; font-size: 0.75rem; color: #fca5a5; font-weight: 800;">
-                                                    <input type="checkbox" class="dsp-chk" checked id="chkFlux" onchange="window.updateDSPStatusVisual()" style="width: 16px; height: 16px; accent-color: #ef4444;">
-                                                    <span><b>[UPGRADED] Temporal Flux Engine:</b> Menarik & mengulur sumbu waktu agresif</span>
-                                                </label>
-                                                <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; text-transform: none; font-size: 0.75rem; color: #fca5a5; font-weight: 800;">
-                                                    <input type="checkbox" class="dsp-chk" checked id="chkMirage" onchange="window.updateDSPStatusVisual()" style="width: 16px; height: 16px; accent-color: #ef4444;">
-                                                    <span><b>[UPGRADED] Waveform Mirage Protocol:</b> Membiaskan struktur gelombang</span>
-                                                </label>
-                                                <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; text-transform: none; font-size: 0.75rem; color: #cbd5e1; font-weight: 600;">
-                                                    <input type="checkbox" class="dsp-chk" checked id="chkNullifier" onchange="window.updateDSPStatusVisual()" style="width: 16px; height: 16px; accent-color: var(--accent-color);">
-                                                    <span><b>Binaural Nullifier:</b> Memanipulasi fase asimetris (Anti-Mono AI)</span>
-                                                </label>
-                                                <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; text-transform: none; font-size: 0.75rem; color: #cbd5e1; font-weight: 600;">
-                                                    <input type="checkbox" class="dsp-chk" checked id="chkLayering" onchange="window.updateDSPStatusVisual()" style="width: 16px; height: 16px; accent-color: var(--accent-color);">
-                                                    <span><b>Layering & Reflektor:</b> Steganographic Audio Layer & Dimensional Void Reflector</span>
-                                                </label>
-                                                <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; text-transform: none; font-size: 0.75rem; color: #fca5a5; font-weight: 800;">
-                                                    <input type="checkbox" class="dsp-chk" checked id="chkTransient" onchange="window.updateDSPStatusVisual()" style="width: 16px; height: 16px; accent-color: #ef4444;">
-                                                    <span><b>[NEW] Transient Smudge:</b> Merusak keselarasan Intro & Durasi Absolut</span>
-                                                </label>
-                                                <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; text-transform: none; font-size: 0.75rem; color: #fca5a5; font-weight: 800;">
-                                                    <input type="checkbox" class="dsp-chk" checked id="chkChroma" onchange="window.updateDSPStatusVisual()" style="width: 16px; height: 16px; accent-color: #ef4444;">
-                                                    <span><b>[NEW] Deep Chroma Scrambler:</b> Membodohi sistem pencocokan Melodi AI</span>
-                                                </label>
-                                                <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; text-transform: none; font-size: 0.75rem; color: #fca5a5; font-weight: 800;">
-                                                    <input type="checkbox" class="dsp-chk" checked id="chkMicroReverse" onchange="window.updateDSPStatusVisual()" style="width: 16px; height: 16px; accent-color: #ef4444;">
-                                                    <span><b>[EXTREME] Waveform DNA Scrambler:</b> Membalikkan mikrosekon audio</span>
-                                                </label>
-                                                <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; text-transform: none; font-size: 0.75rem; color: #fca5a5; font-weight: 800;">
-                                                    <input type="checkbox" class="dsp-chk" checked id="chkRingMod" onchange="window.updateDSPStatusVisual()" style="width: 16px; height: 16px; accent-color: #ef4444;">
-                                                    <span><b>[EXTREME] Spectral Sideband:</b> Menggeser seluruh puncak frekuensi</span>
-                                                </label>
-                                                <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; text-transform: none; font-size: 0.75rem; color: #991b1b; font-weight: 900; background: #fecaca; padding: 4px 8px; border-radius: 6px;">
-                                                    <input type="checkbox" class="dsp-chk" checked id="chkNuke" onchange="window.updateDSPStatusVisual()" style="width: 16px; height: 16px; accent-color: #991b1b;">
-                                                    <span><b>[GOD MODE] Constellation Nuke:</b> Tembakkan Puncak Audio Palsu ke AI!</span>
-                                                </label>
+                                        <input type="range" id="trimSeekSlider" class="audio-seek-slider red-thumb" style="accent-color:#ef4444;" value="0" min="0" max="100" step="0.1" oninput="window.handleTrimSeekInput()" onchange="window.handleTrimSeekChange()">
+                                    </div>
+
+                                    <div class="trim-inputs-wrapper">
+                                        <div class="trim-col">
+                                            <span class="trim-label">Mulai</span>
+                                            <input type="text" id="trimStartInput" class="trim-input-time" placeholder="00:00" value="00:00" onchange="window.validateTrimInputs()">
+                                        </div>
+                                        <span class="trim-divider"><i class="fa-solid fa-arrow-right-long"></i></span>
+                                        <div class="trim-col">
+                                            <span class="trim-label">Selesai</span>
+                                            <input type="text" id="trimEndInput" class="trim-input-time" placeholder="00:00" value="00:00" onchange="window.validateTrimInputs()">
+                                        </div>
+                                    </div>
+                                    <div style="font-size: 0.65rem; color: #fca5a5; text-align: center; line-height: 1.4;">Format: <b style="color:#fff;">MM:SS</b>. Biarkan 00:00 jika tidak ingin dipotong.</div>
+                                </div>
+                            </div>
+
+                            <!-- TAB MENU DSP (V1 & V2) DENGAN TOGGLE COLLAPSE -->
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px;">
+                                <div style="display: flex; gap: 8px; background: rgba(0,0,0,0.3); padding: 4px; border-radius: 12px;">
+                                    <button id="btnTabV1" onclick="window.switchDspTab('v1')" style="background: rgba(56, 189, 248, 0.2); color: #38bdf8; padding: 8px 14px; border-radius: 8px; font-size: 0.8rem; font-weight: 800; border: none; cursor: pointer; transition: 0.3s;">Kreaverse v1 beta</button>
+                                    <button id="btnTabV2" onclick="window.switchDspTab('v2')" style="background: transparent; color: #94a3b8; padding: 8px 14px; border-radius: 8px; font-size: 0.8rem; font-weight: 800; border: none; cursor: pointer; transition: 0.3s;">Kreaverse v2 stabil</button>
+                                </div>
+                                <button onclick="window.toggleDspTabsContent()" id="btnToggleDspTabs" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #e2e8f0; width: 32px; height: 32px; border-radius: 8px; font-size: 0.9rem; cursor: pointer; transition: 0.2s; display: flex; align-items: center; justify-content: center;">
+                                    <i class="fa-solid fa-chevron-down" id="iconToggleDspTabs" style="transition: transform 0.3s;"></i>
+                                </button>
+                            </div>
+
+                            <!-- KONTEN TABS (DEFAULT TERTUTUP) -->
+                            <div id="dspTabsContentContainer" class="hidden">
+                                
+                                <!-- TAB CONTENT V1 BETA -->
+                                <div id="dspTabV1">
+                                    <div style="margin-bottom: 20px;">
+                                        <div class="dsp-row-flex" style="margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                                            <span style="font-size: 0.85rem; font-weight: 800; color: #e2e8f0;">⚙️ Pengaturan Engine (v1 Beta)</span>
+                                            <select id="presetSelectV1" onchange="window.applyV1Preset(this.value)" style="background: rgba(0,0,0,0.3); color: #e2e8f0; border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 6px 10px; font-size: 0.75rem; outline: none; cursor: pointer;">
+                                                <option value="manual">Manual Setup</option>
+                                                <option value="bypass_lyrics">🔥 Preset: Bypass Copy Lyrics</option>
+                                                <option value="preset1">Preset 1: Safe Bypass</option>
+                                                <option value="preset2">Preset 2: Deep Stealth</option>
+                                                <option value="preset3">Preset 3: Extreme Pitch & Time</option>
+                                                <option value="preset4">Preset 4: Vocal Formant Focus</option>
+                                                <option value="preset5">Preset 5: Maximum Scramble</option>
+                                            </select>
+                                        </div>
+                                        
+                                        <div class="dsp-grid" style="display: flex; flex-direction: column; gap: 16px;">
+                                            <div class="dsp-control-box" style="background: rgba(0,0,0,0.25); border: 1px solid rgba(255,255,255,0.08); padding: 16px; border-radius: 16px;">
+                                                <!-- Tempo -->
+                                                <div class="dsp-row-flex" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                                                    <span class="dsp-control-title" style="font-size: 0.8rem; font-weight: 800; color: #e2e8f0;">Kecepatan (Tempo)</span>
+                                                    <span id="valTempoV1" style="color: #38bdf8; font-weight: 800; font-size: 0.8rem;">1.00x</span>
+                                                </div>
+                                                <input type="range" id="sliderTempoV1" class="dsp-slider" style="width: 100%; accent-color: #38bdf8; height: 4px; border-radius: 10px; outline: none; -webkit-appearance: none; background: rgba(255,255,255,0.1);" min="0.5" max="1.5" step="0.01" value="1.0" oninput="document.getElementById('valTempoV1').innerText = parseFloat(this.value).toFixed(2) + 'x'">
+                                                
+                                                <div style="height: 1px; background: rgba(255,255,255,0.05); margin: 16px 0;"></div>
+                                                
+                                                <!-- Pitch -->
+                                                <div class="dsp-row-flex" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                                                    <span class="dsp-control-title" style="font-size: 0.8rem; font-weight: 800; color: #e2e8f0;">Pitch Shift (Cents)</span>
+                                                    <span id="valPitchV1" style="color: #38bdf8; font-weight: 800; font-size: 0.8rem;">0</span>
+                                                </div>
+                                                <input type="range" id="sliderPitchV1" class="dsp-slider" style="width: 100%; accent-color: #38bdf8; height: 4px; border-radius: 10px; outline: none; -webkit-appearance: none; background: rgba(255,255,255,0.1);" min="-1200" max="1200" step="100" value="0" oninput="document.getElementById('valPitchV1').innerText = this.value">
+
+                                                <div style="height: 1px; background: rgba(255,255,255,0.05); margin: 16px 0;"></div>
+                                                
+                                                <!-- Timbre -->
+                                                <div class="dsp-row-flex" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                                                    <span class="dsp-control-title" style="font-size: 0.8rem; font-weight: 800; color: #e2e8f0;">Timbre Density Enhancer</span>
+                                                    <span id="valTimbreV1" style="color: #38bdf8; font-weight: 800; font-size: 0.8rem;">0%</span>
+                                                </div>
+                                                <input type="range" id="sliderTimbreV1" class="dsp-slider" style="width: 100%; accent-color: #38bdf8; height: 4px; border-radius: 10px; outline: none; -webkit-appearance: none; background: rgba(255,255,255,0.1);" min="0" max="100" step="1" value="0" oninput="document.getElementById('valTimbreV1').innerText = this.value + '%'">
+
+                                                <div style="height: 1px; background: rgba(255,255,255,0.05); margin: 16px 0;"></div>
+                                                
+                                                <!-- Stego -->
+                                                <div class="dsp-row-flex" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                                                    <span class="dsp-control-title" style="font-size: 0.8rem; font-weight: 800; color: #e2e8f0;">Steganographic Audio Layer</span>
+                                                    <span id="valStegoV1" style="color: #38bdf8; font-weight: 800; font-size: 0.8rem;">0%</span>
+                                                </div>
+                                                <input type="range" id="sliderStegoV1" class="dsp-slider" style="width: 100%; accent-color: #38bdf8; height: 4px; border-radius: 10px; outline: none; -webkit-appearance: none; background: rgba(255,255,255,0.1);" min="0" max="100" step="1" value="0" oninput="document.getElementById('valStegoV1').innerText = this.value + '%'">
+
+                                                <div style="height: 1px; background: rgba(255,255,255,0.05); margin: 16px 0;"></div>
+                                                
+                                                <!-- Void -->
+                                                <div class="dsp-row-flex" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                                                    <span class="dsp-control-title" style="font-size: 0.8rem; font-weight: 800; color: #e2e8f0;">Dimensional Void Reflector</span>
+                                                    <span id="valVoidV1" style="color: #38bdf8; font-weight: 800; font-size: 0.8rem;">0%</span>
+                                                </div>
+                                                <input type="range" id="sliderVoidV1" class="dsp-slider" style="width: 100%; accent-color: #38bdf8; height: 4px; border-radius: 10px; outline: none; -webkit-appearance: none; background: rgba(255,255,255,0.1);" min="0" max="100" step="1" value="0" oninput="document.getElementById('valVoidV1').innerText = this.value + '%'">
                                             </div>
                                         </div>
                                     </div>
 
-                                    <!-- Lyric Phonetic Encryptor -->
-                                    <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(56, 189, 248, 0.1); padding: 12px 14px; border-radius: 12px; border: 1px solid rgba(56, 189, 248, 0.3); margin-top: 4px;">
-                                        <div style="padding-right: 10px;">
-                                            <div style="font-size: 0.8rem; font-weight: 800; color: #38bdf8;"><i class="fa-solid fa-user-secret"></i> Lyric Phonetic Encryptor</div>
-                                            <div style="font-size: 0.65rem; color: #bae6fd; margin-top: 4px; line-height: 1.4;">Mengelabui sensor teks AI dengan menyisipkan karakter tak kasat mata pada lirik.</div>
+                                    <div style="margin-bottom: 20px;">
+                                        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 12px; margin-bottom: 12px; flex-wrap: wrap; gap: 12px;">
+                                            <span style="font-size: 0.85rem; font-weight: 800; color: #e2e8f0;">🔥 Advanced Algorithms (v1 Beta)</span>
+                                            <div style="display: flex; align-items: center; gap: 8px; background: rgba(0,0,0,0.25); padding: 6px 12px; border-radius: 99px; border: 1px solid rgba(255,255,255,0.05);">
+                                                <span style="font-size: 0.7rem; font-weight: 800; color: #38bdf8;">ON SEMUA</span>
+                                                <label class="switch" style="transform: scale(0.85); transform-origin: right; margin: 0;"><input type="checkbox" id="masterToggleV1" onchange="window.toggleMasterV1(event)"><span class="slider-toggle" style="background-color: #475569;"></span></label>
+                                            </div>
                                         </div>
-                                        <button type="button" onclick="document.getElementById('lyricsInput').scrollIntoView({behavior: 'smooth'});" style="flex-shrink: 0; background: #38bdf8; color: #0f172a; border: none; padding: 8px 12px; border-radius: 8px; font-size: 0.75rem; font-weight: 800; cursor: pointer; box-shadow: 0 4px 10px rgba(56, 189, 248, 0.3); transition: 0.2s;">Ke Lirik</button>
+                                        
+                                        <div class="dsp-control-box" style="display: flex; flex-direction: column; gap: 16px; background: rgba(0,0,0,0.25); border: 1px solid rgba(255,255,255,0.08); padding: 16px; border-radius: 16px;">
+                                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                                <div>
+                                                    <div style="font-size: 0.75rem; font-weight: 800; color: #e2e8f0;">1. Temporal Flux Engine</div>
+                                                    <div style="font-size: 0.65rem; color: #94a3b8;">Menarik dan mengulur sumbu waktu secara asimetris.</div>
+                                                </div>
+                                                <label class="switch" style="transform: scale(0.8); margin: 0;"><input type="checkbox" id="tgTemporalV1" class="dsp-chk-v1"><span class="slider-toggle"></span></label>
+                                            </div>
+                                            <div style="height: 1px; background: rgba(255,255,255,0.05);"></div>
+
+                                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                                <div>
+                                                    <div style="font-size: 0.75rem; font-weight: 800; color: #e2e8f0;">2. Waveform Mirage Protocol</div>
+                                                    <div style="font-size: 0.65rem; color: #94a3b8;">Membiaskan struktur fisik gelombang.</div>
+                                                </div>
+                                                <label class="switch" style="transform: scale(0.8); margin: 0;"><input type="checkbox" id="tgMirageV1" class="dsp-chk-v1"><span class="slider-toggle"></span></label>
+                                            </div>
+                                            <div style="height: 1px; background: rgba(255,255,255,0.05);"></div>
+
+                                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                                <div>
+                                                    <div style="font-size: 0.75rem; font-weight: 800; color: #e2e8f0;">3. Binaural Nullifier (Anti-Mono AI)</div>
+                                                    <div style="font-size: 0.65rem; color: #94a3b8;">Memanipulasi fase asimetris.</div>
+                                                </div>
+                                                <label class="switch" style="transform: scale(0.8); margin: 0;"><input type="checkbox" id="tgAntiMonoV1" class="dsp-chk-v1"><span class="slider-toggle"></span></label>
+                                            </div>
+                                            <div style="height: 1px; background: rgba(255,255,255,0.05);"></div>
+
+                                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                                <div>
+                                                    <div style="font-size: 0.75rem; font-weight: 800; color: #e2e8f0;">4. Spectral Peak Eraser</div>
+                                                    <div style="font-size: 0.65rem; color: #94a3b8;">Menyapu dan menghapus titik koordinat energi tertinggi.</div>
+                                                </div>
+                                                <label class="switch" style="transform: scale(0.8); margin: 0;"><input type="checkbox" id="tgSpectralV1" class="dsp-chk-v1"><span class="slider-toggle"></span></label>
+                                            </div>
+                                            <div style="height: 1px; background: rgba(255,255,255,0.05);"></div>
+
+                                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                                <div>
+                                                    <div style="font-size: 0.75rem; font-weight: 800; color: #e2e8f0;">5. Quantum Pitch Drift</div>
+                                                    <div style="font-size: 0.65rem; color: #94a3b8;">Menyuntikkan ketidakstabilan frekuensi mikro.</div>
+                                                </div>
+                                                <label class="switch" style="transform: scale(0.8); margin: 0;"><input type="checkbox" id="tgQuantumV1" class="dsp-chk-v1"><span class="slider-toggle"></span></label>
+                                            </div>
+                                            <div style="height: 1px; background: rgba(255,255,255,0.05);"></div>
+
+                                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                                <div>
+                                                    <div style="font-size: 0.75rem; font-weight: 800; color: #38bdf8;">6. Phonetic Decoupler (Vocal Formant)</div>
+                                                    <div style="font-size: 0.65rem; color: #bae6fd;">Distorsi struktur formant akustik.</div>
+                                                </div>
+                                                <label class="switch" style="transform: scale(0.8); margin: 0;"><input type="checkbox" id="tgPhoneticV1" class="dsp-chk-v1"><span class="slider-toggle"></span></label>
+                                            </div>
+                                        </div>
                                     </div>
-                                </div>
-                            </div>
+                                </div> <!-- END OF dspTabV1 -->
+
+                                <!-- TAB CONTENT V2 STABIL -->
+                                <div id="dspTabV2" class="hidden">
+                                    <div class="dsp-grid">
+                                        <!-- PITCH & TEMPO -->
+                                        <div class="dsp-control-box">
+                                            <!-- PITCH -->
+                                            <div class="dsp-row-flex">
+                                                <span class="dsp-control-title"><i class="fa-solid fa-music"></i> Pitch (Nada Dasar)</span>
+                                                <div class="stepper-container">
+                                                    <button type="button" class="stepper-btn" onclick="window.adjustStepper('pitchSlider', -1)">-</button>
+                                                    <input type="text" id="valStealthPitch" class="stepper-val" value="+0.0" readonly>
+                                                    <button type="button" class="stepper-btn" onclick="window.adjustStepper('pitchSlider', 1)">+</button>
+                                                </div>
+                                            </div>
+                                            <input type="range" id="pitchSlider" class="dsp-slider" min="-12" max="12" step="1" value="0" oninput="window.updateStealthVal()">
+                                            <div style="font-size: 0.65rem; color: #38bdf8; margin-top: 4px;">*Biarkan 0. Algoritma 20-Layer di bawah yang akan mengecoh AI.</div>
+                                            
+                                            <div style="height: 1px; background: rgba(255,255,255,0.05); margin: 16px 0;"></div>
+
+                                            <!-- TEMPO -->
+                                            <div class="dsp-row-flex">
+                                                <span class="dsp-control-title"><i class="fa-solid fa-gauge-high"></i> Tempo (Speed)</span>
+                                                <div class="stepper-container">
+                                                    <button type="button" class="stepper-btn" onclick="window.adjustStepper('stealthSpeed', -0.01)">-</button>
+                                                    <input type="text" id="valStealthSpeed" class="stepper-val" value="100%" readonly>
+                                                    <button type="button" class="stepper-btn" onclick="window.adjustStepper('stealthSpeed', 0.01)">+</button>
+                                                </div>
+                                            </div>
+                                            <input type="range" id="stealthSpeed" class="dsp-slider" min="0.5" max="1.5" step="0.01" value="1.0" oninput="window.updateStealthVal()">
+                                            <div id="stealthEstimatedDuration" style="font-size: 0.65rem; color: #94a3b8; margin-top: 8px; font-weight: 600; text-align: right;">Estimasi Durasi: 0:00</div>
+                                        </div>
+                                    </div>
+
+                                    <!-- ADVANCED ALGORITHMS TOGGLES -->
+                                    <div style="margin-bottom: 24px;">
+                                        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 12px; margin-bottom: 12px; flex-wrap: wrap; gap: 12px;">
+                                            <div style="display: flex; align-items: center; gap: 10px; cursor: pointer; flex: 1; min-width: 200px;" onclick="toggleAccordion('advAlgoBody')">
+                                                <span style="font-size: 0.85rem; font-weight: 800; color: #e2e8f0;">🔥 20-Layer Ultimate Bypass DSP</span>
+                                                <i class="fa-solid fa-chevron-down" style="color: #94a3b8; transition: 0.3s;"></i>
+                                            </div>
+                                            <!-- MASTER TOGGLE -->
+                                            <div style="display: flex; align-items: center; gap: 8px; background: rgba(0,0,0,0.25); padding: 6px 12px; border-radius: 99px; border: 1px solid rgba(255,255,255,0.05);">
+                                                <span style="font-size: 0.7rem; font-weight: 800; color: #38bdf8;">ON SEMUA</span>
+                                                <label class="switch" style="transform: scale(0.85); transform-origin: right; margin: 0;"><input type="checkbox" id="masterToggle" onchange="window.toggleAllDSP(event)"><span class="slider-toggle" style="background-color: #475569;"></span></label>
+                                            </div>
+                                        </div>
+                                        
+                                        <div id="advAlgoBody" class="hidden" style="display: flex; flex-direction: column; gap: 12px;">
+                                            
+                                            <!-- 20-LAYER ENGINE STATUS DASHBOARD -->
+                                            <div id="dspStatusDashboard" style="background: linear-gradient(145deg, rgba(100, 116, 139, 0.1), rgba(0,0,0,0.2)); border: 1px solid rgba(100, 116, 139, 0.2); padding: 14px; border-radius: 12px; text-align: left; transition: all 0.3s ease;">
+                                                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+                                                    <div id="dspStatusDot" style="width: 8px; height: 8px; background: #64748b; border-radius: 50%; transition: all 0.3s ease;"></div>
+                                                    <div id="dspStatusText" style="font-size: 0.85rem; font-weight: 800; color: #64748b; letter-spacing: 0.5px; transition: all 0.3s ease;">ENGINE STATUS: OFFLINE</div>
+                                                </div>
+                                                <div style="font-size: 0.75rem; color: #cbd5e1; line-height: 1.6;">
+                                                    Saat tombol <b>ON SEMUA</b> diaktifkan, algoritma di bawah berjalan serentak untuk menghancurkan sidik jari audio:
+                                                    <div style="margin-top: 10px; display: flex; flex-direction: column; gap: 10px;">
+                                                        <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; text-transform: none; font-size: 0.75rem; color: #cbd5e1; font-weight: 600;">
+                                                            <input type="checkbox" class="dsp-chk" id="chkPhase" onchange="window.updateDSPStatusVisual()" style="width: 16px; height: 16px; accent-color: var(--accent-color);">
+                                                            <span><b>Phase Scrambler:</b> Mengacak fase frekuensi vokal asli</span>
+                                                        </label>
+                                                        <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; text-transform: none; font-size: 0.75rem; color: #cbd5e1; font-weight: 600;">
+                                                            <input type="checkbox" class="dsp-chk" id="chkWarp" onchange="window.updateDSPStatusVisual()" style="width: 16px; height: 16px; accent-color: var(--accent-color);">
+                                                            <span><b>Micro-Time Jitter:</b> Mengacak timeline melodi (Anti-FFT Match)</span>
+                                                        </label>
+                                                        <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; text-transform: none; font-size: 0.75rem; color: #cbd5e1; font-weight: 600;">
+                                                            <input type="checkbox" class="dsp-chk" id="chkFormant" onchange="window.updateDSPStatusVisual()" style="width: 16px; height: 16px; accent-color: var(--accent-color);">
+                                                            <span><b>Spectrogram Formant Shifter:</b> Menggeser pola resonansi vokal asli</span>
+                                                        </label>
+                                                        <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; text-transform: none; font-size: 0.75rem; color: #cbd5e1; font-weight: 600;">
+                                                            <input type="checkbox" class="dsp-chk" id="chkHarmonics" onchange="window.updateDSPStatusVisual()" style="width: 16px; height: 16px; accent-color: var(--accent-color);">
+                                                            <span><b>Harmonics Distortion:</b> Kompresi saturasi lembut (Anti-Fingerprint)</span>
+                                                        </label>
+                                                        <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; text-transform: none; font-size: 0.75rem; color: #cbd5e1; font-weight: 600;">
+                                                            <input type="checkbox" class="dsp-chk" id="chkSpatial" onchange="window.updateDSPStatusVisual()" style="width: 16px; height: 16px; accent-color: var(--accent-color);">
+                                                            <span><b>Spatial 3D Cross-Feed:</b> Pelebaran spasial asimetris</span>
+                                                        </label>
+                                                        <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; text-transform: none; font-size: 0.75rem; color: #cbd5e1; font-weight: 600;">
+                                                            <input type="checkbox" class="dsp-chk" id="chkMasking" onchange="window.updateDSPStatusVisual()" style="width: 16px; height: 16px; accent-color: var(--accent-color);">
+                                                            <span><b>Spectrogram Valley Masking:</b> Menyisipkan desis masking dinamis</span>
+                                                        </label>
+                                                        <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; text-transform: none; font-size: 0.75rem; color: #fca5a5; font-weight: 800;">
+                                                            <input type="checkbox" class="dsp-chk" id="chkObfuscator" onchange="window.updateDSPStatusVisual()" style="width: 16px; height: 16px; accent-color: #ef4444;">
+                                                            <span><b>[UPGRADED] ASR Cognitive Jammer:</b> Menghancurkan deteksi lirik vokal</span>
+                                                        </label>
+                                                        <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; text-transform: none; font-size: 0.75rem; color: #fca5a5; font-weight: 800;">
+                                                            <input type="checkbox" class="dsp-chk" id="chkFlux" onchange="window.updateDSPStatusVisual()" style="width: 16px; height: 16px; accent-color: #ef4444;">
+                                                            <span><b>[UPGRADED] Temporal Flux Engine:</b> Menarik & mengulur sumbu waktu agresif</span>
+                                                        </label>
+                                                        <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; text-transform: none; font-size: 0.75rem; color: #fca5a5; font-weight: 800;">
+                                                            <input type="checkbox" class="dsp-chk" id="chkMirage" onchange="window.updateDSPStatusVisual()" style="width: 16px; height: 16px; accent-color: #ef4444;">
+                                                            <span><b>[UPGRADED] Waveform Mirage Protocol:</b> Membiaskan struktur gelombang</span>
+                                                        </label>
+                                                        <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; text-transform: none; font-size: 0.75rem; color: #cbd5e1; font-weight: 600;">
+                                                            <input type="checkbox" class="dsp-chk" id="chkNullifier" onchange="window.updateDSPStatusVisual()" style="width: 16px; height: 16px; accent-color: var(--accent-color);">
+                                                            <span><b>Binaural Nullifier:</b> Memanipulasi fase asimetris (Anti-Mono AI)</span>
+                                                        </label>
+                                                        <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; text-transform: none; font-size: 0.75rem; color: #cbd5e1; font-weight: 600;">
+                                                            <input type="checkbox" class="dsp-chk" id="chkLayering" onchange="window.updateDSPStatusVisual()" style="width: 16px; height: 16px; accent-color: var(--accent-color);">
+                                                            <span><b>Layering & Reflektor:</b> Steganographic Audio Layer & Dimensional Void Reflector</span>
+                                                        </label>
+                                                        <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; text-transform: none; font-size: 0.75rem; color: #fca5a5; font-weight: 800;">
+                                                            <input type="checkbox" class="dsp-chk" id="chkTransient" onchange="window.updateDSPStatusVisual()" style="width: 16px; height: 16px; accent-color: #ef4444;">
+                                                            <span><b>[NEW] Transient Smudge:</b> Merusak keselarasan Intro & Durasi Absolut</span>
+                                                        </label>
+                                                        <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; text-transform: none; font-size: 0.75rem; color: #fca5a5; font-weight: 800;">
+                                                            <input type="checkbox" class="dsp-chk" id="chkChroma" onchange="window.updateDSPStatusVisual()" style="width: 16px; height: 16px; accent-color: #ef4444;">
+                                                            <span><b>[NEW] Deep Chroma Scrambler:</b> Membodohi sistem pencocokan Melodi AI</span>
+                                                        </label>
+                                                        <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; text-transform: none; font-size: 0.75rem; color: #fca5a5; font-weight: 800;">
+                                                            <input type="checkbox" class="dsp-chk" id="chkMicroReverse" onchange="window.updateDSPStatusVisual()" style="width: 16px; height: 16px; accent-color: #ef4444;">
+                                                            <span><b>[EXTREME] Waveform DNA Scrambler:</b> Membalikkan mikrosekon audio</span>
+                                                        </label>
+                                                        <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; text-transform: none; font-size: 0.75rem; color: #fca5a5; font-weight: 800;">
+                                                            <input type="checkbox" class="dsp-chk" id="chkRingMod" onchange="window.updateDSPStatusVisual()" style="width: 16px; height: 16px; accent-color: #ef4444;">
+                                                            <span><b>[EXTREME] Spectral Sideband:</b> Menggeser seluruh puncak frekuensi</span>
+                                                        </label>
+                                                        <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; text-transform: none; font-size: 0.75rem; color: #991b1b; font-weight: 900; background: #fecaca; padding: 4px 8px; border-radius: 6px;">
+                                                            <input type="checkbox" class="dsp-chk" id="chkNuke" onchange="window.updateDSPStatusVisual()" style="width: 16px; height: 16px; accent-color: #991b1b;">
+                                                            <span><b>[GOD MODE] Constellation Nuke:</b> Tembakkan Puncak Audio Palsu ke AI!</span>
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <!-- Lyric Phonetic Encryptor -->
+                                            <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(56, 189, 248, 0.1); padding: 12px 14px; border-radius: 12px; border: 1px solid rgba(56, 189, 248, 0.3); margin-top: 4px;">
+                                                <div style="padding-right: 10px;">
+                                                    <div style="font-size: 0.8rem; font-weight: 800; color: #38bdf8;"><i class="fa-solid fa-user-secret"></i> Lyric Phonetic Encryptor</div>
+                                                    <div style="font-size: 0.65rem; color: #bae6fd; margin-top: 4px; line-height: 1.4;">Mengelabui sensor teks AI dengan menyisipkan karakter tak kasat mata pada lirik.</div>
+                                                </div>
+                                                <button type="button" onclick="document.getElementById('lyricsInput').scrollIntoView({behavior: 'smooth'});" style="flex-shrink: 0; background: #38bdf8; color: #0f172a; border: none; padding: 8px 12px; border-radius: 8px; font-size: 0.75rem; font-weight: 800; cursor: pointer; box-shadow: 0 4px 10px rgba(56, 189, 248, 0.3); transition: 0.2s;">Ke Lirik</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div> <!-- END OF dspTabV2 -->
+                            </div> <!-- END OF dspTabsContentContainer -->
                             </div> <!-- END OF dspTabV2 -->
 
                             <!-- TAB CONTENT V1 BETA -->
@@ -5027,10 +5173,19 @@ window.updateStealthVal = function() {
     }
 };
 
-// MASTER TOGGLE DSP WITH INTERACTIVE VISUAL STATUS
+// MASTER TOGGLE DSP WITH INTERACTIVE VISUAL STATUS (V2)
 window.toggleAllDSP = function(e) {
-    e.stopPropagation(); // prevent accordion toggle
+    e.stopPropagation(); 
     const isChecked = e.target.checked;
+    
+    // ANTI TABRAKAN: Matikan V1 jika V2 dinyalakan
+    if(isChecked) {
+        const masterV1 = document.getElementById('masterToggleV1');
+        if(masterV1) masterV1.checked = false;
+        const v1Chks = document.querySelectorAll('.dsp-chk-v1');
+        v1Chks.forEach(chk => chk.checked = false);
+    }
+
     const checkboxes = document.querySelectorAll('.dsp-chk');
     checkboxes.forEach(chk => { chk.checked = isChecked; });
     window.updateDSPStatusVisual(isChecked);
@@ -7309,38 +7464,75 @@ progressBar.style.width = "100%"; percentText.innerText = "100%";
     <!-- DSP TAB & V1 LOGIC -->
     <script>
         window.switchDspTab = function(tab) {
-            const btnV2 = document.getElementById('btnTabV2');
             const btnV1 = document.getElementById('btnTabV1');
-            const contentV2 = document.getElementById('dspTabV2');
+            const btnV2 = document.getElementById('btnTabV2');
             const contentV1 = document.getElementById('dspTabV1');
+            const contentV2 = document.getElementById('dspTabV2');
 
-            if (tab === 'v2') {
-                btnV2.style.color = '#38bdf8';
-                btnV2.style.borderBottomColor = '#38bdf8';
-                btnV1.style.color = '#94a3b8';
-                btnV1.style.borderBottomColor = 'transparent';
-                contentV2.classList.remove('hidden');
-                contentV1.classList.add('hidden');
-            } else {
+            if (tab === 'v1') {
+                btnV1.style.background = 'rgba(56, 189, 248, 0.2)';
                 btnV1.style.color = '#38bdf8';
-                btnV1.style.borderBottomColor = '#38bdf8';
+                btnV2.style.background = 'transparent';
                 btnV2.style.color = '#94a3b8';
-                btnV2.style.borderBottomColor = 'transparent';
                 contentV1.classList.remove('hidden');
                 contentV2.classList.add('hidden');
+            } else {
+                btnV2.style.background = 'rgba(56, 189, 248, 0.2)';
+                btnV2.style.color = '#38bdf8';
+                btnV1.style.background = 'transparent';
+                btnV1.style.color = '#94a3b8';
+                contentV2.classList.remove('hidden');
+                contentV1.classList.add('hidden');
             }
+        };
+
+        window.toggleDspTabsContent = function() {
+            const container = document.getElementById('dspTabsContentContainer');
+            const icon = document.getElementById('iconToggleDspTabs');
+            if (container.classList.contains('hidden')) {
+                container.classList.remove('hidden');
+                icon.style.transform = 'rotate(180deg)';
+                
+                // Set tab V1 sebagai default saat pertama kali dibuka
+                const btnV1 = document.getElementById('btnTabV1');
+                if(btnV1.style.background === 'transparent' || btnV1.style.background === '') {
+                    window.switchDspTab('v1');
+                }
+            } else {
+                container.classList.add('hidden');
+                icon.style.transform = 'rotate(0deg)';
+            }
+        };
+
+        // MASTER TOGGLE DSP V1 (ANTI TABRAKAN DENGAN V2)
+        window.toggleMasterV1 = function(e) {
+            const isChecked = e.target.checked;
+            
+            // ANTI TABRAKAN: Matikan V2 jika V1 dinyalakan
+            if(isChecked) {
+                const masterV2 = document.getElementById('masterToggle');
+                if(masterV2) {
+                    masterV2.checked = false;
+                    window.updateDSPStatusVisual(false);
+                    const v2Chks = document.querySelectorAll('.dsp-chk');
+                    v2Chks.forEach(chk => chk.checked = false);
+                }
+            }
+            
+            const v1Chks = document.querySelectorAll('.dsp-chk-v1');
+            v1Chks.forEach(chk => chk.checked = isChecked);
         };
 
         window.applyV1Preset = function(val) {
             const setValues = (t, p, tm, s, v, tg) => {
-                document.getElementById('sliderTempo').value = t; document.getElementById('valTempo').innerText = parseFloat(t).toFixed(2) + 'x';
-                document.getElementById('sliderPitch').value = p; document.getElementById('valPitch').innerText = p;
-                document.getElementById('sliderTimbre').value = tm; document.getElementById('valTimbre').innerText = tm + '%';
-                document.getElementById('sliderStego').value = s; document.getElementById('valStego').innerText = s + '%';
-                document.getElementById('sliderVoid').value = v; document.getElementById('valVoid').innerText = v + '%';
-                document.getElementById('tgTemporal').checked = tg[0]; document.getElementById('tgMirage').checked = tg[1];
-                document.getElementById('tgAntiMono').checked = tg[2]; document.getElementById('tgSpectral').checked = tg[3];
-                document.getElementById('tgQuantum').checked = tg[4]; document.getElementById('tgPhonetic').checked = tg[5];
+                document.getElementById('sliderTempoV1').value = t; document.getElementById('valTempoV1').innerText = parseFloat(t).toFixed(2) + 'x';
+                document.getElementById('sliderPitchV1').value = p; document.getElementById('valPitchV1').innerText = p;
+                document.getElementById('sliderTimbreV1').value = tm; document.getElementById('valTimbreV1').innerText = tm + '%';
+                document.getElementById('sliderStegoV1').value = s; document.getElementById('valStegoV1').innerText = s + '%';
+                document.getElementById('sliderVoidV1').value = v; document.getElementById('valVoidV1').innerText = v + '%';
+                document.getElementById('tgTemporalV1').checked = tg[0]; document.getElementById('tgMirageV1').checked = tg[1];
+                document.getElementById('tgAntiMonoV1').checked = tg[2]; document.getElementById('tgSpectralV1').checked = tg[3];
+                document.getElementById('tgQuantumV1').checked = tg[4]; document.getElementById('tgPhoneticV1').checked = tg[5];
             };
 
             switch(val) {
