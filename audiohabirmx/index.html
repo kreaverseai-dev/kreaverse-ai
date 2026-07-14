@@ -543,28 +543,6 @@
                 currentNode.connect(delay); delay.connect(delayGain); delayGain.connect(finalMix);
             }
 
-            // REVERB LOGIC (NEW)
-            const reverbVal = parseInt(sliders.reverb.value);
-            if (reverbVal > 0) {
-                const length = ctx.sampleRate * 2.2; 
-                const impulse = ctx.createBuffer(2, length, ctx.sampleRate);
-                for (let i = 0; i < 2; i++) {
-                    const channelData = impulse.getChannelData(i);
-                    for (let j = 0; j < length; j++) {
-                        channelData[j] = (Math.random() * 2 - 1) * Math.pow(1 - j / length, 5);
-                    }
-                }
-                const convolver = ctx.createConvolver();
-                convolver.buffer = impulse;
-                const reverbGain = ctx.createGain();
-                reverbGain.gain.value = (reverbVal / 100) * 0.6; 
-                
-                currentNode.connect(convolver);
-                convolver.connect(reverbGain);
-                reverbGain.connect(finalMix);
-            }
-            }
-
             if (toggles.antiMono.checked && buffer.numberOfChannels >= 2) {
                 const splitter = ctx.createChannelSplitter(2); const merger = ctx.createChannelMerger(2);
                 const gainL = ctx.createGain(); const gainR = ctx.createGain();
