@@ -1798,9 +1798,17 @@
                                 </div>
                             </div>
 
-                            <!-- CORE ENGINE CONTROLS (PITCH, TEMPO, TRIM) -->
-                            <div style="margin-bottom: 20px;">
-                                <span style="font-size: 0.85rem; font-weight: 800; color: #e2e8f0; display: block; margin-bottom: 10px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 5px;">⚡ Audio Adjustments & Trimmer</span>
+                            <!-- TAB MENU DSP -->
+                            <div class="tab-menu-row" style="margin-bottom: 20px; border-bottom: 2px solid rgba(255,255,255,0.1); display: flex; gap: 12px;">
+                                <button class="tab-btn active" id="btnTabV2" onclick="window.switchDspTab('v2')" style="color: #38bdf8 !important; border-bottom: 3px solid #38bdf8 !important; background: none; padding: 10px 18px; font-size: 0.88rem; font-weight: 800; cursor: pointer; transition: 0.2s;">Kreaverse v2 stabil</button>
+                                <button class="tab-btn" id="btnTabV1" onclick="window.switchDspTab('v1')" style="color: #94a3b8 !important; border-bottom: 3px solid transparent !important; background: none; padding: 10px 18px; font-size: 0.88rem; font-weight: 800; cursor: pointer; transition: 0.2s;">Kreaverse v1 beta</button>
+                            </div>
+
+                            <!-- TAB CONTENT V2 STABIL -->
+                            <div id="dspTabV2">
+                                <!-- CORE ENGINE CONTROLS (PITCH, TEMPO, TRIM) -->
+                                <div style="margin-bottom: 20px;">
+                                    <span style="font-size: 0.85rem; font-weight: 800; color: #e2e8f0; display: block; margin-bottom: 10px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 5px;">⚡ Audio Adjustments & Trimmer</span>
                                 
                                 <div class="dsp-grid">
                                     <!-- PANGKAS AUDIO (TRIMMER) -->
@@ -1969,6 +1977,132 @@
                                     </div>
                                 </div>
                             </div>
+                            </div> <!-- END OF dspTabV2 -->
+
+                            <!-- TAB CONTENT V1 BETA -->
+                            <div id="dspTabV1" class="hidden">
+                                <div style="margin-bottom: 20px;">
+                                    <div class="dsp-row-flex" style="margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                                        <span style="font-size: 0.85rem; font-weight: 800; color: #e2e8f0;">⚙️ Pengaturan Engine (v1 Beta)</span>
+                                        <select id="presetSelect" onchange="window.applyV1Preset(this.value)" style="background: rgba(0,0,0,0.3); color: #e2e8f0; border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 6px 10px; font-size: 0.75rem; outline: none; cursor: pointer;">
+                                            <option value="manual">Manual Setup</option>
+                                            <option value="bypass_lyrics">🔥 Preset: Bypass Copy Lyrics</option>
+                                            <option value="preset1">Preset 1: Safe Bypass</option>
+                                            <option value="preset2">Preset 2: Deep Stealth</option>
+                                            <option value="preset3">Preset 3: Extreme Pitch & Time</option>
+                                            <option value="preset4">Preset 4: Vocal Formant Focus</option>
+                                            <option value="preset5">Preset 5: Maximum Scramble</option>
+                                        </select>
+                                    </div>
+                                    
+                                    <div class="dsp-grid" style="display: flex; flex-direction: column; gap: 16px;">
+                                        <div class="dsp-control-box" style="background: rgba(0,0,0,0.25); border: 1px solid rgba(255,255,255,0.08); padding: 16px; border-radius: 16px;">
+                                            <!-- Tempo -->
+                                            <div class="dsp-row-flex" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                                                <span class="dsp-control-title" style="font-size: 0.8rem; font-weight: 800; color: #e2e8f0;">Kecepatan (Tempo)</span>
+                                                <span id="valTempo" style="color: #38bdf8; font-weight: 800; font-size: 0.8rem;">1.00x</span>
+                                            </div>
+                                            <input type="range" id="sliderTempo" class="dsp-slider" style="width: 100%; accent-color: #38bdf8; height: 4px; border-radius: 10px; outline: none; -webkit-appearance: none; background: rgba(255,255,255,0.1);" min="0.5" max="1.5" step="0.01" value="1.0" oninput="document.getElementById('valTempo').innerText = parseFloat(this.value).toFixed(2) + 'x'">
+                                            
+                                            <div style="height: 1px; background: rgba(255,255,255,0.05); margin: 16px 0;"></div>
+                                            
+                                            <!-- Pitch -->
+                                            <div class="dsp-row-flex" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                                                <span class="dsp-control-title" style="font-size: 0.8rem; font-weight: 800; color: #e2e8f0;">Pitch Shift (Cents)</span>
+                                                <span id="valPitch" style="color: #38bdf8; font-weight: 800; font-size: 0.8rem;">0</span>
+                                            </div>
+                                            <input type="range" id="sliderPitch" class="dsp-slider" style="width: 100%; accent-color: #38bdf8; height: 4px; border-radius: 10px; outline: none; -webkit-appearance: none; background: rgba(255,255,255,0.1);" min="-1200" max="1200" step="100" value="0" oninput="document.getElementById('valPitch').innerText = this.value">
+
+                                            <div style="height: 1px; background: rgba(255,255,255,0.05); margin: 16px 0;"></div>
+                                            
+                                            <!-- Timbre -->
+                                            <div class="dsp-row-flex" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                                                <span class="dsp-control-title" style="font-size: 0.8rem; font-weight: 800; color: #e2e8f0;">Timbre Density Enhancer</span>
+                                                <span id="valTimbre" style="color: #38bdf8; font-weight: 800; font-size: 0.8rem;">0%</span>
+                                            </div>
+                                            <input type="range" id="sliderTimbre" class="dsp-slider" style="width: 100%; accent-color: #38bdf8; height: 4px; border-radius: 10px; outline: none; -webkit-appearance: none; background: rgba(255,255,255,0.1);" min="0" max="100" step="1" value="0" oninput="document.getElementById('valTimbre').innerText = this.value + '%'">
+
+                                            <div style="height: 1px; background: rgba(255,255,255,0.05); margin: 16px 0;"></div>
+                                            
+                                            <!-- Stego -->
+                                            <div class="dsp-row-flex" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                                                <span class="dsp-control-title" style="font-size: 0.8rem; font-weight: 800; color: #e2e8f0;">Steganographic Audio Layer</span>
+                                                <span id="valStego" style="color: #38bdf8; font-weight: 800; font-size: 0.8rem;">0%</span>
+                                            </div>
+                                            <input type="range" id="sliderStego" class="dsp-slider" style="width: 100%; accent-color: #38bdf8; height: 4px; border-radius: 10px; outline: none; -webkit-appearance: none; background: rgba(255,255,255,0.1);" min="0" max="100" step="1" value="0" oninput="document.getElementById('valStego').innerText = this.value + '%'">
+
+                                            <div style="height: 1px; background: rgba(255,255,255,0.05); margin: 16px 0;"></div>
+                                            
+                                            <!-- Void -->
+                                            <div class="dsp-row-flex" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                                                <span class="dsp-control-title" style="font-size: 0.8rem; font-weight: 800; color: #e2e8f0;">Dimensional Void Reflector</span>
+                                                <span id="valVoid" style="color: #38bdf8; font-weight: 800; font-size: 0.8rem;">0%</span>
+                                            </div>
+                                            <input type="range" id="sliderVoid" class="dsp-slider" style="width: 100%; accent-color: #38bdf8; height: 4px; border-radius: 10px; outline: none; -webkit-appearance: none; background: rgba(255,255,255,0.1);" min="0" max="100" step="1" value="0" oninput="document.getElementById('valVoid').innerText = this.value + '%'">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div style="margin-bottom: 20px;">
+                                    <span style="font-size: 0.85rem; font-weight: 800; color: #e2e8f0; display: block; margin-bottom: 10px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 5px;">🔥 Advanced Algorithms (v1 Beta)</span>
+                                    
+                                    <div class="dsp-control-box" style="display: flex; flex-direction: column; gap: 16px; background: rgba(0,0,0,0.25); border: 1px solid rgba(255,255,255,0.08); padding: 16px; border-radius: 16px;">
+                                        <!-- Toggles -->
+                                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                                            <div>
+                                                <div style="font-size: 0.75rem; font-weight: 800; color: #e2e8f0;">1. Temporal Flux Engine</div>
+                                                <div style="font-size: 0.65rem; color: #94a3b8;">Menarik dan mengulur sumbu waktu secara asimetris.</div>
+                                            </div>
+                                            <label class="switch" style="transform: scale(0.8); margin: 0;"><input type="checkbox" id="tgTemporal"><span class="slider-toggle"></span></label>
+                                        </div>
+                                        <div style="height: 1px; background: rgba(255,255,255,0.05);"></div>
+
+                                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                                            <div>
+                                                <div style="font-size: 0.75rem; font-weight: 800; color: #e2e8f0;">2. Waveform Mirage Protocol</div>
+                                                <div style="font-size: 0.65rem; color: #94a3b8;">Membiaskan struktur fisik gelombang.</div>
+                                            </div>
+                                            <label class="switch" style="transform: scale(0.8); margin: 0;"><input type="checkbox" id="tgMirage" checked><span class="slider-toggle"></span></label>
+                                        </div>
+                                        <div style="height: 1px; background: rgba(255,255,255,0.05);"></div>
+
+                                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                                            <div>
+                                                <div style="font-size: 0.75rem; font-weight: 800; color: #e2e8f0;">3. Binaural Nullifier (Anti-Mono AI)</div>
+                                                <div style="font-size: 0.65rem; color: #94a3b8;">Memanipulasi fase asimetris.</div>
+                                            </div>
+                                            <label class="switch" style="transform: scale(0.8); margin: 0;"><input type="checkbox" id="tgAntiMono" checked><span class="slider-toggle"></span></label>
+                                        </div>
+                                        <div style="height: 1px; background: rgba(255,255,255,0.05);"></div>
+
+                                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                                            <div>
+                                                <div style="font-size: 0.75rem; font-weight: 800; color: #e2e8f0;">4. Spectral Peak Eraser</div>
+                                                <div style="font-size: 0.65rem; color: #94a3b8;">Menyapu dan menghapus titik koordinat energi tertinggi.</div>
+                                            </div>
+                                            <label class="switch" style="transform: scale(0.8); margin: 0;"><input type="checkbox" id="tgSpectral" checked><span class="slider-toggle"></span></label>
+                                        </div>
+                                        <div style="height: 1px; background: rgba(255,255,255,0.05);"></div>
+
+                                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                                            <div>
+                                                <div style="font-size: 0.75rem; font-weight: 800; color: #e2e8f0;">5. Quantum Pitch Drift</div>
+                                                <div style="font-size: 0.65rem; color: #94a3b8;">Menyuntikkan ketidakstabilan frekuensi mikro.</div>
+                                            </div>
+                                            <label class="switch" style="transform: scale(0.8); margin: 0;"><input type="checkbox" id="tgQuantum"><span class="slider-toggle"></span></label>
+                                        </div>
+                                        <div style="height: 1px; background: rgba(255,255,255,0.05);"></div>
+
+                                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                                            <div>
+                                                <div style="font-size: 0.75rem; font-weight: 800; color: #38bdf8;">6. Phonetic Decoupler (Vocal Formant)</div>
+                                                <div style="font-size: 0.65rem; color: #bae6fd;">Distorsi struktur formant akustik.</div>
+                                            </div>
+                                            <label class="switch" style="transform: scale(0.8); margin: 0;"><input type="checkbox" id="tgPhonetic" checked><span class="slider-toggle"></span></label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div> <!-- END OF dspTabV1 -->
 
                             <!-- ACTION BUTTONS -->
                             <div style="display: flex; flex-direction: column; gap: 10px;">
@@ -7171,6 +7305,55 @@ progressBar.style.width = "100%"; percentText.innerText = "100%";
       window.si = window.si || function () { (window.siq = window.siq || []).push(arguments); };
     </script>
     <script defer src="/_vercel/speed-insights/script.js"></script>
+
+    <!-- DSP TAB & V1 LOGIC -->
+    <script>
+        window.switchDspTab = function(tab) {
+            const btnV2 = document.getElementById('btnTabV2');
+            const btnV1 = document.getElementById('btnTabV1');
+            const contentV2 = document.getElementById('dspTabV2');
+            const contentV1 = document.getElementById('dspTabV1');
+
+            if (tab === 'v2') {
+                btnV2.style.color = '#38bdf8';
+                btnV2.style.borderBottomColor = '#38bdf8';
+                btnV1.style.color = '#94a3b8';
+                btnV1.style.borderBottomColor = 'transparent';
+                contentV2.classList.remove('hidden');
+                contentV1.classList.add('hidden');
+            } else {
+                btnV1.style.color = '#38bdf8';
+                btnV1.style.borderBottomColor = '#38bdf8';
+                btnV2.style.color = '#94a3b8';
+                btnV2.style.borderBottomColor = 'transparent';
+                contentV1.classList.remove('hidden');
+                contentV2.classList.add('hidden');
+            }
+        };
+
+        window.applyV1Preset = function(val) {
+            const setValues = (t, p, tm, s, v, tg) => {
+                document.getElementById('sliderTempo').value = t; document.getElementById('valTempo').innerText = parseFloat(t).toFixed(2) + 'x';
+                document.getElementById('sliderPitch').value = p; document.getElementById('valPitch').innerText = p;
+                document.getElementById('sliderTimbre').value = tm; document.getElementById('valTimbre').innerText = tm + '%';
+                document.getElementById('sliderStego').value = s; document.getElementById('valStego').innerText = s + '%';
+                document.getElementById('sliderVoid').value = v; document.getElementById('valVoid').innerText = v + '%';
+                document.getElementById('tgTemporal').checked = tg[0]; document.getElementById('tgMirage').checked = tg[1];
+                document.getElementById('tgAntiMono').checked = tg[2]; document.getElementById('tgSpectral').checked = tg[3];
+                document.getElementById('tgQuantum').checked = tg[4]; document.getElementById('tgPhonetic').checked = tg[5];
+            };
+
+            switch(val) {
+                case 'bypass_lyrics': setValues(1.04, -150, 25, 50, 15, [true, true, true, false, true, true]); break;
+                case 'preset1': setValues(1.03, 100, 10, 2, 5, [true, false, true, false, false, false]); break;
+                case 'preset2': setValues(1.08, -200, 25, 8, 15, [true, true, true, true, false, true]); break;
+                case 'preset3': setValues(1.15, 400, 15, 5, 10, [true, false, true, false, true, false]); break;
+                case 'preset4': setValues(1.00, 0, 40, 10, 20, [false, true, false, true, false, true]); break;
+                case 'preset5': setValues(1.12, -300, 50, 20, 30, [true, true, true, true, true, true]); break;
+            }
+        };
+    </script>
+
 <!-- ============================================================ -->
 <!-- KREAVERSE SMART SYSTEM: POP-UP BANNER & KILL-SWITCH API      -->
 <!-- ============================================================ -->
