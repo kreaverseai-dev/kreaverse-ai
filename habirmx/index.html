@@ -1833,15 +1833,26 @@
                                 </div>
                             </div>
 
-                            <!-- TAB MENU DSP (V1 & V2) DENGAN TOGGLE COLLAPSE -->
-                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px;">
+                            <!-- TAB MENU DSP & GLOBAL MASTER TOGGLE -->
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px; flex-wrap: wrap; gap: 10px;">
                                 <div style="display: flex; gap: 8px; background: rgba(0,0,0,0.3); padding: 4px; border-radius: 12px; position: relative;">
                                     <button id="btnTabV1" onclick="window.switchDspTab('v1')" style="background: rgba(56, 189, 248, 0.2); color: #38bdf8; padding: 8px 14px; border-radius: 8px; font-size: 0.8rem; font-weight: 800; border: none; cursor: pointer; transition: 0.3s; z-index: 1;">Kreaverse v1 beta</button>
                                     <button id="btnTabV2" onclick="window.switchDspTab('v2')" style="background: transparent; color: #94a3b8; padding: 8px 14px; border-radius: 8px; font-size: 0.8rem; font-weight: 800; border: none; cursor: pointer; transition: 0.3s; z-index: 1;">Kreaverse v2 stabil</button>
                                 </div>
-                                <button onclick="window.toggleDspTabsContent()" id="btnToggleDspTabs" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #e2e8f0; width: 32px; height: 32px; border-radius: 8px; font-size: 0.9rem; cursor: pointer; transition: 0.2s; display: flex; align-items: center; justify-content: center;">
-                                    <i class="fa-solid fa-chevron-down" id="iconToggleDspTabs" style="transition: transform 0.3s;"></i>
-                                </button>
+                                
+                                <div style="display: flex; align-items: center; gap: 12px;">
+                                    <!-- GLOBAL MASTER TOGGLE -->
+                                    <div style="display: flex; align-items: center; gap: 8px; background: rgba(239, 68, 68, 0.15); padding: 6px 12px; border-radius: 99px; border: 1px solid rgba(239, 68, 68, 0.3);">
+                                        <span style="font-size: 0.7rem; font-weight: 900; color: #ef4444;" id="globalToggleLabel">DSP OFF</span>
+                                        <label class="switch" style="transform: scale(0.85); transform-origin: right; margin: 0;">
+                                            <input type="checkbox" id="globalMasterToggle" onchange="window.toggleGlobalMasterDSP(event)">
+                                            <span class="slider-toggle" style="background-color: #475569;"></span>
+                                        </label>
+                                    </div>
+                                    <button onclick="window.toggleDspTabsContent()" id="btnToggleDspTabs" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #e2e8f0; width: 32px; height: 32px; border-radius: 8px; font-size: 0.9rem; cursor: pointer; transition: 0.2s; display: flex; align-items: center; justify-content: center;">
+                                        <i class="fa-solid fa-chevron-down" id="iconToggleDspTabs" style="transition: transform 0.3s;"></i>
+                                    </button>
+                                </div>
                             </div>
 
                             <!-- KONTEN TABS (DEFAULT TERTUTUP) -->
@@ -1852,15 +1863,23 @@
                                     <div style="margin-bottom: 20px;">
                                         <div class="dsp-row-flex" style="margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
                                             <span style="font-size: 0.85rem; font-weight: 800; color: #e2e8f0;">⚙️ Pengaturan Engine (v1 Beta)</span>
-                                            <select id="presetSelectV1" onchange="window.applyV1Preset(this.value)" style="background: rgba(0,0,0,0.3); color: #e2e8f0; border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 6px 10px; font-size: 0.75rem; outline: none; cursor: pointer;">
-                                                <option value="manual">Manual Setup</option>
-                                                <option value="bypass_lyrics">🔥 Preset: Bypass Copy Lyrics</option>
-                                                <option value="preset1">Preset 1: Safe Bypass</option>
-                                                <option value="preset2">Preset 2: Deep Stealth</option>
-                                                <option value="preset3">Preset 3: Extreme Pitch & Time</option>
-                                                <option value="preset4">Preset 4: Vocal Formant Focus</option>
-                                                <option value="preset5">Preset 5: Maximum Scramble</option>
-                                            </select>
+                                            
+                                            <!-- CUSTOM DROPDOWN PRESET -->
+                                            <div class="custom-select-container" style="width: 220px;">
+                                                <div class="custom-select-trigger" onclick="window.toggleCustomSelect('presetDropdownV1')" style="background: rgba(0,0,0,0.3); color: #e2e8f0; border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 8px 12px; font-size: 0.75rem; min-height: auto;">
+                                                    <span id="presetSelectedLabelV1">🔥 Preset: Bypass Copy Lyrics</span>
+                                                    <i class="fa-solid fa-chevron-down"></i>
+                                                </div>
+                                                <div class="custom-select-options hidden" id="presetDropdownV1" style="background: #1e293b; border: 1px solid #334155; top: calc(100% + 4px);">
+                                                    <div class="custom-select-option" onclick="window.selectPresetOption('manual', 'Manual Setup')">Manual Setup</div>
+                                                    <div class="custom-select-option selected" onclick="window.selectPresetOption('bypass_lyrics', '🔥 Preset: Bypass Copy Lyrics')">🔥 Preset: Bypass Copy Lyrics</div>
+                                                    <div class="custom-select-option" onclick="window.selectPresetOption('preset1', 'Preset 1: Safe Bypass')">Preset 1: Safe Bypass</div>
+                                                    <div class="custom-select-option" onclick="window.selectPresetOption('preset2', 'Preset 2: Deep Stealth')">Preset 2: Deep Stealth</div>
+                                                    <div class="custom-select-option" onclick="window.selectPresetOption('preset3', 'Preset 3: Extreme Pitch & Time')">Preset 3: Extreme Pitch & Time</div>
+                                                    <div class="custom-select-option" onclick="window.selectPresetOption('preset4', 'Preset 4: Vocal Formant Focus')">Preset 4: Vocal Formant Focus</div>
+                                                    <div class="custom-select-option" onclick="window.selectPresetOption('preset5', 'Preset 5: Maximum Scramble')">Preset 5: Maximum Scramble</div>
+                                                </div>
+                                            </div>
                                         </div>
                                         
                                         <div class="dsp-grid" style="display: flex; flex-direction: column; gap: 16px;">
@@ -1907,18 +1926,21 @@
                                                     <span id="valVoidV1" style="color: #38bdf8; font-weight: 800; font-size: 0.8rem;">0%</span>
                                                 </div>
                                                 <input type="range" id="sliderVoidV1" class="dsp-slider" style="width: 100%; accent-color: #38bdf8; height: 4px; border-radius: 10px; outline: none; -webkit-appearance: none; background: rgba(255,255,255,0.1);" min="0" max="100" step="1" value="0" oninput="document.getElementById('valVoidV1').innerText = this.value + '%'">
+                                                
+                                                <div style="height: 1px; background: rgba(255,255,255,0.05); margin: 16px 0;"></div>
+                                                
+                                                <!-- REVERB (NEW) -->
+                                                <div class="dsp-row-flex" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                                                    <span class="dsp-control-title" style="font-size: 0.8rem; font-weight: 800; color: #e2e8f0;">Studio Reverb (Vokal & Musik)</span>
+                                                    <span id="valReverbV1" style="color: #38bdf8; font-weight: 800; font-size: 0.8rem;">0%</span>
+                                                </div>
+                                                <input type="range" id="sliderReverbV1" class="dsp-slider" style="width: 100%; accent-color: #38bdf8; height: 4px; border-radius: 10px; outline: none; -webkit-appearance: none; background: rgba(255,255,255,0.1);" min="0" max="100" step="1" value="0" oninput="document.getElementById('valReverbV1').innerText = this.value + '%'">
                                             </div>
                                         </div>
                                     </div>
 
                                     <div style="margin-bottom: 20px;">
-                                        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 12px; margin-bottom: 12px; flex-wrap: wrap; gap: 12px;">
-                                            <span style="font-size: 0.85rem; font-weight: 800; color: #e2e8f0;">🔥 Advanced Algorithms (v1 Beta)</span>
-                                            <div style="display: flex; align-items: center; gap: 8px; background: rgba(0,0,0,0.25); padding: 6px 12px; border-radius: 99px; border: 1px solid rgba(255,255,255,0.05);">
-                                                <span style="font-size: 0.7rem; font-weight: 800; color: #38bdf8;">ON SEMUA</span>
-                                                <label class="switch" style="transform: scale(0.85); transform-origin: right; margin: 0;"><input type="checkbox" id="masterToggleV1" onchange="window.toggleMasterV1(event)"><span class="slider-toggle" style="background-color: #475569;"></span></label>
-                                            </div>
-                                        </div>
+                                        <span style="font-size: 0.85rem; font-weight: 800; color: #e2e8f0; display: block; margin-bottom: 10px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 5px;">🔥 Advanced Algorithms (v1 Beta)</span>
                                         
                                         <div class="dsp-control-box" style="display: flex; flex-direction: column; gap: 16px; background: rgba(0,0,0,0.25); border: 1px solid rgba(255,255,255,0.08); padding: 16px; border-radius: 16px;">
                                             <div style="display: flex; justify-content: space-between; align-items: center;">
@@ -2007,6 +2029,15 @@
                                             </div>
                                             <input type="range" id="stealthSpeed" class="dsp-slider" min="0.5" max="1.5" step="0.01" value="1.0" oninput="window.updateStealthVal()">
                                             <div id="stealthEstimatedDuration" style="font-size: 0.65rem; color: #94a3b8; margin-top: 8px; font-weight: 600; text-align: right;">Estimasi Durasi: 0:00</div>
+                                            
+                                            <div style="height: 1px; background: rgba(255,255,255,0.05); margin: 16px 0;"></div>
+                                            
+                                            <!-- REVERB (NEW) -->
+                                            <div class="dsp-row-flex" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                                                <span class="dsp-control-title" style="font-size: 0.8rem; font-weight: 800; color: #e2e8f0;">Studio Reverb (Vokal & Musik)</span>
+                                                <span id="valReverbV2" style="color: #38bdf8; font-weight: 800; font-size: 0.8rem;">0%</span>
+                                            </div>
+                                            <input type="range" id="sliderReverbV2" class="dsp-slider" style="width: 100%; accent-color: #38bdf8; height: 4px; border-radius: 10px; outline: none; -webkit-appearance: none; background: rgba(255,255,255,0.1);" min="0" max="100" step="1" value="0" oninput="document.getElementById('valReverbV2').innerText = this.value + '%'">
                                         </div>
                                     </div>
 
@@ -2016,11 +2047,6 @@
                                             <div style="display: flex; align-items: center; gap: 10px; cursor: pointer; flex: 1; min-width: 200px;" onclick="toggleAccordion('advAlgoBody')">
                                                 <span style="font-size: 0.85rem; font-weight: 800; color: #e2e8f0;">🔥 20-Layer Ultimate Bypass DSP</span>
                                                 <i class="fa-solid fa-chevron-down" style="color: #94a3b8; transition: 0.3s;"></i>
-                                            </div>
-                                            <!-- MASTER TOGGLE -->
-                                            <div style="display: flex; align-items: center; gap: 8px; background: rgba(0,0,0,0.25); padding: 6px 12px; border-radius: 99px; border: 1px solid rgba(255,255,255,0.05);">
-                                                <span style="font-size: 0.7rem; font-weight: 800; color: #38bdf8;">ON SEMUA</span>
-                                                <label class="switch" style="transform: scale(0.85); transform-origin: right; margin: 0;"><input type="checkbox" id="masterToggle" onchange="window.toggleAllDSP(event)"><span class="slider-toggle" style="background-color: #475569;"></span></label>
                                             </div>
                                         </div>
                                         
@@ -7329,11 +7355,26 @@ progressBar.style.width = "100%"; percentText.innerText = "100%";
 
     <!-- DSP TAB & V1 LOGIC -->
     <script>
+        // MEMORI PENYIMPANAN STATE TAB & PRESET
+        document.addEventListener('DOMContentLoaded', () => {
+            setTimeout(() => {
+                const savedTab = localStorage.getItem('krea_dsp_tab') || 'v1';
+                window.switchDspTab(savedTab);
+                
+                const savedPreset = localStorage.getItem('krea_dsp_preset') || 'bypass_lyrics';
+                const savedPresetLabel = localStorage.getItem('krea_dsp_preset_label') || '🔥 Preset: Bypass Copy Lyrics';
+                window.selectPresetOption(savedPreset, savedPresetLabel, false); // false = jangan simpan ulang saat load
+            }, 500);
+        });
+
         window.switchDspTab = function(tab) {
             const btnV1 = document.getElementById('btnTabV1');
             const btnV2 = document.getElementById('btnTabV2');
             const contentV1 = document.getElementById('dspTabV1');
             const contentV2 = document.getElementById('dspTabV2');
+            
+            // Simpan ke memori
+            localStorage.setItem('krea_dsp_tab', tab);
 
             if (tab === 'v1') {
                 btnV1.style.background = 'rgba(56, 189, 248, 0.2)';
@@ -7342,6 +7383,11 @@ progressBar.style.width = "100%"; percentText.innerText = "100%";
                 btnV2.style.color = '#94a3b8';
                 contentV1.classList.remove('hidden');
                 contentV2.classList.add('hidden');
+                
+                // Sinkronisasi Global Toggle
+                const isV1Active = Array.from(document.querySelectorAll('.dsp-chk-v1')).some(chk => chk.checked);
+                document.getElementById('globalMasterToggle').checked = isV1Active;
+                updateGlobalToggleUI(isV1Active);
             } else {
                 btnV2.style.background = 'rgba(56, 189, 248, 0.2)';
                 btnV2.style.color = '#38bdf8';
@@ -7349,6 +7395,11 @@ progressBar.style.width = "100%"; percentText.innerText = "100%";
                 btnV1.style.color = '#94a3b8';
                 contentV2.classList.remove('hidden');
                 contentV1.classList.add('hidden');
+                
+                // Sinkronisasi Global Toggle
+                const isV2Active = Array.from(document.querySelectorAll('.dsp-chk')).some(chk => chk.checked);
+                document.getElementById('globalMasterToggle').checked = isV2Active;
+                updateGlobalToggleUI(isV2Active);
             }
         };
 
@@ -7359,10 +7410,9 @@ progressBar.style.width = "100%"; percentText.innerText = "100%";
                 container.classList.remove('hidden');
                 icon.style.transform = 'rotate(180deg)';
                 
-                // Set tab V1 sebagai default saat pertama kali dibuka
                 const btnV1 = document.getElementById('btnTabV1');
                 if(btnV1.style.background === 'transparent' || btnV1.style.background === '') {
-                    window.switchDspTab('v1');
+                    window.switchDspTab(localStorage.getItem('krea_dsp_tab') || 'v1');
                 }
             } else {
                 container.classList.add('hidden');
@@ -7370,44 +7420,94 @@ progressBar.style.width = "100%"; percentText.innerText = "100%";
             }
         };
 
-        // MASTER TOGGLE DSP V1 (ANTI TABRAKAN DENGAN V2)
-        window.toggleMasterV1 = function(e) {
+        // GLOBAL MASTER TOGGLE (PINTAR & ANTI TABRAKAN)
+        window.toggleGlobalMasterDSP = function(e) {
             const isChecked = e.target.checked;
+            updateGlobalToggleUI(isChecked);
             
-            // ANTI TABRAKAN: Matikan V2 jika V1 dinyalakan
-            if(isChecked) {
-                const masterV2 = document.getElementById('masterToggle');
-                if(masterV2) {
-                    masterV2.checked = false;
-                    window.updateDSPStatusVisual(false);
+            const activeTab = localStorage.getItem('krea_dsp_tab') || 'v1';
+            
+            if (activeTab === 'v1') {
+                // Nyalakan/Matikan V1
+                const v1Chks = document.querySelectorAll('.dsp-chk-v1');
+                v1Chks.forEach(chk => chk.checked = isChecked);
+                
+                // Pastikan V2 Mati
+                if (isChecked) {
                     const v2Chks = document.querySelectorAll('.dsp-chk');
                     v2Chks.forEach(chk => chk.checked = false);
+                    window.updateDSPStatusVisual(false);
+                }
+            } else {
+                // Nyalakan/Matikan V2
+                const v2Chks = document.querySelectorAll('.dsp-chk');
+                v2Chks.forEach(chk => { chk.checked = isChecked; });
+                window.updateDSPStatusVisual(isChecked);
+                
+                // Pastikan V1 Mati
+                if (isChecked) {
+                    const v1Chks = document.querySelectorAll('.dsp-chk-v1');
+                    v1Chks.forEach(chk => chk.checked = false);
                 }
             }
+        };
+
+        function updateGlobalToggleUI(isActive) {
+            const label = document.getElementById('globalToggleLabel');
+            if (isActive) {
+                label.innerText = 'DSP ON';
+                label.style.color = '#10b981'; // Hijau
+                label.parentElement.style.background = 'rgba(16, 185, 129, 0.15)';
+                label.parentElement.style.borderColor = 'rgba(16, 185, 129, 0.3)';
+            } else {
+                label.innerText = 'DSP OFF';
+                label.style.color = '#ef4444'; // Merah
+                label.parentElement.style.background = 'rgba(239, 68, 68, 0.15)';
+                label.parentElement.style.borderColor = 'rgba(239, 68, 68, 0.3)';
+            }
+        }
+
+        // CUSTOM DROPDOWN PRESET V1
+        window.selectPresetOption = function(val, label, save = true) {
+            document.getElementById('presetSelectedLabelV1').innerText = label;
+            document.getElementById('presetDropdownV1').classList.add('hidden');
             
-            const v1Chks = document.querySelectorAll('.dsp-chk-v1');
-            v1Chks.forEach(chk => chk.checked = isChecked);
+            const options = document.getElementById('presetDropdownV1').querySelectorAll('.custom-select-option');
+            options.forEach(opt => {
+                if (opt.innerText === label) opt.classList.add('selected');
+                else opt.classList.remove('selected');
+            });
+            
+            if (save) {
+                localStorage.setItem('krea_dsp_preset', val);
+                localStorage.setItem('krea_dsp_preset_label', label);
+            }
+            
+            window.applyV1Preset(val);
         };
 
         window.applyV1Preset = function(val) {
-            const setValues = (t, p, tm, s, v, tg) => {
+            const setValues = (t, p, tm, s, v, r, tg) => {
                 document.getElementById('sliderTempoV1').value = t; document.getElementById('valTempoV1').innerText = parseFloat(t).toFixed(2) + 'x';
                 document.getElementById('sliderPitchV1').value = p; document.getElementById('valPitchV1').innerText = p;
                 document.getElementById('sliderTimbreV1').value = tm; document.getElementById('valTimbreV1').innerText = tm + '%';
                 document.getElementById('sliderStegoV1').value = s; document.getElementById('valStegoV1').innerText = s + '%';
                 document.getElementById('sliderVoidV1').value = v; document.getElementById('valVoidV1').innerText = v + '%';
+                document.getElementById('sliderReverbV1').value = r; document.getElementById('valReverbV1').innerText = r + '%';
+                
                 document.getElementById('tgTemporalV1').checked = tg[0]; document.getElementById('tgMirageV1').checked = tg[1];
                 document.getElementById('tgAntiMonoV1').checked = tg[2]; document.getElementById('tgSpectralV1').checked = tg[3];
                 document.getElementById('tgQuantumV1').checked = tg[4]; document.getElementById('tgPhoneticV1').checked = tg[5];
             };
 
+            // UPDATE PRESET ANTI-COPYRIGHT SESUAI SCREENSHOT
             switch(val) {
-                case 'bypass_lyrics': setValues(1.04, -150, 25, 50, 15, [true, true, true, false, true, true]); break;
-                case 'preset1': setValues(1.03, 100, 10, 2, 5, [true, false, true, false, false, false]); break;
-                case 'preset2': setValues(1.08, -200, 25, 8, 15, [true, true, true, true, false, true]); break;
-                case 'preset3': setValues(1.15, 400, 15, 5, 10, [true, false, true, false, true, false]); break;
-                case 'preset4': setValues(1.00, 0, 40, 10, 20, [false, true, false, true, false, true]); break;
-                case 'preset5': setValues(1.12, -300, 50, 20, 30, [true, true, true, true, true, true]); break;
+                case 'bypass_lyrics': setValues(1.15, -200, 59, 79, 49, 30, [false, true, true, true, false, false]); break;
+                case 'preset1': setValues(1.05, 100, 40, 60, 30, 20, [true, true, true, false, false, false]); break;
+                case 'preset2': setValues(1.10, -100, 70, 85, 60, 40, [true, true, true, true, false, true]); break;
+                case 'preset3': setValues(1.18, 400, 15, 5, 10, 10, [true, false, true, false, true, false]); break;
+                case 'preset4': setValues(1.00, 0, 40, 10, 20, 50, [false, true, false, true, false, true]); break;
+                case 'preset5': setValues(1.12, -300, 50, 20, 30, 25, [true, true, true, true, true, true]); break;
             }
         };
     </script>
