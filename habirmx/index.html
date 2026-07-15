@@ -312,27 +312,58 @@
             color: #fff;
         }
 
-        /* MODE SELECTOR BUTTONS */
+        /* MODE SELECTOR BUTTONS (Gaya iOS Segmented Control) */
         .mode-btn { 
             background: transparent; 
             color: var(--text-secondary); 
             flex: 1; 
-            padding: 8px 12px; 
+            padding: 10px 0; 
             border-radius: 10px; 
             border: none; 
-            font-weight: 700; 
+            font-weight: 800; 
             cursor: pointer; 
-            transition: 0.3s;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             font-family: inherit;
-            font-size: 0.8rem;
+            font-size: 0.85rem;
+            position: relative;
+            z-index: 2;
         }
         .mode-btn.active { 
             background: #ffffff; 
             color: var(--accent-color); 
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05); 
-            border: 1px solid rgba(0, 122, 255, 0.1); 
+            box-shadow: 0 4px 10px rgba(0,0,0,0.08); 
         }
-
+        
+        /* HIDE HEADER RAKSASA (Menghemat Ruang) */
+        header { display: none !important; }
+        
+        /* COMPACT ENGINE SETTINGS */
+        #engineSettingsWrapper { padding: 12px 16px !important; margin-bottom: 20px !important; border-radius: 16px !important; }
+        #engineSettingsWrapper .fa-server { font-size: 1rem !important; }
+        
+        /* STICKY BOTTOM BAR UNTUK TOMBOL BUAT */
+        .sticky-action-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border-top: 1px solid rgba(0,0,0,0.08);
+            padding: 16px 20px;
+            z-index: 990;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            box-shadow: 0 -10px 30px rgba(0,0,0,0.05);
+            transform: translate3d(0,0,0);
+        }
+        
+        /* Memberi ruang di bawah agar konten tidak tertutup bar melayang */
+        .container { padding-bottom: 140px !important; margin-top: 20px !important; }
+        .input-section { padding: 24px 20px !important; }
+        
         /* DSP PRESET BUTTONS */
         .dsp-preset-btn {
             background: rgba(255,255,255,0.05);
@@ -1463,15 +1494,18 @@
                 </div>
             </div>
 
-            <!-- MODE SELECTOR -->
-            <div class="input-group" style="margin-bottom: 24px;">
-                <label>Mode Pembuatan Lagu:</label>
-                <div style="display: flex; gap: 10px; background: #f8fafc; padding: 6px; border-radius: 16px; border: 1px solid var(--border-color); flex-wrap: wrap;">
-                    <button type="button" id="modeGenerateBtn" class="mode-btn active" onclick="switchMode('generate')">Bikin Lagu Sendiri</button>
-                    <button type="button" id="modeCoverBtn" class="mode-btn" onclick="switchMode('cover')">Cover Lagu</button>
-                    <button type="button" id="modeVoiceBtn" class="mode-btn" onclick="switchMode('voice')">Pakai SuaraMu</button>
-                </div>
-                <span id="modeDescription" class="helper-text">Buat lagu baru dari awal menggunakan lirik dan gaya musik Anda sendiri.</span>
+            <!-- JUDUL MINI (Pengganti Header Raksasa) -->
+            <div style="text-align: center; margin-bottom: 20px;">
+                <span style="background: rgba(0, 122, 255, 0.1); color: var(--accent-color); padding: 6px 14px; border-radius: 99px; font-size: 0.75rem; font-weight: 800; letter-spacing: 0.5px;"><i class="fa-solid fa-wand-magic-sparkles"></i> Habi RMX Studio</span>
+            </div>
+
+            <!-- MODE SELECTOR (Segmented Control iOS Style) -->
+            <div style="background: #f1f5f9; padding: 4px; border-radius: 14px; display: flex; margin-bottom: 10px; position: relative;">
+                <button type="button" id="modeGenerateBtn" class="mode-btn active" onclick="switchMode('generate')">Bikin Lagu</button>
+                <button type="button" id="modeCoverBtn" class="mode-btn" onclick="switchMode('cover')">Cover Lagu</button>
+                <button type="button" id="modeVoiceBtn" class="mode-btn" onclick="switchMode('voice')">Kloning Suara</button>
+            </div>
+            <span id="modeDescription" class="helper-text" style="text-align: center; margin-bottom: 24px;">Buat lagu baru dari awal menggunakan lirik dan gaya musik Anda sendiri.</span>
             </div>
 
             <!-- CONTAINER PAKAI SUARAMU -->
@@ -2335,23 +2369,27 @@
                 </div>
             </div>
 
-            <!-- SUBMIT ACTION -->
-            <button id="generateBtn" class="action-btn" style="margin-top: 14px; padding: 16px 24px; border-radius: 16px; display: flex; justify-content: center; align-items: center; gap: 10px; background: linear-gradient(135deg, #007AFF, #0056b3); color: #ffffff; box-shadow: 0 8px 20px rgba(0, 122, 255, 0.3); border: none; font-family: 'Plus Jakarta Sans', sans-serif; transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);" onclick="generateAudioSong()">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
-                    <path d="M12 0L14.59 9.41L24 12L14.59 14.59L12 24L9.41 14.59L0 12L9.41 9.41L12 0Z" />
-                </svg>
-                <span style="font-weight: 800; font-size: 1.05rem; letter-spacing: 0.5px;">Buat Lagu</span> 
-                <span style="opacity: 0.6; margin: 0 2px; font-size: 1.2rem;">•</span> 
-                <span id="generateCostBadge" style="font-weight: 700; font-size: 0.85rem; background: rgba(255,255,255,0.2); padding: 4px 10px; border-radius: 8px;"></span>
-            </button>
-            
-            <!-- BENEFIT DESCRIPTIONS -->
-            <div style="display: flex; justify-content: center; align-items: center; gap: 14px; flex-wrap: wrap; margin-top: 18px; font-size: 0.75rem; font-weight: 700; color: var(--text-secondary);">
-                <span style="display: flex; align-items: center; gap: 6px;"><i class="fa-solid fa-headphones" style="color: #10b981;"></i> Audio HD Studio</span>
-                <span style="color: #cbd5e1;">|</span>
-                <span style="display: flex; align-items: center; gap: 6px;"><i class="fa-solid fa-briefcase" style="color: #f59e0b;"></i> Commercial Use</span>
-                <span style="color: #cbd5e1;">|</span>
-                <span style="display: flex; align-items: center; gap: 6px;"><i class="fa-solid fa-bolt" style="color: #38bdf8;"></i> Render Cepat</span>
+            <!-- SUBMIT ACTION (STICKY BOTTOM BAR) -->
+            <div class="sticky-action-bar">
+                <div style="width: 100%; max-width: 900px; margin: 0 auto;">
+                    <button id="generateBtn" class="action-btn" style="width: 100%; padding: 16px 24px; border-radius: 99px; display: flex; justify-content: center; align-items: center; gap: 10px; background: linear-gradient(135deg, #007AFF, #0056b3); color: #ffffff; box-shadow: 0 8px 25px rgba(0, 122, 255, 0.4); border: none; font-family: 'Plus Jakarta Sans', sans-serif; transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);" onclick="generateAudioSong()">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+                            <path d="M12 0L14.59 9.41L24 12L14.59 14.59L12 24L9.41 14.59L0 12L9.41 9.41L12 0Z" />
+                        </svg>
+                        <span style="font-weight: 800; font-size: 1.05rem; letter-spacing: 0.5px;">Buat Lagu</span> 
+                        <span style="opacity: 0.6; margin: 0 4px; font-size: 1.2rem;">•</span> 
+                        <span id="generateCostBadge" style="font-weight: 800; font-size: 0.85rem; background: rgba(255,255,255,0.25); padding: 4px 10px; border-radius: 8px;"></span>
+                    </button>
+                    
+                    <!-- BENEFIT DESCRIPTIONS -->
+                    <div style="display: flex; justify-content: center; align-items: center; gap: 14px; flex-wrap: wrap; margin-top: 12px; font-size: 0.7rem; font-weight: 800; color: var(--text-secondary);">
+                        <span style="display: flex; align-items: center; gap: 6px;"><i class="fa-solid fa-headphones" style="color: #10b981;"></i> Audio HD</span>
+                        <span style="color: #cbd5e1;">|</span>
+                        <span style="display: flex; align-items: center; gap: 6px;"><i class="fa-solid fa-briefcase" style="color: #f59e0b;"></i> Commercial Use</span>
+                        <span style="color: #cbd5e1;">|</span>
+                        <span style="display: flex; align-items: center; gap: 6px;"><i class="fa-solid fa-bolt" style="color: #38bdf8;"></i> Cepat</span>
+                    </div>
+                </div>
             </div>
         </div>
 
