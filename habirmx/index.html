@@ -1646,11 +1646,16 @@
             <div id="uploadSectionWrapper" class="hidden">
                 <div class="upload-section">
                     <div style="display: flex; flex-direction: column; align-items: center; gap: 8px;">
-                        <!-- CLICKABLE UPLOAD TRIGGER -->
-                        <div onclick="window.openUploadOptionsModal()" style="display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer; padding: 24px 20px; width: 100%; border-radius: 16px; transition: 0.2s; background: #ffffff; border: 1px solid var(--border-color); box-shadow: var(--shadow-sm);">
-                            <i class="fa-solid fa-cloud-arrow-up" style="font-size: 2.5rem; color: var(--accent-color);"></i>
-                            <span style="font-size: 0.95rem; font-weight: 800; color: var(--text-primary);">Unggah Berkas Audio Referensi</span>
-                            <span style="font-size: 0.75rem; color: var(--text-light); font-weight: 600;">MP3, WAV, OGG, M4A, FLAC, AAC (Max 8 Menit)</span>
+                        <!-- CLICKABLE UPLOAD TRIGGER (Compact Horizontal) -->
+                        <div onclick="window.openUploadOptionsModal()" style="display: flex; align-items: center; justify-content: space-between; gap: 14px; cursor: pointer; padding: 16px; width: 100%; border-radius: 16px; transition: 0.2s; background: linear-gradient(145deg, #ffffff, #f8fafc); border: 1.5px dashed #cbd5e1; box-shadow: 0 4px 10px rgba(0,0,0,0.02);">
+                            <div style="width: 48px; height: 48px; background: rgba(0, 122, 255, 0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                                <i class="fa-solid fa-cloud-arrow-up" style="font-size: 1.4rem; color: var(--accent-color);"></i>
+                            </div>
+                            <div style="text-align: left; flex: 1;">
+                                <div style="font-size: 0.9rem; font-weight: 800; color: var(--text-primary); margin-bottom: 2px;">Unggah Audio Referensi</div>
+                                <div style="font-size: 0.7rem; color: var(--text-light); font-weight: 600;">MP3, WAV, M4A (Max 8 Menit)</div>
+                            </div>
+                            <i class="fa-solid fa-chevron-right" style="color: #94a3b8; font-size: 0.9rem;"></i>
                         </div>
                         <input type="file" id="audioReferenceInput" accept="audio/*" style="display: none;">
 
@@ -1756,23 +1761,25 @@
                         </div>
                     </div>
 
-                    <!-- SUNO AUDIO STEALTH STUDIO -->
-                    <div id="dspStudioWrapper" class="hidden" style="margin-top: 15px; background: linear-gradient(145deg, #0f172a, #1e293b); border-radius: 24px; padding: 24px; color: #fff; text-align: left; box-shadow: 0 15px 35px rgba(0,0,0,0.25); border: 1px solid rgba(239, 68, 68, 0.3);">
+                    <!-- SUNO AUDIO STEALTH STUDIO (FULLSCREEN POP-UP) -->
+                    <div id="dspStudioWrapper" class="hidden" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #0f172a; z-index: 9999999; overflow-y: auto; padding: 0; color: #fff; text-align: left;">
                         
-                        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px; cursor: pointer;" onclick="toggleAccordion('dspStudioBody')">
+                        <!-- Sticky Header -->
+                        <div style="position: sticky; top: 0; background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(10px); padding: 16px 20px; border-bottom: 1px solid rgba(255,255,255,0.08); display: flex; justify-content: space-between; align-items: center; z-index: 100; box-shadow: 0 4px 20px rgba(0,0,0,0.3);">
                             <div style="display: flex; align-items: center; gap: 12px;">
-                                <div style="width: 40px; height: 40px; border-radius: 12px; background: rgba(239, 68, 68, 0.1); display: flex; align-items: center; justify-content: center; color: #ef4444; font-size: 1.2rem;">
+                                <div style="width: 38px; height: 38px; border-radius: 10px; background: rgba(239, 68, 68, 0.15); display: flex; align-items: center; justify-content: center; color: #ef4444; font-size: 1.1rem;">
                                     <i class="fa-solid fa-shield-halved"></i>
                                 </div>
                                 <div>
-                                    <h3 style="margin: 0; font-size: 1.1rem; font-weight: 900; letter-spacing: 0.5px; color: #f8fafc;">SUNO Audio Kreaverse AI</h3>
-                                    <span style="font-size: 0.7rem; color: #ef4444; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; display: flex; align-items: center; gap: 5px;"><i class="fa-solid fa-triangle-exclamation" style="color: #eab308; font-size: 0.75rem;"></i> AI SENSOR DETECTED</span>
+                                    <h3 style="margin: 0; font-size: 1.05rem; font-weight: 900; letter-spacing: 0.5px; color: #f8fafc;">SUNO Audio DSP</h3>
+                                    <span style="font-size: 0.65rem; color: #ef4444; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; display: flex; align-items: center; gap: 5px;"><i class="fa-solid fa-triangle-exclamation" style="color: #eab308; font-size: 0.75rem;"></i> AI SENSOR DETECTED</span>
                                 </div>
                             </div>
-                            <i class="fa-solid fa-chevron-down" style="color: #94a3b8;"></i>
+                            <button onclick="document.getElementById('dspStudioWrapper').classList.add('hidden')" style="background: rgba(255,255,255,0.1); border: none; color: #fff; width: 34px; height: 34px; border-radius: 50%; font-size: 1.1rem; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.2s;"><i class="fa-solid fa-xmark"></i></button>
                         </div>
 
-                        <div id="dspStudioBody">
+                        <!-- Konten DSP (Dibungkus agar ada padding) -->
+                        <div id="dspStudioBody" style="padding: 20px; max-width: 800px; margin: 0 auto; padding-bottom: 50px;">
                             <!-- NEW INFO BOX -->
                             <div style="background: linear-gradient(145deg, rgba(239, 68, 68, 0.1), rgba(0,0,0,0.2)); border: 1px solid rgba(239, 68, 68, 0.3); padding: 16px; border-radius: 16px; margin-bottom: 20px; text-align: left;">
                                 <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
@@ -6681,7 +6688,7 @@ progressBar.style.width = "100%"; percentText.innerText = "100%";
         };
 
         window.deleteAllUploadHistory = function() {
-            if(confirm("Apakah Anda yakin ingin menghapus semua histori di tab ini?")) {
+            window.kreaConfirm("Hapus Histori", "Apakah Anda yakin ingin menghapus semua histori unggahan di tab ini secara permanen?", () => {
                 const key = getHistoryKey();
                 let history = JSON.parse(localStorage.getItem(key)) || [];
                 history = history.filter(item => {
@@ -6691,7 +6698,7 @@ progressBar.style.width = "100%"; percentText.innerText = "100%";
                 localStorage.setItem(key, JSON.stringify(history));
                 renderUploadHistoryList();
                 showIphoneToast("Dihapus", "Semua histori di tab ini berhasil dihapus.", "fa-trash");
-            }
+            });
         };
 
         window.applyAudioUrl = function() {
