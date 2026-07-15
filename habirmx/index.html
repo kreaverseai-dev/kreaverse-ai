@@ -7382,7 +7382,7 @@ progressBar.style.width = "100%"; percentText.innerText = "100%";
         };
 
         // ============================================================
-        // LOGIKA HALAMAN SHARE PUBLIK (PUBLIC PLAYER)
+        // LOGIKA HALAMAN SHARE PUBLIK (PUBLIC PLAYER SUNO STYLE)
         // ============================================================
         document.addEventListener('DOMContentLoaded', async () => {
             const urlParams = new URLSearchParams(window.location.search);
@@ -7396,10 +7396,11 @@ progressBar.style.width = "100%"; percentText.innerText = "100%";
                 if(container) container.style.display = 'none';
                 if(navbar) navbar.style.display = 'none';
                 if(sidebar) sidebar.style.display = 'none';
+                document.body.style.background = '#000'; // Latar belakang hitam untuk player
 
                 // 2. Tampilkan Overlay Player Publik
                 const overlay = document.getElementById('publicShareOverlay');
-                if(overlay) overlay.style.display = 'block';
+                if(overlay) overlay.style.display = 'flex';
 
                 try {
                     const docRef = doc(db, "render_gallery", playId);
@@ -7413,52 +7414,67 @@ progressBar.style.width = "100%"; percentText.innerText = "100%";
                         const cleanTitle = rawTitle.replace(/\s*\(Part\s*\d+\)/gi, '').replace(/\s*-\s*Versi\s*\d+/gi, '').trim();
 
                         document.getElementById('shareTitle').innerText = cleanTitle;
-                        document.getElementById('shareStyle').innerText = data.prompt || "Style tidak tersedia";
-                        document.getElementById('shareLyrics').innerText = data.lyrics || "Instrumental (Tanpa Lirik)";
-                        document.getElementById('shareImg').src = data.imageUrl || "https://i.postimg.cc/Jh211FTG/46cc61ec-de7f-4c62-8245-946e22312d2b.jpg";
+                        
+                        // Handle Lirik
+                        let lyricsText = data.lyrics || "[Instrumental]";
+                        document.getElementById('shareLyrics').innerText = lyricsText;
+                        
+                        // Set Background Image & Avatar
+                        const coverUrl = data.imageUrl || "https://i.postimg.cc/Jh211FTG/46cc61ec-de7f-4c62-8245-946e22312d2b.jpg";
+                        document.getElementById('shareBg').style.backgroundImage = `url('${coverUrl}')`;
+                        document.getElementById('shareAvatar').src = coverUrl;
                         
                         const audioEl = document.getElementById('shareAudio');
                         audioEl.src = data.url;
                         
-                        // Logika Progress Bar & Durasi Khusus Share Player
+                        // Logika Progress Bar
                         audioEl.addEventListener('timeupdate', () => {
-                            const fill = document.querySelector('#cp-share .progress-bar-fill');
-                            const currTimeEl = document.querySelector('#cp-share .current-time');
-                            const durTimeEl = document.querySelector('#cp-share .duration-time');
-                            
+                            const fill = document.getElementById('shareProgressFill');
                             if (isFinite(audioEl.duration) && audioEl.duration > 0) {
                                 const percent = (audioEl.currentTime / audioEl.duration) * 100;
                                 fill.style.width = `${percent}%`;
-                                currTimeEl.innerText = formatTime(audioEl.currentTime);
-                                durTimeEl.innerText = formatTime(audioEl.duration);
                             }
                         });
 
-                        // Animasi Piringan Hitam Berputar
-                        const spinDisk = document.getElementById('shareSpinDisk');
-                        spinDisk.style.animationPlayState = 'paused';
+                        // Sinkronisasi Tombol Play (Tengah dan Bawah)
+                        const centerPlayBtn = document.getElementById('shareCenterPlayBtn');
+                        const bottomPlayBtn = document.getElementById('shareBottomPlayBtn');
                         
-                        audioEl.addEventListener('play', () => spinDisk.style.animationPlayState = 'running');
-                        audioEl.addEventListener('pause', () => spinDisk.style.animationPlayState = 'paused');
-                        audioEl.addEventListener('ended', () => {
-                            spinDisk.style.animationPlayState = 'paused';
-                            document.querySelector('#cp-share .play-btn i').className = 'fa-solid fa-play';
-                        });
+                        const syncPlayState = () => {
+                            if (audioEl.paused) {
+                                centerPlayBtn.innerHTML = '<i class="fa-solid fa-play" style="margin-left: 5px;"></i>';
+                                centerPlayBtn.style.opacity = '1';
+                                bottomPlayBtn.innerHTML = '<i class="fa-solid fa-play"></i>';
+                            } else {
+                                centerPlayBtn.innerHTML = '<i class="fa-solid fa-pause"></i>';
+                                centerPlayBtn.style.opacity = '0'; // Sembunyikan tombol tengah saat play (Suno Style)
+                                bottomPlayBtn.innerHTML = '<i class="fa-solid fa-pause"></i>';
+                            }
+                        };
+
+                        audioEl.addEventListener('play', syncPlayState);
+                        audioEl.addEventListener('pause', syncPlayState);
+                        audioEl.addEventListener('ended', syncPlayState);
+
+                        // Fungsi Play/Pause
+                        window.toggleSharePlay = () => {
+                            if (audioEl.paused) audioEl.play();
+                            else audioEl.pause();
+                        };
 
                     } else {
                         document.getElementById('shareTitle').innerText = "Lagu Tidak Ditemukan";
-                        document.getElementById('shareStyle').innerText = "Lagu ini mungkin telah dihapus oleh pembuatnya.";
-                        document.getElementById('shareLyrics').innerText = "-";
+                        document.getElementById('shareLyrics').innerText = "Lagu ini mungkin telah dihapus.";
                     }
                 } catch (err) {
                     console.error("Gagal memuat lagu:", err);
                     document.getElementById('shareTitle').innerText = "Terjadi Kesalahan";
-                    document.getElementById('shareStyle').innerText = "Gagal memuat data dari server. Pastikan Rules Firestore Anda mengizinkan 'read' untuk publik.";
+                    document.getElementById('shareLyrics').innerText = "Gagal memuat data dari server.";
                 }
             }
         });
 
-        // Fungsi Seek (Geser Waktu) khusus Share Player
+        // Fungsi Seek (Geser Waktu)
         window.seekShareAudio = function(e) {
             const audioEl = document.getElementById('shareAudio');
             const container = e.currentTarget;
@@ -7470,51 +7486,77 @@ progressBar.style.width = "100%"; percentText.innerText = "100%";
         };
     </script>
 
-    <!-- PUBLIC SHARED PLAYER VIEW (UI) -->
-    <div id="publicShareOverlay" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: radial-gradient(circle at top, #1e293b, #0f172a); z-index: 9999999999; overflow-y: auto; color: #fff; padding-bottom: 110px;">
-        <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
-            <!-- Header Logo -->
-            <div style="text-align: center; margin-bottom: 30px; margin-top: 10px;">
-                <h2 style="font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 900; font-size: 1.8rem; letter-spacing: -0.5px;">Kreaverse<span style="color: #D97757;"> AI</span></h2>
-            </div>
-
-            <!-- Card Player (Glassmorphism) -->
-            <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 28px; padding: 30px 24px; text-align: center; backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); box-shadow: 0 30px 60px rgba(0,0,0,0.4);">
-                <!-- Spinning Image -->
-                <div style="width: 200px; height: 200px; margin: 0 auto 24px; border-radius: 50%; overflow: hidden; border: 4px solid rgba(56, 189, 248, 0.2); box-shadow: 0 10px 30px rgba(0,0,0,0.5), 0 0 20px rgba(56, 189, 248, 0.2); animation: shareSpin 12s linear infinite;" id="shareSpinDisk">
-                    <img id="shareImg" src="" style="width: 100%; height: 100%; object-fit: cover;">
-                </div>
-                
-                <!-- Title & Style -->
-                <h1 id="shareTitle" style="font-size: 1.5rem; font-weight: 900; margin-bottom: 10px; color: #f8fafc;">Memuat...</h1>
-                <p id="shareStyle" style="font-size: 0.85rem; color: #94a3b8; margin-bottom: 24px; line-height: 1.5; font-weight: 500; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;"></p>
-
-                <!-- Audio Player -->
-                <audio id="shareAudio" class="hidden"></audio>
-                <div class="custom-player" id="cp-share" style="background: rgba(0,0,0,0.4); border: 1px solid rgba(56, 189, 248, 0.2); padding: 12px 16px; border-radius: 16px;">
-                    <button class="play-btn" onclick="toggleCustomPlay('shareAudio', 'cp-share')" style="background: #38bdf8; color: #0f172a; width: 40px; height: 40px; font-size: 1.1rem; box-shadow: 0 4px 12px rgba(56, 189, 248, 0.3);"><i class="fa-solid fa-play"></i></button>
-                    <span class="time-display current-time" style="color: #cbd5e1; font-size: 0.75rem;">0:00</span>
-                    <div class="progress-container" onclick="window.seekShareAudio(event)" style="background: rgba(255,255,255,0.1); height: 8px;"><div class="progress-bar-fill" style="background: #38bdf8; width: 0%;"></div></div>
-                    <span class="time-display duration-time" style="color: #cbd5e1; font-size: 0.75rem;">0:00</span>
-                </div>
-            </div>
-
-            <!-- Lyrics Section -->
-            <div style="margin-top: 24px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 28px; padding: 24px; backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);">
-                <h3 style="font-size: 1.1rem; font-weight: 800; margin-bottom: 16px; color: #38bdf8; display: flex; align-items: center; gap: 8px;"><i class="fa-solid fa-microphone-lines"></i> Lirik Lagu</h3>
-                <pre id="shareLyrics" style="font-family: 'Plus Jakarta Sans', sans-serif; font-size: 0.95rem; line-height: 1.8; color: #e2e8f0; white-space: pre-wrap; margin: 0; font-weight: 500;">Memuat lirik...</pre>
+    <!-- PUBLIC SHARED PLAYER VIEW (UI SUNO STYLE) -->
+    <div id="publicShareOverlay" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #000; z-index: 9999999999; flex-direction: column; color: #fff; font-family: 'Inter', sans-serif;">
+        
+        <!-- Background Blur Image -->
+        <div id="shareBg" style="position: absolute; top: -10%; left: -10%; width: 120%; height: 120%; background-size: cover; background-position: center; filter: blur(25px) brightness(0.35); z-index: 1;"></div>
+        
+        <!-- Top Nav Bar -->
+        <div style="position: relative; z-index: 10; display: flex; justify-content: space-between; align-items: center; padding: 16px 20px;">
+            <div style="font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 900; font-size: 1.4rem; letter-spacing: -0.5px; text-shadow: 0 2px 4px rgba(0,0,0,0.5);">Kreaverse<span style="color: var(--accent-color);"> AI</span></div>
+            <div style="display: flex; gap: 16px; align-items: center;">
+                <a href="/login/index.html" style="color: #fff; text-decoration: none; font-weight: 600; font-size: 0.95rem; text-shadow: 0 2px 4px rgba(0,0,0,0.5);">Masuk</a>
             </div>
         </div>
 
-        <!-- Floating CTA Button -->
-        <div style="position: fixed; bottom: 0; left: 0; width: 100%; padding: 20px; background: linear-gradient(to top, rgba(15,23,42,1) 30%, rgba(15,23,42,0)); text-align: center; display: flex; justify-content: center; z-index: 10;">
-            <button onclick="window.location.href=window.location.origin + window.location.pathname" style="background: linear-gradient(135deg, #007AFF, #0056b3); color: #fff; border: 1px solid rgba(255,255,255,0.1); padding: 16px 24px; border-radius: 99px; font-weight: 800; font-size: 0.95rem; box-shadow: 0 10px 30px rgba(0, 122, 255, 0.5); cursor: pointer; transition: 0.2s; width: 100%; max-width: 400px; display: flex; align-items: center; justify-content: center; gap: 10px;">
-                <i class="fa-solid fa-wand-magic-sparkles"></i> Buat Lagu Ini di Kreaverse AI
-            </button>
+        <!-- Lyrics Area (Scrollable Background) -->
+        <div style="position: relative; z-index: 10; flex: 1; overflow-y: auto; padding: 20px; padding-bottom: 160px; mask-image: linear-gradient(to bottom, black 60%, transparent 100%); -webkit-mask-image: linear-gradient(to bottom, black 60%, transparent 100%);">
+            <pre id="shareLyrics" style="font-family: 'Inter', sans-serif; font-size: 1.35rem; line-height: 1.6; color: rgba(255,255,255,0.9); white-space: pre-wrap; margin: 0; font-weight: 600; text-shadow: 0 2px 10px rgba(0,0,0,0.8);"></pre>
         </div>
-        <style>
-            @keyframes shareSpin { 100% { transform: rotate(360deg); } }
-        </style>
+
+        <!-- Center Huge Play Button -->
+        <div style="position: absolute; top: 45%; left: 50%; transform: translate(-50%, -50%); z-index: 15; cursor: pointer; transition: opacity 0.3s;" onclick="window.toggleSharePlay()">
+            <div id="shareCenterPlayBtn" style="width: 75px; height: 75px; background: rgba(255,255,255,0.15); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 2.2rem; color: #fff; box-shadow: 0 10px 30px rgba(0,0,0,0.3);">
+                <i class="fa-solid fa-play" style="margin-left: 5px;"></i>
+            </div>
+        </div>
+
+        <!-- Bottom Info & CTA Controls -->
+        <div style="position: absolute; bottom: 65px; left: 0; width: 100%; z-index: 20; padding: 0 20px; background: linear-gradient(to top, rgba(0,0,0,0.95) 15%, rgba(0,0,0,0) 100%); padding-top: 50px;">
+            
+            <h1 id="shareTitle" style="font-size: 1.25rem; font-weight: 800; margin: 0 0 12px 0; line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; text-shadow: 0 2px 4px rgba(0,0,0,0.8);">Memuat...</h1>
+            
+            <!-- User Info & Bagikan -->
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <img id="shareAvatar" src="" style="width: 30px; height: 30px; border-radius: 50%; object-fit: cover; border: 1px solid rgba(255,255,255,0.2);">
+                    <span style="font-size: 0.85rem; font-weight: 600; color: #e2e8f0; text-shadow: 0 2px 4px rgba(0,0,0,0.8);">Kreaverse AI User</span>
+                </div>
+                <button onclick="navigator.clipboard.writeText(window.location.href); window.showIphoneToast('Tersalin', 'Link lagu berhasil disalin!', 'fa-link');" style="background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.1); color: #fff; padding: 6px 14px; border-radius: 99px; font-size: 0.75rem; font-weight: 700; display: flex; align-items: center; gap: 6px; backdrop-filter: blur(10px); cursor: pointer;">
+                    <i class="fa-solid fa-share-nodes"></i> Bagikan
+                </button>
+            </div>
+
+            <!-- Audio Progress Bar -->
+            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 20px;">
+                <button id="shareBottomPlayBtn" onclick="window.toggleSharePlay()" style="background: none; border: none; color: #fff; font-size: 1.1rem; cursor: pointer; padding: 0; display: flex; align-items: center; justify-content: center; width: 24px;">
+                    <i class="fa-solid fa-play"></i>
+                </button>
+                <div onclick="window.seekShareAudio(event)" style="flex: 1; height: 4px; background: rgba(255,255,255,0.3); border-radius: 4px; cursor: pointer; position: relative;">
+                    <div id="shareProgressFill" style="position: absolute; top: 0; left: 0; height: 100%; width: 0%; background: #fff; border-radius: 4px;"></div>
+                </div>
+            </div>
+
+            <!-- CTA Create Box -->
+            <div style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.05); border-radius: 99px; padding: 6px 6px 6px 20px; display: flex; align-items: center; justify-content: space-between; backdrop-filter: blur(10px); margin-bottom: 10px;">
+                <span style="font-size: 0.9rem; font-weight: 600; color: #e2e8f0;">Buat lagu sendiri</span>
+                <button onclick="window.location.href=window.location.href.split('?')[0]" style="background: var(--accent-color); color: #fff; border: none; padding: 10px 20px; border-radius: 99px; font-weight: 800; font-size: 0.85rem; cursor: pointer; display: flex; align-items: center; gap: 8px; box-shadow: 0 4px 15px rgba(0, 122, 255, 0.4);">
+                    Buat <i class="fa-solid fa-music"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Fixed Bottom Navigation Bar -->
+        <div style="position: absolute; bottom: 0; left: 0; width: 100%; height: 65px; background: #000; border-top: 1px solid rgba(255,255,255,0.05); display: flex; justify-content: space-around; align-items: center; z-index: 30; padding: 0 10px;">
+            <a href="/" style="color: #fff; text-decoration: none; font-size: 1.2rem; display: flex; flex-direction: column; align-items: center; opacity: 0.5;"><i class="fa-solid fa-house"></i></a>
+            <a href="/media-ai/" style="color: #fff; text-decoration: none; font-size: 1.2rem; display: flex; flex-direction: column; align-items: center; opacity: 0.5;"><i class="fa-solid fa-compass"></i></a>
+            <a href="#" style="color: var(--accent-color); text-decoration: none; font-size: 1.2rem; display: flex; flex-direction: column; align-items: center; opacity: 1;"><i class="fa-solid fa-circle-play"></i></a>
+            <a href="/login/index.html" style="color: #fff; text-decoration: none; font-size: 1.2rem; display: flex; flex-direction: column; align-items: center; opacity: 0.5;"><i class="fa-solid fa-lines-leaning"></i></a>
+            <a href="/login/index.html" style="color: #fff; text-decoration: none; font-size: 1.2rem; display: flex; flex-direction: column; align-items: center; opacity: 0.5;"><i class="fa-solid fa-ellipsis"></i></a>
+        </div>
+        
+        <audio id="shareAudio" class="hidden"></audio>
     </div>
 
     <!-- Vercel Web Analytics -->
