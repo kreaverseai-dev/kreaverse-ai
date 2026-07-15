@@ -2,138 +2,148 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <!-- Meta viewport yang mencegah zoom dan memperbaiki ukuran layar di mobile -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Kreaverse Ai Studio</title>
+    <title>Kreaverse AI Studio</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
         :root {
             --bg-main: #000000;
-            --bg-panel: #121212;
-            --bg-toolbar: #1a1a1a;
+            --bg-panel: #111111;
             --text-main: #ffffff;
-            --text-muted: #888;
-            --accent: #ff3b30;
-            --track-bg: #050505;
-            --border: #222;
+            --accent: #ffffff;
             --playhead: #ffffff;
+            --track-bg: #000000;
+            --header-w: 100px;
         }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, sans-serif; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; user-select: none; -webkit-tap-highlight-color: transparent;}
         
-        /* PERBAIKAN LAYOUT ANTI BLANK DI HP */
-        body { 
-            background-color: var(--bg-main); 
-            color: var(--text-main); 
-            height: 100dvh; /* Menggunakan dvh agar tidak tertutup bar navigasi HP */
-            width: 100vw;
-            display: flex; 
-            flex-direction: column; 
-            overflow: hidden; 
-            user-select: none; 
-        }
+        body { background-color: var(--bg-main); color: var(--text-main); height: 100dvh; width: 100vw; display: flex; flex-direction: column; overflow: hidden; }
 
-        /* MODAL & LOADING */
-        .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.85); z-index: 9999; display: flex; justify-content: center; align-items: center; }
-        .modal-box { background: var(--bg-toolbar); padding: 20px; border-radius: 10px; width: 90%; max-width: 350px; text-align: center; border: 1px solid var(--border); max-height: 80vh; display: flex; flex-direction: column; }
-        .modal-box h3 { margin-bottom: 10px; }
-        .modal-box p { margin-bottom: 20px; color: var(--text-muted); font-size: 0.9rem; }
-        .modal-btn { background: var(--accent); color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-weight: bold; width: 100%; margin-top: 10px;}
-        .modal-btn.secondary { background: #333; }
-        
-        /* PROJECT MANAGER LIST */
-        .proj-list { flex-grow: 1; overflow-y: auto; text-align: left; margin-bottom: 10px; }
-        .proj-item { display: flex; justify-content: space-between; align-items: center; background: #222; padding: 10px; margin-bottom: 8px; border-radius: 5px; border: 1px solid #333;}
-        .proj-item-info { display: flex; flex-direction: column; overflow: hidden; }
-        .proj-item-info strong { font-size: 0.9rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;}
-        .proj-item-info span { font-size: 0.7rem; color: #888; }
-        .proj-actions { display: flex; gap: 5px; }
-        .proj-btn { background: #444; border: none; color: white; padding: 5px 10px; border-radius: 3px; cursor: pointer; font-size: 0.8rem;}
-        .proj-btn.del { background: var(--accent); }
+        /* MODAL EXPORT & INFO */
+        .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.85); z-index: 9999; display: none; justify-content: center; align-items: center; }
+        .modal-box { background: #1c1c1e; padding: 20px; border-radius: 12px; width: 90%; max-width: 350px; text-align: left; border: 1px solid #333; }
+        .modal-box h3 { margin-bottom: 15px; text-align: center; font-size: 1.2rem;}
+        .input-group { margin-bottom: 15px; }
+        .input-group label { display: block; font-size: 0.8rem; color: #aaa; margin-bottom: 5px; }
+        .modal-box input, .modal-box textarea { width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #444; background: #000; color: white; outline: none; font-size: 1rem;}
+        .modal-box textarea { resize: none; height: 60px; }
+        .modal-btn { background: white; color: black; border: none; padding: 12px; border-radius: 8px; cursor: pointer; font-weight: bold; width: 100%; margin-top: 5px; font-size: 1rem;}
+        .modal-btn.cancel { background: #333; color: white; margin-top: 10px;}
+        .progress-bar-container { width: 100%; background: #000; height: 12px; border-radius: 6px; overflow: hidden; margin: 15px 0; border: 1px solid #444;}
+        .progress-bar { width: 0%; height: 100%; background: white; transition: width 0.1s; }
 
         /* TOP NAVIGATION */
-        .top-nav { flex-shrink: 0; display: flex; justify-content: space-between; align-items: center; background: var(--bg-main); height: 50px; padding: 0 15px; border-bottom: 1px solid var(--border); }
-        .logo { font-weight: bold; font-size: 1rem; display: flex; align-items: center; gap: 10px; }
-        .top-icons { display: flex; gap: 20px; font-size: 1.2rem; color: var(--text-muted); }
-        .top-icons i:hover { color: white; cursor: pointer; }
+        .top-nav { flex-shrink: 0; display: flex; justify-content: space-between; align-items: center; background: var(--bg-main); height: 45px; padding: 0 15px; border-bottom: 1px solid #222; }
+        .timecode { font-family: monospace; font-size: 0.9rem; font-weight: bold; letter-spacing: 1px; display: flex; align-items: center; gap: 15px;}
+        .top-icons { display: flex; gap: 20px; font-size: 1.1rem; color: #ccc; }
+        .top-icons i { cursor: pointer; }
 
         /* WORKSPACE */
-        .workspace { flex-grow: 1; display: flex; flex-direction: column; overflow-x: auto; overflow-y: auto; position: relative; background: var(--bg-main); padding-bottom: 20px; }
-        .ruler-container { height: 25px; background: var(--bg-main); position: sticky; top: 0; z-index: 50; border-bottom: 1px solid var(--border); cursor: pointer; }
-        .ruler-canvas { position: absolute; left: 120px; height: 100%; pointer-events: none; }
-        .tracks-container { position: relative; width: 100%; min-height: 100%; padding-bottom: 50px;}
+        .workspace { flex-grow: 1; display: flex; flex-direction: column; overflow-x: auto; overflow-y: auto; position: relative; }
+        
+        /* RULER */
+        .ruler-container { height: 20px; background: var(--bg-main); position: sticky; top: 0; z-index: 50; border-bottom: 1px solid #333; cursor: pointer; }
+        .ruler-canvas { position: absolute; left: var(--header-w); height: 100%; pointer-events: none; }
+        
+        .tracks-container { position: relative; width: 100%; min-height: 100%; padding-bottom: 80px;}
 
         /* PLAYHEAD */
-        .playhead-wrapper { position: absolute; top: 0; bottom: 0; left: 120px; width: 0; z-index: 100; pointer-events: none; }
-        .playhead-line { position: absolute; left: 0; top: 0; bottom: 0; width: 1px; background: var(--playhead); box-shadow: 0 0 4px rgba(255,255,255,0.5); }
-        .playhead-handle { position: absolute; left: -6px; top: 0; width: 13px; height: 13px; background: var(--playhead); border-radius: 50%; pointer-events: auto; cursor: ew-resize; touch-action: none; }
+        .playhead-wrapper { position: absolute; top: 0; bottom: 0; left: var(--header-w); width: 0; z-index: 100; pointer-events: none; }
+        .playhead-line { position: absolute; left: 0; top: 0; bottom: 100vh; width: 1.5px; background: var(--playhead); }
+        .playhead-handle { position: absolute; left: -7px; top: 2px; width: 15px; height: 15px; background: var(--playhead); border-radius: 50%; pointer-events: auto; cursor: ew-resize; touch-action: none; box-shadow: 0 0 5px rgba(0,0,0,0.5);}
 
-        /* TRACK INFO */
-        .track { height: 80px; background: var(--track-bg); border-bottom: 1px solid var(--border); display: flex; position: relative; }
-        .track-header { width: 120px; background: var(--bg-main); position: sticky; left: 0; z-index: 40; border-right: 1px solid var(--border); padding: 10px; display: flex; flex-direction: row; align-items: center; gap: 10px; }
-        .track-icon { min-width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; color: white; }
-        .track-info { display: flex; flex-direction: column; overflow: hidden; flex: 1; }
-        .track-info span.t-name { font-size: 0.8rem; font-weight: bold; white-space: nowrap; cursor: text; overflow: hidden; text-overflow: ellipsis; }
-        .track-controls { display: flex; gap: 5px; margin-top: 5px; }
-        .btn-mute { background: transparent; border: 1px solid var(--text-muted); color: var(--text-muted); border-radius: 3px; font-size: 10px; padding: 2px 5px; cursor: pointer; }
-        .btn-mute.muted { background: var(--accent); color: white; border-color: var(--accent); }
+        /* TRACK HEADER */
+        .track { height: 90px; background: var(--track-bg); border-bottom: 1px solid #222; display: flex; position: relative; }
+        .track-header { width: var(--header-w); background: var(--bg-main); position: sticky; left: 0; z-index: 40; border-right: 1px solid #333; padding: 5px; display: flex; flex-direction: column; justify-content: center; }
+        
+        .th-top { display: flex; align-items: center; gap: 5px; margin-bottom: 5px;}
+        .track-icon { min-width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; color: white; }
+        .t-name { font-size: 0.75rem; font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: text;}
+        
+        .th-bottom { display: flex; gap: 5px; justify-content: flex-start; padding-left: 28px;}
+        .btn-fx { background: #222; border: 1px solid #444; color: #ccc; border-radius: 12px; font-size: 9px; padding: 3px 8px; cursor: pointer; }
+        .btn-mute, .btn-solo { background: #222; border: none; color: #aaa; border-radius: 3px; font-size: 10px; width: 20px; height: 20px; font-weight:bold; cursor: pointer; }
+        .btn-mute.active { background: #ff3b30; color: white; }
+        .btn-solo.active { background: #ffcc00; color: black; }
 
         /* CLIP */
-        .clip { position: absolute; height: 70px; top: 5px; border-radius: 4px; display: flex; align-items: center; justify-content: center; cursor: grab; touch-action: none; overflow: hidden; color: white; font-size: 0.7rem; font-weight: bold; }
-        .clip.selected { border: 1px solid white; z-index: 10; opacity: 0.9; }
-        .clip.locked { opacity: 0.5; border: 1px dashed red;}
-        .clip-wave { position: absolute; width: 100%; height: 50%; opacity: 0.5; pointer-events: none; background: repeating-linear-gradient(90deg, #fff 0px, #fff 2px, transparent 2px, transparent 4px); }
-        .clip span { z-index: 2; text-shadow: 0 0 2px black; cursor: text; padding: 5px;}
-        .clip .lock-icon { position: absolute; top: 5px; right: 5px; font-size: 10px; display: none; z-index: 2; }
-        .clip.locked .lock-icon { display: block; }
+        .clip { position: absolute; height: 75px; top: 7px; border-radius: 6px; display: flex; align-items: center; justify-content: center; cursor: grab; touch-action: none; overflow: hidden; }
+        .clip.selected { border: 1.5px solid white; z-index: 10; opacity: 1; box-shadow: 0 0 10px rgba(255,255,255,0.3);}
+        .clip-wave { position: absolute; width: 100%; height: 60%; opacity: 0.4; pointer-events: none; background: repeating-linear-gradient(90deg, #fff 0px, #fff 1px, transparent 1px, transparent 3px); }
+        .clip-name { position: absolute; top: 2px; left: 5px; font-size: 0.65rem; font-weight: bold; color: white; z-index: 2; text-shadow: 1px 1px 2px rgba(0,0,0,0.8); pointer-events: none;}
+        
+        /* FLOATING CONTEXT MENU (SEPERTI DI VIDEO) */
+        .context-menu { position: absolute; background: #2c2c2e; border-radius: 8px; display: none; gap: 10px; padding: 8px 12px; z-index: 200; box-shadow: 0 5px 15px rgba(0,0,0,0.5); transform: translate(-50%, -120%); border: 1px solid #444;}
+        .context-menu i { color: white; font-size: 1.1rem; cursor: pointer; padding: 5px; }
+        .context-menu i:active { opacity: 0.5; }
+        
+        /* TOMBOL TAMBAH BESAR (SEPERTI DI VIDEO) */
+        .btn-add-track { width: 50px; height: 50px; background: #1c1c1e; border: 1px solid #333; border-radius: 12px; color: white; font-size: 1.5rem; display: flex; justify-content: center; align-items: center; margin: 10px; cursor: pointer; }
 
         /* BOTTOM TOOLBAR */
-        .bottom-nav { flex-shrink: 0; background: var(--bg-panel); border-top: 1px solid var(--border); padding: 10px 10px calc(10px + env(safe-area-inset-bottom)) 10px; display: flex; flex-direction: column; gap: 10px; z-index: 60; }
-        .toolbar-actions { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 5px; }
-        
-        .tool-btn { background: transparent; color: white; border: 1px solid var(--border); padding: 8px 15px; border-radius: 20px; cursor: pointer; font-size: 0.85rem; display: flex; align-items: center; gap: 5px; white-space: nowrap; }
-        .tool-btn:hover { background: #333; }
-        .tool-btn:disabled { opacity: 0.3; cursor: not-allowed; }
-        
-        .play-controls { display: flex; justify-content: center; align-items: center; gap: 30px; padding-bottom: 5px;}
-        .ctrl-icon { color: var(--text-muted); font-size: 1.2rem; cursor: pointer; }
-        .ctrl-icon:hover { color: white; }
-        .play-btn-main { width: 50px; height: 50px; border-radius: 50%; background: var(--bg-toolbar); color: white; border: none; font-size: 1.5rem; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s; }
-        .play-btn-main.recording { background: var(--accent); }
+        .bottom-nav { flex-shrink: 0; background: var(--bg-main); border-top: 1px solid #222; padding: 10px; display: flex; justify-content: space-between; align-items: center; z-index: 60; padding-bottom: calc(10px + env(safe-area-inset-bottom));}
+        .bot-tools { display: flex; gap: 15px; color: white; font-size: 1.2rem;}
+        .bot-tools i { cursor: pointer; }
+        .play-controls { display: flex; align-items: center; gap: 25px; }
+        .play-controls i { color: white; font-size: 1.3rem; cursor: pointer; }
+        .btn-record { width: 45px; height: 45px; border-radius: 50%; background: #ff3b30; border: 3px solid #000; box-shadow: 0 0 0 2px #ff3b30; display: flex; justify-content: center; align-items: center; cursor: pointer;}
+        .btn-record i { color: white; font-size: 1rem; }
     </style>
 </head>
 <body>
 
-    <!-- MODAL LOADING / INFO -->
+    <!-- MODAL LOADING -->
     <div class="modal-overlay" id="loading-modal">
-        <div class="modal-box" style="width: auto;">
-            <h3 id="loading-title">Memuat...</h3>
-            <p id="loading-desc">Harap tunggu sebentar</p>
+        <div class="modal-box" style="width: auto; text-align: center;">
+            <i class="fa-solid fa-spinner fa-spin" style="font-size: 2rem; color: white; margin-bottom: 10px;"></i>
+            <p id="loading-desc" style="color: white; margin:0;">Memproses...</p>
         </div>
     </div>
 
-    <!-- MODAL PROJECT MANAGER -->
-    <div class="modal-overlay" id="project-modal" style="display:none;">
+    <!-- MODAL EXPORT FORM -->
+    <div class="modal-overlay" id="export-modal">
         <div class="modal-box">
-            <h3><i class="fa-solid fa-folder-open"></i> Project Saya</h3>
-            <p>Pilih atau buat project baru.</p>
-            <div class="proj-list" id="project-list-container">
-                <!-- List Project Muncul Disini -->
+            <h3 id="export-title">Simpan Project</h3>
+            
+            <div id="export-form">
+                <div class="input-group">
+                    <label>Nama File / Judul</label>
+                    <input type="text" id="exp-name" placeholder="Misal: Lagu Keren">
+                </div>
+                <div class="input-group">
+                    <label>Deskripsi (Opsional)</label>
+                    <textarea id="exp-desc" placeholder="Tambahkan catatan..."></textarea>
+                </div>
+                <button class="modal-btn" onclick="processExport()">Simpan ke MP3/WAV</button>
+                <button class="modal-btn cancel" onclick="document.getElementById('export-modal').style.display='none'">Batal</button>
             </div>
-            <button class="modal-btn" onclick="createNewProject()"><i class="fa-solid fa-plus"></i> Buat Project Baru</button>
-            <button class="modal-btn secondary" onclick="document.getElementById('project-modal').style.display='none'">Tutup</button>
+
+            <div id="export-progress" style="display:none; text-align:center;">
+                <p>Mengekspor Audio Asli...</p>
+                <div class="progress-bar-container"><div class="progress-bar" id="exp-bar"></div></div>
+                <p id="exp-status" style="font-size: 0.8rem; color: #aaa;">Rendering: 0%</p>
+            </div>
         </div>
+    </div>
+
+    <!-- FLOATING CONTEXT MENU -->
+    <div class="context-menu" id="ctx-menu">
+        <i class="fa-solid fa-trash" onclick="ctxAction('delete')" title="Hapus"></i>
+        <i class="fa-solid fa-copy" onclick="ctxAction('copy')" title="Salin"></i>
+        <i class="fa-solid fa-scissors" onclick="ctxAction('split')" title="Potong (Split)"></i>
     </div>
 
     <!-- TOP NAV -->
     <header class="top-nav">
-        <div class="logo">
-            <span id="header-project-name" onclick="renameProject()" style="cursor:pointer;" title="Ubah Nama">Project Tanpa Nama</span>
+        <div class="timecode">
+            <span id="time-display">00:00.0</span>
+            <i class="fa-solid fa-magnet" style="font-size:0.8rem; color:#aaa;"></i>
         </div>
         <div class="top-icons">
-            <i class="fa-solid fa-folder-open" title="Buka Histori Project" onclick="openProjectManager()"></i>
-            <i class="fa-solid fa-cloud-arrow-up" title="Export MP3 (Simulasi)" onclick="startExport()"></i>
+            <i class="fa-solid fa-sliders"></i>
+            <i class="fa-solid fa-cloud-arrow-up" onclick="openExportModal()"></i>
         </div>
     </header>
 
@@ -146,611 +156,507 @@
                 <div class="playhead-line"></div>
             </div>
         </div>
-        <div class="tracks-container" id="tracks-workspace"></div>
+        <div class="tracks-container" id="tracks-workspace">
+            <!-- Tracks Here -->
+            <div class="btn-add-track" onclick="document.getElementById('audio-upload').click()">
+                <i class="fa-solid fa-plus"></i>
+            </div>
+        </div>
     </main>
 
     <!-- BOTTOM TOOLBAR -->
     <div class="bottom-nav">
-        <div class="toolbar-actions">
+        <div class="bot-tools">
+            <i class="fa-solid fa-sliders"></i>
             <input type="file" id="audio-upload" accept="audio/*" multiple style="display: none;">
-            <button class="tool-btn" onclick="document.getElementById('audio-upload').click()">
-                <i class="fa-solid fa-plus"></i> Tambah Lagu
-            </button>
-            <button class="tool-btn" id="btn-undo" onclick="undo()" style="opacity: 0.5;"><i class="fa-solid fa-rotate-left"></i> Undo</button>
-            <button class="tool-btn" id="btn-redo" onclick="redo()" style="opacity: 0.5;"><i class="fa-solid fa-rotate-right"></i> Redo</button>
-            <button class="tool-btn" id="btn-cut" disabled><i class="fa-solid fa-scissors"></i> Potong</button>
-            <button class="tool-btn" id="btn-copy" disabled><i class="fa-solid fa-copy"></i> Duplikat</button>
-            <button class="tool-btn" id="btn-delete" disabled><i class="fa-solid fa-trash"></i> Hapus</button>
-            <button class="tool-btn" id="btn-lock" disabled><i class="fa-solid fa-lock"></i> Kunci</button>
-            <button class="tool-btn" id="btn-zoom"><i class="fa-solid fa-magnifying-glass"></i> Zoom</button>
         </div>
         
         <div class="play-controls">
-            <i class="fa-solid fa-backward-step ctrl-icon" id="btn-to-start" title="Kembali ke Awal"></i>
-            <button class="play-btn-main" id="btn-play"><i class="fa-solid fa-play"></i></button>
-            <button class="play-btn-main recording" id="btn-stop" style="display:none;"><i class="fa-solid fa-stop"></i></button>
-            <i class="fa-solid fa-rotate-right ctrl-icon" onclick="alert('Auto Save Database Aktif! Refresh halaman dengan aman.')" title="Info"></i>
+            <i class="fa-solid fa-rotate-left" onclick="alert('Undo')"></i>
+            <i class="fa-solid fa-backward-step" onclick="goToStart()"></i>
+            <div class="btn-record" id="btn-play">
+                <i class="fa-solid fa-play" id="play-icon"></i>
+            </div>
+            <i class="fa-solid fa-rotate-right" onclick="alert('Redo')"></i>
+        </div>
+        
+        <div class="bot-tools">
+            <i class="fa-solid fa-magnifying-glass-plus" onclick="zoomIn()"></i>
+            <i class="fa-solid fa-magnifying-glass-minus" onclick="zoomOut()"></i>
         </div>
     </div>
 
     <script>
         // ==========================================
-        // 1. ENGINE DATABASE LOKAL (IndexedDB)
+        // 1. STATE & ENGINE VARIABLES
         // ==========================================
-        const DB_NAME = "KreaverseAudioDB";
-        let dbPromise = new Promise((resolve, reject) => {
-            const req = indexedDB.open(DB_NAME, 1);
-            req.onupgradeneeded = (e) => {
-                let db = e.target.result;
-                if (!db.objectStoreNames.contains('projects')) db.createObjectStore('projects', {keyPath: 'id'});
-                if (!db.objectStoreNames.contains('audios')) db.createObjectStore('audios', {keyPath: 'id'});
-            };
-            req.onsuccess = () => resolve(req.result);
-            req.onerror = () => reject(req.error);
-        });
+        let PPS = 30; // Pixels Per Second (Zoom level)
+        const HEADER_W = 100;
+        const MIN_CUT_SEC = 1.0; 
+        const trackColors = ['#ff3b30', '#007aff', '#34c759', '#ff9500', '#af52de'];
 
-        async function saveProjectToDB(projectData) {
-            const db = await dbPromise;
-            const tx = db.transaction('projects', 'readwrite');
-            tx.objectStore('projects').put(projectData);
-        }
-
-        async function getProjectFromDB(id) {
-            const db = await dbPromise;
-            return new Promise(res => {
-                const req = db.transaction('projects').objectStore('projects').get(id);
-                req.onsuccess = () => res(req.result);
-            });
-        }
-
-        async function getAllProjectsDB() {
-            const db = await dbPromise;
-            return new Promise(res => {
-                const req = db.transaction('projects').objectStore('projects').getAll();
-                req.onsuccess = () => res(req.result);
-            });
-        }
-
-        async function deleteProjectDB(id) {
-            const db = await dbPromise;
-            const tx = db.transaction('projects', 'readwrite');
-            tx.objectStore('projects').delete(id);
-        }
-
-        async function saveAudioToDB(bufferId, arrayBuffer) {
-            const db = await dbPromise;
-            const tx = db.transaction('audios', 'readwrite');
-            tx.objectStore('audios').put({id: bufferId, data: arrayBuffer});
-        }
-
-        async function getAudioFromDB(bufferId) {
-            const db = await dbPromise;
-            return new Promise(res => {
-                const req = db.transaction('audios').objectStore('audios').get(bufferId);
-                req.onsuccess = () => res(req.result ? req.result.data : null);
-            });
-        }
-
-        // ==========================================
-        // 2. VARIABEL GLOBAL APLIKASI
-        // ==========================================
-        let PPS = 20; 
-        const TRACK_HEADER_WIDTH = 120;
-        const MIN_CUT_SECONDS = 0.5; 
-        const colors = ['#007aff', '#34c759', '#ff9500', '#af52de', '#ff2d55', '#ffcc00'];
-
-        let currentProjectId = null;
-        let currentProjectName = "Project Baru";
         let trackCount = 0;
-        let trackMutes = {}; 
+        let clipsData = []; // SOURCE OF TRUTH (Data driven, bukan DOM driven)
+        let trackStates = {}; // Mute/Solo states
 
-        let selectedClip = null;
-        let playheadPos = 0; 
+        let selectedClipId = null;
+        let playheadTime = 0; // Waktu dalam detik
         let isPlaying = false;
         let playInterval;
         let startTimeContext = 0;
-        let startPlayheadPos = 0;
+        let startPlayheadTime = 0;
 
-        let historyDOM = [];
-        let historyIndex = -1;
-
-        // Audio API
         const AudioContext = window.AudioContext || window.webkitAudioContext;
-        let audioCtx;
+        let audioCtx = new AudioContext();
         let audioBuffers = {}; 
         let activeSources = [];
 
         const ws = document.getElementById('workspace');
         const tracksWs = document.getElementById('tracks-workspace');
-        const rulerCanvas = document.getElementById('ruler');
         const playhead = document.getElementById('playhead');
+        const ctxMenu = document.getElementById('ctx-menu');
 
         // ==========================================
-        // 3. LOGIKA PENYIMPANAN & PEMUATAN (AUTO SAVE)
+        // 2. WAKTU & RULER (REAL-TIME)
         // ==========================================
-        
-        function showLoad(title, desc) {
-            document.getElementById('loading-title').innerText = title;
-            document.getElementById('loading-desc').innerText = desc;
-            document.getElementById('loading-modal').style.display = 'flex';
-        }
-        function hideLoad() { document.getElementById('loading-modal').style.display = 'none'; }
-
-        // Merekam keadaan layar saat ini ke DB agar saat di refresh tidak hilang
-        async function autoSave() {
-            if (!currentProjectId) return;
-            
-            const tracksData = Array.from(document.querySelectorAll('.track')).map(t => ({
-                id: t.dataset.trackid,
-                muted: trackMutes[t.dataset.trackid] || false,
-                name: t.querySelector('.t-name').innerText,
-                color: t.querySelector('.track-icon').style.background
-            }));
-
-            const clipsData = Array.from(document.querySelectorAll('.clip')).map(c => ({
-                trackId: c.dataset.trackid,
-                bufferId: c.dataset.bufferid,
-                offset: c.dataset.offset,
-                color: c.dataset.color,
-                locked: c.dataset.locked,
-                text: c.querySelector('span').innerText,
-                width: parseFloat(c.style.width),
-                left: parseFloat(c.style.left)
-            }));
-
-            const project = {
-                id: currentProjectId,
-                name: currentProjectName,
-                updatedAt: Date.now(),
-                tracks: tracksData,
-                clips: clipsData,
-                trackCount: trackCount,
-                pps: PPS
-            };
-            
-            await saveProjectToDB(project);
-            document.getElementById('header-project-name').innerText = currentProjectName;
+        function formatTime(seconds) {
+            let m = Math.floor(seconds / 60);
+            let s = Math.floor(seconds % 60);
+            let ms = Math.floor((seconds % 1) * 10); // 1 digit milidetik
+            return `${m < 10 ? '0'+m : m}:${s < 10 ? '0'+s : s}.${ms}`;
         }
 
-        // Fungsi khusus mencatat Undo/Redo di layar
-        function saveDOMState() {
-            const state = tracksWs.innerHTML;
-            if (historyIndex < historyDOM.length - 1) historyDOM = historyDOM.slice(0, historyIndex + 1);
-            historyDOM.push(state);
-            historyIndex++;
-            updateHistoryBtns();
-            autoSave(); // Panggil autosave DB juga
+        function updateTimecode() {
+            document.getElementById('time-display').innerText = formatTime(playheadTime);
         }
 
-        // INIT LOAD PROJECT SAAT REFRESH
-        async function initializeApp() {
-            showLoad("Memuat Sistem...", "Menyiapkan Kreaverse Studio");
-            const lastId = localStorage.getItem('kreaverse_current_proj');
-            
-            if (lastId) {
-                await loadProject(lastId);
-            } else {
-                createNewProject();
-            }
-        }
-
-        async function createNewProject() {
-            currentProjectId = 'proj_' + Date.now();
-            currentProjectName = "Project Baru";
-            localStorage.setItem('kreaverse_current_proj', currentProjectId);
-            
-            tracksWs.innerHTML = '';
-            trackCount = 0;
-            trackMutes = {};
-            audioBuffers = {};
-            historyDOM = [];
-            historyIndex = -1;
-            setPlayhead(0);
-            drawRuler();
-            
-            document.getElementById('project-modal').style.display = 'none';
-            saveDOMState();
-            hideLoad();
-        }
-
-        async function loadProject(id) {
-            showLoad("Membuka Project...", "Membaca memori lokal.");
-            const proj = await getProjectFromDB(id);
-            if (!proj) { createNewProject(); return; }
-
-            currentProjectId = proj.id;
-            currentProjectName = proj.name;
-            trackCount = proj.trackCount;
-            PPS = proj.pps || 20;
-            localStorage.setItem('kreaverse_current_proj', currentProjectId);
-
-            tracksWs.innerHTML = '';
-            trackMutes = {};
-            audioBuffers = {};
-            historyDOM = [];
-            historyIndex = -1;
-            setPlayhead(0);
-
-            // Rebuild Tracks
-            proj.tracks.forEach(tData => {
-                trackMutes[tData.id] = tData.muted;
-                const track = document.createElement('div');
-                track.className = 'track'; track.dataset.trackid = tData.id;
-                track.innerHTML = `
-                    <div class="track-header">
-                        <div class="track-icon" style="background:${tData.color}"><i class="fa-solid fa-microphone"></i></div>
-                        <div class="track-info">
-                            <span class="t-name" onclick="renameTrack(this)">${tData.name}</span>
-                            <div class="track-controls">
-                                <button class="btn-mute ${tData.muted ? 'muted' : ''}" data-trackid="${tData.id}" onclick="toggleMute('${tData.id}', this)">M</button>
-                            </div>
-                        </div>
-                    </div>
-                `;
-                tracksWs.appendChild(track);
-            });
-
-            // Rebuild Clips & Fetch Audio
-            if(proj.clips.length > 0) {
-                showLoad("Memuat Audio...", "Mendekode suara dari database. Mohon tunggu.");
-                initAudio();
-                
-                // Cari bufferId unik agar tidak decode berulang
-                const uniqueBuffers = [...new Set(proj.clips.map(c => c.bufferId))];
-                
-                for(let bId of uniqueBuffers) {
-                    const arrayBuf = await getAudioFromDB(bId);
-                    if(arrayBuf) {
-                        try {
-                            const decAudio = await audioCtx.decodeAudioData(arrayBuf);
-                            audioBuffers[bId] = decAudio;
-                        } catch(e) { console.log("Gagal decode buffer lama"); }
-                    }
-                }
-
-                // Masukkan clip ke layarnya
-                proj.clips.forEach(cData => {
-                    const trackEl = document.querySelector(`.track[data-trackid="${cData.trackId}"]`);
-                    if(trackEl) {
-                        const clip = document.createElement('div');
-                        clip.className = 'clip'; 
-                        if(cData.locked === "true") clip.classList.add('locked');
-                        clip.style.background = cData.color;
-                        clip.style.width = `${cData.width}px`; 
-                        clip.style.left = `${cData.left}px`; 
-                        clip.dataset.color = cData.color; 
-                        clip.dataset.locked = cData.locked;
-                        clip.dataset.trackid = cData.trackId; 
-                        clip.dataset.bufferid = cData.bufferId; 
-                        clip.dataset.offset = cData.offset;
-                        clip.innerHTML = `<i class="fa-solid fa-lock lock-icon"></i><div class="clip-wave"></div><span onclick="renameClip(this)">${cData.text}</span>`;
-                        setupClipEvents(clip);
-                        trackEl.appendChild(clip);
-                    }
-                });
-            }
-
-            drawRuler();
-            document.getElementById('header-project-name').innerText = currentProjectName;
-            document.getElementById('project-modal').style.display = 'none';
-            saveDOMState();
-            hideLoad();
-        }
-
-        // ==========================================
-        // 4. PROJECT MANAGER (Histori)
-        // ==========================================
-        async function openProjectManager() {
-            const listCont = document.getElementById('project-list-container');
-            listCont.innerHTML = '<p>Memuat daftar project...</p>';
-            document.getElementById('project-modal').style.display = 'flex';
-            
-            const projects = await getAllProjectsDB();
-            listCont.innerHTML = '';
-            
-            if(projects.length === 0) {
-                listCont.innerHTML = '<p style="font-size:12px; color:gray;">Belum ada project.</p>';
-                return;
-            }
-
-            // Urutkan dari yang terbaru
-            projects.sort((a,b) => b.updatedAt - a.updatedAt).forEach(p => {
-                const date = new Date(p.updatedAt).toLocaleString('id-ID', {day:'numeric', month:'short', hour:'2-digit', minute:'2-digit'});
-                const div = document.createElement('div');
-                div.className = 'proj-item';
-                div.innerHTML = `
-                    <div class="proj-item-info">
-                        <strong>${p.name}</strong>
-                        <span>${p.tracks.length} Track | ${date}</span>
-                    </div>
-                    <div class="proj-actions">
-                        <button class="proj-btn" onclick="loadProject('${p.id}')">Buka</button>
-                        <button class="proj-btn del" onclick="delProj('${p.id}')"><i class="fa-solid fa-trash"></i></button>
-                    </div>
-                `;
-                listCont.appendChild(div);
-            });
-        }
-
-        async function delProj(id) {
-            if(confirm("Yakin hapus project ini?")) {
-                await deleteProjectDB(id);
-                if(id === currentProjectId) { localStorage.removeItem('kreaverse_current_proj'); createNewProject(); }
-                else { openProjectManager(); }
-            }
-        }
-
-        function renameProject() {
-            const n = prompt("Nama Project:", currentProjectName);
-            if(n) { currentProjectName = n; autoSave(); }
-        }
-        function renameTrack(el) { const n = prompt("Ganti Nama Track:", el.innerText); if(n) { el.innerText = n; saveDOMState(); } }
-        function renameClip(el) { const n = prompt("Ganti Nama Bagian:", el.innerText); if(n) { el.innerText = n; saveDOMState(); } }
-
-        // ==========================================
-        // 5. AUDIO UPLOAD & ENGINE
-        // ==========================================
-        function initAudio() {
-            if (!audioCtx) audioCtx = new AudioContext();
-            if (audioCtx.state === 'suspended') audioCtx.resume();
-        }
-
-        document.getElementById('audio-upload').addEventListener('change', async (e) => {
-            initAudio();
-            const files = Array.from(e.target.files);
-            if (files.length === 0) return;
-            
-            showLoad("Memproses Audio...", "Membaca & Menyimpan lagu ke memori.");
-            
-            for (let file of files) {
-                try {
-                    const arrBuffer = await file.arrayBuffer();
-                    
-                    // Simpan raw ArrayBuffer ke Database biar persisten (tidak hilang saat direfresh)
-                    const bId = 'buf_' + Date.now() + Math.floor(Math.random() * 1000);
-                    await saveAudioToDB(bId, arrBuffer);
-                    
-                    // Decode untuk diputar
-                    const aBuffer = await audioCtx.decodeAudioData(arrBuffer.slice(0)); 
-                    audioBuffers[bId] = aBuffer;
-                    
-                    createTrack(file.name, aBuffer.duration, bId);
-                } catch (err) { alert("Format audio tidak didukung."); }
-            }
-            saveDOMState();
-            e.target.value = ''; 
-            hideLoad();
-        });
-
-        function createTrack(name, durSec, bufferId) {
-            const trackId = 'trk_' + trackCount;
-            const color = colors[trackCount % colors.length];
-            const track = document.createElement('div');
-            
-            track.className = 'track'; track.dataset.trackid = trackId; trackMutes[trackId] = false;
-            track.innerHTML = `
-                <div class="track-header">
-                    <div class="track-icon" style="background:${color}"><i class="fa-solid fa-microphone"></i></div>
-                    <div class="track-info">
-                        <span class="t-name" onclick="renameTrack(this)">Trk ${trackCount+1}</span>
-                        <div class="track-controls">
-                            <button class="btn-mute" data-trackid="${trackId}" onclick="toggleMute('${trackId}', this)">M</button>
-                        </div>
-                    </div>
-                </div>
-            `;
-            
-            const clip = createClipElement(color, name, durSec * PPS, 0, trackId, bufferId, 0); 
-            track.appendChild(clip); tracksWs.appendChild(track);
-            trackCount++; drawRuler();
-        }
-
-        function createClipElement(color, text, w, l, tId, bId, offset) {
-            const clip = document.createElement('div');
-            clip.className = 'clip'; clip.style.background = color;
-            clip.style.width = `${w}px`; clip.style.left = `${l + TRACK_HEADER_WIDTH}px`; 
-            clip.dataset.color = color; clip.dataset.locked = "false";
-            clip.dataset.trackid = tId; clip.dataset.bufferid = bId; clip.dataset.offset = offset;
-            
-            clip.innerHTML = `<i class="fa-solid fa-lock lock-icon"></i><div class="clip-wave"></div><span onclick="renameClip(this)">${text}</span>`;
-            setupClipEvents(clip); return clip;
-        }
-
-        function toggleMute(tid, btn) {
-            trackMutes[tid] = !trackMutes[tid];
-            trackMutes[tid] ? btn.classList.add('muted') : btn.classList.remove('muted');
-            autoSave();
-        }
-
-        // ==========================================
-        // 6. UI KONTROL & PLAYHEAD
-        // ==========================================
         function drawRuler() {
-            const ctx = rulerCanvas.getContext('2d');
-            let maxDur = 180; 
-            document.querySelectorAll('.clip').forEach(c => {
-                const end = (parseFloat(c.style.left) - TRACK_HEADER_WIDTH + parseFloat(c.style.width)) / PPS;
-                if (end > maxDur) maxDur = end;
-            });
-            const width = Math.max(ws.scrollWidth, (maxDur + 30) * PPS); 
-            rulerCanvas.width = width; rulerCanvas.height = 25;
-            ctx.clearRect(0, 0, width, 25); ctx.fillStyle = "#888"; ctx.font = "10px sans-serif";
+            const canvas = document.getElementById('ruler');
+            const ctx = canvas.getContext('2d');
+            let maxTime = 60; 
+            clipsData.forEach(c => { if(c.startTime + c.duration > maxTime) maxTime = c.startTime + c.duration; });
+            maxTime += 30; // buffer ruang kosong
             
-            for (let i = 0; i * PPS < width; i++) {
+            const width = maxTime * PPS;
+            canvas.width = Math.max(ws.scrollWidth - HEADER_W, width);
+            canvas.height = 20;
+            ctx.clearRect(0, 0, canvas.width, 20);
+            ctx.fillStyle = "#888";
+            ctx.font = "9px Arial";
+            
+            for (let i = 0; i < maxTime; i++) {
                 const x = i * PPS;
-                let step = PPS < 5 ? 30 : (PPS < 15 ? 10 : 1); 
-                if (i % step === 0) {
-                    ctx.fillRect(x, 10, 1, 15);
-                    const min = Math.floor(i / 60); const sec = i % 60;
-                    ctx.fillText(`${min}:${sec < 10 ? '0'+sec : sec}`, x + 3, 10);
-                } else { ctx.fillRect(x, 18, 1, 7); }
+                if (PPS > 15 || i % 5 === 0) {
+                    ctx.fillRect(x, 0, 1, 8);
+                    if (i % 5 === 0) ctx.fillText(i, x + 3, 8);
+                }
             }
-            tracksWs.style.width = `${width + TRACK_HEADER_WIDTH}px`;
+            document.querySelector('.btn-add-track').style.left = `${HEADER_W}px`;
         }
 
-        function updatePlayheadUI() { playhead.style.left = `${TRACK_HEADER_WIDTH + playheadPos}px`; }
-        function setPlayhead(x) { playheadPos = x < 0 ? 0 : x; updatePlayheadUI(); }
+        function setPlayhead(timeSec) {
+            playheadTime = timeSec < 0 ? 0 : timeSec;
+            playhead.style.left = `${HEADER_W + (playheadTime * PPS)}px`;
+            updateTimecode();
+        }
 
-        const rulerCont = document.getElementById('ruler-container');
+        // Drag Playhead
         let isDraggingPh = false;
-
-        rulerCont.addEventListener('mousedown', (e) => { if(isPlaying) return; setPlayhead(e.clientX - ws.getBoundingClientRect().left + ws.scrollLeft - TRACK_HEADER_WIDTH); });
+        document.getElementById('ruler-container').addEventListener('mousedown', (e) => {
+            if(isPlaying) return;
+            setPlayhead((e.clientX - ws.getBoundingClientRect().left + ws.scrollLeft - HEADER_W) / PPS);
+        });
         
-        const phStart = (e) => { isDraggingPh = true; e.stopPropagation(); }
-        const phMove = (e) => { if (!isDraggingPh) return; setPlayhead((e.touches ? e.touches[0].clientX : e.clientX) - ws.getBoundingClientRect().left + ws.scrollLeft - TRACK_HEADER_WIDTH); }
+        const phStart = (e) => { isDraggingPh = true; e.stopPropagation(); hideContextMenu(); }
+        const phMove = (e) => {
+            if (!isDraggingPh) return;
+            let x = (e.touches ? e.touches[0].clientX : e.clientX) - ws.getBoundingClientRect().left + ws.scrollLeft - HEADER_W;
+            setPlayhead(x / PPS);
+        }
         const phEnd = () => { isDraggingPh = false; }
-
-        document.getElementById('playhead-handle').addEventListener('mousedown', phStart); document.getElementById('playhead-handle').addEventListener('touchstart', phStart, {passive: true});
+        
+        document.getElementById('playhead-handle').addEventListener('mousedown', phStart);
+        document.getElementById('playhead-handle').addEventListener('touchstart', phStart, {passive: true});
         document.addEventListener('mousemove', phMove); document.addEventListener('touchmove', phMove, {passive: true});
         document.addEventListener('mouseup', phEnd); document.addEventListener('touchend', phEnd);
 
         // ==========================================
-        // 7. DRAG AUDIO & SELEKSI
+        // 3. RENDER UI DARI DATA (DATA-DRIVEN)
         // ==========================================
-        let dOffX = 0, dClip = null, isMoved = false;
+        // Ini kunci agar Zoom dan Potong presisi. DOM digambar ulang berdasarkan Array clipsData.
+        function renderClips() {
+            // Hapus clip lama
+            document.querySelectorAll('.clip').forEach(el => el.remove());
+            
+            clipsData.forEach(data => {
+                const trackEl = document.getElementById(data.trackId);
+                if(!trackEl) return;
 
-        function setupClipEvents(clip) {
+                const clip = document.createElement('div');
+                clip.className = `clip ${selectedClipId === data.id ? 'selected' : ''}`;
+                clip.id = data.id;
+                clip.style.background = data.color;
+                clip.style.width = `${data.duration * PPS}px`;
+                clip.style.left = `${HEADER_W + (data.startTime * PPS)}px`;
+                
+                clip.innerHTML = `<span class="clip-name">${data.name}</span><div class="clip-wave"></div>`;
+                
+                setupClipEvents(clip, data);
+                trackEl.appendChild(clip);
+            });
+            drawRuler();
+            if(selectedClipId) positionContextMenu(document.getElementById(selectedClipId));
+        }
+
+        // ==========================================
+        // 4. AUDIO UPLOAD & ADD TRACK
+        // ==========================================
+        document.getElementById('audio-upload').addEventListener('change', async (e) => {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            const files = Array.from(e.target.files);
+            if (files.length === 0) return;
+            
+            document.getElementById('loading-modal').style.display = 'flex';
+            
+            for (let file of files) {
+                try {
+                    const arrBuffer = await file.arrayBuffer();
+                    const aBuffer = await audioCtx.decodeAudioData(arrBuffer);
+                    const bId = 'buf_' + Date.now() + Math.random();
+                    audioBuffers[bId] = aBuffer;
+                    createTrack(file.name, aBuffer.duration, bId);
+                } catch (err) { alert("Format audio tidak didukung."); }
+            }
+            document.getElementById('loading-modal').style.display = 'none';
+            e.target.value = ''; 
+        });
+
+        function createTrack(name, duration, bufferId) {
+            trackCount++;
+            const tId = 'trk_' + Date.now();
+            const color = trackColors[(trackCount-1) % trackColors.length];
+            trackStates[tId] = { mute: false, solo: false };
+            
+            // Buat Elemen Track
+            const track = document.createElement('div');
+            track.className = 'track'; track.id = tId;
+            track.innerHTML = `
+                <div class="track-header">
+                    <div class="th-top">
+                        <div class="track-icon" style="background:${color}"><i class="fa-solid fa-microphone"></i></div>
+                        <span class="t-name">${name}</span>
+                    </div>
+                    <div class="th-bottom">
+                        <button class="btn-mute" onclick="toggleState('${tId}', 'mute', this)">M</button>
+                        <button class="btn-solo" onclick="toggleState('${tId}', 'solo', this)">S</button>
+                        <button class="btn-fx">+Fx</button>
+                    </div>
+                </div>
+            `;
+            
+            // Sisipkan sebelum tombol "+"
+            tracksWs.insertBefore(track, document.querySelector('.btn-add-track'));
+            
+            // Masukkan data clip
+            clipsData.push({
+                id: 'clip_' + Date.now(),
+                trackId: tId,
+                bufferId: bufferId,
+                name: name,
+                color: color,
+                startTime: 0, // di detik 0
+                duration: duration,
+                offset: 0 // baca audio dari detik 0
+            });
+            
+            renderClips();
+        }
+
+        function toggleState(tId, type, btn) {
+            trackStates[tId][type] = !trackStates[tId][type];
+            btn.classList.toggle('active');
+        }
+
+        // ==========================================
+        // 5. CLIP DRAG & FLOATING MENU
+        // ==========================================
+        let dClipId = null, startDragX = 0, origStartTime = 0, hasMoved = false;
+
+        function setupClipEvents(clipEl, data) {
             const startDrag = (e) => {
-                if (e.target.tagName === 'SPAN') return;
-                selectClip(clip); if (clip.dataset.locked === "true") return; 
-                dClip = clip; isMoved = false;
-                dOffX = (e.touches ? e.touches[0].clientX : e.clientX) - clip.getBoundingClientRect().left;
+                selectedClipId = data.id;
+                renderClips(); // re-render untuk highlight border
+                
+                dClipId = data.id;
+                origStartTime = data.startTime;
+                hasMoved = false;
+                startDragX = (e.touches ? e.touches[0].clientX : e.clientX);
+                
+                positionContextMenu(document.getElementById(data.id));
             };
-            clip.addEventListener('mousedown', startDrag); clip.addEventListener('touchstart', startDrag, {passive: true});
+            clipEl.addEventListener('mousedown', startDrag); 
+            clipEl.addEventListener('touchstart', startDrag, {passive: true});
         }
 
         const moveDrag = (e) => {
-            if (!dClip) return; isMoved = true;
-            let nx = (e.touches ? e.touches[0].clientX : e.clientX) - ws.getBoundingClientRect().left + ws.scrollLeft - dOffX;
-            if (nx < TRACK_HEADER_WIDTH) nx = TRACK_HEADER_WIDTH;
-            dClip.style.left = `${nx}px`;
+            if (!dClipId) return;
+            hasMoved = true;
+            hideContextMenu(); // sembunyikan menu saat digeser
+            
+            const clientX = (e.touches ? e.touches[0].clientX : e.clientX);
+            const deltaPx = clientX - startDragX;
+            const deltaSec = deltaPx / PPS;
+            
+            const data = clipsData.find(c => c.id === dClipId);
+            let newTime = origStartTime + deltaSec;
+            if (newTime < 0) newTime = 0;
+            data.startTime = newTime;
+            
+            // Update visual directly for performance
+            const el = document.getElementById(dClipId);
+            el.style.left = `${HEADER_W + (newTime * PPS)}px`;
         }
-        const endDrag = () => { if(dClip && isMoved) saveDOMState(); dClip = null; }
+        
+        const endDrag = () => { 
+            if(dClipId && hasMoved) {
+                renderClips(); // pastikan snap to grid/data final
+            }
+            dClipId = null; 
+        }
 
         document.addEventListener('mousemove', moveDrag); document.addEventListener('touchmove', moveDrag, {passive: true});
         document.addEventListener('mouseup', endDrag); document.addEventListener('touchend', endDrag);
 
-        function selectClip(clip) {
-            if (selectedClip) selectedClip.classList.remove('selected');
-            selectedClip = clip; clip.classList.add('selected');
-            ['btn-cut','btn-copy','btn-delete','btn-lock'].forEach(id => document.getElementById(id).disabled = false);
-        }
-
+        // Deselect click outside
         ws.addEventListener('mousedown', (e) => {
-            if (!e.target.closest('.clip') && !e.target.closest('.playhead-handle') && !e.target.closest('.ruler-container')) {
-                if (selectedClip) selectedClip.classList.remove('selected'); selectedClip = null;
-                ['btn-cut','btn-copy','btn-delete','btn-lock'].forEach(id => document.getElementById(id).disabled = true);
+            if (!e.target.closest('.clip') && !e.target.closest('.context-menu')) {
+                selectedClipId = null;
+                hideContextMenu();
+                renderClips();
             }
         });
 
-        // ==========================================
-        // 8. FUNGSI ALAT BAWAH (POTONG, DLL)
-        // ==========================================
-        document.getElementById('btn-delete').addEventListener('click', () => {
-            if (selectedClip) { selectedClip.remove(); selectedClip = null; saveDOMState(); }
-        });
-        
-        document.getElementById('btn-copy').addEventListener('click', () => {
-            if (selectedClip) {
-                const w = parseFloat(selectedClip.style.width), l = parseFloat(selectedClip.style.left) - TRACK_HEADER_WIDTH;
-                const clone = createClipElement(selectedClip.dataset.color, "Copy", w, l + w + 5, selectedClip.dataset.trackid, selectedClip.dataset.bufferid, selectedClip.dataset.offset);
-                selectedClip.parentElement.appendChild(clone); saveDOMState();
-            }
-        });
-        
-        document.getElementById('btn-lock').addEventListener('click', () => {
-            if (selectedClip) {
-                const isL = selectedClip.dataset.locked === "true";
-                selectedClip.dataset.locked = !isL ? "true" : "false";
-                isL ? selectedClip.classList.remove('locked') : selectedClip.classList.add('locked'); saveDOMState();
-            }
-        });
-
-        document.getElementById('btn-cut').addEventListener('click', () => {
-            if (!selectedClip || selectedClip.dataset.locked === "true") return;
-            const cLeft = parseFloat(selectedClip.style.left), cWidth = parseFloat(selectedClip.style.width), phAbs = playheadPos + TRACK_HEADER_WIDTH;
-            if (phAbs > cLeft && phAbs < cLeft + cWidth) {
-                const w1 = phAbs - cLeft, w2 = (cLeft + cWidth) - phAbs;
-                if (w1 < (MIN_CUT_SECONDS * PPS) || w2 < (MIN_CUT_SECONDS * PPS)) { alert("Potongan terlalu kecil."); return; }
-                const origOff = parseFloat(selectedClip.dataset.offset);
-                selectedClip.style.width = `${w1}px`;
-                const part2 = createClipElement(selectedClip.dataset.color, selectedClip.querySelector('span').innerText, w2, phAbs - TRACK_HEADER_WIDTH + 1, selectedClip.dataset.trackid, selectedClip.dataset.bufferid, origOff + (w1/PPS));
-                selectedClip.parentElement.appendChild(part2); saveDOMState();
-            }
-        });
-
-        document.getElementById('btn-zoom').addEventListener('click', () => {
-            let old = PPS;
-            if(PPS === 20) PPS = 5; else if(PPS === 5) PPS = 2; else PPS = 20; 
-            const ratio = PPS / old;
-            document.querySelectorAll('.clip').forEach(c => {
-                c.style.width = `${parseFloat(c.style.width) * ratio}px`;
-                c.style.left = `${((parseFloat(c.style.left) - TRACK_HEADER_WIDTH) * ratio) + TRACK_HEADER_WIDTH}px`;
-            });
-            playheadPos *= ratio; updatePlayheadUI(); drawRuler(); autoSave();
-        });
-
-        function undo() {
-            if (historyIndex > 0) {
-                historyIndex--; tracksWs.innerHTML = historyDOM[historyIndex];
-                document.querySelectorAll('.clip').forEach(c => setupClipEvents(c)); selectedClip = null;
-                updateHistoryBtns(); autoSave();
-            }
+        function positionContextMenu(clipEl) {
+            if(!clipEl) return;
+            const rect = clipEl.getBoundingClientRect();
+            ctxMenu.style.display = 'flex';
+            ctxMenu.style.left = `${rect.left + (rect.width/2)}px`;
+            ctxMenu.style.top = `${rect.top}px`;
         }
-        function redo() {
-            if (historyIndex < historyDOM.length - 1) {
-                historyIndex++; tracksWs.innerHTML = historyDOM[historyIndex];
-                document.querySelectorAll('.clip').forEach(c => setupClipEvents(c)); selectedClip = null;
-                updateHistoryBtns(); autoSave();
+        function hideContextMenu() { ctxMenu.style.display = 'none'; }
+
+        // --- AKSI MENU FLOAT (POTONG, HAPUS, COPY) ---
+        function ctxAction(action) {
+            if(!selectedClipId) return;
+            const index = clipsData.findIndex(c => c.id === selectedClipId);
+            const clip = clipsData[index];
+
+            if (action === 'delete') {
+                clipsData.splice(index, 1);
+                selectedClipId = null;
+            } 
+            else if (action === 'copy') {
+                clipsData.push({
+                    ...clip,
+                    id: 'clip_' + Date.now(),
+                    startTime: clip.startTime + clip.duration + 0.5 // taruh di kanannya
+                });
             }
-        }
-        function updateHistoryBtns() {
-            document.getElementById('btn-undo').style.opacity = historyIndex > 0 ? "1" : "0.5";
-            document.getElementById('btn-redo').style.opacity = historyIndex < historyDOM.length - 1 ? "1" : "0.5";
+            else if (action === 'split') {
+                // Potong persis di garis playhead
+                if (playheadTime > clip.startTime && playheadTime < clip.startTime + clip.duration) {
+                    const dur1 = playheadTime - clip.startTime;
+                    const dur2 = (clip.startTime + clip.duration) - playheadTime;
+                    
+                    if (dur1 < MIN_CUT_SEC || dur2 < MIN_CUT_SEC) {
+                        alert(`Potongan minimal ${MIN_CUT_SEC} detik.`); return;
+                    }
+
+                    const originalOffset = clip.offset;
+                    // Ubah clip pertama (kiri)
+                    clip.duration = dur1;
+                    
+                    // Buat clip kedua (kanan)
+                    clipsData.push({
+                        ...clip,
+                        id: 'clip_' + Date.now(),
+                        startTime: playheadTime,
+                        duration: dur2,
+                        offset: originalOffset + dur1
+                    });
+                } else {
+                    alert("Geser garis penanda putih (Playhead) tepat ke atas lagu ini untuk memotong.");
+                }
+            }
+            hideContextMenu();
+            renderClips();
         }
 
         // ==========================================
-        // 9. PEMUTARAN AUDIO
+        // 6. ZOOM IN / OUT 
+        // ==========================================
+        function zoomIn() { if(PPS < 100) { PPS += 10; renderClips(); setPlayhead(playheadTime); } }
+        function zoomOut() { if(PPS > 10) { PPS -= 10; renderClips(); setPlayhead(playheadTime); } }
+
+        // ==========================================
+        // 7. PEMUTARAN AUDIO
         // ==========================================
         function stopAllAudio() { activeSources.forEach(src => { try { src.stop(); } catch(e){} }); activeSources = []; }
-
+        function goToStart() { stopAction(); setPlayhead(0); ws.scrollLeft = 0; }
+        
         const stopAction = () => {
             isPlaying = false; clearInterval(playInterval);
-            document.getElementById('btn-play').style.display = 'flex'; document.getElementById('btn-stop').style.display = 'none'; stopAllAudio();
+            document.getElementById('play-icon').className = "fa-solid fa-play";
+            document.getElementById('btn-play').style.background = "#ff3b30";
+            stopAllAudio();
         };
 
         document.getElementById('btn-play').addEventListener('click', () => {
-            initAudio(); stopAllAudio(); isPlaying = true;
-            document.getElementById('btn-play').style.display = 'none'; document.getElementById('btn-stop').style.display = 'flex';
+            if(isPlaying) { stopAction(); return; }
             
-            const currentSec = playheadPos / PPS;
-            document.querySelectorAll('.clip').forEach(clip => {
-                const tId = clip.dataset.trackid; if (trackMutes[tId]) return; 
-                const buffer = audioBuffers[clip.dataset.bufferid]; if (!buffer) return;
-                const startSec = (parseFloat(clip.style.left) - TRACK_HEADER_WIDTH) / PPS;
-                const durSec = parseFloat(clip.style.width) / PPS;
-                let delay = startSec - currentSec, startOffset = parseFloat(clip.dataset.offset || 0);
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            stopAllAudio(); isPlaying = true;
+            document.getElementById('play-icon').className = "fa-solid fa-stop";
+            document.getElementById('btn-play').style.background = "#333";
+            
+            // Logika Mute & Solo
+            let hasSolo = Object.values(trackStates).some(t => t.solo);
+
+            clipsData.forEach(c => {
+                const ts = trackStates[c.trackId];
+                if (ts.mute) return; // Muted
+                if (hasSolo && !ts.solo) return; // Jika ada yang disolo, yang tidak disolo dimatikan
                 
-                if (currentSec < startSec + durSec) {
-                    const source = audioCtx.createBufferSource(); source.buffer = buffer;
-                    if (delay < 0) { startOffset += Math.abs(delay); delay = 0; }
-                    source.connect(audioCtx.destination); source.start(audioCtx.currentTime + delay, startOffset, durSec); activeSources.push(source);
+                const buffer = audioBuffers[c.bufferId];
+                if (!buffer) return;
+
+                let delay = c.startTime - playheadTime;
+                let startOffset = c.offset;
+                
+                if (delay < 0) {
+                    startOffset += Math.abs(delay);
+                    delay = 0;
+                }
+                
+                if (playheadTime < c.startTime + c.duration) {
+                    const source = audioCtx.createBufferSource();
+                    source.buffer = buffer;
+                    source.connect(audioCtx.destination);
+                    source.start(audioCtx.currentTime + delay, startOffset, c.duration);
+                    activeSources.push(source);
                 }
             });
             
-            startTimeContext = audioCtx.currentTime; startPlayheadPos = playheadPos;
+            startTimeContext = audioCtx.currentTime; 
+            startPlayheadTime = playheadTime;
+            
             playInterval = setInterval(() => {
-                playheadPos = startPlayheadPos + ((audioCtx.currentTime - startTimeContext) * PPS); updatePlayheadUI();
+                setPlayhead(startPlayheadTime + (audioCtx.currentTime - startTimeContext));
                 if (playhead.getBoundingClientRect().left > window.innerWidth - 80) ws.scrollLeft += 150;
-            }, 50);
+            }, 30);
         });
-        
-        document.getElementById('btn-stop').addEventListener('click', stopAction);
-        document.getElementById('btn-to-start').addEventListener('click', () => { stopAction(); setPlayhead(0); ws.scrollLeft = 0; });
 
-        // RUN
-        window.addEventListener('resize', drawRuler);
-        initializeApp();
+        // ==========================================
+        // 8. REAL EXPORT AUDIO (.WAV Asli)
+        // ==========================================
+        function openExportModal() {
+            if(clipsData.length === 0) { alert("Tidak ada lagu untuk disimpan!"); return;}
+            document.getElementById('export-modal').style.display = 'flex';
+            document.getElementById('export-form').style.display = 'block';
+            document.getElementById('export-progress').style.display = 'none';
+        }
+
+        async function processExport() {
+            const title = document.getElementById('exp-name').value || "Project Tanpa Nama";
+            document.getElementById('export-form').style.display = 'none';
+            document.getElementById('export-progress').style.display = 'block';
+            
+            // Hitung total durasi
+            let maxTime = 0;
+            clipsData.forEach(c => { if(c.startTime + c.duration > maxTime) maxTime = c.startTime + c.duration; });
+            
+            const stat = document.getElementById('exp-status');
+            const bar = document.getElementById('exp-bar');
+            stat.innerText = "Menyiapkan Renderer..."; bar.style.width = "10%";
+            
+            // Gunakan OfflineAudioContext untuk merender (Sangat Cepat & Tanpa Suara Keluar)
+            const offlineCtx = new OfflineAudioContext(2, 44100 * maxTime, 44100);
+            let hasSolo = Object.values(trackStates).some(t => t.solo);
+
+            clipsData.forEach(c => {
+                const ts = trackStates[c.trackId];
+                if (ts.mute) return; 
+                if (hasSolo && !ts.solo) return;
+                
+                const buffer = audioBuffers[c.bufferId];
+                if(buffer) {
+                    const source = offlineCtx.createBufferSource();
+                    source.buffer = buffer;
+                    source.connect(offlineCtx.destination);
+                    source.start(c.startTime, c.offset, c.duration);
+                }
+            });
+
+            stat.innerText = "Merender Audio..."; bar.style.width = "50%";
+            
+            try {
+                const renderedBuffer = await offlineCtx.startRendering();
+                stat.innerText = "Membuat File WAV..."; bar.style.width = "90%";
+                
+                // Konversi Buffer ke format file WAV
+                const wavBlob = bufferToWav(renderedBuffer);
+                const url = URL.createObjectURL(wavBlob);
+                
+                // Trigger Download
+                const a = document.createElement('a');
+                a.style.display = 'none';
+                a.href = url;
+                a.download = `Kreaverse AI - ${title}.wav`;
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+                
+                bar.style.width = "100%";
+                stat.innerText = "Selesai!";
+                setTimeout(() => { document.getElementById('export-modal').style.display = 'none'; }, 1000);
+            } catch(e) {
+                stat.innerText = "Gagal merender!";
+            }
+        }
+
+        // Fungsi standard untuk merubah AudioBuffer ke Format .wav yang bisa didownload
+        function bufferToWav(abuffer) {
+            let numOfChan = abuffer.numberOfChannels,
+                length = abuffer.length * numOfChan * 2 + 44,
+                buffer = new ArrayBuffer(length),
+                view = new DataView(buffer),
+                channels = [], i, sample, offset = 0, pos = 0;
+
+            setUint32(0x46464952); setUint32(length - 8); setUint32(0x45564157);
+            setUint32(0x20746d66); setUint32(16); setUint16(1); setUint16(numOfChan);
+            setUint32(abuffer.sampleRate); setUint32(abuffer.sampleRate * 2 * numOfChan);
+            setUint16(numOfChan * 2); setUint16(16); setUint32(0x61746164); setUint32(length - pos - 4);
+
+            for(i=0; i<abuffer.numberOfChannels; i++) channels.push(abuffer.getChannelData(i));
+
+            while(pos < length) {
+                for(i=0; i<numOfChan; i++) {
+                    sample = Math.max(-1, Math.min(1, channels[i][offset]));
+                    sample = (0.5 + sample < 0 ? sample * 32768 : sample * 32767)|0;
+                    view.setInt16(pos, sample, true); pos += 2;
+                }
+                offset++
+            }
+            return new Blob([buffer], {type: "audio/wav"});
+
+            function setUint16(data) { view.setUint16(pos, data, true); pos += 2; }
+            function setUint32(data) { view.setUint32(pos, data, true); pos += 4; }
+        }
+
+        // Inisialisasi awal
+        drawRuler();
+        setPlayhead(0);
+
     </script>
 </body>
 </html>
