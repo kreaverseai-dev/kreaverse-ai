@@ -1764,25 +1764,22 @@
                         </div>
                     </div>
 
-                    <!-- SUNO AUDIO STEALTH STUDIO (FULLSCREEN POP-UP) -->
-                    <div id="dspStudioWrapper" class="hidden" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #0f172a; z-index: 9999999; overflow-y: auto; padding: 0; color: #fff; text-align: left;">
+                    <!-- SUNO AUDIO STEALTH STUDIO (FULLSCREEN POP-UP FIXED) -->
+                    <div id="dspStudioWrapper" class="hidden" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #0f172a; z-index: 9999999; overflow-y: auto; padding: 0; color: #fff; text-align: left;">
                         
                         <!-- Sticky Header -->
                         <div style="position: sticky; top: 0; background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(10px); padding: 16px 20px; border-bottom: 1px solid rgba(255,255,255,0.08); display: flex; justify-content: space-between; align-items: center; z-index: 100; box-shadow: 0 4px 20px rgba(0,0,0,0.3);">
-                            <div style="display: flex; align-items: center; gap: 12px;">
-                                <div style="width: 38px; height: 38px; border-radius: 10px; background: rgba(239, 68, 68, 0.15); display: flex; align-items: center; justify-content: center; color: #ef4444; font-size: 1.1rem;">
-                                    <i class="fa-solid fa-shield-halved"></i>
-                                </div>
-                                <div>
-                                    <h3 style="margin: 0; font-size: 1.05rem; font-weight: 900; letter-spacing: 0.5px; color: #f8fafc;">SUNO Audio DSP</h3>
-                                    <span style="font-size: 0.65rem; color: #ef4444; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; display: flex; align-items: center; gap: 5px;"><i class="fa-solid fa-triangle-exclamation" style="color: #eab308; font-size: 0.75rem;"></i> AI SENSOR DETECTED</span>
-                                </div>
+                            <div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px;">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 450 80" width="130" height="auto">
+                                    <text x="0" y="55%" font-family="'Arial Black', Impact, sans-serif" font-size="65" font-weight="900" fill="#ffffff" dominant-baseline="middle" letter-spacing="3">KREAVERSE</text>
+                                </svg>
+                                <span style="font-size: 0.65rem; color: #ef4444; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; display: flex; align-items: center; gap: 5px;"><i class="fa-solid fa-triangle-exclamation" style="color: #eab308; font-size: 0.75rem;"></i> AI SENSOR DETECTED</span>
                             </div>
                             <button onclick="document.getElementById('dspStudioWrapper').classList.add('hidden')" style="background: rgba(255,255,255,0.1); border: none; color: #fff; width: 34px; height: 34px; border-radius: 50%; font-size: 1.1rem; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.2s;"><i class="fa-solid fa-xmark"></i></button>
                         </div>
 
-                        <!-- Konten DSP (Dibungkus agar ada padding) -->
-                        <div id="dspStudioBody" style="padding: 20px; max-width: 800px; margin: 0 auto; padding-bottom: 50px;">
+                        <!-- Konten DSP (Padding bawah dibesarkan agar tidak ketutup) -->
+                        <div id="dspStudioBody" style="padding: 20px; max-width: 800px; margin: 0 auto; padding-bottom: 150px;">
                             <!-- NEW INFO BOX -->
                             <div style="background: linear-gradient(145deg, rgba(239, 68, 68, 0.1), rgba(0,0,0,0.2)); border: 1px solid rgba(239, 68, 68, 0.3); padding: 16px; border-radius: 16px; margin-bottom: 20px; text-align: left;">
                                 <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
