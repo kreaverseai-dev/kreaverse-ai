@@ -3,156 +3,102 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Kreaverse Ai Studio Pro</title>
+    <title>Kreaverse Ai Studio</title>
+    <!-- Ikon dari FontAwesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
-        /* TEMA & VARIABEL */
+        /* TEMA & VARIABEL BANDLAB STYLE */
         :root {
-            --bg-main: #111111;
-            --bg-panel: #1e1e24;
-            --bg-toolbar: #2b2b36;
-            --text-main: #f0f0f0;
+            --bg-main: #000000;
+            --bg-panel: #121212;
+            --bg-toolbar: #1a1a1a;
+            --text-main: #ffffff;
             --text-muted: #888;
             --accent: #ff3b30;
-            --accent-hover: #ff5c53;
-            --track-bg: #18181d;
-            --border: #333;
-            --playhead: #ffcc00;
+            --track-bg: #000000;
+            --border: #222;
+            --playhead: #ffffff;
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, sans-serif; }
-
-        body {
-            background-color: var(--bg-main);
-            color: var(--text-main);
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-            user-select: none; /* Mencegah blok teks biru saat drag */
+        
+        body { 
+            background-color: var(--bg-main); 
+            color: var(--text-main); 
+            height: 100vh; 
+            display: flex; 
+            flex-direction: column; 
+            overflow: hidden; 
+            user-select: none; /* Mencegah terblok warna biru saat di hp */
         }
 
-        /* CUSTOM MODAL (Pengganti Alert Bawaan) */
-        .modal-overlay {
-            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0,0,0,0.8); z-index: 9999;
-            display: none; justify-content: center; align-items: center;
-        }
-        .modal-box {
-            background: var(--bg-toolbar); padding: 20px; border-radius: 10px;
-            width: 300px; text-align: center; border: 1px solid var(--border);
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-        }
+        /* CUSTOM MODAL PENGGANTI ALERT */
+        .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); z-index: 9999; display: none; justify-content: center; align-items: center; }
+        .modal-box { background: var(--bg-toolbar); padding: 20px; border-radius: 10px; width: 300px; text-align: center; border: 1px solid var(--border); }
         .modal-box h3 { margin-bottom: 10px; }
         .modal-box p { margin-bottom: 20px; color: var(--text-muted); font-size: 0.9rem; }
-        .modal-btn {
-            background: var(--accent); color: white; border: none;
-            padding: 8px 20px; border-radius: 5px; cursor: pointer; font-weight: bold;
-        }
-        .progress-bar-container {
-            width: 100%; background: var(--bg-main); height: 10px; border-radius: 5px;
-            overflow: hidden; margin-bottom: 15px; display: none;
-        }
+        .modal-btn { background: var(--accent); color: white; border: none; padding: 8px 20px; border-radius: 5px; cursor: pointer; font-weight: bold; }
+        .progress-bar-container { width: 100%; background: var(--bg-main); height: 10px; border-radius: 5px; overflow: hidden; margin-bottom: 15px; display: none; }
         .progress-bar { width: 0%; height: 100%; background: var(--accent); transition: width 0.2s; }
 
         /* TOP NAVIGATION */
-        .top-nav {
-            display: flex; justify-content: space-between; align-items: center;
-            background: var(--bg-panel); height: 60px; padding: 0 20px;
-            border-bottom: 1px solid var(--border);
-        }
-        .logo { font-weight: bold; font-size: 1.2rem; display: flex; align-items: center; gap: 8px; }
-        
-        /* PLAY CONTROLS */
-        .play-controls { display: flex; gap: 15px; }
-        .play-btn {
-            background: transparent; color: white; border: none;
-            font-size: 1.5rem; cursor: pointer; transition: 0.2s;
-        }
-        .play-btn:hover { color: var(--accent); }
-        .play-btn.active { color: var(--accent); }
-
-        .export-btn {
-            background: var(--accent); color: white; border: none;
-            padding: 8px 15px; border-radius: 5px; font-weight: bold; cursor: pointer;
-        }
-
-        /* TOOLBAR (Menu Tindakan) */
-        .toolbar {
-            display: flex; gap: 10px; padding: 10px 20px; background: var(--bg-toolbar);
-            border-bottom: 1px solid var(--border); overflow-x: auto;
-        }
-        .tool-btn {
-            background: var(--bg-panel); color: white; border: 1px solid var(--border);
-            padding: 6px 12px; border-radius: 5px; cursor: pointer; font-size: 0.85rem;
-            display: flex; align-items: center; gap: 5px; white-space: nowrap;
-        }
-        .tool-btn:hover { background: #3a3a48; }
-        .tool-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+        .top-nav { display: flex; justify-content: space-between; align-items: center; background: var(--bg-main); height: 50px; padding: 0 15px; border-bottom: 1px solid var(--border); }
+        .logo { font-weight: bold; font-size: 1rem; display: flex; align-items: center; gap: 8px; }
+        .top-icons { display: flex; gap: 20px; font-size: 1.2rem; color: var(--text-muted); }
+        .top-icons i:hover { color: white; cursor: pointer; }
 
         /* WORKSPACE & TIMELINE */
-        .workspace {
-            flex-grow: 1; display: flex; flex-direction: column;
-            overflow-x: auto; overflow-y: auto; position: relative;
-        }
-        
-        .ruler-container {
-            height: 30px; background: var(--bg-toolbar); position: sticky;
-            top: 0; z-index: 50; border-bottom: 1px solid var(--border);
-        }
-        .ruler-canvas { position: absolute; left: 100px; height: 100%; }
-        
+        .workspace { flex-grow: 1; display: flex; flex-direction: column; overflow-x: auto; overflow-y: auto; position: relative; background: var(--bg-main); }
+        .ruler-container { height: 25px; background: var(--bg-main); position: sticky; top: 0; z-index: 50; border-bottom: 1px solid var(--border); cursor: pointer; }
+        .ruler-canvas { position: absolute; left: 120px; height: 100%; pointer-events: none; }
         .tracks-container { position: relative; width: 100%; min-height: 100%; }
 
-        /* PLAYHEAD (Garis Penanda Potong/Play) */
-        .playhead-wrapper {
-            position: absolute; top: 0; bottom: 0; left: 100px; width: 0; z-index: 100;
-        }
-        .playhead-line {
-            position: absolute; left: 0; top: 30px; bottom: 0;
-            width: 2px; background: var(--playhead); box-shadow: 0 0 5px var(--playhead);
-            pointer-events: none;
-        }
-        .playhead-handle {
-            position: absolute; left: -7px; top: 0; width: 16px; height: 30px;
-            background: var(--playhead); clip-path: polygon(0 0, 100% 0, 100% 60%, 50% 100%, 0 60%);
-            cursor: ew-resize; touch-action: none;
-        }
+        /* PLAYHEAD (GARIS PENANDA KUNING/PUTIH) */
+        .playhead-wrapper { position: absolute; top: 0; bottom: 0; left: 120px; width: 0; z-index: 100; pointer-events: none; }
+        .playhead-line { position: absolute; left: 0; top: 0; bottom: 0; width: 1px; background: var(--playhead); box-shadow: 0 0 4px rgba(255,255,255,0.5); }
+        .playhead-handle { position: absolute; left: -6px; top: 0; width: 13px; height: 13px; background: var(--playhead); border-radius: 50%; pointer-events: auto; cursor: ew-resize; touch-action: none; }
 
-        /* TRACK & CLIP */
-        .track {
-            height: 90px; background: var(--track-bg); border-bottom: 1px solid var(--border);
-            display: flex; position: relative;
-        }
-        .track-header {
-            width: 100px; background: var(--bg-panel); position: sticky; left: 0; z-index: 40;
-            border-right: 2px solid var(--border); padding: 5px; display: flex;
-            flex-direction: column; justify-content: center; text-align: center;
-        }
-        .track-header span { font-size: 0.75rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;}
+        /* TRACK INFO (KIRI) */
+        .track { height: 80px; background: var(--track-bg); border-bottom: 1px solid var(--border); display: flex; position: relative; }
+        .track-header { width: 120px; background: var(--bg-main); position: sticky; left: 0; z-index: 40; border-right: 1px solid var(--border); padding: 10px; display: flex; flex-direction: row; align-items: center; gap: 10px; }
+        .track-icon { min-width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; color: white; }
+        .track-info { display: flex; flex-direction: column; overflow: hidden; flex: 1; }
+        .track-info span.t-name { font-size: 0.8rem; font-weight: bold; white-space: nowrap; cursor: text; overflow: hidden; text-overflow: ellipsis; }
+        .track-controls { display: flex; gap: 5px; margin-top: 5px; }
         
-        .clip {
-            position: absolute; height: 70px; top: 10px; border-radius: 6px;
-            display: flex; align-items: center; justify-content: center;
-            cursor: grab; border: 2px solid rgba(255,255,255,0.1); touch-action: none;
-            overflow: hidden; color: white; font-size: 0.7rem; font-weight: bold;
-        }
-        .clip.selected { border-color: white; z-index: 10; box-shadow: 0 0 10px rgba(255,255,255,0.3); }
-        .clip.locked { border: 2px dashed #ff3b30; cursor: not-allowed; opacity: 0.8;}
-        
-        .clip-wave {
-            position: absolute; width: 100%; height: 50%; opacity: 0.3; pointer-events: none;
-            background: repeating-linear-gradient(90deg, #fff 0px, #fff 2px, transparent 2px, transparent 4px);
-        }
-        
-        .clip .lock-icon { position: absolute; top: 5px; right: 5px; font-size: 10px; display: none; }
+        /* TOMBOL MUTE */
+        .btn-mute { background: transparent; border: 1px solid var(--text-muted); color: var(--text-muted); border-radius: 3px; font-size: 10px; padding: 2px 5px; cursor: pointer; }
+        .btn-mute.muted { background: var(--accent); color: white; border-color: var(--accent); }
+
+        /* AUDIO CLIP (POTONGAN LAGU) */
+        .clip { position: absolute; height: 70px; top: 5px; border-radius: 4px; display: flex; align-items: center; justify-content: center; cursor: grab; touch-action: none; overflow: hidden; color: white; font-size: 0.7rem; font-weight: bold; }
+        .clip.selected { border: 1px solid white; z-index: 10; opacity: 0.9; }
+        .clip.locked { opacity: 0.5; border: 1px dashed red;}
+        .clip-wave { position: absolute; width: 100%; height: 50%; opacity: 0.5; pointer-events: none; background: repeating-linear-gradient(90deg, #fff 0px, #fff 2px, transparent 2px, transparent 4px); }
+        .clip span { z-index: 2; text-shadow: 0 0 2px black; cursor: text; padding: 5px;}
+        .clip .lock-icon { position: absolute; top: 5px; right: 5px; font-size: 10px; display: none; z-index: 2; }
         .clip.locked .lock-icon { display: block; }
+
+        /* BOTTOM TOOLBAR (ALAT & PLAY) */
+        .bottom-nav { background: var(--bg-panel); border-top: 1px solid var(--border); padding: 10px; display: flex; flex-direction: column; gap: 10px; z-index: 60; }
+        .toolbar-actions { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 5px; }
+        
+        .tool-btn { background: transparent; color: white; border: 1px solid var(--border); padding: 8px 15px; border-radius: 20px; cursor: pointer; font-size: 0.85rem; display: flex; align-items: center; gap: 5px; white-space: nowrap; }
+        .tool-btn:hover { background: #333; }
+        .tool-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+        
+        .play-controls { display: flex; justify-content: center; align-items: center; gap: 30px; }
+        .ctrl-icon { color: var(--text-muted); font-size: 1.2rem; cursor: pointer; }
+        .ctrl-icon:hover { color: white; }
+        
+        .play-btn-main { width: 50px; height: 50px; border-radius: 50%; background: var(--bg-toolbar); color: white; border: none; font-size: 1.5rem; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s; }
+        .play-btn-main.recording { background: var(--accent); }
     </style>
 </head>
 <body>
 
-    <!-- CUSTOM MODAL -->
+    <!-- CUSTOM MODAL (TAMPILAN LOADING / POPUP) -->
     <div class="modal-overlay" id="custom-modal">
         <div class="modal-box">
             <h3 id="modal-title">Pemberitahuan</h3>
@@ -166,44 +112,18 @@
 
     <!-- TOP NAV -->
     <header class="top-nav">
-        <div class="logo"><i class="fa-solid fa-headphones-simple"></i> Kreaverse Ai</div>
-        
-        <div class="play-controls">
-            <button class="play-btn" id="btn-stop"><i class="fa-solid fa-stop"></i></button>
-            <button class="play-btn" id="btn-play"><i class="fa-solid fa-play"></i></button>
+        <div class="logo"><i class="fa-solid fa-arrow-left"></i> Kreaverse Ai</div>
+        <div class="top-icons">
+            <i class="fa-solid fa-sliders" title="Pengaturan"></i>
+            <i class="fa-solid fa-cloud-arrow-up" title="Simpan MP3" onclick="startExport()"></i>
         </div>
-
-        <button class="export-btn" onclick="startExport()"><i class="fa-solid fa-download"></i> Simpan MP3</button>
     </header>
-
-    <!-- TOOLBAR -->
-    <div class="toolbar">
-        <!-- Input file accept="audio/*" memperbaiki masalah audio abu-abu di HP -->
-        <input type="file" id="audio-upload" accept="audio/*" multiple style="display: none;">
-        
-        <button class="tool-btn" onclick="document.getElementById('audio-upload').click()">
-            <i class="fa-solid fa-plus"></i> Tambah Lagu
-        </button>
-        
-        <div style="width: 1px; background: var(--border); margin: 0 5px;"></div>
-        
-        <button class="tool-btn" id="btn-cut" disabled><i class="fa-solid fa-scissors"></i> Potong</button>
-        <button class="tool-btn" id="btn-copy" disabled><i class="fa-solid fa-copy"></i> Duplikat</button>
-        <button class="tool-btn" id="btn-delete" disabled><i class="fa-solid fa-trash"></i> Hapus</button>
-        <button class="tool-btn" id="btn-lock" disabled><i class="fa-solid fa-lock"></i> Kunci</button>
-        
-        <div style="width: 1px; background: var(--border); margin: 0 5px;"></div>
-        
-        <button class="tool-btn" id="btn-zoom-out"><i class="fa-solid fa-magnifying-glass-minus"></i></button>
-        <button class="tool-btn" id="btn-zoom-in"><i class="fa-solid fa-magnifying-glass-plus"></i></button>
-    </div>
 
     <!-- WORKSPACE -->
     <main class="workspace" id="workspace">
         <div class="ruler-container" id="ruler-container">
             <canvas class="ruler-canvas" id="ruler"></canvas>
             
-            <!-- PLAYHEAD / GARIS PENANDA POTONG -->
             <div class="playhead-wrapper" id="playhead">
                 <div class="playhead-handle" id="playhead-handle"></div>
                 <div class="playhead-line"></div>
@@ -211,434 +131,523 @@
         </div>
         
         <div class="tracks-container" id="tracks-workspace">
-            <!-- Tracks masuk sini -->
+            <!-- Tempat Track Audio Ditambahkan -->
         </div>
     </main>
 
+    <!-- BOTTOM TOOLBAR -->
+    <div class="bottom-nav">
+        <div class="toolbar-actions">
+            <!-- Input File Hidden -->
+            <input type="file" id="audio-upload" accept="audio/*" multiple style="display: none;">
+            
+            <button class="tool-btn" onclick="document.getElementById('audio-upload').click()">
+                <i class="fa-solid fa-plus"></i> Tambah Lagu
+            </button>
+            <button class="tool-btn" id="btn-undo" onclick="undo()" style="opacity: 0.5;">
+                <i class="fa-solid fa-rotate-left"></i> Undo
+            </button>
+            <button class="tool-btn" id="btn-redo" onclick="redo()" style="opacity: 0.5;">
+                <i class="fa-solid fa-rotate-right"></i> Redo
+            </button>
+            <button class="tool-btn" id="btn-cut" disabled>
+                <i class="fa-solid fa-scissors"></i> Potong
+            </button>
+            <button class="tool-btn" id="btn-copy" disabled>
+                <i class="fa-solid fa-copy"></i> Duplikat
+            </button>
+            <button class="tool-btn" id="btn-delete" disabled>
+                <i class="fa-solid fa-trash"></i> Hapus
+            </button>
+            <button class="tool-btn" id="btn-lock" disabled>
+                <i class="fa-solid fa-lock"></i> Kunci
+            </button>
+            <button class="tool-btn" id="btn-zoom">
+                <i class="fa-solid fa-magnifying-glass"></i> Zoom
+            </button>
+        </div>
+        
+        <div class="play-controls">
+            <i class="fa-solid fa-backward-step ctrl-icon" id="btn-to-start" title="Kembali ke Awal"></i>
+            <button class="play-btn-main" id="btn-play"><i class="fa-solid fa-play"></i></button>
+            <button class="play-btn-main recording" id="btn-stop" style="display:none;"><i class="fa-solid fa-stop"></i></button>
+            <i class="fa-solid fa-rotate-right ctrl-icon" title="Ulang"></i>
+        </div>
+    </div>
+
     <script>
         // --- KONFIGURASI & VARIABEL ---
-        let PPS = 20; // Pixels Per Second (Berapa pixel untuk 1 detik)
-        let zoom = 1;
-        const TRACK_HEADER_WIDTH = 100;
-        const MIN_CUT_SECONDS = 1; // Minimal potong 1 detik
+        let PPS = 20; // Default: 20 Pixel per 1 Detik
+        const TRACK_HEADER_WIDTH = 120;
+        const MIN_CUT_SECONDS = 0.5; // Batas minimum potong 0.5 detik
 
         let trackCount = 0;
         let selectedClip = null;
-        let playheadPos = 0; // dalam pixel relatif terhadap track area (tanpa header)
+        let playheadPos = 0; 
         
-        // State Playback
         let isPlaying = false;
         let playInterval;
+        let startTimeContext = 0;
+        let startPlayheadPos = 0;
 
-        const colors = ['#007aff', '#34c759', '#ff9500', '#af52de', '#ff2d55'];
+        // --- AUDIO ENGINE LOGIC (Web Audio API) ---
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        let audioCtx;
+        let audioBuffers = {}; // Menyimpan data suara mentah
+        let activeSources = []; // Melacak suara yang sedang berbunyi agar bisa di-stop
+        let trackMutes = {}; // Melacak status MUTE setiap track
+
+        // --- HISTORY (UNDO / REDO) ---
+        let history = [];
+        let historyIndex = -1;
+
+        const colors = ['#007aff', '#34c759', '#ff9500', '#af52de', '#ff2d55', '#ffcc00'];
         const ws = document.getElementById('workspace');
         const tracksWs = document.getElementById('tracks-workspace');
         const rulerCanvas = document.getElementById('ruler');
         const playhead = document.getElementById('playhead');
 
-        // --- SISTEM MODAL (Pengganti Alert) ---
+        // Initialize Audio jika pertama kali berinteraksi
+        function initAudio() {
+            if (!audioCtx) audioCtx = new AudioContext();
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+        }
+
+        // FUNGSI POPUP / MODAL
         function showModal(title, desc, isProgress = false) {
             document.getElementById('modal-title').innerText = title;
             document.getElementById('modal-desc').innerText = desc;
-            
-            const progCont = document.getElementById('modal-progress-container');
-            const okBtn = document.getElementById('modal-ok-btn');
-            
-            if (isProgress) {
-                progCont.style.display = 'block';
-                okBtn.style.display = 'none';
-                document.getElementById('modal-progress').style.width = '0%';
-            } else {
-                progCont.style.display = 'none';
-                okBtn.style.display = 'inline-block';
-            }
-            
+            document.getElementById('modal-progress-container').style.display = isProgress ? 'block' : 'none';
+            document.getElementById('modal-ok-btn').style.display = isProgress ? 'none' : 'inline-block';
+            if(isProgress) document.getElementById('modal-progress').style.width = '0%';
             document.getElementById('custom-modal').style.display = 'flex';
         }
         function closeModal() { document.getElementById('custom-modal').style.display = 'none'; }
 
-        // --- PENGGARIS WAKTU (RULER) ---
+        // FUNGSI SIMPAN STATUS (Untuk Undo)
+        function saveState() {
+            const state = tracksWs.innerHTML;
+            if (historyIndex < history.length - 1) {
+                history = history.slice(0, historyIndex + 1);
+            }
+            history.push(state);
+            historyIndex++;
+            updateHistoryBtns();
+        }
+
+        function undo() {
+            if (historyIndex > 0) {
+                historyIndex--; 
+                tracksWs.innerHTML = history[historyIndex];
+                rebindEvents(); 
+                updateHistoryBtns();
+            }
+        }
+
+        function redo() {
+            if (historyIndex < history.length - 1) {
+                historyIndex++; 
+                tracksWs.innerHTML = history[historyIndex];
+                rebindEvents(); 
+                updateHistoryBtns();
+            }
+        }
+
+        function updateHistoryBtns() {
+            document.getElementById('btn-undo').style.opacity = historyIndex > 0 ? "1" : "0.5";
+            document.getElementById('btn-redo').style.opacity = historyIndex < history.length - 1 ? "1" : "0.5";
+        }
+
+        // Pasang kembali event click setelah Undo
+        function rebindEvents() {
+            document.querySelectorAll('.clip').forEach(clip => setupClipEvents(clip));
+            selectedClip = null;
+        }
+
+        // --- PENGGARIS & GARIS KLIK (CERDAS SNAP) ---
         function drawRuler() {
             const ctx = rulerCanvas.getContext('2d');
-            const width = Math.max(ws.scrollWidth, 3000); // Lebar minimal
-            rulerCanvas.width = width;
-            rulerCanvas.height = 30;
+            let maxDur = 180; // Default 3 menit
+            // Cari durasi terjauh
+            document.querySelectorAll('.clip').forEach(c => {
+                const end = (parseFloat(c.style.left) - TRACK_HEADER_WIDTH + parseFloat(c.style.width)) / PPS;
+                if (end > maxDur) maxDur = end;
+            });
+            const width = Math.max(ws.scrollWidth, (maxDur + 30) * PPS); 
             
-            ctx.clearRect(0, 0, width, 30);
-            ctx.fillStyle = "#888";
+            rulerCanvas.width = width; 
+            rulerCanvas.height = 25;
+            ctx.clearRect(0, 0, width, 25); 
+            ctx.fillStyle = "#888"; 
             ctx.font = "10px sans-serif";
             
-            const scaledPPS = PPS * zoom;
-            
-            for (let i = 0; i * scaledPPS < width; i++) {
-                const x = i * scaledPPS;
-                if (i % 5 === 0) {
-                    // Garis panjang setiap 5 detik
-                    ctx.fillRect(x, 15, 1, 15);
-                    // Format waktu MM:SS
-                    const min = Math.floor(i / 60);
-                    const sec = i % 60;
-                    ctx.fillText(`${min}:${sec < 10 ? '0'+sec : sec}`, x + 3, 12);
-                } else {
-                    // Garis pendek setiap 1 detik
-                    ctx.fillRect(x, 22, 1, 8);
+            for (let i = 0; i * PPS < width; i++) {
+                const x = i * PPS;
+                let step = PPS < 5 ? 30 : (PPS < 15 ? 10 : 1); 
+                if (i % step === 0) {
+                    ctx.fillRect(x, 10, 1, 15);
+                    const min = Math.floor(i / 60); const sec = i % 60;
+                    ctx.fillText(`${min}:${sec < 10 ? '0'+sec : sec}`, x + 3, 10);
+                } else { 
+                    ctx.fillRect(x, 18, 1, 7); 
                 }
             }
             tracksWs.style.width = `${width + TRACK_HEADER_WIDTH}px`;
         }
-        window.addEventListener('resize', drawRuler);
-        
-        // --- PLAYHEAD (GARIS PENANDA) LOGIC ---
-        let isDraggingPlayhead = false;
-        
-        function updatePlayheadUI() {
-            playhead.style.left = `${TRACK_HEADER_WIDTH + playheadPos}px`;
-        }
 
-        function setPlayhead(xCoordinate) {
-            let newPos = xCoordinate - TRACK_HEADER_WIDTH;
-            if (newPos < 0) newPos = 0;
-            playheadPos = newPos;
-            updatePlayheadUI();
-        }
+        function updatePlayheadUI() { playhead.style.left = `${TRACK_HEADER_WIDTH + playheadPos}px`; }
+        function setPlayhead(x) { playheadPos = x < 0 ? 0 : x; updatePlayheadUI(); }
 
-        const handle = document.getElementById('playhead-handle');
-        
-        const phStart = (e) => { isDraggingPlayhead = true; }
-        const phMove = (e) => {
-            if (!isDraggingPlayhead) return;
-            const rect = ws.getBoundingClientRect();
-            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-            // Memperhitungkan scroll horizontal
-            const absoluteX = clientX - rect.left + ws.scrollLeft;
-            setPlayhead(absoluteX);
-        }
-        const phEnd = () => { isDraggingPlayhead = false; }
+        const rulerCont = document.getElementById('ruler-container');
+        let isDraggingPh = false;
 
-        handle.addEventListener('mousedown', phStart);
-        handle.addEventListener('touchstart', phStart, {passive: true});
-        document.addEventListener('mousemove', phMove);
-        document.addEventListener('touchmove', phMove, {passive: true});
-        document.addEventListener('mouseup', phEnd);
-        document.addEventListener('touchend', phEnd);
-
-        // --- PLAY & STOP LOGIC (Simulasi) ---
-        const btnPlay = document.getElementById('btn-play');
-        btnPlay.addEventListener('click', () => {
-            if (isPlaying) {
-                // Pause
-                isPlaying = false;
-                clearInterval(playInterval);
-                btnPlay.innerHTML = '<i class="fa-solid fa-play"></i>';
-                btnPlay.classList.remove('active');
-            } else {
-                // Play
-                isPlaying = true;
-                btnPlay.innerHTML = '<i class="fa-solid fa-pause"></i>';
-                btnPlay.classList.add('active');
-                
-                playInterval = setInterval(() => {
-                    playheadPos += (PPS * zoom) / 20; // Maju sesuai scale (Asumsi 20fps setInterval)
-                    updatePlayheadUI();
-                    
-                    // Auto scroll jika playhead keluar layar kanan
-                    const phScreenX = playhead.getBoundingClientRect().left;
-                    if (phScreenX > window.innerWidth - 50) {
-                        ws.scrollLeft += 100;
-                    }
-                }, 50);
-            }
+        // Klik pada penggaris otomatis pindah garis playhead
+        rulerCont.addEventListener('mousedown', (e) => {
+            if(isPlaying) return;
+            const x = e.clientX - ws.getBoundingClientRect().left + ws.scrollLeft - TRACK_HEADER_WIDTH;
+            setPlayhead(x);
         });
 
-        document.getElementById('btn-stop').addEventListener('click', () => {
-            isPlaying = false;
+        // Geser manual dari kepala/handle garis
+        const phStart = (e) => { isDraggingPh = true; e.stopPropagation(); }
+        const phMove = (e) => {
+            if (!isDraggingPh) return;
+            const x = (e.touches ? e.touches[0].clientX : e.clientX) - ws.getBoundingClientRect().left + ws.scrollLeft - TRACK_HEADER_WIDTH;
+            setPlayhead(x);
+        }
+        const phEnd = () => { isDraggingPh = false; }
+
+        document.getElementById('playhead-handle').addEventListener('mousedown', phStart);
+        document.getElementById('playhead-handle').addEventListener('touchstart', phStart, {passive: true});
+        document.addEventListener('mousemove', phMove); 
+        document.addEventListener('touchmove', phMove, {passive: true});
+        document.addEventListener('mouseup', phEnd); 
+        document.addEventListener('touchend', phEnd);
+
+        // --- PEMUTAR AUDIO SESUNGGUHNYA ---
+        function stopAllAudio() {
+            activeSources.forEach(src => { try { src.stop(); } catch(e){} });
+            activeSources = [];
+        }
+
+        function playTimeline() {
+            initAudio(); 
+            stopAllAudio();
+            const currentSec = playheadPos / PPS;
+            
+            document.querySelectorAll('.clip').forEach(clip => {
+                const trackId = clip.dataset.trackid;
+                // Jika Track di-Mute, jangan putar
+                if (trackMutes[trackId]) return; 
+
+                const buffer = audioBuffers[clip.dataset.bufferid];
+                if (!buffer) return;
+
+                const startSec = (parseFloat(clip.style.left) - TRACK_HEADER_WIDTH) / PPS;
+                const durSec = parseFloat(clip.style.width) / PPS;
+                const offsetSec = parseFloat(clip.dataset.offset || 0);
+
+                if (currentSec < startSec + durSec) {
+                    const source = audioCtx.createBufferSource();
+                    source.buffer = buffer;
+                    
+                    let delay = startSec - currentSec;
+                    let startOffset = offsetSec;
+                    
+                    if (delay < 0) { 
+                        startOffset += Math.abs(delay); 
+                        delay = 0; 
+                    }
+                    
+                    source.connect(audioCtx.destination);
+                    source.start(audioCtx.currentTime + delay, startOffset, durSec);
+                    activeSources.push(source);
+                }
+            });
+        }
+
+        // --- KONTROL TOMBOL PLAY & STOP ---
+        const btnPlay = document.getElementById('btn-play');
+        const btnStop = document.getElementById('btn-stop');
+
+        const stopAction = () => {
+            isPlaying = false; 
             clearInterval(playInterval);
-            btnPlay.innerHTML = '<i class="fa-solid fa-play"></i>';
-            btnPlay.classList.remove('active');
-            playheadPos = 0; // Kembali ke awal
-            updatePlayheadUI();
+            btnPlay.style.display = 'flex'; 
+            btnStop.style.display = 'none';
+            stopAllAudio();
+        };
+
+        btnPlay.addEventListener('click', () => {
+            initAudio(); 
+            isPlaying = true;
+            btnPlay.style.display = 'none'; 
+            btnStop.style.display = 'flex';
+            
+            playTimeline(); // Mulai Putar Audio
+            
+            startTimeContext = audioCtx.currentTime; 
+            startPlayheadPos = playheadPos;
+            
+            // Animasi jalannya garis kuning
+            playInterval = setInterval(() => {
+                playheadPos = startPlayheadPos + ((audioCtx.currentTime - startTimeContext) * PPS);
+                updatePlayheadUI();
+                
+                // Auto Scroll Layar
+                if (playhead.getBoundingClientRect().left > window.innerWidth - 80) ws.scrollLeft += 150;
+            }, 50);
+        });
+        
+        btnStop.addEventListener('click', stopAction);
+        document.getElementById('btn-to-start').addEventListener('click', () => {
+            stopAction(); 
+            setPlayhead(0); 
             ws.scrollLeft = 0;
         });
 
-        // --- UPLOAD & BUAT TRACK ---
-        document.getElementById('audio-upload').addEventListener('change', (e) => {
+        // --- UPLOAD & DECODE AUDIO BROWSER ---
+        document.getElementById('audio-upload').addEventListener('change', async (e) => {
+            initAudio();
             const files = Array.from(e.target.files);
             if (files.length === 0) return;
             
-            files.forEach(file => {
-                // Coba baca durasi asli file menggunakan dummy audio element
-                const url = URL.createObjectURL(file);
-                const audio = new Audio(url);
-                
-                audio.addEventListener('loadedmetadata', () => {
-                    createTrack(file.name, audio.duration);
-                });
-                
-                // Fallback jika browser gagal baca metadata (misal format aneh), set default 60 detik
-                audio.addEventListener('error', () => {
-                    createTrack(file.name, 60); 
-                });
-            });
+            showModal("Loading...", "Mengekstrak Suara, Mohon Tunggu.", true);
+            
+            for (let file of files) {
+                try {
+                    const arrBuffer = await file.arrayBuffer();
+                    // Web Audio API membaca file asli
+                    const aBuffer = await audioCtx.decodeAudioData(arrBuffer);
+                    const bId = 'buf_' + Date.now() + Math.floor(Math.random() * 1000);
+                    
+                    audioBuffers[bId] = aBuffer;
+                    createTrack(file.name, aBuffer.duration, bId);
+                } catch (err) { 
+                    alert("Format audio tidak didukung."); 
+                }
+            }
+            closeModal(); 
+            saveState(); 
             e.target.value = ''; 
         });
 
-        function createTrack(name, durationSec) {
+        function createTrack(name, durSec, bufferId) {
+            const trackId = 'trk_' + trackCount;
             const color = colors[trackCount % colors.length];
             const track = document.createElement('div');
-            track.className = 'track';
+            
+            track.className = 'track'; 
+            track.dataset.trackid = trackId; 
+            trackMutes[trackId] = false;
             
             track.innerHTML = `
                 <div class="track-header">
-                    <span>Trk ${trackCount+1}</span>
-                    <span style="color:#888; font-size:9px">${name}</span>
+                    <div class="track-icon" style="background:${color}"><i class="fa-solid fa-microphone"></i></div>
+                    <div class="track-info">
+                        <span class="t-name" onclick="rename(this)">Trk ${trackCount+1}</span>
+                        <div class="track-controls">
+                            <!-- TOMBOL MUTE -->
+                            <button class="btn-mute" data-trackid="${trackId}" onclick="toggleMute('${trackId}', this)">M</button>
+                        </div>
+                    </div>
                 </div>
             `;
             
-            // Lebar clip berdasarkan durasi
-            const clipWidth = durationSec * PPS * zoom;
-            
-            const clip = createClipElement(color, name, clipWidth, 0); // Left awal 0
-            
-            track.appendChild(clip);
+            const clip = createClipElement(color, name, durSec * PPS, 0, trackId, bufferId, 0); 
+            track.appendChild(clip); 
             tracksWs.appendChild(track);
-            trackCount++;
-            drawRuler(); // Redraw agar timeline memanjang jika lagunya panjang
+            trackCount++; 
+            drawRuler();
         }
 
-        function createClipElement(color, text, width, left) {
+        // --- FUNGSI GANTI NAMA (RENAME) & MUTE ---
+        function rename(el) { 
+            const n = prompt("Ganti Nama:", el.innerText); 
+            if(n) { el.innerText = n; saveState(); } 
+        }
+        
+        function toggleMute(tid, btn) {
+            trackMutes[tid] = !trackMutes[tid];
+            if(trackMutes[tid]){
+                btn.classList.add('muted');
+            } else {
+                btn.classList.remove('muted');
+            }
+        }
+
+        function createClipElement(color, text, w, l, tId, bId, offset) {
             const clip = document.createElement('div');
-            clip.className = 'clip';
+            clip.className = 'clip'; 
             clip.style.background = color;
-            clip.style.width = `${width}px`;
-            clip.style.left = `${left + TRACK_HEADER_WIDTH}px`; // Relatif ke header
-            clip.dataset.color = color;
+            clip.style.width = `${w}px`; 
+            clip.style.left = `${l + TRACK_HEADER_WIDTH}px`; 
+            
+            clip.dataset.color = color; 
             clip.dataset.locked = "false";
+            clip.dataset.trackid = tId; 
+            clip.dataset.bufferid = bId; 
+            clip.dataset.offset = offset;
             
             clip.innerHTML = `
                 <i class="fa-solid fa-lock lock-icon"></i>
                 <div class="clip-wave"></div>
-                <span>${text}</span>
+                <span onclick="rename(this)">${text}</span>
             `;
             
-            setupClipEvents(clip);
+            setupClipEvents(clip); 
             return clip;
         }
 
-        // --- CLIP EVENTS (Drag, Select, Lock) ---
-        let dragOffsetX = 0;
-        let draggedClip = null;
+        // --- KLIK DAN GESER POTONGAN LAGU ---
+        let dOffX = 0, dClip = null, isMoved = false;
 
         function setupClipEvents(clip) {
             const startDrag = (e) => {
-                selectClip(clip);
-                if (clip.dataset.locked === "true") return; // Jangan geser jika dilock
+                if (e.target.tagName === 'SPAN') return; // Agar klik nama bisa jalan
+                selectClip(clip); 
+                if (clip.dataset.locked === "true") return; 
                 
-                draggedClip = clip;
-                const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-                dragOffsetX = clientX - clip.getBoundingClientRect().left;
+                dClip = clip; 
+                isMoved = false;
+                dOffX = (e.touches ? e.touches[0].clientX : e.clientX) - clip.getBoundingClientRect().left;
             };
-
-            clip.addEventListener('mousedown', startDrag);
+            clip.addEventListener('mousedown', startDrag); 
             clip.addEventListener('touchstart', startDrag, {passive: true});
         }
 
         const moveDrag = (e) => {
-            if (!draggedClip) return;
-            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-            const rect = ws.getBoundingClientRect();
-            
-            // Hitung posisi dengan scroll
-            let newLeft = clientX - rect.left + ws.scrollLeft - dragOffsetX;
-            
-            // Jangan sampai nabrak header
-            if (newLeft < TRACK_HEADER_WIDTH) newLeft = TRACK_HEADER_WIDTH;
-            
-            draggedClip.style.left = `${newLeft}px`;
+            if (!dClip) return; 
+            isMoved = true;
+            let nx = (e.touches ? e.touches[0].clientX : e.clientX) - ws.getBoundingClientRect().left + ws.scrollLeft - dOffX;
+            if (nx < TRACK_HEADER_WIDTH) nx = TRACK_HEADER_WIDTH;
+            dClip.style.left = `${nx}px`;
+        }
+        const endDrag = () => { 
+            if(dClip && isMoved) saveState(); 
+            dClip = null; 
         }
 
-        const endDrag = () => { draggedClip = null; }
-
-        document.addEventListener('mousemove', moveDrag);
+        document.addEventListener('mousemove', moveDrag); 
         document.addEventListener('touchmove', moveDrag, {passive: true});
-        document.addEventListener('mouseup', endDrag);
+        document.addEventListener('mouseup', endDrag); 
         document.addEventListener('touchend', endDrag);
 
-        // --- SELECT CLIP LOGIC ---
         function selectClip(clip) {
             if (selectedClip) selectedClip.classList.remove('selected');
-            selectedClip = clip;
+            selectedClip = clip; 
             clip.classList.add('selected');
-            
-            // Update UI Toolbar
-            document.getElementById('btn-cut').disabled = false;
-            document.getElementById('btn-copy').disabled = false;
-            document.getElementById('btn-delete').disabled = false;
-            document.getElementById('btn-lock').disabled = false;
-            
-            // Ganti teks tombol lock sesuai status
-            const btnLock = document.getElementById('btn-lock');
-            if (clip.dataset.locked === "true") {
-                btnLock.innerHTML = '<i class="fa-solid fa-unlock"></i> Buka Kunci';
-            } else {
-                btnLock.innerHTML = '<i class="fa-solid fa-lock"></i> Kunci';
-            }
+            ['btn-cut','btn-copy','btn-delete','btn-lock'].forEach(id => document.getElementById(id).disabled = false);
         }
 
-        // Unselect saat klik background kosong
         ws.addEventListener('mousedown', (e) => {
-            if (!e.target.closest('.clip') && !e.target.closest('.playhead-handle')) {
-                if (selectedClip) selectedClip.classList.remove('selected');
+            if (!e.target.closest('.clip') && !e.target.closest('.playhead-handle') && !e.target.closest('.ruler-container')) {
+                if (selectedClip) selectedClip.classList.remove('selected'); 
                 selectedClip = null;
-                document.querySelectorAll('.tool-btn:not(#btn-zoom-in):not(#btn-zoom-out)').forEach(b => b.disabled = true);
+                ['btn-cut','btn-copy','btn-delete','btn-lock'].forEach(id => document.getElementById(id).disabled = true);
             }
         });
 
-        // --- TOOLBAR ACTIONS ---
-        
-        // 1. DELETE
+        // --- ALAT MENU BAWAH ---
         document.getElementById('btn-delete').addEventListener('click', () => {
-            if (selectedClip) {
-                // Konfirmasi custom
-                showModal("Hapus Audio", "Apakah Anda yakin ingin menghapus potongan ini?");
-                // Mengubah fungsi tombol OK sementara untuk delete
-                const okBtn = document.getElementById('modal-ok-btn');
-                okBtn.onclick = function() {
-                    selectedClip.remove();
-                    selectedClip = null;
-                    document.querySelectorAll('.tool-btn:not(#btn-zoom-in):not(#btn-zoom-out)').forEach(b => b.disabled = true);
-                    closeModal();
-                    // Kembalikan fungsi OK
-                    okBtn.onclick = closeModal;
-                };
-            }
+            if (selectedClip) { selectedClip.remove(); selectedClip = null; saveState(); }
         });
-
-        // 2. DUPLIKAT
+        
         document.getElementById('btn-copy').addEventListener('click', () => {
             if (selectedClip) {
-                const currentWidth = parseFloat(selectedClip.style.width);
-                const currentLeft = parseFloat(selectedClip.style.left);
-                
-                // Buat kloningan diletakkan tepat di sebelah kanannya
-                const newClip = createClipElement(
-                    selectedClip.dataset.color, 
-                    "Copy", 
-                    currentWidth, 
-                    currentLeft + currentWidth - TRACK_HEADER_WIDTH
-                );
-                
-                selectedClip.parentElement.appendChild(newClip);
+                const w = parseFloat(selectedClip.style.width);
+                const l = parseFloat(selectedClip.style.left) - TRACK_HEADER_WIDTH;
+                const clone = createClipElement(selectedClip.dataset.color, "Copy", w, l + w + 5, selectedClip.dataset.trackid, selectedClip.dataset.bufferid, selectedClip.dataset.offset);
+                selectedClip.parentElement.appendChild(clone); 
+                saveState();
             }
         });
-
-        // 3. LOCK (KUNCI GESER)
+        
         document.getElementById('btn-lock').addEventListener('click', () => {
             if (selectedClip) {
-                const isLocked = selectedClip.dataset.locked === "true";
-                selectedClip.dataset.locked = !isLocked ? "true" : "false";
-                
-                if (!isLocked) {
-                    selectedClip.classList.add('locked');
-                    document.getElementById('btn-lock').innerHTML = '<i class="fa-solid fa-unlock"></i> Buka Kunci';
-                } else {
-                    selectedClip.classList.remove('locked');
-                    document.getElementById('btn-lock').innerHTML = '<i class="fa-solid fa-lock"></i> Kunci';
-                }
+                const isL = selectedClip.dataset.locked === "true";
+                selectedClip.dataset.locked = !isL ? "true" : "false";
+                isL ? selectedClip.classList.remove('locked') : selectedClip.classList.add('locked'); 
+                saveState();
             }
         });
 
-        // 4. POTONG (CUT) BERDASARKAN PLAYHEAD TEPAT
+        // --- POTONG AUDIO ---
         document.getElementById('btn-cut').addEventListener('click', () => {
-            if (!selectedClip) return;
-            if (selectedClip.dataset.locked === "true") {
-                showModal("Gagal", "Audio ini dikunci. Buka kunci terlebih dahulu untuk memotong.");
-                return;
-            }
+            if (!selectedClip || selectedClip.dataset.locked === "true") return;
+            
+            const cLeft = parseFloat(selectedClip.style.left);
+            const cWidth = parseFloat(selectedClip.style.width);
+            const phAbs = playheadPos + TRACK_HEADER_WIDTH;
 
-            const clipLeft = parseFloat(selectedClip.style.left);
-            const clipWidth = parseFloat(selectedClip.style.width);
-            const clipRight = clipLeft + clipWidth;
-            const phAbsolute = playheadPos + TRACK_HEADER_WIDTH;
-
-            // Cek apakah garis putar (playhead) berada DI DALAM clip yang dipilih
-            if (phAbsolute > clipLeft && phAbsolute < clipRight) {
+            // Jika garis ada di tengah-tengah audio
+            if (phAbs > cLeft && phAbs < cLeft + cWidth) {
+                const w1 = phAbs - cLeft;
+                const w2 = (cLeft + cWidth) - phAbs;
                 
-                const widthPart1 = phAbsolute - clipLeft;
-                const widthPart2 = clipRight - phAbsolute;
-                
-                // Aturan 1 Detik Minimal (Misal zoom 1, 1 detik = 20px)
-                const minPx = MIN_CUT_SECONDS * PPS * zoom;
-                
-                if (widthPart1 < minPx || widthPart2 < minPx) {
-                    showModal("Terlalu Kecil", `Potongan tidak boleh kurang dari ${MIN_CUT_SECONDS} detik.`);
-                    return;
+                if (w1 < (MIN_CUT_SECONDS * PPS) || w2 < (MIN_CUT_SECONDS * PPS)) {
+                    alert("Potongan terlalu kecil."); return;
                 }
 
-                // Potong! Ubah ukuran clip pertama
-                selectedClip.style.width = `${widthPart1}px`;
-                selectedClip.querySelector('span').innerText = "Part 1";
-
-                // Buat clip kedua (sisanya)
-                const newClip = createClipElement(
-                    selectedClip.dataset.color,
-                    "Part 2",
-                    widthPart2,
-                    phAbsolute - TRACK_HEADER_WIDTH + 2 // +2 px jarak celah visual
-                );
+                const origOff = parseFloat(selectedClip.dataset.offset);
+                selectedClip.style.width = `${w1}px`;
                 
-                selectedClip.parentElement.appendChild(newClip);
-                showModal("Sukses", "Audio berhasil dipotong tepat di garis penanda.");
-            } else {
-                showModal("Gagal Potong", "Geser garis kuning (Playhead) tepat ke atas audio yang dipilih untuk memotongnya.");
+                const part2 = createClipElement(selectedClip.dataset.color, selectedClip.querySelector('span').innerText, w2, phAbs - TRACK_HEADER_WIDTH + 1, selectedClip.dataset.trackid, selectedClip.dataset.bufferid, origOff + (w1/PPS));
+                selectedClip.parentElement.appendChild(part2); 
+                saveState();
             }
         });
 
-        // 5. ZOOM
-        function applyZoom() {
-            drawRuler();
-            updatePlayheadUI();
-            
-            // Skalakan ulang semua clip
+        // --- ZOOM LUAS LOGIC ---
+        function applyZoom(oldPPS) {
+            const ratio = PPS / oldPPS;
             document.querySelectorAll('.clip').forEach(clip => {
-                // Perlu menyimpan durasi asli/start asli di dataset untuk zoom presisi di produksi nyata.
-                // Untuk UI template ini, kita kali silang dari lebar saat ini
-                const oldWidth = parseFloat(clip.style.width);
-                const oldLeft = parseFloat(clip.style.left) - TRACK_HEADER_WIDTH;
-                // Faktor pengali (misal dari zoom 1 ke 1.2 -> faktor 1.2)
-                // Ini pendekatan sederhana.
+                clip.style.width = `${parseFloat(clip.style.width) * ratio}px`;
+                clip.style.left = `${((parseFloat(clip.style.left) - TRACK_HEADER_WIDTH) * ratio) + TRACK_HEADER_WIDTH}px`;
             });
-            // (Catatan: Zoom logic pada DOM dinamis butuh re-kalkulasi dari State aslinya. 
-            // Untuk template ini kita lewati visual scaling clip agar tidak error posisi saat dipotong,
-            // Namun ruler timeline sudah menyesuaikan zoom).
+            playheadPos *= ratio; 
+            updatePlayheadUI(); 
+            drawRuler();
         }
+        
+        document.getElementById('btn-zoom').addEventListener('click', () => {
+            let old = PPS;
+            // 20 = Detil, 5 = Sedang (Lagu 3 Mnt muat), 2 = Jauh (Lagu 10 mnt muat)
+            if(PPS === 20) PPS = 5; 
+            else if(PPS === 5) PPS = 2; 
+            else PPS = 20; 
+            
+            applyZoom(old);
+        });
 
-        // --- PROGRESS SIMPAN MP3 ---
+        // --- FUNGSI SIMPAN EXPORT ---
         function startExport() {
-            if (trackCount === 0) {
-                showModal("Kosong", "Tidak ada lagu yang ditambahkan!");
-                return;
+            if (trackCount === 0) { 
+                showModal("Kosong", "Tambahkan lagu terlebih dahulu!"); 
+                return; 
             }
+            showModal("Menyimpan MP3...", "Sedang merender audio (UI Simulasi Progress)", true);
             
-            showModal("Menyimpan MP3...", "Harap tunggu, sedang merender audio (Simulasi)", true);
-            const progBar = document.getElementById('modal-progress');
             let progress = 0;
-            
-            const renderInterval = setInterval(() => {
+            let bar = document.getElementById('modal-progress');
+            let intv = setInterval(() => {
                 progress += Math.random() * 15; // Naik acak
                 if (progress >= 100) {
                     progress = 100;
-                    clearInterval(renderInterval);
-                    setTimeout(() => {
-                        showModal("Berhasil!", "File MP3 Anda siap. (UI Preview Selesai)");
+                    clearInterval(intv);
+                    setTimeout(() => { 
+                        showModal("Berhasil!", "File MP3 Anda Siap!"); 
                     }, 500);
                 }
-                progBar.style.width = `${progress}%`;
+                bar.style.width = progress + '%';
             }, 300);
         }
 
-        // INIT
-        drawRuler();
-        updatePlayheadUI();
+        // Init Layout saat halaman dimuat
+        window.addEventListener('resize', drawRuler);
+        drawRuler(); 
+        updatePlayheadUI(); 
+        saveState();
 
     </script>
 </body>
