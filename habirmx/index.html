@@ -5054,19 +5054,24 @@
 
         window.handleAudioUploadSelect = function(event) {
             const fileInput = event ? event.target : document.getElementById('audioReferenceInput');
-            const nameText = document.getElementById('audioFileName');
             const dspStudio = document.getElementById('dspStudioWrapper');
             const originalPlayer = document.getElementById('originalAudioPlayer');
             
             if (!fileInput.files || fileInput.files.length === 0) return;
             
-            showIphoneToast("Memuat Audio", "Mempersiapkan DSP Studio...", "fa-spinner fa-spin");
-            
             rawAudioFile = fileInput.files[0];
-            nameText.innerText = rawAudioFile.name;
+            
+            // Switch UI Trigger ke Mini Player
+            document.getElementById('uploadTriggerBox').classList.add('hidden');
+            document.getElementById('uploadedStateBox').classList.remove('hidden');
+            document.getElementById('uploadedMiniFileName').innerText = rawAudioFile.name;
+            document.getElementById('uploadedMiniBadge').innerText = "Menyiapkan...";
+            document.getElementById('uploadedMiniBadge').style.background = "#e2e8f0";
+            document.getElementById('uploadedMiniBadge').style.color = "#475569";
             
             originalPlayer.src = URL.createObjectURL(rawAudioFile);
-            initCustomPlayer('originalAudioPlayer', 'cp-original');
+            initCustomPlayer('originalAudioPlayer', 'uploadedStateBox');
+            initCustomPlayer('originalAudioPlayer', 'cp-original'); // Sinkronkan juga ke player dalam DSP
             
             dspStudio.classList.remove('hidden');
             document.getElementById('audioProgressBox').classList.add('hidden');
@@ -5074,9 +5079,64 @@
             initVisualizer();
         };
 
+        window.removeUploadedAudio = function() {
+            rawAudioFile = null;
+            selectedAudioUrl = "";
+            const originalPlayer = document.getElementById('originalAudioPlayer');
+            originalPlayer.src = "";
+            
+            document.getElementById('uploadedStateBox').classList.add('hidden');
+            document.getElementById('uploadTriggerBox').classList.remove('hidden');
+            
+            const btnPlay = document.getElementById('uploadedMiniPlayBtn').querySelector('i');
+            if(btnPlay) btnPlay.className = 'fa-solid fa-play';
+        };
+
         const audioInputEl = document.getElementById('audioReferenceInput');
         if (audioInputEl) {
             audioInputEl.addEventListener('change', window.handleAudioUploadSelect);
+        }
+
+        // ============================================================
+        // SISTEM TOP PROGRESS BAR & ANIMASI TEKS
+        // ============================================================
+        let dotInterval;
+        function startDotsAnimation() {
+            const dotsEl = document.getElementById('topProgressDots');
+            let dotCount = 0;
+            clearInterval(dotInterval);
+            dotInterval = setInterval(() => {
+                dotCount = (dotCount + 1) % 4;
+                dotsEl.innerText = '.'.repeat(dotCount);
+            }, 400);
+        }
+        function stopDotsAnimation() {
+            clearInterval(dotInterval);
+            document.getElementById('topProgressDots').innerText = '';
+        }
+
+        function showTopProgress(badgeText, badgeColor) {
+            const overlay = document.getElementById('topProgressOverlay');
+            const badge = document.getElementById('topProgressBadge');
+            badge.innerHTML = `<i class="fa-solid fa-cloud-arrow-up"></i> ${badgeText}`;
+            badge.style.color = badgeColor;
+            
+            document.getElementById('topProgressFill').style.background = `linear-gradient(90deg, ${badgeColor}, #fff)`;
+            
+            overlay.style.transform = 'translateY(0)';
+            startDotsAnimation();
+        }
+
+        function hideTopProgress() {
+            const overlay = document.getElementById('topProgressOverlay');
+            overlay.style.transform = 'translateY(-100%)';
+            stopDotsAnimation();
+        }
+
+        function updateTopProgress(percent, text) {
+            document.getElementById('topProgressPercent').innerText = `${percent}/100`;
+            document.getElementById('topProgressFill').style.width = `${percent}%`;
+            document.getElementById('topProgressText').innerHTML = `${text}<span id="topProgressDots">...</span>`;
         }
 
         // ============================================================
@@ -5864,47 +5924,55 @@ window.generateDspPreview = async function() {
 };
 
 window.startDspBypassAndUpload = async function() {
-    if(!rawAudioFile) return;
-    
-    const btnStart = document.getElementById('btnStartDsp');
-    const btnPreview = document.getElementById('btnPreviewDsp');
-    const progressBox = document.getElementById('dspProgressBox');
-    const statusText = document.getElementById('dspStatusText');
-    const percentText = document.getElementById('dspPercentText');
-    const progressBar = document.getElementById('dspProgressBar');
-    
-    btnStart.disabled = true;
-    btnPreview.disabled = true;
-    progressBox.classList.remove('hidden');
-    
-    try {
-        statusText.innerText = "Menerapkan Algoritma Kreaverse AI...";
-        progressBar.style.width = "10%"; percentText.innerText = "10%";
-        
-        const mp3Blob = await processStealthAudio(rawAudioFile, false, (percent) => {
-            const mappedPercent = 10 + Math.floor(percent * 0.7);
-            progressBar.style.width = mappedPercent + "%"; 
-            percentText.innerText = mappedPercent + "%";
-        });
-        
-        statusText.innerText = "Mengunggah ke Kreaverse AI...";
-        progressBar.style.width = "85%"; percentText.innerText = "85%";
-        
-        await uploadBlobToCloudinary(mp3Blob, rawAudioFile.name, true);
-        
-        statusText.innerText = "Selesai!";
-        progressBar.style.width = "100%"; percentText.innerText = "100%";
-        showIphoneToast("Kreaverse AI Sukses", "Audio berhasil dienkripsi dan diunggah.", "fa-shield-halved");
-        
-    } catch(err) {
-        console.error(err);
-        statusText.innerText = "Gagal memproses audio!";
-        showIphoneToast("Kreaverse AI Error", "Gagal memanipulasi audio.", "fa-triangle-exclamation");
-    } finally {
-        btnStart.disabled = false;
-        btnPreview.disabled = false;
-    }
-};
+            if(!rawAudioFile) return;
+            
+            const btnStart = document.getElementById('btnStartDsp');
+            const btnPreview = document.getElementById('btnPreviewDsp');
+            
+            btnStart.disabled = true;
+            btnPreview.disabled = true;
+            
+            // Tutup DSP Studio dan Munculkan Top Progress
+            document.getElementById('dspStudioWrapper').classList.add('hidden');
+            showTopProgress("Menerapkan DSP...", "#0ea5e9");
+            
+            try {
+                updateTopProgress(5, "Menghubungkan");
+                await new Promise(r => setTimeout(r, 500));
+                updateTopProgress(15, "Terhubung ke vps Kreaverse AI");
+                await new Promise(r => setTimeout(r, 500));
+                
+                const safeName = rawAudioFile.name.length > 20 ? rawAudioFile.name.substring(0, 17) + "..." : rawAudioFile.name;
+                
+                const mp3Blob = await processStealthAudio(rawAudioFile, false, (percent) => {
+                    const mappedPercent = 16 + Math.floor(percent * 0.69); // Map 0-100% to 16-85%
+                    updateTopProgress(mappedPercent, `Memproses DSP ${safeName}`);
+                });
+                
+                updateTopProgress(86, "Proses upload by Kreaverse AI");
+                
+                await uploadBlobToCloudinary(mp3Blob, rawAudioFile.name, true);
+                
+                updateTopProgress(100, "Selesai");
+                await new Promise(r => setTimeout(r, 1000));
+                hideTopProgress();
+                
+                // Update Badge di Mini Player
+                document.getElementById('uploadedMiniBadge').innerText = "DSP Bypassed";
+                document.getElementById('uploadedMiniBadge').style.background = "rgba(239,68,68,0.1)";
+                document.getElementById('uploadedMiniBadge').style.color = "#ef4444";
+                
+                showIphoneToast("Kreaverse AI Sukses", "Audio berhasil dienkripsi dan diunggah.", "fa-shield-halved");
+                
+            } catch(err) {
+                console.error(err);
+                hideTopProgress();
+                showIphoneToast("Kreaverse AI Error", "Gagal memanipulasi audio.", "fa-triangle-exclamation");
+            } finally {
+                btnStart.disabled = false;
+                btnPreview.disabled = false;
+            }
+        };
 
 // ============================================================
         // LYRIC ENCRYPTOR (VISUAL-HOMOGLYPH & ZERO-WIDTH SPACE BYPASS)
@@ -6448,18 +6516,25 @@ window.startDspBypassAndUpload = async function() {
 
         window.useRecordedAudio = function() {
             if (!recordedBlob) return;
-            const nameText = document.getElementById('audioFileName');
-            const dspStudio = document.getElementById('dspStudioWrapper');
-            const originalPlayer = document.getElementById('originalAudioPlayer');
+            
+            // Switch UI Trigger ke Mini Player
+            document.getElementById('uploadTriggerBox').classList.add('hidden');
+            document.getElementById('uploadedStateBox').classList.remove('hidden');
+            document.getElementById('uploadedMiniBadge').innerText = "Menyiapkan...";
+            document.getElementById('uploadedMiniBadge').style.background = "#e2e8f0";
+            document.getElementById('uploadedMiniBadge').style.color = "#475569";
             
             const fileName = `Kreaverse_Voice_${Date.now()}.mp3`;
+            document.getElementById('uploadedMiniFileName').innerText = fileName;
+            
             rawAudioFile = new File([recordedBlob], fileName, { type: "audio/mp3" });
             
-            nameText.innerText = fileName;
+            const originalPlayer = document.getElementById('originalAudioPlayer');
             originalPlayer.src = URL.createObjectURL(rawAudioFile);
+            initCustomPlayer('originalAudioPlayer', 'uploadedStateBox');
             initCustomPlayer('originalAudioPlayer', 'cp-original');
             
-            dspStudio.classList.remove('hidden');
+            document.getElementById('dspStudioWrapper').classList.remove('hidden');
             document.getElementById('audioProgressBox').classList.add('hidden');
             document.getElementById('voiceRecorderBox').classList.add('hidden');
             
@@ -6473,19 +6548,30 @@ window.startDspBypassAndUpload = async function() {
             const btnOriginal = document.getElementById('btnUploadOriginal');
             const btnStart = document.getElementById('btnStartDsp');
             const btnPreview = document.getElementById('btnPreviewDsp');
-            const progressBox = document.getElementById('dspProgressBox');
-            const statusText = document.getElementById('dspStatusText');
-            const percentText = document.getElementById('dspPercentText');
-            const progressBar = document.getElementById('dspProgressBar');
             
             btnOriginal.disabled = true;
             btnStart.disabled = true;
             btnPreview.disabled = true;
-            progressBox.classList.remove('hidden');
+            
+            // Tutup DSP Studio dan Munculkan Top Progress
+            document.getElementById('dspStudioWrapper').classList.add('hidden');
+            showTopProgress("Mengunggah Original...", "#10b981");
             
             try {
-                statusText.innerText = "Mengunggah Original Audio...";
-                progressBar.style.width = "50%"; percentText.innerText = "50%";
+                updateTopProgress(10, "Menghubungkan");
+                await new Promise(r => setTimeout(r, 500));
+                updateTopProgress(30, "Terhubung ke vps Kreaverse AI");
+                await new Promise(r => setTimeout(r, 800));
+                
+                // Simulasi progress berjalan mulus sampai 90%
+                let fakeProgress = 30;
+                const fakeInterval = setInterval(() => {
+                    if (fakeProgress < 90) {
+                        fakeProgress += Math.floor(Math.random() * 5) + 1;
+                        if (fakeProgress > 90) fakeProgress = 90;
+                        updateTopProgress(fakeProgress, "Proses upload by Kreaverse AI");
+                    }
+                }, 400);
                 
                 const origPlayer = document.getElementById('originalAudioPlayer');
                 let finalDurStr = "0:00";
@@ -6493,15 +6579,24 @@ window.startDspBypassAndUpload = async function() {
                     finalDurStr = formatTime(origPlayer.duration);
                 }
                 
+                // Tunggu upload asli selesai
                 await uploadBlobToCloudinary(rawAudioFile, rawAudioFile.name, false, finalDurStr);
                 
-                statusText.innerText = "Selesai!";
-progressBar.style.width = "100%"; percentText.innerText = "100%";
+                clearInterval(fakeInterval);
+                updateTopProgress(100, "Selesai");
+                await new Promise(r => setTimeout(r, 1000));
+                hideTopProgress();
+                
+                // Update Badge di Mini Player
+                document.getElementById('uploadedMiniBadge').innerText = "Original Ready";
+                document.getElementById('uploadedMiniBadge').style.background = "rgba(16,185,129,0.1)";
+                document.getElementById('uploadedMiniBadge').style.color = "#10b981";
+                
                 showIphoneToast("Upload Sukses", "Audio original berhasil diunggah tanpa manipulasi.", "fa-circle-check");
                 
             } catch(err) {
                 console.error(err);
-                statusText.innerText = "Gagal mengunggah audio!";
+                hideTopProgress();
                 showIphoneToast("Upload Error", "Gagal mengunggah audio original.", "fa-triangle-exclamation");
             } finally {
                 btnOriginal.disabled = false;
