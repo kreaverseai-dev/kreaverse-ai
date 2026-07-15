@@ -864,6 +864,7 @@ ATURAN MUTLAK:
                     let extractedArray = getValueByPath(resData, arrayPath);
                     if (Array.isArray(extractedArray) && extractedArray.length > 0) {
                         tracks = extractedArray.map(item => ({
+                            audioId: item.id || item.audio_id || item.audioId || "",
                             audioUrl: item[propName] || item.audio_url || item.audioUrl || item.url || item.download_url || "",
                             imageUrl: item.image_url || item.imageUrl || item.cover_url || "https://i.postimg.cc/Jh211FTG/46cc61ec-de7f-4c62-8245-946e22312d2b.jpg"
                         })).filter(t => t.audioUrl && typeof t.audioUrl === 'string' && t.audioUrl.startsWith('http'));
@@ -872,13 +873,23 @@ ATURAN MUTLAK:
                     }
                 } else if (typeof extractedMedia === 'string' && extractedMedia.startsWith('http')) {
                     audioUrlVal = extractedMedia;
-                    tracks.push({ audioUrl: audioUrlVal, imageUrl: "https://i.postimg.cc/Jh211FTG/46cc61ec-de7f-4c62-8245-946e22312d2b.jpg" });
+                    tracks.push({ 
+                        audioId: resData.id || resData.audio_id || resData.audioId || taskId,
+                        audioUrl: audioUrlVal, 
+                        imageUrl: "https://i.postimg.cc/Jh211FTG/46cc61ec-de7f-4c62-8245-946e22312d2b.jpg" 
+                    });
                 }
 
                 // Fallback jika jalur dinamis admin salah/gagal
                 if (!audioUrlVal) {
                     audioUrlVal = findAudioUrlRecursively(resData);
-                    if (audioUrlVal) tracks.push({ audioUrl: audioUrlVal, imageUrl: "https://i.postimg.cc/Jh211FTG/46cc61ec-de7f-4c62-8245-946e22312d2b.jpg" });
+                    if (audioUrlVal) {
+                        tracks.push({ 
+                            audioId: resData.id || resData.audio_id || resData.audioId || taskId,
+                            audioUrl: audioUrlVal, 
+                            imageUrl: "https://i.postimg.cc/Jh211FTG/46cc61ec-de7f-4c62-8245-946e22312d2b.jpg" 
+                        });
+                    }
                 }
 
                 if (!audioUrlVal) {
