@@ -2080,11 +2080,11 @@
                                                 <span class="dsp-control-title"><i class="fa-solid fa-music"></i> Pitch (Nada Dasar)</span>
                                                 <div class="stepper-container">
                                                     <button type="button" class="stepper-btn" onclick="window.adjustStepper('pitchSlider', -1)">-</button>
-                                                    <input type="text" id="valStealthPitch" class="stepper-val" value="+0.0" readonly>
+                                                    <input type="text" id="valKreaversePitch" class="stepper-val" value="+0.0" readonly>
                                                     <button type="button" class="stepper-btn" onclick="window.adjustStepper('pitchSlider', 1)">+</button>
                                                 </div>
                                             </div>
-                                            <input type="range" id="pitchSlider" class="dsp-slider" min="-12" max="12" step="1" value="0" oninput="window.updateStealthVal()">
+                                            <input type="range" id="pitchSlider" class="dsp-slider" min="-12" max="12" step="1" value="0" oninput="window.updateKreaverseVal()">
                                             <div style="font-size: 0.65rem; color: #38bdf8; margin-top: 4px;">*Biarkan 0. Algoritma 20-Layer di bawah yang akan mengecoh AI.</div>
                                             
                                             <div style="height: 1px; background: rgba(255,255,255,0.05); margin: 16px 0;"></div>
@@ -2093,13 +2093,13 @@
                                             <div class="dsp-row-flex">
                                                 <span class="dsp-control-title"><i class="fa-solid fa-gauge-high"></i> Tempo (Speed)</span>
                                                 <div class="stepper-container">
-                                                    <button type="button" class="stepper-btn" onclick="window.adjustStepper('stealthSpeed', -0.01)">-</button>
-                                                    <input type="text" id="valStealthSpeed" class="stepper-val" value="100%" readonly>
-                                                    <button type="button" class="stepper-btn" onclick="window.adjustStepper('stealthSpeed', 0.01)">+</button>
+                                                    <button type="button" class="stepper-btn" onclick="window.adjustStepper('kreaverseSpeed', -0.01)">-</button>
+                                                    <input type="text" id="valKreaverseSpeed" class="stepper-val" value="100%" readonly>
+                                                    <button type="button" class="stepper-btn" onclick="window.adjustStepper('kreaverseSpeed', 0.01)">+</button>
                                                 </div>
                                             </div>
-                                            <input type="range" id="stealthSpeed" class="dsp-slider" min="0.5" max="1.5" step="0.01" value="1.0" oninput="window.updateStealthVal()">
-                                            <div id="stealthEstimatedDuration" style="font-size: 0.65rem; color: #94a3b8; margin-top: 8px; font-weight: 600; text-align: right;">Estimasi Durasi: 0:00</div>
+                                            <input type="range" id="kreaverseSpeed" class="dsp-slider" min="0.5" max="1.5" step="0.01" value="1.0" oninput="window.updateKreaverseVal()">
+                                            <div id="kreaverseEstimatedDuration" style="font-size: 0.65rem; color: #94a3b8; margin-top: 8px; font-weight: 600; text-align: right;">Estimasi Durasi: 0:00</div>
                                             
                                             <div style="height: 1px; background: rgba(255,255,255,0.05); margin: 16px 0;"></div>
                                             
@@ -5215,7 +5215,7 @@ window.validateTrimInputs = function() {
     document.getElementById('trimStartInput').value = formatSecondsToTime(startSec);
     if (maxDur > 0) document.getElementById('trimEndInput').value = formatSecondsToTime(endSec);
     
-    window.updateStealthVal(); // Update estimasi durasi
+    window.updateKreaverseVal(); // Update estimasi durasi
     if (trimPreviewCtx) window.toggleTrimPlayback(); // Stop player jika sedang jalan
 };
 
@@ -5225,21 +5225,21 @@ window.adjustStepper = function(sliderId, amount) {
     if (newVal > parseFloat(slider.max)) newVal = slider.max;
     if (newVal < parseFloat(slider.min)) newVal = slider.min;
     slider.value = newVal;
-    window.updateStealthVal();
+    window.updateKreaverseVal();
 };
 
-window.updateStealthVal = function() {
+window.updateKreaverseVal = function() {
     const pitchVal = parseInt(document.getElementById('pitchSlider').value);
-    const speedVal = parseFloat(document.getElementById('stealthSpeed').value);
+    const speedVal = parseFloat(document.getElementById('kreaverseSpeed').value);
     
     // Update Text UI
     const pitchText = pitchVal > 0 ? `+${pitchVal}.0` : (pitchVal === 0 ? `+0.0` : `${pitchVal}.0`);
-    document.getElementById('valStealthPitch').value = pitchText;
-    document.getElementById('valStealthSpeed').value = Math.round(speedVal * 100) + "%";
+    document.getElementById('valKreaversePitch').value = pitchText;
+    document.getElementById('valKreaverseSpeed').value = Math.round(speedVal * 100) + "%";
     
     // Update Estimasi Durasi (Berdasarkan Trimmer & Speed)
     const origPlayer = document.getElementById('originalAudioPlayer');
-    const estDurEl = document.getElementById('stealthEstimatedDuration');
+    const estDurEl = document.getElementById('kreaverseEstimatedDuration');
     
     if (origPlayer && isFinite(origPlayer.duration) && origPlayer.duration > 0) {
         let startSec = parseTimeToSeconds(document.getElementById('trimStartInput').value);
@@ -5463,7 +5463,7 @@ function makeMirageCurve() {
         }
 
 // Fungsi Utama Pemrosesan Stealth Audio (Dengan Pangkas & Pitch)
-async function processStealthAudio(file, isPreview = false, progressCallback) {
+async function processKreaverseAudio(file, isPreview = false, progressCallback) {
     const arrayBuffer = await file.arrayBuffer();
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
     const originalBuffer = await audioCtx.decodeAudioData(arrayBuffer);
@@ -5943,7 +5943,7 @@ window.generateDspPreview = async function() {
     btnPreview.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Memproses...';
     
     try {
-        const mp3Blob = await processStealthAudio(rawAudioFile, true, () => {}); 
+        const mp3Blob = await processKreaverseAudio(rawAudioFile, true, () => {}); 
         bypassPlayer.src = URL.createObjectURL(mp3Blob);
         initCustomPlayer('bypassedAudioPlayer', 'cp-bypassed');
         
@@ -5959,55 +5959,55 @@ window.generateDspPreview = async function() {
 };
 
 window.startDspBypassAndUpload = async function() {
-            if(!rawAudioFile) return;
-            
-            const btnStart = document.getElementById('btnStartDsp');
-            const btnPreview = document.getElementById('btnPreviewDsp');
-            
-            btnStart.disabled = true;
-            btnPreview.disabled = true;
-            
-            // Tutup DSP Studio dan Munculkan Top Progress
-            document.getElementById('dspStudioWrapper').classList.add('hidden');
-            showTopProgress("Menerapkan DSP...", "#0ea5e9");
-            
-            try {
-                updateTopProgress(5, "Menghubungkan");
-                await new Promise(r => setTimeout(r, 500));
-                updateTopProgress(15, "Terhubung ke vps Kreaverse AI");
-                await new Promise(r => setTimeout(r, 500));
-                
-                const safeName = rawAudioFile.name.length > 20 ? rawAudioFile.name.substring(0, 17) + "..." : rawAudioFile.name;
-                
-                const mp3Blob = await processStealthAudio(rawAudioFile, false, (percent) => {
-                    const mappedPercent = 16 + Math.floor(percent * 0.69); // Map 0-100% to 16-85%
-                    updateTopProgress(mappedPercent, `Memproses DSP ${safeName}`);
-                });
-                
-                updateTopProgress(86, "Proses upload by Kreaverse AI");
-                
-                await uploadBlobToCloudinary(mp3Blob, rawAudioFile.name, true);
-                
-                updateTopProgress(100, "Selesai");
-                await new Promise(r => setTimeout(r, 1000));
-                hideTopProgress();
-                
-                // Update Badge di Mini Player
-                document.getElementById('uploadedMiniBadge').innerText = "DSP Bypassed";
-                document.getElementById('uploadedMiniBadge').style.background = "rgba(239,68,68,0.1)";
-                document.getElementById('uploadedMiniBadge').style.color = "#ef4444";
-                
-                showIphoneToast("Kreaverse AI Sukses", "Audio berhasil dienkripsi dan diunggah.", "fa-shield-halved");
-                
-            } catch(err) {
-                console.error(err);
-                hideTopProgress();
-                showIphoneToast("Kreaverse AI Error", "Gagal memanipulasi audio.", "fa-triangle-exclamation");
-            } finally {
-                btnStart.disabled = false;
-                btnPreview.disabled = false;
-            }
-        };
+    if(!rawAudioFile) return;
+    
+    const btnStart = document.getElementById('btnStartDsp');
+    const btnPreview = document.getElementById('btnPreviewDsp');
+    
+    btnStart.disabled = true;
+    btnPreview.disabled = true;
+    
+    // Tutup DSP Studio dan Munculkan Top Progress
+    document.getElementById('dspStudioWrapper').classList.add('hidden');
+    showTopProgress("Menerapkan DSP...", "#0ea5e9");
+    
+    try {
+        updateTopProgress(5, "Menghubungkan");
+        await new Promise(r => setTimeout(r, 500));
+        updateTopProgress(15, "Terhubung ke vps Kreaverse AI");
+        await new Promise(r => setTimeout(r, 500));
+        
+        const safeName = rawAudioFile.name.length > 20 ? rawAudioFile.name.substring(0, 17) + "..." : rawAudioFile.name;
+        
+        const mp3Blob = await processKreaverseAudio(rawAudioFile, false, (percent) => {
+            const mappedPercent = 16 + Math.floor(percent * 0.69); // Map 0-100% to 16-85%
+            updateTopProgress(mappedPercent, `Memproses DSP ${safeName}`);
+        });
+        
+        updateTopProgress(86, "Proses upload by Kreaverse AI");
+        
+        await uploadBlobToCloudinary(mp3Blob, rawAudioFile.name, true);
+        
+        updateTopProgress(100, "Selesai");
+        await new Promise(r => setTimeout(r, 1000));
+        hideTopProgress();
+        
+        // Update Badge di Mini Player
+        document.getElementById('uploadedMiniBadge').innerText = "DSP Bypassed";
+        document.getElementById('uploadedMiniBadge').style.background = "rgba(239,68,68,0.1)";
+        document.getElementById('uploadedMiniBadge').style.color = "#ef4444";
+        
+        showIphoneToast("Kreaverse AI Sukses", "Audio berhasil dienkripsi dan diunggah.", "fa-shield-halved");
+        
+    } catch(err) {
+        console.error(err);
+        hideTopProgress();
+        showIphoneToast("Kreaverse AI Error", "Gagal memanipulasi audio.", "fa-triangle-exclamation");
+    } finally {
+        btnStart.disabled = false;
+        btnPreview.disabled = false;
+    }
+};
 
 // ============================================================
         // LYRIC ENCRYPTOR (VISUAL-HOMOGLYPH & ZERO-WIDTH SPACE BYPASS)
