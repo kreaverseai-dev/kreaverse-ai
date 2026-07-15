@@ -5052,6 +5052,17 @@
         let analyserNode = null;
         let animationFrameId = null;
 
+        // GLOBAL HELPER: Aktifkan Mini Player dari mana saja
+        window.activateMiniPlayerUI = function(fileName, badgeText = "Menyiapkan...", badgeBg = "#e2e8f0", badgeColor = "#475569") {
+            document.getElementById('uploadTriggerBox').classList.add('hidden');
+            document.getElementById('uploadedStateBox').classList.remove('hidden');
+            document.getElementById('uploadedMiniFileName').innerText = fileName;
+            const badge = document.getElementById('uploadedMiniBadge');
+            badge.innerText = badgeText;
+            badge.style.background = badgeBg;
+            badge.style.color = badgeColor;
+        };
+
         window.handleAudioUploadSelect = function(event) {
             const fileInput = event ? event.target : document.getElementById('audioReferenceInput');
             const dspStudio = document.getElementById('dspStudioWrapper');
@@ -5061,17 +5072,11 @@
             
             rawAudioFile = fileInput.files[0];
             
-            // Switch UI Trigger ke Mini Player
-            document.getElementById('uploadTriggerBox').classList.add('hidden');
-            document.getElementById('uploadedStateBox').classList.remove('hidden');
-            document.getElementById('uploadedMiniFileName').innerText = rawAudioFile.name;
-            document.getElementById('uploadedMiniBadge').innerText = "Menyiapkan...";
-            document.getElementById('uploadedMiniBadge').style.background = "#e2e8f0";
-            document.getElementById('uploadedMiniBadge').style.color = "#475569";
+            window.activateMiniPlayerUI(rawAudioFile.name);
             
             originalPlayer.src = URL.createObjectURL(rawAudioFile);
             initCustomPlayer('originalAudioPlayer', 'uploadedStateBox');
-            initCustomPlayer('originalAudioPlayer', 'cp-original'); // Sinkronkan juga ke player dalam DSP
+            initCustomPlayer('originalAudioPlayer', 'cp-original'); 
             
             dspStudio.classList.remove('hidden');
             document.getElementById('audioProgressBox').classList.add('hidden');
@@ -5087,6 +5092,7 @@
             
             document.getElementById('uploadedStateBox').classList.add('hidden');
             document.getElementById('uploadTriggerBox').classList.remove('hidden');
+            document.getElementById('dspStudioWrapper').classList.add('hidden'); // Sembunyikan DSP juga
             
             const btnPlay = document.getElementById('uploadedMiniPlayBtn').querySelector('i');
             if(btnPlay) btnPlay.className = 'fa-solid fa-play';
@@ -6517,15 +6523,8 @@ window.startDspBypassAndUpload = async function() {
         window.useRecordedAudio = function() {
             if (!recordedBlob) return;
             
-            // Switch UI Trigger ke Mini Player
-            document.getElementById('uploadTriggerBox').classList.add('hidden');
-            document.getElementById('uploadedStateBox').classList.remove('hidden');
-            document.getElementById('uploadedMiniBadge').innerText = "Menyiapkan...";
-            document.getElementById('uploadedMiniBadge').style.background = "#e2e8f0";
-            document.getElementById('uploadedMiniBadge').style.color = "#475569";
-            
             const fileName = `Kreaverse_Voice_${Date.now()}.mp3`;
-            document.getElementById('uploadedMiniFileName').innerText = fileName;
+            window.activateMiniPlayerUI(fileName, "Rekaman Studio", "rgba(16,185,129,0.1)", "#10b981");
             
             rawAudioFile = new File([recordedBlob], fileName, { type: "audio/mp3" });
             
@@ -6837,14 +6836,24 @@ window.startDspBypassAndUpload = async function() {
                 return;
             }
             selectedAudioUrl = urlInput;
-            document.getElementById('urlSuccessMsg').classList.remove('hidden');
+            
+            // Ekstrak nama file dari URL atau gunakan default
+            let fileName = urlInput.split('/').pop().split('?')[0];
+            if (!fileName || fileName.length > 30) fileName = "Audio_dari_URL.mp3";
+            
+            window.activateMiniPlayerUI(fileName, "URL Diterapkan", "rgba(14,165,233,0.1)", "#0ea5e9");
+            
+            const originalPlayer = document.getElementById('originalAudioPlayer');
+            originalPlayer.src = selectedAudioUrl;
+            initCustomPlayer('originalAudioPlayer', 'uploadedStateBox');
+            
+            document.getElementById('urlInputBox').classList.add('hidden');
             document.getElementById('dspStudioWrapper').classList.add('hidden'); 
             showIphoneToast("URL Diterapkan", "Audio siap digunakan untuk generate.", "fa-link");
         };
 
         window.selectFromUploadHistory = async function(url, name) {
             const dspStudio = document.getElementById('dspStudioWrapper');
-            const nameText = document.getElementById('audioFileName');
             const originalPlayer = document.getElementById('originalAudioPlayer');
             
             document.getElementById('uploadHistoryPopup').classList.add('hidden');
@@ -6855,8 +6864,10 @@ window.startDspBypassAndUpload = async function() {
                 const blob = await response.blob();
                 rawAudioFile = new File([blob], name, { type: "audio/mp3" });
                 
-                nameText.innerText = name;
+                window.activateMiniPlayerUI(name, "Histori Siap", "rgba(16,185,129,0.1)", "#10b981");
+                
                 originalPlayer.src = URL.createObjectURL(rawAudioFile);
+                initCustomPlayer('originalAudioPlayer', 'uploadedStateBox');
                 initCustomPlayer('originalAudioPlayer', 'cp-original');
                 
                 dspStudio.classList.remove('hidden');
@@ -7262,7 +7273,21 @@ window.startDspBypassAndUpload = async function() {
                 }
             }
 
-            const title = document.getElementById('titleInput').value.trim();
+            let title = document.getElementById('titleInput').value.trim();
+            
+            // AUTO-FILL JUDUL DARI NAMA FILE JIKA KOSONG (DAN SANITIZE)
+            if (!title && (selectedAudioUrl || rawAudioFile)) {
+                let rawName = document.getElementById('uploadedMiniFileName').innerText;
+                if (rawName && rawName !== '-' && !rawName.startsWith('http')) {
+                    // Hapus ekstensi file
+                    let cleanName = rawName.replace(/\.(mp3|wav|ogg|m4a|flac|aac)$/i, '');
+                    // Ganti simbol aneh (-_- atau _ atau -) menjadi |
+                    cleanName = cleanName.replace(/[-_]+/g, ' | ').replace(/\s+\|\s+/g, ' | ').replace(/\|+/g, '|');
+                    title = cleanName.trim();
+                    document.getElementById('titleInput').value = title; // Tampilkan di UI
+                }
+            }
+
             const style = document.getElementById('styleInput').value.trim();
             const lyrics = document.getElementById('lyricsInput').value.trim();
             const instrumental = document.getElementById('instrumentalToggle').checked;
