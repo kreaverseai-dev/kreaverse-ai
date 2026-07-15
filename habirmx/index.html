@@ -3613,7 +3613,7 @@
             };
 
             // Action: Share
-            const shareUrl = `${window.location.origin}/?play=${docId}`;
+            const shareUrl = `${window.location.href.split('?')[0]}?play=${docId}`;
             const shareText = `Dengarkan lagu AI buatanku: "${currentDetailTitle}" 🎵 Dibuat menggunakan Kreaverse AI!`;
             
             document.getElementById('btnShareWA').onclick = () => {
