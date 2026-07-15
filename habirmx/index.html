@@ -2677,9 +2677,24 @@
                         <button onclick="navigator.clipboard.writeText(document.getElementById('detailAudioId').innerText); window.showIphoneToast('Tersalin', 'Audio ID disalin!', 'fa-copy');" style="background:none; border:none; color:#38bdf8; cursor:pointer; font-size: 0.8rem;"><i class="fa-regular fa-copy"></i></button>
                     </div>
                     <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 6px; margin-bottom: 6px;">
-                        <div><strong style="color: #e2e8f0;"><i class="fa-solid fa-user-astronaut" style="margin-right: 4px;"></i> Persona ID:</strong> <span id="detailPersonaId" style="font-family: monospace; color: #38bdf8;">-</span></div>
-                        <button onclick="navigator.clipboard.writeText(document.getElementById('detailPersonaId').innerText); window.showIphoneToast('Tersalin', 'Persona ID disalin!', 'fa-copy');" style="background:none; border:none; color:#38bdf8; cursor:pointer; font-size: 0.8rem;"><i class="fa-regular fa-copy"></i></button>
+                        <div><strong style="color: #e2e8f0;"><i class="fa-solid fa-user-astronaut" style="margin-right: 4px;"></i> Persona / Voice ID:</strong> <span id="detailPersonaId" style="font-family: monospace; color: #38bdf8;">-</span></div>
+                        <button onclick="navigator.clipboard.writeText(document.getElementById('detailPersonaId').innerText); window.showIphoneToast('Tersalin', 'Persona/Voice ID disalin!', 'fa-copy');" style="background:none; border:none; color:#38bdf8; cursor:pointer; font-size: 0.8rem;"><i class="fa-regular fa-copy"></i></button>
                     </div>
+                    
+                    <!-- NEW FIELDS: GENDER & PARAMS -->
+                    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 6px; margin-bottom: 6px;">
+                        <div><strong style="color: #e2e8f0;"><i class="fa-solid fa-venus-mars" style="margin-right: 4px;"></i> Vocal Gender:</strong> <span id="detailVocalGender" style="color: #38bdf8;">-</span></div>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 6px; margin-bottom: 6px;">
+                        <div><strong style="color: #e2e8f0;"><i class="fa-solid fa-sliders" style="margin-right: 4px;"></i> Parameters:</strong> <span id="detailParams" style="color: #38bdf8; font-size: 0.65rem;">-</span></div>
+                    </div>
+                    
+                    <!-- NEW FIELD: ORIGINAL AUDIO URL (COVER MODE) -->
+                    <div id="detailOriginalAudioBox" style="display: none; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 6px; margin-bottom: 6px;">
+                        <div><strong style="color: #e2e8f0;"><i class="fa-solid fa-link" style="margin-right: 4px;"></i> Original Audio:</strong> <a id="detailOriginalAudioLink" href="#" target="_blank" style="color: #38bdf8; text-decoration: underline; font-size: 0.65rem;">Lihat Referensi</a></div>
+                        <button onclick="navigator.clipboard.writeText(document.getElementById('detailOriginalAudioLink').href); window.showIphoneToast('Tersalin', 'Link Audio Referensi disalin!', 'fa-copy');" style="background:none; border:none; color:#38bdf8; cursor:pointer; font-size: 0.8rem;"><i class="fa-regular fa-copy"></i></button>
+                    </div>
+
                     <div style="display: flex; align-items: center;"><strong style="color: #e2e8f0;"><i class="fa-solid fa-calendar-days" style="margin-right: 4px;"></i> Dibuat pada:</strong> <span id="detailDate" style="margin-left: 6px; color: #cbd5e1;">-</span></div>
                 </div>
 
@@ -3545,8 +3560,28 @@
             const dateStr = `${days[dateObj.getDay()]}, ${dateObj.getDate()} ${months[dateObj.getMonth()]} ${dateObj.getFullYear()} pukul ${displayH}.${m} ${period}`;
             
             document.getElementById('detailTaskId').innerText = docData.taskId || '-';
-            document.getElementById('detailAudioId').innerText = docData.id || '-';
+            document.getElementById('detailAudioId').innerText = docData.audioId || docData.id || '-';
             document.getElementById('detailPersonaId').innerText = docData.personaId || '-';
+            
+            // Tampilkan Vocal Gender & Params
+            document.getElementById('detailVocalGender').innerText = docData.vocalGender ? docData.vocalGender.toUpperCase() : '-';
+            
+            let paramsText = [];
+            if (docData.styleWeight) paramsText.push(`Style: ${docData.styleWeight}`);
+            if (docData.weirdness) paramsText.push(`Weirdness: ${docData.weirdness}`);
+            if (docData.audioWeight) paramsText.push(`Audio: ${docData.audioWeight}`);
+            document.getElementById('detailParams').innerText = paramsText.length > 0 ? paramsText.join(' | ') : '-';
+
+            // Tampilkan Original Audio jika ada (Mode Cover)
+            const origAudioBox = document.getElementById('detailOriginalAudioBox');
+            const origAudioLink = document.getElementById('detailOriginalAudioLink');
+            if (docData.originalAudioUrl) {
+                origAudioBox.style.display = 'flex';
+                origAudioLink.href = docData.originalAudioUrl;
+            } else {
+                origAudioBox.style.display = 'none';
+            }
+
             document.getElementById('detailDate').innerText = dateStr;
 
             // Set Prompt (Default 1 baris)
@@ -7127,7 +7162,13 @@ progressBar.style.width = "100%"; percentText.innerText = "100%";
                     provider: data.provider,
                     model: modelLabel,
                     timestamp: Date.now(),
-                    mode: currentMode
+                    mode: currentMode,
+                    personaId: options.personaId || "",
+                    vocalGender: options.vocalGender || "",
+                    styleWeight: options.styleWeight || "",
+                    weirdness: options.weirdness || "",
+                    audioWeight: options.audioWeight || "",
+                    originalAudioUrl: currentMode === 'cover' ? selectedAudioUrl : ""
                 });
                 
                 generateBtn.disabled = false;
