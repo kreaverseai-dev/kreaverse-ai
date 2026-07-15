@@ -1,3 +1,5 @@
+// File: api/chat.js
+
 export default async function handler(req, res) {
     // 1. Setup CORS agar bisa diakses dari frontend tanpa diblokir browser
     res.setHeader('Access-Control-Allow-Credentials', true);
@@ -5,25 +7,26 @@ export default async function handler(req, res) {
     res.setHeader('Access-Control-Allow-Methods', 'OPTIONS, POST');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
 
-    // 2. Handle Preflight Request (Wajib untuk Vercel/Browser)
+    // 2. Handle Preflight Request (Wajib untuk Vercel/Browser agar tidak error CORS)
     if (req.method === 'OPTIONS') {
         res.status(200).end();
         return;
     }
 
+    // Hanya izinkan metode POST
     if (req.method !== 'POST') {
         return res.status(405).json({ error: 'Method Not Allowed. Gunakan POST.' });
     }
 
     try {
-        // 3. Tangkap data dari frontend Kreaverse
+        // 3. Tangkap data yang dikirim dari HTML Kreaverse (index.html)
         const { targetUrl, apiKey, headerName = 'Authorization', payload } = req.body;
 
         if (!targetUrl || !apiKey || !payload) {
             return res.status(400).json({ error: 'Parameter tidak lengkap dari frontend.' });
         }
 
-        // 4. Teruskan request ke Server AI (NaraRouter, Groq, dll)
+        // 4. Teruskan request ke Server AI (NaraRouter, Groq, Tencent, dll)
         const response = await fetch(targetUrl, {
             method: 'POST',
             headers: {
@@ -36,11 +39,12 @@ export default async function handler(req, res) {
         // 5. Ambil balasan dari Server AI
         const data = await response.json();
 
-        // 6. Kembalikan balasan ke Kreaverse
+        // 6. Jika server AI error (misal token habis / server down), kembalikan error aslinya
         if (!response.ok) {
             return res.status(response.status).json(data);
         }
 
+        // 7. Jika sukses, kirimkan hasil chat ke Kreaverse
         return res.status(200).json(data);
 
     } catch (error) {
