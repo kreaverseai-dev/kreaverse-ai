@@ -7415,6 +7415,10 @@ progressBar.style.width = "100%"; percentText.innerText = "100%";
 
                         document.getElementById('shareTitle').innerText = cleanTitle;
                         
+                        // Set Style Text di CTA Bawah
+                        const promptText = data.prompt || "Ciptakan lagu AI pertamamu";
+                        document.getElementById('shareBottomStyle').innerText = promptText;
+                        
                         // Handle Lirik
                         let lyricsText = data.lyrics || "[Instrumental]";
                         document.getElementById('shareLyrics').innerText = lyricsText;
@@ -7427,12 +7431,17 @@ progressBar.style.width = "100%"; percentText.innerText = "100%";
                         const audioEl = document.getElementById('shareAudio');
                         audioEl.src = data.url;
                         
-                        // Logika Progress Bar
+                        // Logika Progress Bar & Waktu
                         audioEl.addEventListener('timeupdate', () => {
                             const fill = document.getElementById('shareProgressFill');
+                            const currEl = document.getElementById('shareCurrTime');
+                            const durEl = document.getElementById('shareDurTime');
+                            
                             if (isFinite(audioEl.duration) && audioEl.duration > 0) {
                                 const percent = (audioEl.currentTime / audioEl.duration) * 100;
                                 fill.style.width = `${percent}%`;
+                                currEl.innerText = formatTime(audioEl.currentTime);
+                                durEl.innerText = formatTime(audioEl.duration);
                             }
                         });
 
@@ -7494,7 +7503,9 @@ progressBar.style.width = "100%"; percentText.innerText = "100%";
         
         <!-- Top Nav Bar -->
         <div style="position: relative; z-index: 10; display: flex; justify-content: space-between; align-items: center; padding: 16px 20px;">
-            <div style="font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 900; font-size: 1.4rem; letter-spacing: -0.5px; text-shadow: 0 2px 4px rgba(0,0,0,0.5);">Kreaverse<span style="color: var(--accent-color);"> AI</span></div>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 450 80" width="130" height="auto">
+                <text x="0" y="55%" font-family="'Arial Black', Impact, sans-serif" font-size="65" font-weight="900" fill="#ffffff" dominant-baseline="middle" letter-spacing="3">KREAVERSE</text>
+            </svg>
             <div style="display: flex; gap: 16px; align-items: center;">
                 <a href="/login/index.html" style="color: #fff; text-decoration: none; font-weight: 600; font-size: 0.95rem; text-shadow: 0 2px 4px rgba(0,0,0,0.5);">Masuk</a>
             </div>
@@ -7533,15 +7544,17 @@ progressBar.style.width = "100%"; percentText.innerText = "100%";
                 <button id="shareBottomPlayBtn" onclick="window.toggleSharePlay()" style="background: none; border: none; color: #fff; font-size: 1.1rem; cursor: pointer; padding: 0; display: flex; align-items: center; justify-content: center; width: 24px;">
                     <i class="fa-solid fa-play"></i>
                 </button>
+                <span id="shareCurrTime" style="font-size: 0.7rem; font-family: monospace; color: #cbd5e1; font-weight: 600; text-shadow: 0 1px 2px rgba(0,0,0,0.8);">0:00</span>
                 <div onclick="window.seekShareAudio(event)" style="flex: 1; height: 4px; background: rgba(255,255,255,0.3); border-radius: 4px; cursor: pointer; position: relative;">
                     <div id="shareProgressFill" style="position: absolute; top: 0; left: 0; height: 100%; width: 0%; background: #fff; border-radius: 4px;"></div>
                 </div>
+                <span id="shareDurTime" style="font-size: 0.7rem; font-family: monospace; color: #cbd5e1; font-weight: 600; text-shadow: 0 1px 2px rgba(0,0,0,0.8);">0:00</span>
             </div>
 
             <!-- CTA Create Box -->
             <div style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.05); border-radius: 99px; padding: 6px 6px 6px 20px; display: flex; align-items: center; justify-content: space-between; backdrop-filter: blur(10px); margin-bottom: 10px;">
-                <span style="font-size: 0.9rem; font-weight: 600; color: #e2e8f0;">Buat lagu sendiri</span>
-                <button onclick="window.location.href=window.location.href.split('?')[0]" style="background: var(--accent-color); color: #fff; border: none; padding: 10px 20px; border-radius: 99px; font-weight: 800; font-size: 0.85rem; cursor: pointer; display: flex; align-items: center; gap: 8px; box-shadow: 0 4px 15px rgba(0, 122, 255, 0.4);">
+                <span id="shareBottomStyle" style="font-size: 0.85rem; font-weight: 600; color: #e2e8f0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 60%; text-shadow: 0 1px 3px rgba(0,0,0,0.8);">Style musik...</span>
+                <button onclick="window.location.href='/login/index.html'" style="background: var(--accent-color); color: #fff; border: none; padding: 10px 20px; border-radius: 99px; font-weight: 800; font-size: 0.85rem; cursor: pointer; display: flex; align-items: center; gap: 8px; box-shadow: 0 4px 15px rgba(0, 122, 255, 0.4); flex-shrink: 0;">
                     Buat <i class="fa-solid fa-music"></i>
                 </button>
             </div>
