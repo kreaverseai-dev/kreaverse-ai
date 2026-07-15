@@ -2864,7 +2864,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
-        import { getFirestore, doc, collection, getDocs, addDoc, onSnapshot, updateDoc, query, where, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+        import { getFirestore, doc, collection, getDocs, addDoc, onSnapshot, updateDoc, query, where, deleteDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
         import { getDatabase, ref, set, onValue, onDisconnect, serverTimestamp as rtdbTimestamp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
 
         // Firebase Configuration
@@ -3613,17 +3613,17 @@
             };
 
             // Action: Share
+            const shareUrl = `${window.location.origin}/?play=${docId}`;
             const shareText = `Dengarkan lagu AI buatanku: "${currentDetailTitle}" 🎵 Dibuat menggunakan Kreaverse AI!`;
-            const shareUrl = "https://kreaverse-ai.biz.id"; 
             
             document.getElementById('btnShareWA').onclick = () => {
-                window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(shareText + ' ' + shareUrl)}`, '_blank');
+                window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(shareText + '\n\n' + shareUrl)}`, '_blank');
             };
             document.getElementById('btnShareFB').onclick = () => {
                 window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}&quote=${encodeURIComponent(shareText)}`, '_blank');
             };
             document.getElementById('btnShareCopy').onclick = () => {
-                navigator.clipboard.writeText(`${shareText} ${shareUrl}`);
+                navigator.clipboard.writeText(`${shareText} \n${shareUrl}`);
                 showIphoneToast('Tersalin', 'Link berhasil disalin!', 'fa-link');
             };
 
@@ -7380,7 +7380,142 @@ progressBar.style.width = "100%"; percentText.innerText = "100%";
                 content.style.maxHeight = "0";
             }
         };
+
+        // ============================================================
+        // LOGIKA HALAMAN SHARE PUBLIK (PUBLIC PLAYER)
+        // ============================================================
+        document.addEventListener('DOMContentLoaded', async () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const playId = urlParams.get('play');
+
+            if (playId) {
+                // 1. Sembunyikan UI Utama Website
+                const container = document.querySelector('.container');
+                const navbar = document.querySelector('.navbar');
+                const sidebar = document.getElementById('sidebarMenu');
+                if(container) container.style.display = 'none';
+                if(navbar) navbar.style.display = 'none';
+                if(sidebar) sidebar.style.display = 'none';
+
+                // 2. Tampilkan Overlay Player Publik
+                const overlay = document.getElementById('publicShareOverlay');
+                if(overlay) overlay.style.display = 'block';
+
+                try {
+                    const docRef = doc(db, "render_gallery", playId);
+                    const docSnap = await getDoc(docRef);
+
+                    if (docSnap.exists()) {
+                        const data = docSnap.data();
+                        
+                        // Bersihkan judul dari tulisan (Part X)
+                        const rawTitle = data.title || "Untitled Song";
+                        const cleanTitle = rawTitle.replace(/\s*\(Part\s*\d+\)/gi, '').replace(/\s*-\s*Versi\s*\d+/gi, '').trim();
+
+                        document.getElementById('shareTitle').innerText = cleanTitle;
+                        document.getElementById('shareStyle').innerText = data.prompt || "Style tidak tersedia";
+                        document.getElementById('shareLyrics').innerText = data.lyrics || "Instrumental (Tanpa Lirik)";
+                        document.getElementById('shareImg').src = data.imageUrl || "https://i.postimg.cc/Jh211FTG/46cc61ec-de7f-4c62-8245-946e22312d2b.jpg";
+                        
+                        const audioEl = document.getElementById('shareAudio');
+                        audioEl.src = data.url;
+                        
+                        // Logika Progress Bar & Durasi Khusus Share Player
+                        audioEl.addEventListener('timeupdate', () => {
+                            const fill = document.querySelector('#cp-share .progress-bar-fill');
+                            const currTimeEl = document.querySelector('#cp-share .current-time');
+                            const durTimeEl = document.querySelector('#cp-share .duration-time');
+                            
+                            if (isFinite(audioEl.duration) && audioEl.duration > 0) {
+                                const percent = (audioEl.currentTime / audioEl.duration) * 100;
+                                fill.style.width = `${percent}%`;
+                                currTimeEl.innerText = formatTime(audioEl.currentTime);
+                                durTimeEl.innerText = formatTime(audioEl.duration);
+                            }
+                        });
+
+                        // Animasi Piringan Hitam Berputar
+                        const spinDisk = document.getElementById('shareSpinDisk');
+                        spinDisk.style.animationPlayState = 'paused';
+                        
+                        audioEl.addEventListener('play', () => spinDisk.style.animationPlayState = 'running');
+                        audioEl.addEventListener('pause', () => spinDisk.style.animationPlayState = 'paused');
+                        audioEl.addEventListener('ended', () => {
+                            spinDisk.style.animationPlayState = 'paused';
+                            document.querySelector('#cp-share .play-btn i').className = 'fa-solid fa-play';
+                        });
+
+                    } else {
+                        document.getElementById('shareTitle').innerText = "Lagu Tidak Ditemukan";
+                        document.getElementById('shareStyle').innerText = "Lagu ini mungkin telah dihapus oleh pembuatnya.";
+                        document.getElementById('shareLyrics').innerText = "-";
+                    }
+                } catch (err) {
+                    console.error("Gagal memuat lagu:", err);
+                    document.getElementById('shareTitle').innerText = "Terjadi Kesalahan";
+                    document.getElementById('shareStyle').innerText = "Gagal memuat data dari server. Pastikan Rules Firestore Anda mengizinkan 'read' untuk publik.";
+                }
+            }
+        });
+
+        // Fungsi Seek (Geser Waktu) khusus Share Player
+        window.seekShareAudio = function(e) {
+            const audioEl = document.getElementById('shareAudio');
+            const container = e.currentTarget;
+            if (!isFinite(audioEl.duration)) return;
+            const rect = container.getBoundingClientRect();
+            const clickX = e.clientX - rect.left;
+            const percent = clickX / rect.width;
+            audioEl.currentTime = percent * audioEl.duration;
+        };
     </script>
+
+    <!-- PUBLIC SHARED PLAYER VIEW (UI) -->
+    <div id="publicShareOverlay" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: radial-gradient(circle at top, #1e293b, #0f172a); z-index: 9999999999; overflow-y: auto; color: #fff; padding-bottom: 110px;">
+        <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
+            <!-- Header Logo -->
+            <div style="text-align: center; margin-bottom: 30px; margin-top: 10px;">
+                <h2 style="font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 900; font-size: 1.8rem; letter-spacing: -0.5px;">Kreaverse<span style="color: #D97757;"> AI</span></h2>
+            </div>
+
+            <!-- Card Player (Glassmorphism) -->
+            <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 28px; padding: 30px 24px; text-align: center; backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); box-shadow: 0 30px 60px rgba(0,0,0,0.4);">
+                <!-- Spinning Image -->
+                <div style="width: 200px; height: 200px; margin: 0 auto 24px; border-radius: 50%; overflow: hidden; border: 4px solid rgba(56, 189, 248, 0.2); box-shadow: 0 10px 30px rgba(0,0,0,0.5), 0 0 20px rgba(56, 189, 248, 0.2); animation: shareSpin 12s linear infinite;" id="shareSpinDisk">
+                    <img id="shareImg" src="" style="width: 100%; height: 100%; object-fit: cover;">
+                </div>
+                
+                <!-- Title & Style -->
+                <h1 id="shareTitle" style="font-size: 1.5rem; font-weight: 900; margin-bottom: 10px; color: #f8fafc;">Memuat...</h1>
+                <p id="shareStyle" style="font-size: 0.85rem; color: #94a3b8; margin-bottom: 24px; line-height: 1.5; font-weight: 500; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;"></p>
+
+                <!-- Audio Player -->
+                <audio id="shareAudio" class="hidden"></audio>
+                <div class="custom-player" id="cp-share" style="background: rgba(0,0,0,0.4); border: 1px solid rgba(56, 189, 248, 0.2); padding: 12px 16px; border-radius: 16px;">
+                    <button class="play-btn" onclick="toggleCustomPlay('shareAudio', 'cp-share')" style="background: #38bdf8; color: #0f172a; width: 40px; height: 40px; font-size: 1.1rem; box-shadow: 0 4px 12px rgba(56, 189, 248, 0.3);"><i class="fa-solid fa-play"></i></button>
+                    <span class="time-display current-time" style="color: #cbd5e1; font-size: 0.75rem;">0:00</span>
+                    <div class="progress-container" onclick="window.seekShareAudio(event)" style="background: rgba(255,255,255,0.1); height: 8px;"><div class="progress-bar-fill" style="background: #38bdf8; width: 0%;"></div></div>
+                    <span class="time-display duration-time" style="color: #cbd5e1; font-size: 0.75rem;">0:00</span>
+                </div>
+            </div>
+
+            <!-- Lyrics Section -->
+            <div style="margin-top: 24px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 28px; padding: 24px; backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);">
+                <h3 style="font-size: 1.1rem; font-weight: 800; margin-bottom: 16px; color: #38bdf8; display: flex; align-items: center; gap: 8px;"><i class="fa-solid fa-microphone-lines"></i> Lirik Lagu</h3>
+                <pre id="shareLyrics" style="font-family: 'Plus Jakarta Sans', sans-serif; font-size: 0.95rem; line-height: 1.8; color: #e2e8f0; white-space: pre-wrap; margin: 0; font-weight: 500;">Memuat lirik...</pre>
+            </div>
+        </div>
+
+        <!-- Floating CTA Button -->
+        <div style="position: fixed; bottom: 0; left: 0; width: 100%; padding: 20px; background: linear-gradient(to top, rgba(15,23,42,1) 30%, rgba(15,23,42,0)); text-align: center; display: flex; justify-content: center; z-index: 10;">
+            <button onclick="window.location.href=window.location.origin + window.location.pathname" style="background: linear-gradient(135deg, #007AFF, #0056b3); color: #fff; border: 1px solid rgba(255,255,255,0.1); padding: 16px 24px; border-radius: 99px; font-weight: 800; font-size: 0.95rem; box-shadow: 0 10px 30px rgba(0, 122, 255, 0.5); cursor: pointer; transition: 0.2s; width: 100%; max-width: 400px; display: flex; align-items: center; justify-content: center; gap: 10px;">
+                <i class="fa-solid fa-wand-magic-sparkles"></i> Buat Lagu Ini di Kreaverse AI
+            </button>
+        </div>
+        <style>
+            @keyframes shareSpin { 100% { transform: rotate(360deg); } }
+        </style>
+    </div>
 
     <!-- Vercel Web Analytics -->
     <script>
