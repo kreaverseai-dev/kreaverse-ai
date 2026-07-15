@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kreaverse Ai - Music Making Studio</title>
+    <!-- Font Awesome untuk Icon -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --bg-dark: #121212;
+            --bg-panel: #1e1e1e;
+            --text-light: #ffffff;
+            --accent-red: #ff3b30;
+            --track-colors: #ff3b30, #34c759, #007aff, #ffcc00, #af52de;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-dark);
+            color: var(--text-light);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow: hidden;
+        }
+
+        /* Navbar */
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 20px;
+            background-color: var(--bg-panel);
+            border-bottom: 1px solid #333;
+            height: 60px;
+        }
+
+        .logo {
+            font-size: 1.2rem;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+        }
+
+        button {
+            cursor: pointer;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            font-weight: bold;
+            color: white;
+            transition: 0.2s;
+        }
+
+        .btn-primary { background-color: #333; }
+        .btn-primary:hover { background-color: #555; }
+        .btn-secondary { background-color: #555; }
+        .btn-secondary:disabled { opacity: 0.5; cursor: not-allowed; }
+        .btn-export { background-color: var(--accent-red); }
+        .btn-export:hover { background-color: #d32f2f; }
+        .btn-icon { background-color: transparent; font-size: 1.2rem; }
+
+        /* Workspace */
+        .studio-container {
+            height: calc(100vh - 60px);
+            display: flex;
+            flex-direction: column;
+            overflow-x: auto; /* Untuk Zoom */
+            overflow-y: auto;
+            position: relative;
+        }
+
+        .timeline-ruler {
+            height: 30px;
+            background-color: #222;
+            border-bottom: 1px solid #444;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            width: 100%; /* Akan diubah JS saat zoom */
+        }
+
+        .tracks-workspace {
+            position: relative;
+            padding-top: 10px;
+            width: 100%; /* Akan diubah JS saat zoom */
+        }
+
+        /* Track Row */
+        .track-row {
+            height: 100px;
+            background-color: #1a1a1a;
+            border-bottom: 1px solid #333;
+            margin-bottom: 5px;
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .track-info {
+            width: 150px;
+            height: 100%;
+            background-color: #252525;
+            position: sticky;
+            left: 0;
+            z-index: 5;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 10px;
+            box-sizing: border-box;
+            border-right: 2px solid #000;
+        }
+
+        .track-info span {
+            font-size: 0.8rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* Audio Clip (Potongan Lagu) */
+        .clip {
+            position: absolute;
+            height: 80px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: grab;
+            user-select: none;
+            border: 2px solid transparent;
+            opacity: 0.9;
+            overflow: hidden;
+        }
+
+        .clip:active { cursor: grabbing; }
+        .clip.selected { border-color: white; z-index: 4; box-shadow: 0 0 10px rgba(255,255,255,0.5); }
+
+        /* Waveform tiruan di dalam clip */
+        .waveform-mock {
+            width: 100%;
+            height: 50%;
+            background: repeating-linear-gradient(
+                90deg,
+                rgba(255,255,255,0.2) 0px,
+                rgba(255,255,255,0.6) 2px,
+                transparent 2px,
+                transparent 4px
+            );
+        }
+
+        /* Playhead (Garis penanda potong/play) */
+        .playhead {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background-color: white;
+            left: 200px; /* Posisi default */
+            z-index: 20;
+            pointer-events: none; /* Agar tidak menghalangi klik */
+        }
+    </style>
+</head>
+<body>
+
+    <header class="navbar">
+        <div class="logo">
+            <i class="fa-solid fa-music"></i> Kreaverse Ai - Music Making Studio
+        </div>
+        <div class="controls">
+            <input type="file" id="audio-upload" accept="audio/mp3, audio/wav" multiple style="display: none;">
+            <button onclick="document.getElementById('audio-upload').click()" class="btn-primary">
+                <i class="fa-solid fa-cloud-arrow-up"></i> Upload Lagu (Max 10)
+            </button>
+            <button id="btn-cut" class="btn-secondary" disabled>
+                <i class="fa-solid fa-scissors"></i> Potong (Cut)
+            </button>
+            <button id="btn-zoom-out" class="btn-icon"><i class="fa-solid fa-magnifying-glass-minus"></i></button>
+            <button id="btn-zoom-in" class="btn-icon"><i class="fa-solid fa-magnifying-glass-plus"></i></button>
+            <button id="btn-export" class="btn-export">
+                <i class="fa-solid fa-download"></i> Simpan MP3
+            </button>
+        </div>
+    </header>
+
+    <main class="studio-container">
+        <!-- Ruler / Timeline -->
+        <div class="timeline-ruler" id="timeline-ruler"></div>
+        
+        <!-- Tracks Workspace -->
+        <div class="tracks-workspace" id="tracks-workspace">
+            <!-- Track akan ditambahkan di sini melalui JavaScript -->
+        </div>
+    </main>
+
+    <script>
+        let trackCount = 0;
+        const MAX_TRACKS = 10;
+        let zoomLevel = 1; // 1 = 100%
+        const WORKSPACE_BASE_WIDTH = 2000; // Lebar dasar workspace dalam pixel
+
+        const trackColors = ['#ff3b30', '#34c759', '#007aff', '#ffcc00', '#af52de', '#ff9500', '#5ac8fa', '#ff2d55', '#5856d6', '#8e8e93'];
+
+        let selectedClip = null;
+        let isDragging = false;
+        let offsetX = 0;
+
+        // Elemen DOM
+        const uploadInput = document.getElementById('audio-upload');
+        const workspace = document.getElementById('tracks-workspace');
+        const ruler = document.getElementById('timeline-ruler');
+        const btnCut = document.getElementById('btn-cut');
+        const btnZoomIn = document.getElementById('btn-zoom-in');
+        const btnZoomOut = document.getElementById('btn-zoom-out');
+
+        // 1. FITUR UPLOAD (MAX 10)
+        uploadInput.addEventListener('change', (e) => {
+            const files = Array.from(e.target.files);
+            
+            files.forEach(file => {
+                if (trackCount >= MAX_TRACKS) {
+                    alert("Maksimal hanya bisa 10 lagu!");
+                    return;
+                }
+                createTrack(file.name);
+            });
+            uploadInput.value = ''; // Reset input
+        });
+
+        function createTrack(fileName) {
+            const trackColor = trackColors[trackCount % trackColors.length];
+            
+            // Buat baris track
+            const trackRow = document.createElement('div');
+            trackRow.className = 'track-row';
+            
+            // Info Track (Kiri)
+            const trackInfo = document.createElement('div');
+            trackInfo.className = 'track-info';
+            trackInfo.innerHTML = `<span>Track ${trackCount + 1}</span><span style="color:gray; font-size:10px;">${fileName}</span>`;
+            
+            // Clip Audio Visual (Kanan)
+            const clip = document.createElement('div');
+            clip.className = 'clip';
+            clip.style.backgroundColor = trackColor;
+            clip.style.width = '300px'; // Panjang default
+            clip.style.left = '150px'; // Mulai setelah track-info
+            
+            // Waveform bohongan
+            const wave = document.createElement('div');
+            wave.className = 'waveform-mock';
+            clip.appendChild(wave);
+
+            // Event Listener untuk Clip (Pilih & Geser)
+            setupClipEvents(clip);
+
+            trackRow.appendChild(trackInfo);
+            trackRow.appendChild(clip);
+            workspace.appendChild(trackRow);
+            
+            trackCount++;
+            updateWorkspaceWidth();
+        }
+
+        // 2. FITUR GESER (DRAG) & PILIH (SELECT)
+        function setupClipEvents(clip) {
+            clip.addEventListener('mousedown', (e) => {
+                // Hilangkan seleksi dari clip lain
+                if(selectedClip) selectedClip.classList.remove('selected');
+                
+                selectedClip = clip;
+                clip.classList.add('selected');
+                btnCut.disabled = false; // Aktifkan tombol potong
+
+                isDragging = true;
+                offsetX = e.clientX - clip.getBoundingClientRect().left;
+                clip.style.cursor = 'grabbing';
+            });
+
+            document.addEventListener('mousemove', (e) => {
+                if (!isDragging || !selectedClip) return;
+                
+                const workspaceRect = workspace.getBoundingClientRect();
+                // Hitung posisi baru mempertimbangkan zoom dan scroll
+                let newLeft = e.clientX - workspaceRect.left - offsetX;
+                
+                // Batasi agar tidak nabrak panel kiri (150px)
+                if (newLeft < 150) newLeft = 150; 
+                
+                selectedClip.style.left = `${newLeft}px`;
+            });
+
+            document.addEventListener('mouseup', () => {
+                if(selectedClip) selectedClip.style.cursor = 'grab';
+                isDragging = false;
+            });
+        }
+
+        // Klik di luar clip untuk unselect
+        workspace.addEventListener('mousedown', (e) => {
+            if (!e.target.closest('.clip')) {
+                if (selectedClip) selectedClip.classList.remove('selected');
+                selectedClip = null;
+                btnCut.disabled = true;
+            }
+        });
+
+        // 3. FITUR POTONG (CUT)
+        btnCut.addEventListener('click', () => {
+            if (!selectedClip) return;
+
+            const currentWidth = parseFloat(selectedClip.style.width);
+            const currentLeft = parseFloat(selectedClip.style.left);
+            
+            // Jangan potong jika terlalu kecil
+            if(currentWidth < 20) return; 
+
+            // Ubah ukuran clip pertama (setengahnya)
+            const newWidth = currentWidth / 2;
+            selectedClip.style.width = `${newWidth}px`;
+
+            // Buat clip kedua (potongan)
+            const newClip = selectedClip.cloneNode(true);
+            newClip.style.width = `${newWidth}px`;
+            newClip.style.left = `${currentLeft + newWidth + 5}px`; // Kasih jarak 5px
+            
+            // Hapus class selected dari clip baru
+            newClip.classList.remove('selected');
+
+            // Masukkan ke baris yang sama
+            selectedClip.parentElement.appendChild(newClip);
+
+            // Aktifkan event drag untuk clip baru
+            setupClipEvents(newClip);
+        });
+
+        // 4. FITUR ZOOM
+        function updateWorkspaceWidth() {
+            const newWidth = WORKSPACE_BASE_WIDTH * zoomLevel;
+            workspace.style.width = `${newWidth}px`;
+            ruler.style.width = `${newWidth}px`;
+        }
+
+        btnZoomIn.addEventListener('click', () => {
+            zoomLevel += 0.2;
+            updateWorkspaceWidth();
+            // Efek visual: melebarkan clip yang ada
+            document.querySelectorAll('.clip').forEach(clip => {
+                clip.style.width = `${parseFloat(clip.style.width) * 1.2}px`;
+                clip.style.left = `${(parseFloat(clip.style.left) - 150) * 1.2 + 150}px`;
+            });
+        });
+
+        btnZoomOut.addEventListener('click', () => {
+            if (zoomLevel <= 0.4) return; // Batas zoom out
+            zoomLevel -= 0.2;
+            updateWorkspaceWidth();
+            // Efek visual: menyusutkan clip yang ada
+            document.querySelectorAll('.clip').forEach(clip => {
+                clip.style.width = `${parseFloat(clip.style.width) / 1.2}px`;
+                clip.style.left = `${(parseFloat(clip.style.left) - 150) / 1.2 + 150}px`;
+            });
+        });
+
+        // 5. EXPORT MP3 
+        document.getElementById('btn-export').addEventListener('click', () => {
+            alert("UI Workspace siap! \n\nUntuk menjadikan ini file MP3 asli yang bisa diputar, Anda harus menyambungkan koordinat visual ini dengan 'Web Audio API' atau library 'ffmpeg.wasm' agar browser bisa memproses (render) audionya secara langsung.");
+        });
+    </script>
+</body>
+</html>
