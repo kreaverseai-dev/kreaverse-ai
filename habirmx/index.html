@@ -5955,7 +5955,16 @@ window.generateDspPreview = async function() {
     btnPreview.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Memproses...';
     
     try {
-        const mp3Blob = await processKreaverseAudio(rawAudioFile, true, () => {}); 
+        // Sistem Deteksi Fungsi Otomatis (Mencegah Error Nama Fungsi)
+        let mp3Blob;
+        if (typeof processKreaverseAudio === 'function') {
+            mp3Blob = await processKreaverseAudio(rawAudioFile, true, () => {});
+        } else if (typeof processStealthAudio === 'function') {
+            mp3Blob = await processStealthAudio(rawAudioFile, true, () => {});
+        } else {
+            throw new Error("Fungsi Engine DSP tidak ditemukan di sistem!");
+        }
+
         bypassPlayer.src = URL.createObjectURL(mp3Blob);
         initCustomPlayer('bypassedAudioPlayer', 'cp-bypassed');
         
@@ -5963,7 +5972,9 @@ window.generateDspPreview = async function() {
         window.toggleCustomPlay('bypassedAudioPlayer', 'cp-bypassed');
         showIphoneToast("Preview Kreaverse AI Siap", "Memutar hasil manipulasi algoritma.", "fa-user-secret");
     } catch(err) {
-        showIphoneToast("Error", "Gagal membuat preview.", "fa-triangle-exclamation");
+        console.error(err);
+        // TAMPILKAN ERROR ASLI KE LAYAR AGAR KITA TAHU PENYEBABNYA
+        showIphoneToast("Error DSP", err.message || "Gagal membuat preview.", "fa-triangle-exclamation");
     } finally {
         btnPreview.disabled = false;
         btnPreview.innerHTML = '<i class="fa-solid fa-headphones"></i> Preview Kreaverse AI';
@@ -5991,10 +6002,21 @@ window.startDspBypassAndUpload = async function() {
                 
                 const safeName = rawAudioFile.name.length > 20 ? rawAudioFile.name.substring(0, 17) + "..." : rawAudioFile.name;
                 
-                const mp3Blob = await processKreaverseAudio(rawAudioFile, false, (percent) => {
-                    const mappedPercent = 16 + Math.floor(percent * 0.69); // Map 0-100% to 16-85%
-                    updateTopProgress(mappedPercent, `Memproses DSP ${safeName}`);
-                });
+                // Sistem Deteksi Fungsi Otomatis (Mencegah Error Nama Fungsi)
+                let mp3Blob;
+                if (typeof processKreaverseAudio === 'function') {
+                    mp3Blob = await processKreaverseAudio(rawAudioFile, false, (percent) => {
+                        const mappedPercent = 16 + Math.floor(percent * 0.69); // Map 0-100% to 16-85%
+                        updateTopProgress(mappedPercent, `Memproses DSP ${safeName}`);
+                    });
+                } else if (typeof processStealthAudio === 'function') {
+                    mp3Blob = await processStealthAudio(rawAudioFile, false, (percent) => {
+                        const mappedPercent = 16 + Math.floor(percent * 0.69); // Map 0-100% to 16-85%
+                        updateTopProgress(mappedPercent, `Memproses DSP ${safeName}`);
+                    });
+                } else {
+                    throw new Error("Fungsi Engine DSP tidak ditemukan di sistem!");
+                }
                 
                 updateTopProgress(86, "Proses upload by Kreaverse AI");
                 
@@ -6021,7 +6043,8 @@ window.startDspBypassAndUpload = async function() {
             } catch(err) {
                 console.error(err);
                 hideTopProgress();
-                showIphoneToast("Kreaverse AI Error", "Gagal memanipulasi audio.", "fa-triangle-exclamation");
+                // TAMPILKAN ERROR ASLI KE LAYAR AGAR KITA TAHU PENYEBABNYA
+                showIphoneToast("Kreaverse AI Error", err.message || "Gagal memanipulasi audio.", "fa-triangle-exclamation");
             } finally {
                 btnStart.disabled = false;
                 btnPreview.disabled = false;
