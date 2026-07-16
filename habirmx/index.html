@@ -4975,15 +4975,27 @@
             }
         };
 
+        // Fungsi untuk menggeser lagu saat progress bar diklik
+        window.seekCustomAudio = function(e, audioId) {
+            const audio = document.getElementById(audioId);
+            const container = e.currentTarget;
+            if (!audio || !isFinite(audio.duration)) return;
+            const rect = container.getBoundingClientRect();
+            const clickX = e.clientX - rect.left;
+            const percent = clickX / rect.width;
+            audio.currentTime = percent * audio.duration;
+        };
+
         function initCustomPlayer(audioId, containerId) {
             const audio = document.getElementById(audioId);
             const container = document.getElementById(containerId);
             if(!audio || !container) return;
 
             const slider = container.querySelector('.audio-seek-slider');
+            const fillBar = container.querySelector('.progress-bar-fill'); // Support untuk Mini Player
             const currTimeEl = container.querySelector('.current-time');
             const durTimeEl = container.querySelector('.duration-time');
-            const btn = container.querySelector('.play-btn i') || container.querySelector('.trim-play-btn i');
+            const btn = container.querySelector('.play-btn i') || container.querySelector('.trim-play-btn i') || container.querySelector('button i');
 
             let isDragging = false;
 
@@ -4991,7 +5003,7 @@
             try { audio.load(); } catch (e) { console.warn("Audio load delayed:", e); }
             
             const updateDuration = () => {
-                if(isFinite(audio.duration) && audio.duration > 0) {
+                if(isFinite(audio.duration) && audio.duration > 0 && durTimeEl) {
                     durTimeEl.innerText = formatTime(audio.duration);
                 }
             };
@@ -5014,36 +5026,36 @@
 
             audio.addEventListener('timeupdate', () => {
                 if (!isDragging) {
-                    currTimeEl.innerText = formatTime(audio.currentTime);
-                    if(isFinite(audio.duration) && audio.duration > 0) {
-                        slider.value = (audio.currentTime / audio.duration) * 100;
-                        durTimeEl.innerText = formatTime(audio.duration); 
+                    if (currTimeEl) currTimeEl.innerText = formatTime(audio.currentTime);
+                    if (isFinite(audio.duration) && audio.duration > 0) {
+                        const percent = (audio.currentTime / audio.duration) * 100;
+                        if (slider) slider.value = percent;
+                        if (fillBar) fillBar.style.width = percent + '%'; // Animasi bar berjalan
+                        if (durTimeEl) durTimeEl.innerText = formatTime(audio.duration); 
                     }
                 }
             });
 
-            // Event saat user menggeser (drag) slider
             if (slider) {
                 slider.addEventListener('input', () => {
                     isDragging = true;
-                    if(isFinite(audio.duration)) {
+                    if(isFinite(audio.duration) && currTimeEl) {
                         currTimeEl.innerText = formatTime((slider.value / 100) * audio.duration);
                     }
                 });
-
-                // Event saat user melepas slider
                 slider.addEventListener('change', () => {
                     if(isFinite(audio.duration)) {
                         audio.currentTime = (slider.value / 100) * audio.duration;
                     }
-                    isDragging = false;
+                        isDragging = false;
                 });
             }
 
             audio.addEventListener('ended', () => {
-                btn.className = 'fa-solid fa-play';
+                if (btn) btn.className = 'fa-solid fa-play';
                 if (slider) slider.value = 0;
-                currTimeEl.innerText = "0:00";
+                if (fillBar) fillBar.style.width = '0%';
+                if (currTimeEl) currTimeEl.innerText = "0:00";
             });
 
             audio.addEventListener('error', (e) => {
@@ -5959,55 +5971,62 @@ window.generateDspPreview = async function() {
 };
 
 window.startDspBypassAndUpload = async function() {
-    if(!rawAudioFile) return;
-    
-    const btnStart = document.getElementById('btnStartDsp');
-    const btnPreview = document.getElementById('btnPreviewDsp');
-    
-    btnStart.disabled = true;
-    btnPreview.disabled = true;
-    
-    // Tutup DSP Studio dan Munculkan Top Progress
-    document.getElementById('dspStudioWrapper').classList.add('hidden');
-    showTopProgress("Menerapkan DSP...", "#0ea5e9");
-    
-    try {
-        updateTopProgress(5, "Menghubungkan");
-        await new Promise(r => setTimeout(r, 500));
-        updateTopProgress(15, "Terhubung ke vps Kreaverse AI");
-        await new Promise(r => setTimeout(r, 500));
-        
-        const safeName = rawAudioFile.name.length > 20 ? rawAudioFile.name.substring(0, 17) + "..." : rawAudioFile.name;
-        
-        const mp3Blob = await processKreaverseAudio(rawAudioFile, false, (percent) => {
-            const mappedPercent = 16 + Math.floor(percent * 0.69); // Map 0-100% to 16-85%
-            updateTopProgress(mappedPercent, `Memproses DSP ${safeName}`);
-        });
-        
-        updateTopProgress(86, "Proses upload by Kreaverse AI");
-        
-        await uploadBlobToCloudinary(mp3Blob, rawAudioFile.name, true);
-        
-        updateTopProgress(100, "Selesai");
-        await new Promise(r => setTimeout(r, 1000));
-        hideTopProgress();
-        
-        // Update Badge di Mini Player
-        document.getElementById('uploadedMiniBadge').innerText = "DSP Bypassed";
-        document.getElementById('uploadedMiniBadge').style.background = "rgba(239,68,68,0.1)";
-        document.getElementById('uploadedMiniBadge').style.color = "#ef4444";
-        
-        showIphoneToast("Kreaverse AI Sukses", "Audio berhasil dienkripsi dan diunggah.", "fa-shield-halved");
-        
-    } catch(err) {
-        console.error(err);
-        hideTopProgress();
-        showIphoneToast("Kreaverse AI Error", "Gagal memanipulasi audio.", "fa-triangle-exclamation");
-    } finally {
-        btnStart.disabled = false;
-        btnPreview.disabled = false;
-    }
-};
+            if(!rawAudioFile) return;
+            
+            const btnStart = document.getElementById('btnStartDsp');
+            const btnPreview = document.getElementById('btnPreviewDsp');
+            
+            btnStart.disabled = true;
+            btnPreview.disabled = true;
+            
+            // Tutup DSP Studio dan Munculkan Top Progress
+            document.getElementById('dspStudioWrapper').classList.add('hidden');
+            showTopProgress("Menerapkan DSP...", "#0ea5e9");
+            
+            try {
+                updateTopProgress(5, "Menghubungkan");
+                await new Promise(r => setTimeout(r, 500));
+                updateTopProgress(15, "Terhubung ke vps Kreaverse AI");
+                await new Promise(r => setTimeout(r, 500));
+                
+                const safeName = rawAudioFile.name.length > 20 ? rawAudioFile.name.substring(0, 17) + "..." : rawAudioFile.name;
+                
+                const mp3Blob = await processKreaverseAudio(rawAudioFile, false, (percent) => {
+                    const mappedPercent = 16 + Math.floor(percent * 0.69); // Map 0-100% to 16-85%
+                    updateTopProgress(mappedPercent, `Memproses DSP ${safeName}`);
+                });
+                
+                updateTopProgress(86, "Proses upload by Kreaverse AI");
+                
+                // Ambil durasi asli untuk disimpan ke histori
+                const origPlayer = document.getElementById('originalAudioPlayer');
+                let finalDurStr = "0:00";
+                if (origPlayer && isFinite(origPlayer.duration) && origPlayer.duration > 0) {
+                    finalDurStr = formatTime(origPlayer.duration);
+                }
+                
+                await uploadBlobToCloudinary(mp3Blob, rawAudioFile.name, true, finalDurStr);
+                
+                updateTopProgress(100, "Selesai");
+                await new Promise(r => setTimeout(r, 1000));
+                hideTopProgress();
+                
+                // Update Badge di Mini Player
+                document.getElementById('uploadedMiniBadge').innerText = "DSP Bypassed";
+                document.getElementById('uploadedMiniBadge').style.background = "rgba(239,68,68,0.1)";
+                document.getElementById('uploadedMiniBadge').style.color = "#ef4444";
+                
+                showIphoneToast("Kreaverse AI Sukses", "Audio berhasil dienkripsi dan diunggah.", "fa-shield-halved");
+                
+            } catch(err) {
+                console.error(err);
+                hideTopProgress();
+                showIphoneToast("Kreaverse AI Error", "Gagal memanipulasi audio.", "fa-triangle-exclamation");
+            } finally {
+                btnStart.disabled = false;
+                btnPreview.disabled = false;
+            }
+        };
 
 // ============================================================
         // LYRIC ENCRYPTOR (VISUAL-HOMOGLYPH & ZERO-WIDTH SPACE BYPASS)
