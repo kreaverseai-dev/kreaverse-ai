@@ -5556,23 +5556,110 @@ async function processKreaverseAudio(file, isPreview = false, progressCallback) 
             
             let lastNode = inputTrim;
 
-            // 2. CORE CONTROLS (PITCH & TEMPO DENGAN SAFE FALLBACK)
-            const pitchVal = parseInt(safeGetVal('pitchSlider', '0')) || 0;
-            const speedVal = parseFloat(safeGetVal('stealthSpeed', '1.0')) || 1.0;
+            // 2. CORE CONTROLS (PITCH & TEMPO DENGAN SAFE FALLBACK & TAB DETECTION)
+            const activeTab = localStorage.getItem('krea_dsp_tab') || 'v1';
+            
+            let pitchVal = 0;
+            let speedVal = 1.0;
+            
+            if (activeTab === 'v1') {
+                pitchVal = parseInt(safeGetVal('sliderPitchV1', '0')) || 0;
+                speedVal = parseFloat(safeGetVal('sliderTempoV1', '1.0')) || 1.0;
+            } else {
+                pitchVal = parseInt(safeGetVal('pitchSlider', '0')) || 0;
+                speedVal = parseFloat(safeGetVal('stealthSpeed', '1.0')) || 1.0;
+            }
+
             // UPGRADE: Detune dasar sedikit digeser secara acak (+/- 5 cents) agar base hash langsung meleset
             const randomDetuneOffset = (Math.random() * 10) - 5; 
-            source.detune.value = (pitchVal * 100) + randomDetuneOffset;
+            const finalDetune = activeTab === 'v1' ? pitchVal : (pitchVal * 100);
+            source.detune.value = finalDetune + randomDetuneOffset;
             source.playbackRate.value = speedVal;
     
     // 🔥 SANGAT KRUSIAL: Matikan preservesPitch. Jika speed berubah, pitch HARUS ikut berubah secara natural.
     // Algoritma Content-ID sangat bergantung pada kestabilan Pitch.
     source.preservesPitch = false; 
 
+    // FIX: Mendeteksi ID toggle yang benar agar mesin DSP menyala
+    const masterToggleEl = document.getElementById('globalMasterToggle') || document.getElementById('masterToggle');
+    let isMasterOn = masterToggleEl ? masterToggleEl.checked : false;
+
     // =========================================================
-    // 🔥 THE 20-LAYER ULTIMATE BYPASS ENGINE (UPGRADED ANTI-SUNO BOT)
+    // 🔥 EKSEKUSI DSP V1 (BETA)
     // =========================================================
-    
-    const isMasterOn = document.getElementById('masterToggle') && document.getElementById('masterToggle').checked;
+    if (isMasterOn && activeTab === 'v1') {
+        const v1Timbre = parseInt(safeGetVal('sliderTimbreV1', '0')) || 0;
+        const v1Stego = parseInt(safeGetVal('sliderStegoV1', '0')) || 0;
+        const v1Void = parseInt(safeGetVal('sliderVoidV1', '0')) || 0;
+        
+        const tgTemporalEl = document.getElementById('tgTemporalV1');
+        const tgTemporal = tgTemporalEl ? tgTemporalEl.checked : false;
+        
+        const tgMirageEl = document.getElementById('tgMirageV1');
+        const tgMirage = tgMirageEl ? tgMirageEl.checked : false;
+        
+        const tgAntiMonoEl = document.getElementById('tgAntiMonoV1');
+        const tgAntiMono = tgAntiMonoEl ? tgAntiMonoEl.checked : false;
+
+        // 1. Temporal Flux (V1)
+        if (tgTemporal) {
+            for (let time = 0; time < finalDuration; time += 0.1) {
+                let dynamicSpeed = speedVal + (Math.sin(time * 0.5) * 0.02);
+                source.playbackRate.setValueAtTime(dynamicSpeed, time);
+            }
+        }
+
+        // 2. Timbre Density (V1)
+        if (v1Timbre > 0) {
+            const saturator = offlineCtx.createWaveShaper();
+            const curve = new Float32Array(44100);
+            for (let i = 0; i < 44100; ++i) {
+                let x = (i * 2) / 44100 - 1;
+                curve[i] = Math.tanh(x * (1 + (v1Timbre/50))); 
+            }
+            saturator.curve = curve;
+            lastNode.connect(saturator);
+            lastNode = saturator;
+        }
+
+        // 3. Dimensional Void (V1)
+        if (v1Void > 0) {
+            const voidDelay = offlineCtx.createDelay();
+            voidDelay.delayTime.value = 0.015; 
+            const voidGain = offlineCtx.createGain();
+            voidGain.gain.value = (v1Void / 100) * 0.4; 
+            const voidMix = offlineCtx.createGain();
+            lastNode.connect(voidMix);
+            lastNode.connect(voidDelay);
+            voidDelay.connect(voidGain);
+            voidGain.connect(voidMix);
+            lastNode = voidMix;
+        }
+
+        // 4. Stego Layer (V1)
+        if (v1Stego > 0) {
+            const stegoOsc = offlineCtx.createOscillator();
+            stegoOsc.type = 'sine';
+            stegoOsc.frequency.value = 17500; 
+            const stegoGain = offlineCtx.createGain();
+            stegoGain.gain.value = (v1Stego / 100) * 0.03;
+            stegoOsc.connect(stegoGain);
+            stegoGain.connect(offlineCtx.destination);
+            stegoOsc.start(0);
+        }
+
+        // 5. Mirage & Anti Mono (V1 Basic)
+        if (tgMirage || tgAntiMono) {
+            const filter = offlineCtx.createBiquadFilter();
+            filter.type = 'allpass';
+            filter.frequency.value = 1000;
+            lastNode.connect(filter);
+            lastNode = filter;
+        }
+
+        // Matikan isMasterOn agar logika V2 di bawahnya tidak ikut dieksekusi bertumpuk
+        isMasterOn = false;
+    }
         
         if (isMasterOn) {
             
