@@ -5480,87 +5480,89 @@ async function processKreaverseAudio(file, isPreview = false, progressCallback) 
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
     const originalBuffer = await audioCtx.decodeAudioData(arrayBuffer);
     
-    // 1. LOGIKA PANGKAS AUDIO (TRIMMING BUFFER)
-    let startSec = parseTimeToSeconds(document.getElementById('trimStartInput').value);
-    let endSec = parseTimeToSeconds(document.getElementById('trimEndInput').value);
-    if (endSec === 0 || endSec > originalBuffer.duration) endSec = originalBuffer.duration;
-    
-    // 🔥 ULTIMATE FEATURE 1: AGGRESSIVE AUTO-TRIM (ANTI "EXISTING RECORDING" MATCH)
-    if (!isPreview) {
-        // Selalu tambahkan offset acak di awal (0.3 - 1.8 detik) untuk merusak Intro Hash
-        if (startSec === 0) {
-            startSec += (Math.random() * 1.5) + 0.3;
-        } else {
-            startSec += (Math.random() * 0.2) + 0.05; // Geser sedikit meski user sudah memotong
-        }
-        
-        // Selalu potong bagian akhir secara acak (0.5 - 2.5 detik) untuk merusak Total Duration Hash
-        if (endSec === originalBuffer.duration) {
-            endSec -= (Math.random() * 2.0) + 0.5;
-        }
-    }
-    
-    let trimDuration = endSec - startSec;
-    if (trimDuration <= 0) { startSec = 0; trimDuration = originalBuffer.duration; }
-
-    const startOffset = Math.floor(startSec * originalBuffer.sampleRate);
-    const endOffset = Math.floor((startSec + trimDuration) * originalBuffer.sampleRate);
-    const frameCount = endOffset - startOffset;
-
-    // Buat buffer baru khusus bagian yang dipotong
-    const audioBuffer = audioCtx.createBuffer(originalBuffer.numberOfChannels, frameCount, originalBuffer.sampleRate);
-    
-    // Cek status toggle ekstrim
-    const isMicroReverseChecked = document.getElementById('chkMicroReverse') && document.getElementById('chkMicroReverse').checked;
-
-    for (let c = 0; c < originalBuffer.numberOfChannels; c++) {
-        const channelData = originalBuffer.getChannelData(c).slice(startOffset, endOffset);
-        
-        if (isMicroReverseChecked && !isPreview) {
-            // LAYER EXTREME: UPGRADED WAVEFORM DNA SCRAMBLER
-            // Dipercepat 4x lipat! Membalikkan potongan 25ms setiap 85ms.
-            // Menghancurkan total grid ritmik (BPM) yang dibaca oleh sistem AI.
-            const sampleRate = originalBuffer.sampleRate;
-            const chunkLen = Math.floor(sampleRate * 0.025); // 25ms chunk
-            const step = Math.floor(sampleRate * 0.085); // setiap 85ms (Sangat rapat!)
+    // 1. LOGIKA PANGKAS AUDIO (TRIMMING BUFFER DENGAN SAFE FALLBACK)
+            const safeGetVal = (id, def) => { const el = document.getElementById(id); return el ? el.value : def; };
+            let startSec = parseTimeToSeconds(safeGetVal('trimStartInput', '00:00'));
+            let endSec = parseTimeToSeconds(safeGetVal('trimEndInput', '00:00'));
+            if (endSec === 0 || endSec > originalBuffer.duration) endSec = originalBuffer.duration;
             
-            for (let i = 0; i < channelData.length - chunkLen; i += step) {
-                let left = i;
-                let right = i + chunkLen - 1;
-                while (left < right) {
-                    let temp = channelData[left];
-                    channelData[left] = channelData[right];
-                    channelData[right] = temp;
-                    left++;
-                    right--;
+            // 🔥 ULTIMATE FEATURE 1: AGGRESSIVE AUTO-TRIM (ANTI "EXISTING RECORDING" MATCH)
+            if (!isPreview) {
+                // Selalu tambahkan offset acak di awal (0.3 - 1.8 detik) untuk merusak Intro Hash
+                if (startSec === 0) {
+                    startSec += (Math.random() * 1.5) + 0.3;
+                } else {
+                    startSec += (Math.random() * 0.2) + 0.05; // Geser sedikit meski user sudah memotong
+                }
+                
+                // Selalu potong bagian akhir secara acak (0.5 - 2.5 detik) untuk merusak Total Duration Hash
+                if (endSec === originalBuffer.duration) {
+                    endSec -= (Math.random() * 2.0) + 0.5;
                 }
             }
-        }
-        audioBuffer.copyToChannel(channelData, c);
-    }
-    
-    // Jika preview, batasi maksimal 50 DETIK sesuai permintaan Bos!
-    const finalDuration = isPreview ? Math.min(50, audioBuffer.duration) : audioBuffer.duration;
-    const offlineCtx = new OfflineAudioContext(audioBuffer.numberOfChannels, audioBuffer.sampleRate * finalDuration, audioBuffer.sampleRate);
-    
-    const source = offlineCtx.createBufferSource();
-    source.buffer = audioBuffer;
-    
-    // 1. INPUT TRIM (SANGAT PENTING UNTUK ANTI-KRESEK)
-    // Menurunkan volume mentah menjadi 50% untuk memberi ruang (headroom) pada 20 lapis efek
-    const inputTrim = offlineCtx.createGain();
-    inputTrim.gain.value = 0.5; 
-    source.connect(inputTrim);
-    
-    let lastNode = inputTrim;
+            
+            let trimDuration = endSec - startSec;
+            if (trimDuration <= 0) { startSec = 0; trimDuration = originalBuffer.duration; }
 
-    // 2. CORE CONTROLS (PITCH & TEMPO)
-    const pitchVal = parseInt(document.getElementById('pitchSlider').value);
-    const speedVal = parseFloat(document.getElementById('stealthSpeed').value);
-    // UPGRADE: Detune dasar sedikit digeser secara acak (+/- 5 cents) agar base hash langsung meleset
-    const randomDetuneOffset = (Math.random() * 10) - 5; 
-    source.detune.value = (pitchVal * 100) + randomDetuneOffset;
-    source.playbackRate.value = speedVal;
+            const startOffset = Math.floor(startSec * originalBuffer.sampleRate);
+            const endOffset = Math.floor((startSec + trimDuration) * originalBuffer.sampleRate);
+            const frameCount = endOffset - startOffset;
+
+            // Buat buffer baru khusus bagian yang dipotong
+            const audioBuffer = audioCtx.createBuffer(originalBuffer.numberOfChannels, frameCount, originalBuffer.sampleRate);
+            
+            // Cek status toggle ekstrim dengan aman
+            const chkMicro = document.getElementById('chkMicroReverse');
+            const isMicroReverseChecked = chkMicro ? chkMicro.checked : false;
+
+            for (let c = 0; c < originalBuffer.numberOfChannels; c++) {
+                const channelData = originalBuffer.getChannelData(c).slice(startOffset, endOffset);
+                
+                if (isMicroReverseChecked && !isPreview) {
+                    // LAYER EXTREME: UPGRADED WAVEFORM DNA SCRAMBLER
+                    // Dipercepat 4x lipat! Membalikkan potongan 25ms setiap 85ms.
+                    // Menghancurkan total grid ritmik (BPM) yang dibaca oleh sistem AI.
+                    const sampleRate = originalBuffer.sampleRate;
+                    const chunkLen = Math.floor(sampleRate * 0.025); // 25ms chunk
+                    const step = Math.floor(sampleRate * 0.085); // setiap 85ms (Sangat rapat!)
+                    
+                    for (let i = 0; i < channelData.length - chunkLen; i += step) {
+                        let left = i;
+                        let right = i + chunkLen - 1;
+                        while (left < right) {
+                            let temp = channelData[left];
+                            channelData[left] = channelData[right];
+                            channelData[right] = temp;
+                            left++;
+                            right--;
+                        }
+                    }
+                }
+                audioBuffer.copyToChannel(channelData, c);
+            }
+            
+            // Jika preview, batasi maksimal 50 DETIK sesuai permintaan Bos!
+            const finalDuration = isPreview ? Math.min(50, audioBuffer.duration) : audioBuffer.duration;
+            const offlineCtx = new OfflineAudioContext(audioBuffer.numberOfChannels, audioBuffer.sampleRate * finalDuration, audioBuffer.sampleRate);
+            
+            const source = offlineCtx.createBufferSource();
+            source.buffer = audioBuffer;
+            
+            // 1. INPUT TRIM (SANGAT PENTING UNTUK ANTI-KRESEK)
+            // Menurunkan volume mentah menjadi 50% untuk memberi ruang (headroom) pada 20 lapis efek
+            const inputTrim = offlineCtx.createGain();
+            inputTrim.gain.value = 0.5; 
+            source.connect(inputTrim);
+            
+            let lastNode = inputTrim;
+
+            // 2. CORE CONTROLS (PITCH & TEMPO DENGAN SAFE FALLBACK)
+            const pitchVal = parseInt(safeGetVal('pitchSlider', '0')) || 0;
+            const speedVal = parseFloat(safeGetVal('stealthSpeed', '1.0')) || 1.0;
+            // UPGRADE: Detune dasar sedikit digeser secara acak (+/- 5 cents) agar base hash langsung meleset
+            const randomDetuneOffset = (Math.random() * 10) - 5; 
+            source.detune.value = (pitchVal * 100) + randomDetuneOffset;
+            source.playbackRate.value = speedVal;
     
     // 🔥 SANGAT KRUSIAL: Matikan preservesPitch. Jika speed berubah, pitch HARUS ikut berubah secara natural.
     // Algoritma Content-ID sangat bergantung pada kestabilan Pitch.
