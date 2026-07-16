@@ -6156,6 +6156,11 @@ window.startDspBypassAndUpload = async function() {
                 document.getElementById('uploadedMiniBadge').style.background = "rgba(239,68,68,0.1)";
                 document.getElementById('uploadedMiniBadge').style.color = "#ef4444";
                 
+                // FIX: Ganti sumber suara di Mini Player menjadi hasil DSP agar user bisa mendengarnya
+                const originalPlayer = document.getElementById('originalAudioPlayer');
+                originalPlayer.src = URL.createObjectURL(mp3Blob);
+                initCustomPlayer('originalAudioPlayer', 'uploadedStateBox');
+                
                 showIphoneToast("Kreaverse AI Sukses", "Audio berhasil dienkripsi dan diunggah.", "fa-shield-halved");
                 
             } catch(err) {
