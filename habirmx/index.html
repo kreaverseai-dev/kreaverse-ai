@@ -5585,12 +5585,14 @@ async function processKreaverseAudio(file, isPreview = false, progressCallback) 
     let isMasterOn = masterToggleEl ? masterToggleEl.checked : false;
 
     // =========================================================
-    // 🔥 EKSEKUSI DSP V1 (BETA)
+    // 🔥 EKSEKUSI DSP V1 (BETA) - STRICT & AGGRESSIVE MODE
+    // Mengaktifkan 6 Algoritma + 4 Slider Efek
     // =========================================================
     if (isMasterOn && activeTab === 'v1') {
         const v1Timbre = parseInt(safeGetVal('sliderTimbreV1', '0')) || 0;
         const v1Stego = parseInt(safeGetVal('sliderStegoV1', '0')) || 0;
         const v1Void = parseInt(safeGetVal('sliderVoidV1', '0')) || 0;
+        const v1Reverb = parseInt(safeGetVal('sliderReverbV1', '0')) || 0; // Fitur Reverb ditambahkan!
         
         const tgTemporal = document.getElementById('tgTemporalV1') ? document.getElementById('tgTemporalV1').checked : false;
         const tgMirage = document.getElementById('tgMirageV1') ? document.getElementById('tgMirageV1').checked : false;
@@ -5599,91 +5601,126 @@ async function processKreaverseAudio(file, isPreview = false, progressCallback) 
         const tgQuantum = document.getElementById('tgQuantumV1') ? document.getElementById('tgQuantumV1').checked : false;
         const tgPhonetic = document.getElementById('tgPhoneticV1') ? document.getElementById('tgPhoneticV1').checked : false;
 
-        // 1. Temporal Flux (V1)
+        // 1. Temporal Flux (V1) - Ditambah Micro-Jitter Acak
         if (tgTemporal) {
-            for (let time = 0; time < finalDuration; time += 0.1) {
-                let dynamicSpeed = speedVal + (Math.sin(time * 0.5) * 0.02);
+            for (let time = 0; time < finalDuration; time += 0.05) { 
+                let jitter = (Math.random() - 0.5) * 0.03; 
+                let dynamicSpeed = speedVal + (Math.sin(time * 2.0) * 0.02) + jitter;
                 source.playbackRate.setValueAtTime(dynamicSpeed, time);
             }
         }
 
-        // 2. Timbre Density (V1)
+        // 2. Timbre Density (V1) - Asymmetric Distortion
         if (v1Timbre > 0) {
             const saturator = offlineCtx.createWaveShaper();
             const curve = new Float32Array(44100);
             for (let i = 0; i < 44100; ++i) {
                 let x = (i * 2) / 44100 - 1;
-                curve[i] = Math.tanh(x * (1 + (v1Timbre/50))); 
+                // Menambah harmonik genap untuk mengubah warna sidik jari
+                curve[i] = Math.tanh(x * (1 + (v1Timbre/30))) + (0.1 * Math.sin(x * Math.PI)); 
             }
             saturator.curve = curve;
             lastNode.connect(saturator);
             lastNode = saturator;
         }
 
-        // 3. Dimensional Void (V1)
+        // 3. Dimensional Void (V1) - Multi-tap Ghost Peaks
         if (v1Void > 0) {
-            const voidDelay = offlineCtx.createDelay();
-            voidDelay.delayTime.value = 0.015; 
-            const voidGain = offlineCtx.createGain();
-            voidGain.gain.value = (v1Void / 100) * 0.4; 
+            const delay1 = offlineCtx.createDelay(); delay1.delayTime.value = 0.011;
+            const delay2 = offlineCtx.createDelay(); delay2.delayTime.value = 0.023;
+            const voidGain = offlineCtx.createGain(); voidGain.gain.value = (v1Void / 100) * 0.5;
             const voidMix = offlineCtx.createGain();
+
             lastNode.connect(voidMix);
-            lastNode.connect(voidDelay);
-            voidDelay.connect(voidGain);
+            lastNode.connect(delay1); delay1.connect(voidGain);
+            lastNode.connect(delay2); delay2.connect(voidGain);
             voidGain.connect(voidMix);
             lastNode = voidMix;
         }
 
-        // 4. Stego Layer (V1)
+        // 4. Stego Layer (V1) - High Freq + Sub Bass Injection
         if (v1Stego > 0) {
-            const stegoOsc = offlineCtx.createOscillator();
-            stegoOsc.type = 'sine';
-            stegoOsc.frequency.value = 17500; 
-            const stegoGain = offlineCtx.createGain();
-            stegoGain.gain.value = (v1Stego / 100) * 0.03;
-            stegoOsc.connect(stegoGain);
+            const stegoHigh = offlineCtx.createOscillator(); stegoHigh.type = 'sine'; stegoHigh.frequency.value = 18500;
+            const stegoLow = offlineCtx.createOscillator(); stegoLow.type = 'sine'; stegoLow.frequency.value = 35; // Sub-bass penghancur FFT
+            const stegoGain = offlineCtx.createGain(); stegoGain.gain.value = (v1Stego / 100) * 0.05;
+
+            stegoHigh.connect(stegoGain); stegoLow.connect(stegoGain);
             stegoGain.connect(offlineCtx.destination);
-            stegoOsc.start(0);
+            stegoHigh.start(0); stegoLow.start(0);
         }
 
-        // 5. Mirage & Anti Mono (V1 Basic)
+        // 5. Mirage & Anti Mono (V1 Strict) - Cascade Allpass
         if (tgMirage || tgAntiMono) {
-            const filter = offlineCtx.createBiquadFilter();
-            filter.type = 'allpass';
-            filter.frequency.value = 1000;
-            lastNode.connect(filter);
-            lastNode = filter;
+            const freqs = [400, 1200, 3500];
+            freqs.forEach(f => {
+                const apf = offlineCtx.createBiquadFilter();
+                apf.type = 'allpass';
+                apf.frequency.value = f;
+                apf.Q.value = 2.0;
+                lastNode.connect(apf);
+                lastNode = apf;
+            });
         }
 
-        // 6. Spectral Peak Eraser (V1)
+        // 6. Spectral Peak Eraser (V1 Strict) - Multi-Notch Sweeping
         if (tgSpectral) {
-            const peakEraser = offlineCtx.createBiquadFilter();
-            peakEraser.type = 'notch';
-            peakEraser.Q.value = 3.0;
-            for (let t = 0; t < finalDuration; t += 0.2) {
-                peakEraser.frequency.setValueAtTime(1500 + (Math.sin(t * 3) * 500), t);
+            const peak1 = offlineCtx.createBiquadFilter(); peak1.type = 'notch'; peak1.Q.value = 4.0;
+            const peak2 = offlineCtx.createBiquadFilter(); peak2.type = 'notch'; peak2.Q.value = 4.0;
+            for (let t = 0; t < finalDuration; t += 0.1) {
+                peak1.frequency.setValueAtTime(800 + (Math.sin(t * 4) * 300), t);
+                peak2.frequency.setValueAtTime(2500 + (Math.cos(t * 3) * 800), t);
             }
-            lastNode.connect(peakEraser);
-            lastNode = peakEraser;
+            lastNode.connect(peak1); peak1.connect(peak2);
+            lastNode = peak2;
         }
 
-        // 7. Quantum Pitch Drift (V1)
+        // 7. Quantum Pitch Drift (V1 Strict) - Fast Micro-Vibrato
         if (tgQuantum) {
-            for (let time = 0; time < finalDuration; time += 0.5) {
-                let drift = finalDetune + randomDetuneOffset + (Math.sin(time) * 15);
+            for (let time = 0; time < finalDuration; time += 0.1) {
+                let drift = finalDetune + randomDetuneOffset + (Math.sin(time * 8.0) * 25);
                 source.detune.setValueAtTime(drift, time);
             }
         }
 
-        // 8. Phonetic Decoupler (V1)
+        // 8. Phonetic Decoupler (V1 Strict) - Dynamic Formant Shifting
         if (tgPhonetic) {
-            const formantShift = offlineCtx.createBiquadFilter();
-            formantShift.type = 'peaking';
-            formantShift.frequency.value = 2500; 
-            formantShift.Q.value = 1.5;
-            formantShift.gain.value = -4.0; 
-            lastNode.connect(formantShift);
-            lastNode = formantShift;
+            const formant = offlineCtx.createBiquadFilter();
+            formant.type = 'peaking';
+            formant.Q.value = 2.0;
+            formant.gain.value = -6.0;
+            for (let t = 0; t < finalDuration; t += 0.2) {
+                formant.frequency.setValueAtTime(2000 + (Math.sin(t * 2) * 800), t);
+            }
+            lastNode.connect(formant);
+            lastNode = formant;
+        }
+        
+        // 9. Studio Reverb (V1) - Convolution Reverb Simulator
+        if (v1Reverb > 0) {
+            const length = offlineCtx.sampleRate * 2.0; // 2 seconds tail
+            const impulse = offlineCtx.createBuffer(2, length, offlineCtx.sampleRate);
+            for (let i = 0; i < 2; i++) {
+                const channelData = impulse.getChannelData(i);
+                for (let j = 0; j < length; j++) {
+                    channelData[j] = (Math.random() * 2 - 1) * Math.pow(1 - j / length, 3); // Exponential decay
+                }
+            }
+            const convolver = offlineCtx.createConvolver();
+            convolver.buffer = impulse;
+            
+            const wetGain = offlineCtx.createGain();
+            wetGain.gain.value = (v1Reverb / 100) * 0.5; // Max 50% wet
+            const dryGain = offlineCtx.createGain();
+            dryGain.gain.value = 1.0;
+            
+            const mixNode = offlineCtx.createGain();
+            lastNode.connect(dryGain);
+            lastNode.connect(convolver);
+            convolver.connect(wetGain);
+            dryGain.connect(mixNode);
+            wetGain.connect(mixNode);
+            
+            lastNode = mixNode;
         }
 
         // Matikan isMasterOn agar logika V2 di bawahnya tidak ikut dieksekusi bertumpuk
