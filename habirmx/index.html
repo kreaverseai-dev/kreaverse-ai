@@ -5592,14 +5592,12 @@ async function processKreaverseAudio(file, isPreview = false, progressCallback) 
         const v1Stego = parseInt(safeGetVal('sliderStegoV1', '0')) || 0;
         const v1Void = parseInt(safeGetVal('sliderVoidV1', '0')) || 0;
         
-        const tgTemporalEl = document.getElementById('tgTemporalV1');
-        const tgTemporal = tgTemporalEl ? tgTemporalEl.checked : false;
-        
-        const tgMirageEl = document.getElementById('tgMirageV1');
-        const tgMirage = tgMirageEl ? tgMirageEl.checked : false;
-        
-        const tgAntiMonoEl = document.getElementById('tgAntiMonoV1');
-        const tgAntiMono = tgAntiMonoEl ? tgAntiMonoEl.checked : false;
+        const tgTemporal = document.getElementById('tgTemporalV1') ? document.getElementById('tgTemporalV1').checked : false;
+        const tgMirage = document.getElementById('tgMirageV1') ? document.getElementById('tgMirageV1').checked : false;
+        const tgAntiMono = document.getElementById('tgAntiMonoV1') ? document.getElementById('tgAntiMonoV1').checked : false;
+        const tgSpectral = document.getElementById('tgSpectralV1') ? document.getElementById('tgSpectralV1').checked : false;
+        const tgQuantum = document.getElementById('tgQuantumV1') ? document.getElementById('tgQuantumV1').checked : false;
+        const tgPhonetic = document.getElementById('tgPhoneticV1') ? document.getElementById('tgPhoneticV1').checked : false;
 
         // 1. Temporal Flux (V1)
         if (tgTemporal) {
@@ -5655,6 +5653,37 @@ async function processKreaverseAudio(file, isPreview = false, progressCallback) 
             filter.frequency.value = 1000;
             lastNode.connect(filter);
             lastNode = filter;
+        }
+
+        // 6. Spectral Peak Eraser (V1)
+        if (tgSpectral) {
+            const peakEraser = offlineCtx.createBiquadFilter();
+            peakEraser.type = 'notch';
+            peakEraser.Q.value = 3.0;
+            for (let t = 0; t < finalDuration; t += 0.2) {
+                peakEraser.frequency.setValueAtTime(1500 + (Math.sin(t * 3) * 500), t);
+            }
+            lastNode.connect(peakEraser);
+            lastNode = peakEraser;
+        }
+
+        // 7. Quantum Pitch Drift (V1)
+        if (tgQuantum) {
+            for (let time = 0; time < finalDuration; time += 0.5) {
+                let drift = finalDetune + randomDetuneOffset + (Math.sin(time) * 15);
+                source.detune.setValueAtTime(drift, time);
+            }
+        }
+
+        // 8. Phonetic Decoupler (V1)
+        if (tgPhonetic) {
+            const formantShift = offlineCtx.createBiquadFilter();
+            formantShift.type = 'peaking';
+            formantShift.frequency.value = 2500; 
+            formantShift.Q.value = 1.5;
+            formantShift.gain.value = -4.0; 
+            lastNode.connect(formantShift);
+            lastNode = formantShift;
         }
 
         // Matikan isMasterOn agar logika V2 di bawahnya tidak ikut dieksekusi bertumpuk
