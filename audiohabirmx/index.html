@@ -284,8 +284,9 @@
                         <!-- Menu Dropdown (Muncul ke atas agar tidak terpotong layar) -->
                         <div id="formatDropdownMenu" class="absolute bottom-full left-0 mb-2 w-full bg-white border border-gray-200 rounded-xl shadow-xl hidden flex-col overflow-hidden z-50">
                             <div class="format-option px-4 py-3 hover:bg-blue-50 cursor-pointer text-sm font-bold text-gray-700 border-b border-gray-100" data-value="mp3">Format: .MP3</div>
-                            <div class="format-option px-4 py-3 hover:bg-blue-50 cursor-pointer text-sm font-bold text-gray-700 border-b border-gray-100" data-value="flac">Format: .FLAC</div>
                             <div class="format-option px-4 py-3 hover:bg-blue-50 cursor-pointer text-sm font-bold text-gray-700 border-b border-gray-100" data-value="ogg">Format: .OGG</div>
+                            <div class="format-option px-4 py-3 hover:bg-blue-50 cursor-pointer text-sm font-bold text-gray-700 border-b border-gray-100" data-value="m4a">Format: .M4A</div>
+                            <div class="format-option px-4 py-3 hover:bg-blue-50 cursor-pointer text-sm font-bold text-gray-700 border-b border-gray-100" data-value="flac">Format: .FLAC</div>
                             <div class="format-option px-4 py-3 hover:bg-blue-50 cursor-pointer text-sm font-bold text-gray-700" data-value="wav">Format: .WAV</div>
                         </div>
                     </div>
@@ -334,7 +335,7 @@
         
         // Membaca format terakhir yang dipilih (Default ke MP3 jika belum pernah diatur)
         let currentFormat = localStorage.getItem('selectedFormat') || 'mp3'; 
-        const formatLabels = { 'mp3': 'Format: .MP3', 'flac': 'Format: .FLAC', 'ogg': 'Format: .OGG', 'wav': 'Format: .WAV' };
+        const formatLabels = { 'mp3': 'Format: .MP3', 'flac': 'Format: .FLAC', 'ogg': 'Format: .OGG', 'm4a': 'Format: .M4A', 'wav': 'Format: .WAV' };
         formatText.innerText = formatLabels[currentFormat];
 
         // Logika Buka/Tutup Dropdown
