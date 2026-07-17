@@ -2269,6 +2269,23 @@
                                 <input type="hidden" id="uploadFormatSelect" value="mp3">
                             </div>
 
+                            <!-- ESTIMATED FILE INFO BOX (NEW) -->
+                            <div id="dspFileInfoBox" style="margin-bottom: 20px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); padding: 16px; border-radius: 16px; font-size: 0.75rem; line-height: 1.6; color: #cbd5e1;">
+                                <span style="font-size: 0.8rem; font-weight: 800; color: #38bdf8; display: block; margin-bottom: 8px;"><i class="fa-solid fa-chart-simple"></i> Estimasi Spesifikasi File</span>
+                                <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 6px; margin-bottom: 6px;">
+                                    <span>Durasi Sebelum Diedit:</span>
+                                    <span id="infoDurOriginal" style="font-weight: 700; color: #fff;">00:00</span>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 6px; margin-bottom: 6px;">
+                                    <span>Durasi Setelah Diedit (DSP):</span>
+                                    <span id="infoDurProcessed" style="font-weight: 700; color: #38bdf8;">00:00</span>
+                                </div>
+                                <div style="display: flex; justify-content: space-between;">
+                                    <span>Estimasi Ukuran File:</span>
+                                    <span id="infoFileSize" style="font-weight: 700; color: #ef4444;">0.00 MB</span>
+                                </div>
+                            </div>
+
                             <!-- ACTION BUTTONS -->
                             <div style="display: flex; flex-direction: column; gap: 10px;">
                                 <div class="dsp-action-row">
