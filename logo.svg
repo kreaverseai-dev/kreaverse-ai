@@ -1,11 +1,16 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 550 100" width="200" height="auto">
-  <!-- Grup Teks KREAVERSE dengan Efek Glitch -->
-  <g font-family="'Arial Black', 'Proxima Nova', sans-serif" font-size="65" font-weight="900" dominant-baseline="middle" letter-spacing="2">
-    <!-- Bayangan Cyan (Kiri) -->
-    <text x="1%" y="53%" fill="#25F4EE">KREAVERSE</text>
-    <!-- Bayangan Merah Neon (Kanan) -->
-    <text x="2.5%" y="53%" fill="#FE2C55">KREAVERSE</text>
-    <!-- Teks Utama Hitam -->
-    <text x="1.5%" y="53%" fill="#000000">KREAVERSE</text>
-  </g>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 500" width="200" height="200">
+  <defs>
+    <!-- Gradasi Warna Premium ala Soniva (Ungu ke Pink/Oranye) -->
+    <linearGradient id="sonivaStyle" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#4A00E0" /> <!-- Ungu Tua -->
+      <stop offset="50%" stop-color="#8E2DE2" /> <!-- Ungu Terang -->
+      <stop offset="100%" stop-color="#FF007F" /> <!-- Pink Neon -->
+    </linearGradient>
+  </defs>
+
+  <!-- Latar Belakang Kotak Melengkung -->
+  <rect width="500" height="500" rx="115" fill="url(#sonivaStyle)"/>
+  
+  <!-- Huruf K yang elegan dan membulat -->
+  <text x="50%" y="52%" font-family="'Arial Rounded MT Bold', 'Nunito', sans-serif" font-size="280" font-weight="bold" fill="#FFFFFF" text-anchor="middle" dominant-baseline="central">K</text>
 </svg>
