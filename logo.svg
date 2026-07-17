@@ -11,15 +11,20 @@
   <!-- Latar Belakang Kotak Melengkung -->
   <rect width="500" height="500" rx="115" fill="url(#flixaPremium)"/>
   
-  <!-- Ikon 'f' Abstrak Mengalir (Continuous Line) -->
-  <!-- Garis tebal, ujung membulat, sangat elegan -->
-  <path d="M 250 375 
-           L 250 205 
-           C 250 125, 350 125, 350 205 
-           C 350 275, 250 275, 170 275" 
+  <!-- Tiang Utama dan Lengkungan Atas Huruf 'f' -->
+  <path d="M 230 380 
+           L 230 180 
+           C 230 120, 320 120, 340 160" 
         stroke="#FFFFFF" 
         stroke-width="45" 
         stroke-linecap="round" 
-        stroke-linejoin="round" 
+        fill="none" />
+        
+  <!-- Garis Tengah (Crossbar) Huruf 'f' -->
+  <path d="M 150 240 
+           L 310 240" 
+        stroke="#FFFFFF" 
+        stroke-width="45" 
+        stroke-linecap="round" 
         fill="none" />
 </svg>
