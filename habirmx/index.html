@@ -6256,9 +6256,12 @@ async function processKreaverseAudio(file, isPreview = false, progressCallback) 
             } else {
                 // Ambil format yang dipilih di dropdown DSP Studio modal
                 const targetFormat = document.getElementById('uploadFormatSelect') ? document.getElementById('uploadFormatSelect').value : 'mp3';
-                if (targetFormat === 'mp3') {
+                
+                // Sesuai diskusi: Format MP3, OGG, dan M4A dikompresi sebagai MP3 agar ukurannya kecil (di bawah 5MB)
+                if (targetFormat === 'mp3' || targetFormat === 'ogg' || targetFormat === 'm4a') {
                     return await encodeAudioBufferToMp3(renderedBuffer, progressCallback);
                 } else {
+                    // Format lossless (WAV, FLAC) tetap menggunakan WAV instan agar cepat
                     return await audioBufferToWavAsync(renderedBuffer);
                 }
             }
