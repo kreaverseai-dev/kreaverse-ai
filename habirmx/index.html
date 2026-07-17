@@ -7429,10 +7429,18 @@ window.startDspBypassAndUpload = async function() {
                         throw new Error("Kunci API Groq Whisper tidak ditemukan di database. Pastikan sudah didaftarkan di tab Audio!");
                     }
 
-                    // 3. Kirim ke API Groq Whisper (ASR) dengan Auto-Detect Bahasa (Sangat Akurat)
+                    // 3. Kirim ke API Groq Whisper (ASR) dengan parameter anti-halusinasi & pendeteksi bahasa dinamis (multibahasa)
+                const songTitle = document.getElementById('titleInput') ? document.getElementById('titleInput').value.trim() : "";
+                const songStyle = document.getElementById('styleInput') ? document.getElementById('styleInput').value.trim() : "";
+                const whisperPrompt = songTitle || songStyle 
+                    ? `Lirik lagu bersih: ${songTitle}. Gaya musik: ${songStyle}. Transkripsi nyanyian tanpa subtitle cues.`
+                    : "Lirik lagu bersih, transkripsi nyanyian tanpa subtitle cues, clean lyrics transcript.";
+
                 const formData = new FormData();
                 formData.append("file", audioBlob, "audio.mp3");
                 formData.append("model", "whisper-large-v3");
+                formData.append("temperature", "0.0"); // Mengunci akurasi agar AI tidak berhalusinasi melantur saat ada musik instrumental
+                formData.append("prompt", whisperPrompt); // Petunjuk dinamis mengikuti judul & gaya lagu (Arab, Jawa, Madura, Inggris, Indonesia, dll)
 
                 const whisperResponse = await fetch("https://api.groq.com/openai/v1/audio/transcriptions", {
                     method: "POST",
