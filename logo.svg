@@ -11,20 +11,20 @@
   <!-- Latar Belakang Kotak Melengkung -->
   <rect width="500" height="500" rx="115" fill="url(#flixaPremium)"/>
   
-  <!-- Tiang Utama dan Lengkungan Atas Huruf 'f' -->
-  <path d="M 230 380 
-           L 230 180 
-           C 230 120, 320 120, 340 160" 
+  <!-- Tiang Utama 'f' (Melengkung seperti gelombang suara / Forte musik) -->
+  <path d="M 320 150 
+           C 320 70, 230 70, 230 190 
+           C 230 290, 200 350, 200 400" 
         stroke="#FFFFFF" 
-        stroke-width="45" 
+        stroke-width="42" 
         stroke-linecap="round" 
         fill="none" />
         
-  <!-- Garis Tengah (Crossbar) Huruf 'f' -->
-  <path d="M 150 240 
-           L 310 240" 
+  <!-- Garis Tengah 'f' (Dibuat bergelombang dinamis, bukan garis lurus kaku) -->
+  <path d="M 130 240 
+           C 190 200, 260 280, 320 220" 
         stroke="#FFFFFF" 
-        stroke-width="45" 
+        stroke-width="42" 
         stroke-linecap="round" 
         fill="none" />
 </svg>
