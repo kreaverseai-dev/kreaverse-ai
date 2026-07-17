@@ -2269,8 +2269,24 @@
                                 <input type="hidden" id="uploadFormatSelect" value="mp3">
                             </div>
 
+                            <!-- ESTIMATED FILE INFO BOX (NEW) -->
+                            <div id="dspFileInfoBox" style="margin-bottom: 20px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); padding: 14px; border-radius: 16px; font-size: 0.75rem; line-height: 1.6; color: #cbd5e1;">
+                                <span style="font-size: 0.8rem; font-weight: 800; color: #38bdf8; display: block; margin-bottom: 8px;"><i class="fa-solid fa-chart-simple"></i> Estimasi Spesifikasi File</span>
+                                <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 4px; margin-bottom: 4px;">
+                                    <span>Durasi Sebelum Diedit:</span>
+                                    <span id="infoDurOriginal" style="font-weight: 700; color: #fff;">00:00</span>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 4px; margin-bottom: 4px;">
+                                    <span>Durasi Setelah Diedit (DSP):</span>
+                                    <span id="infoDurProcessed" style="font-weight: 700; color: #38bdf8;">00:00</span>
+                                </div>
+                                <div style="display: flex; justify-content: space-between;">
+                                    <span>Estimasi Ukuran File:</span>
+                                    <span id="infoFileSize" style="font-weight: 700; color: #ef4444;">0.00 MB</span>
+                                </div>
+                            </div>
+
                             <!-- ACTION BUTTONS -->
-                            <div style="display: flex; flex-direction: column; gap: 10px;">
                                 <div class="dsp-action-row">
                                     <button id="btnPreviewDsp" type="button" class="dsp-action-btn" style="flex: 1; background: rgba(255,255,255,0.1); color: #fff; border: 1px solid rgba(255,255,255,0.2); padding: 10px 14px; border-radius: 12px; font-weight: 700; font-size: 0.8rem; cursor: pointer;" onclick="generateDspPreview()">
                                         <i class="fa-solid fa-headphones"></i> Preview Kreaverse AI
@@ -8463,6 +8479,177 @@ window.startDspBypassAndUpload = async function() {
                 else opt.classList.remove('selected');
             });
         };
+
+        // Fungsi pemicu Modal Kustom Simpan Preset (Mengganti Prompt Browser)
+        window.openSavePresetModal = function() {
+            let overlay = document.getElementById('savePresetModalOverlay');
+            if (!overlay) {
+                overlay = document.createElement('div');
+                overlay.id = 'savePresetModalOverlay';
+                overlay.className = 'krea-modal-overlay';
+                overlay.style.zIndex = '9999999';
+                overlay.innerHTML = `
+                    <div class="krea-modal-box" style="max-width: 350px; padding: 24px; text-align: left; border-radius: 24px; background: #1e293b; border: 1px solid #334155; color: #fff;">
+                        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+                            <div style="width: 40px; height: 40px; background: rgba(56, 189, 248, 0.15); color: #38bdf8; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem;"><i class="fa-solid fa-floppy-disk"></i></div>
+                            <div>
+                                <h3 style="font-size: 1.05rem; font-weight: 900; color: #fff; margin: 0;">Simpan Preset Kustom</h3>
+                            </div>
+                        </div>
+                        <p style="font-size: 0.75rem; color: #cbd5e1; margin-bottom: 16px; line-height: 1.5;">Simpan konfigurasi slider & algoritma V1 aktif Anda ke dalam penyimpanan browser.</p>
+                        <input type="text" id="savePresetNameInput" style="width: 100%; padding: 12px 14px; border-radius: 12px; border: 1.5px solid #334155; background: #0f172a; font-size: 0.95rem; font-weight: 800; color: #fff; outline: none; margin-bottom: 20px; transition: 0.2s;" placeholder="Nama preset (misal: Bass Boost)...">
+                        <div style="display: flex; gap: 10px;">
+                            <button type="button" onclick="window.closeSavePresetModal()" style="flex: 1; padding: 12px; border-radius: 12px; font-weight: 800; font-size: 0.85rem; cursor: pointer; border: none; background: #334155; color: #cbd5e1; transition: 0.2s;">Batal</button>
+                            <button type="button" onclick="window.confirmSavePreset()" style="flex: 1; padding: 12px; border-radius: 12px; font-weight: 800; font-size: 0.85rem; cursor: pointer; border: none; background: #38bdf8; color: #0f172a; transition: 0.2s; font-weight: 800; box-shadow: 0 4px 10px rgba(56,189,248,0.25);">Simpan</button>
+                        </div>
+                    </div>
+                `;
+                document.body.appendChild(overlay);
+            }
+            
+            document.getElementById('savePresetNameInput').value = '';
+            overlay.classList.add('show');
+            document.getElementById('savePresetNameInput').focus();
+        };
+
+        window.closeSavePresetModal = function() {
+            const overlay = document.getElementById('savePresetModalOverlay');
+            if (overlay) overlay.classList.remove('show');
+        };
+
+        window.confirmSavePreset = function() {
+            const name = document.getElementById('savePresetNameInput').value.trim();
+            if (!name) {
+                alert("Nama preset tidak boleh kosong!");
+                return;
+            }
+
+            const raw = localStorage.getItem('kreaverse_custom_presets_v1');
+            const customPresets = raw ? JSON.parse(raw) : {};
+
+            customPresets[name] = {
+                t: document.getElementById('sliderTempoV1').value,
+                p: document.getElementById('sliderPitchV1').value,
+                tm: document.getElementById('sliderTimbreV1').value,
+                s: document.getElementById('sliderStegoV1').value,
+                v: document.getElementById('sliderVoidV1').value,
+                r: document.getElementById('sliderReverbV1').value,
+                tg: [
+                    document.getElementById('tgTemporalV1').checked,
+                    document.getElementById('tgMirageV1').checked,
+                    document.getElementById('tgAntiMonoV1').checked,
+                    document.getElementById('tgSpectralV1').checked,
+                    document.getElementById('tgQuantumV1').checked,
+                    document.getElementById('tgPhoneticV1').checked
+                ]
+            };
+
+            localStorage.setItem('kreaverse_custom_presets_v1', JSON.stringify(customPresets));
+            window.loadCustomPresets();
+            window.selectPresetOption('custom_' + name, '⭐ Preset: ' + name);
+            window.closeSavePresetModal();
+            
+            if (typeof showIphoneToast === 'function') {
+                showIphoneToast("Preset Disimpan", `Preset "${name}" berhasil disimpan.`, "fa-floppy-disk");
+            }
+        };
+
+        // Fungsi Kunci & Buka Kunci Slider V1 (UX Anti-Geser)
+        window.toggleSliderLock = function(sliderId, btn) {
+            const slider = document.getElementById(sliderId);
+            if (!slider) return;
+            
+            const isLocked = slider.disabled;
+            slider.disabled = !isLocked;
+            
+            if (isLocked) {
+                btn.innerHTML = '<i class="fa-solid fa-lock-open" style="color: #10b981;"></i>';
+                btn.title = "Kunci Slider";
+                if (typeof showIphoneToast === 'function') {
+                    showIphoneToast("Slider Terbuka", "Geser slider untuk mengubah pengaturan.", "fa-lock-open");
+                }
+            } else {
+                btn.innerHTML = '<i class="fa-solid fa-lock" style="color: #ef4444;"></i>';
+                btn.title = "Buka Kunci";
+                if (typeof showIphoneToast === 'function') {
+                    showIphoneToast("Slider Terkunci", "Slider dikunci untuk mencegah pergeseran tidak sengaja.", "fa-lock");
+                }
+            }
+        };
+
+        // Fungsi Kalkulator Spesifikasi & Estimasi Ukuran File (MB) Real-Time
+        window.updateDspFileInfo = function() {
+            const infoBox = document.getElementById('dspFileInfoBox');
+            if (!infoBox) return;
+
+            if (!originalAudioBuffer) {
+                document.getElementById('infoDurOriginal').innerText = "00:00";
+                document.getElementById('infoDurProcessed').innerText = "00:00";
+                document.getElementById('infoFileSize').innerText = "0.00 MB";
+                return;
+            }
+
+            // 1. Durasi Sebelum Diedit (berdasarkan pangkasan/trimmer)
+            let startSec = parseTimeToSeconds(document.getElementById('trimStartInput').value);
+            let endSec = parseTimeToSeconds(document.getElementById('trimEndInput').value);
+            if (endSec === 0 || endSec > originalAudioBuffer.duration) {
+                endSec = originalAudioBuffer.duration;
+            }
+            let rawDuration = endSec - startSec;
+            if (rawDuration < 0) rawDuration = 0;
+
+            document.getElementById('infoDurOriginal').innerText = formatSecondsToTime(rawDuration);
+
+            // 2. Durasi Setelah Diedit (dibagi Kecepatan/Tempo)
+            const activeTab = localStorage.getItem('krea_dsp_tab') || 'v1';
+            let speedVal = 1.0;
+            if (activeTab === 'v1') {
+                speedVal = parseFloat(document.getElementById('sliderTempoV1').value) || 1.0;
+            } else {
+                speedVal = parseFloat(document.getElementById('kreaverseSpeed').value) || 1.0;
+            }
+
+            const processedDuration = rawDuration / speedVal;
+            document.getElementById('infoDurProcessed').innerText = formatSecondsToTime(processedDuration);
+
+            // 3. Estimasi Ukuran File Sesuai Format Pilihan
+            const targetFormat = document.getElementById('uploadFormatSelect') ? document.getElementById('uploadFormatSelect').value : 'mp3';
+            let sizeInMb = 0;
+
+            if (targetFormat === 'mp3') {
+                // MP3 Terkompresi 128 kbps (Sangat Kecil)
+                sizeInMb = (processedDuration * 128000) / (8 * 1024 * 1024);
+            } else {
+                // WAV / OGG / M4A / FLAC (Sistem bypass menggunakkan WAV raw PCM 16-bit)
+                const sampleRate = originalAudioBuffer.sampleRate || 44100;
+                const channels = originalAudioBuffer.numberOfChannels || 2;
+                const sizeInBytes = processedDuration * sampleRate * channels * 2;
+                sizeInMb = sizeInBytes / (1024 * 1024);
+            }
+
+            document.getElementById('infoFileSize').innerText = sizeInMb.toFixed(2) + " MB";
+        };
+
+        // Realtime sync listener untuk meng-update info spesifikasi file secara live
+        document.addEventListener('DOMContentLoaded', () => {
+            const triggerUpdate = () => {
+                if (typeof window.updateDspFileInfo === 'function') {
+                    window.updateDspFileInfo();
+                }
+            };
+
+            const inputsToWatch = ['sliderTempoV1', 'kreaverseSpeed', 'trimStartInput', 'trimEndInput', 'uploadFormatSelect'];
+            inputsToWatch.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) {
+                    el.addEventListener('input', triggerUpdate);
+                    el.addEventListener('change', triggerUpdate);
+                }
+            });
+
+            // Loop sinkronisasi ringan 1 detik agar data file selalu sinkron secara otomatis
+            setInterval(triggerUpdate, 1000);
+        });
 
         // Muat preset kustom saat halaman dimuat pertama kali
         document.addEventListener('DOMContentLoaded', () => {
