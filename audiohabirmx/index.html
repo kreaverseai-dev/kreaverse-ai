@@ -653,19 +653,19 @@
                 let finalBlob;
                 let fileExtension;
 
-                if (format === 'mp3' && typeof lamejs !== 'undefined') {
-                    // Async MP3 Encoding untuk mencegah Lag
+                if ((format === 'mp3' || format === 'ogg' || format === 'm4a') && typeof lamejs !== 'undefined') {
+                    // Kompresi biner MP3 untuk ekstensi .MP3, .OGG, dan .M4A agar file berukuran kecil (di bawah 5MB)
                     finalBlob = await audioBufferToMp3Async(renderedBuffer, (prog) => {
                         let p = 50 + (prog * 45);
                         progressBar.style.width = `${p}%`;
                         progressText.innerText = `${Math.round(p)}% (Encoding MP3...)`;
                     });
-                    fileExtension = '.mp3';
+                    fileExtension = '.' + format;
                 } else {
                     // Menggunakan PCM Encoder cepat dan mengubah Extension agar bypass Web Upload Filter (Suno AI, dsb).
                     // Robot AI backend akan otomatis membaca codec aslinya yang tidak terkompresi.
                     finalBlob = await audioBufferToWavAsync(renderedBuffer);
-                    fileExtension = `.${format}`; // Output: .wav, .flac, .ogg
+                    fileExtension = `.${format}`; // Output: .wav, .flac
                 }
                 
                 const url = URL.createObjectURL(finalBlob);
