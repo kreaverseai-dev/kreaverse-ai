@@ -1933,7 +1933,12 @@
                                 <div id="dspTabV1">
                                     <div style="margin-bottom: 20px;">
                                         <div class="dsp-row-flex" style="margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
-                                            <span style="font-size: 0.85rem; font-weight: 800; color: #e2e8f0;">⚙️ Pengaturan Engine (v1 Beta)</span>
+                                            <span style="font-size: 0.85rem; font-weight: 800; color: #e2e8f0; display: flex; align-items: center; gap: 8px;">
+                                                ⚙️ Pengaturan Engine (v1 Beta)
+                                                <button type="button" id="v1MasterLockBtn" onclick="window.toggleV1MasterLock()" style="background: none; border: none; color: #ef4444; cursor: pointer; font-size: 0.95rem; padding: 2px 6px; display: inline-flex; align-items: center;" title="Buka Kunci Panel">
+                                                    <i class="fa-solid fa-lock"></i>
+                                                </button>
+                                            </span>
                                             
                                             <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap; flex: 1; justify-content: flex-end;">
                                                 <!-- CUSTOM DROPDOWN PRESET -->
@@ -6290,8 +6295,16 @@ window.generateDspPreview = async function() {
         initCustomPlayer('bypassedAudioPlayer', 'cp-bypassed');
         
         // Memanggil fungsi play secara langsung agar tidak error mencari class tombol
-        window.toggleCustomPlay('bypassedAudioPlayer', 'cp-bypassed');
-        showIphoneToast("Preview Kreaverse AI Siap", "Memutar hasil manipulasi algoritma.", "fa-user-secret");
+                window.toggleCustomPlay('bypassedAudioPlayer', 'cp-bypassed');
+                showIphoneToast("Preview Kreaverse AI Siap", "Memutar hasil manipulasi algoritma.", "fa-user-secret");
+
+                // AUTO-SCROLL OTOMATIS KE OSCILLOSCOPE & PLAYER (ANTI-RIBET)
+                setTimeout(() => {
+                    const target = document.getElementById('audioVisualizer') || document.querySelector('.visualizer-box');
+                    if (target) {
+                        target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }
+                }, 300);
     } catch(err) {
         console.error(err);
         // TAMPILKAN ERROR ASLI KE LAYAR AGAR KITA TAHU PENYEBABNYA
