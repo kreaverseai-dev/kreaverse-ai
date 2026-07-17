@@ -1,16 +1,15 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 500" width="200" height="200">
   <defs>
-    <!-- Gradasi Warna Premium ala Soniva (Ungu ke Pink/Oranye) -->
-    <linearGradient id="sonivaStyle" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#4A00E0" /> <!-- Ungu Tua -->
-      <stop offset="50%" stop-color="#8E2DE2" /> <!-- Ungu Terang -->
+    <!-- Gradasi Warna Premium Flixa (Ungu ke Pink Neon) -->
+    <linearGradient id="flixaGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#7F00FF" /> <!-- Ungu Terang -->
       <stop offset="100%" stop-color="#FF007F" /> <!-- Pink Neon -->
     </linearGradient>
   </defs>
 
-  <!-- Latar Belakang Kotak Melengkung -->
-  <rect width="500" height="500" rx="115" fill="url(#sonivaStyle)"/>
+  <!-- Latar Belakang Putih Bersih -->
+  <rect width="500" height="500" rx="115" fill="#FFFFFF"/>
   
-  <!-- Huruf K yang elegan dan membulat -->
-  <text x="50%" y="52%" font-family="'Arial Rounded MT Bold', 'Nunito', sans-serif" font-size="280" font-weight="bold" fill="#FFFFFF" text-anchor="middle" dominant-baseline="central">K</text>
+  <!-- Huruf F (Tebal, Miring/Italic untuk kesan dinamis) -->
+  <text x="48%" y="52%" font-family="'Arial Black', 'Montserrat', sans-serif" font-size="320" font-weight="900" font-style="italic" fill="url(#flixaGradient)" text-anchor="middle" dominant-baseline="central">F</text>
 </svg>
