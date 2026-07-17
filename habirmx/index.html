@@ -8363,10 +8363,18 @@ window.startDspBypassAndUpload = async function() {
         };
 
         window.openSavePresetModal = function() {
-            const name = prompt("Masukkan nama untuk preset kustom Anda:", "");
-            if (name === null) return;
-            const trimmedName = name.trim();
-            if (!trimmedName) {
+            document.getElementById('savePresetNameInput').value = '';
+            document.getElementById('savePresetModalOverlay').classList.add('show');
+            document.getElementById('savePresetNameInput').focus();
+        };
+
+        window.closeSavePresetModal = function() {
+            document.getElementById('savePresetModalOverlay').classList.remove('show');
+        };
+
+        window.confirmSavePreset = function() {
+            const name = document.getElementById('savePresetNameInput').value.trim();
+            if (!name) {
                 alert("Nama preset tidak boleh kosong!");
                 return;
             }
@@ -8374,7 +8382,7 @@ window.startDspBypassAndUpload = async function() {
             const raw = localStorage.getItem('kreaverse_custom_presets_v1');
             const customPresets = raw ? JSON.parse(raw) : {};
 
-            customPresets[trimmedName] = {
+            customPresets[name] = {
                 t: document.getElementById('sliderTempoV1').value,
                 p: document.getElementById('sliderPitchV1').value,
                 tm: document.getElementById('sliderTimbreV1').value,
@@ -8393,12 +8401,33 @@ window.startDspBypassAndUpload = async function() {
 
             localStorage.setItem('kreaverse_custom_presets_v1', JSON.stringify(customPresets));
             window.loadCustomPresets();
-            window.selectPresetOption('custom_' + trimmedName, '⭐ Preset: ' + trimmedName);
+            window.selectPresetOption('custom_' + name, '⭐ Preset: ' + name);
+            window.closeSavePresetModal();
             
             if (typeof showIphoneToast === 'function') {
-                showIphoneToast("Preset Disimpan", `Preset "${trimmedName}" berhasil disimpan ke browser memory.`, "fa-floppy-disk");
+                showIphoneToast("Preset Disimpan", `Preset "${name}" berhasil disimpan.`, "fa-floppy-disk");
+            }
+        };
+
+        window.toggleSliderLock = function(sliderId, btn) {
+            const slider = document.getElementById(sliderId);
+            if (!slider) return;
+            
+            const isLocked = slider.disabled;
+            slider.disabled = !isLocked;
+            
+            if (isLocked) {
+                btn.innerHTML = '<i class="fa-solid fa-lock-open" style="color: #10b981;"></i>';
+                btn.title = "Kunci Slider";
+                if (typeof showIphoneToast === 'function') {
+                    showIphoneToast("Slider Terbuka", "Geser slider untuk mengubah pengaturan.", "fa-lock-open");
+                }
             } else {
-                alert(`Preset "${trimmedName}" berhasil disimpan!`);
+                btn.innerHTML = '<i class="fa-solid fa-lock" style="color: #ef4444;"></i>';
+                btn.title = "Buka Kunci";
+                if (typeof showIphoneToast === 'function') {
+                    showIphoneToast("Slider Terkunci", "Slider dikunci untuk mencegah pergeseran tidak sengaja.", "fa-lock");
+                }
             }
         };
 
