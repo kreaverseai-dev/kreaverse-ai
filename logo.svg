@@ -1,15 +1,25 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 500" width="200" height="200">
   <defs>
-    <!-- Gradasi Warna Premium Flixa (Ungu ke Pink Neon) -->
-    <linearGradient id="flixaGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#7F00FF" /> <!-- Ungu Terang -->
-      <stop offset="100%" stop-color="#FF007F" /> <!-- Pink Neon -->
+    <!-- Gradasi Premium ala Soniva (Biru Dongker ke Ungu ke Oranye Kemerahan) -->
+    <linearGradient id="flixaPremium" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#1A1449" /> <!-- Biru Dongker / Navy -->
+      <stop offset="50%" stop-color="#7B2956" /> <!-- Ungu / Magenta -->
+      <stop offset="100%" stop-color="#D95040" /> <!-- Oranye Kemerahan -->
     </linearGradient>
   </defs>
 
-  <!-- Latar Belakang Putih Bersih -->
-  <rect width="500" height="500" rx="115" fill="#FFFFFF"/>
+  <!-- Latar Belakang Kotak Melengkung -->
+  <rect width="500" height="500" rx="115" fill="url(#flixaPremium)"/>
   
-  <!-- Huruf F (Tebal, Miring/Italic untuk kesan dinamis) -->
-  <text x="48%" y="52%" font-family="'Arial Black', 'Montserrat', sans-serif" font-size="320" font-weight="900" font-style="italic" fill="url(#flixaGradient)" text-anchor="middle" dominant-baseline="central">F</text>
+  <!-- Ikon 'f' Abstrak Mengalir (Continuous Line) -->
+  <!-- Garis tebal, ujung membulat, sangat elegan -->
+  <path d="M 250 375 
+           L 250 205 
+           C 250 125, 350 125, 350 205 
+           C 350 275, 250 275, 170 275" 
+        stroke="#FFFFFF" 
+        stroke-width="45" 
+        stroke-linecap="round" 
+        stroke-linejoin="round" 
+        fill="none" />
 </svg>
