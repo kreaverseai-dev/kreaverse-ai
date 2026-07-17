@@ -7429,17 +7429,16 @@ window.startDspBypassAndUpload = async function() {
                         throw new Error("Kunci API Groq Whisper tidak ditemukan di database. Pastikan sudah didaftarkan di tab Audio!");
                     }
 
-                    // 3. Kirim ke API Groq Whisper (ASR)
-                    const formData = new FormData();
-                    formData.append("file", audioBlob, "audio.mp3");
-                    formData.append("model", "whisper-large-v3");
-                    formData.append("language", "id"); // Otomatis deteksi bahasa
+                    // 3. Kirim ke API Groq Whisper (ASR) dengan Auto-Detect Bahasa (Sangat Akurat)
+                const formData = new FormData();
+                formData.append("file", audioBlob, "audio.mp3");
+                formData.append("model", "whisper-large-v3");
 
-                    const whisperResponse = await fetch("https://api.groq.com/openai/v1/audio/transcriptions", {
-                        method: "POST",
-                        headers: { "Authorization": `Bearer ${groqKey}` },
-                        body: formData
-                    });
+                const whisperResponse = await fetch("https://api.groq.com/openai/v1/audio/transcriptions", {
+                    method: "POST",
+                    headers: { "Authorization": `Bearer ${groqKey}` },
+                    body: formData
+                });
                     
                     const whisperData = await whisperResponse.json();
                     if (!whisperResponse.ok) throw new Error(whisperData.error?.message || "Gagal transkripsi audio.");
