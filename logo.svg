@@ -8,25 +8,23 @@
     </linearGradient>
   </defs>
 
-  <!-- KOTAK PENUH (Tanpa rx). Ini yang akan menghilangkan pinggiran putih di HP Anda! -->
+  <!-- Latar Belakang Kotak Penuh -->
   <rect width="500" height="500" fill="url(#flixaPremium)"/>
   
-  <!-- Huruf 'f' Geometris, Sangat Tebal, dan Rapi -->
-  <!-- Tiang dan Lengkungan Atas (Lengkungan menggunakan lingkaran sempurna) -->
-  <path d="M 245 380 
-           L 245 200 
-           A 80 80 0 0 1 325 120 
-           L 345 120" 
+  <!-- Tiang 'f' Abstrak (Meliuk halus seperti pita/nada musik) -->
+  <path d="M 320 160 
+           C 320 60, 190 60, 190 200 
+           C 190 290, 230 320, 230 400" 
         stroke="#FFFFFF" 
-        stroke-width="75" 
+        stroke-width="70" 
         stroke-linecap="round" 
         fill="none" />
         
-  <!-- Garis Tengah (Sangat tebal dan seimbang) -->
-  <path d="M 155 240 
-           L 335 240" 
+  <!-- Garis Tengah 'f' (Melengkung dinamis, bukan garis lurus) -->
+  <path d="M 120 250 
+           Q 210 200 300 250" 
         stroke="#FFFFFF" 
-        stroke-width="75" 
+        stroke-width="70" 
         stroke-linecap="round" 
         fill="none" />
 </svg>
