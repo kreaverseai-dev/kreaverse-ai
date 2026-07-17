@@ -443,8 +443,8 @@
                         <label>Payload Template JSON</label>
                         <textarea id="prov-payload-audio" rows="3" placeholder="Format JSON Request Body"></textarea>
                         <div style="font-size:0.75rem; color:var(--text-sec); margin-top:4px; line-height: 1.5;">
-                            <b>Variabel:</b> {{prompt}}, {{lyrics}}, {{audioUrl}}, {{model}}, {{instrumental}}, {{customMode}}<br>
-                            <span style="color:var(--accent); font-weight:600;"><i class="fa-solid fa-lightbulb"></i> Tips Limit Karakter:</span> Gunakan <code>{{prompt:390}}</code> untuk memotong teks maksimal 390 huruf (misal untuk AIMusic). Biarkan <code>{{prompt}}</code> untuk mengirim full 1000 huruf (seperti Kie.ai).
+                            <b>Variabel:</b> {{prompt}}, {{lyrics}}, {{audioUrl}}, {{model}}, {{instrumental}}, {{customMode}}, {{voice_id}}<br>
+                            <span style="color:var(--accent); font-weight:600;"><i class="fa-solid fa-lightbulb"></i> Tips Limit Karakter:</span> Gunakan <code>{{prompt:390}}</code> untuk memotong teks maksimal 390 huruf. Biarkan <code>{{prompt}}</code> untuk full teks. Untuk TTS ElevenLabs, gunakan <code>{{voice_id}}</code> pada Endpoint Path.
                         </div>
                     </div>
                     <div><label>Payload Custom Lyrics JSON (Khusus Habi RMX)</label><textarea id="prov-payloadCustom" rows="2" placeholder="Format JSON khusus mode Lirik Sendiri"></textarea></div>
@@ -453,6 +453,15 @@
                     <div style="font-weight:800; font-size:0.9rem; color:var(--text);"><i class="fa-solid fa-upload"></i> Upload & Cover (Audio-to-Audio)</div>
                     <div><label>Endpoint Cover Path (POST)</label><input type="text" id="prov-pathCover-audio" placeholder="Contoh: /api/v1/upload-and-cover-audio"></div>
                     <div><label>Payload Cover JSON</label><textarea id="prov-payloadCover-audio" rows="3" placeholder="JSON Khusus Upload/Cover"></textarea></div>
+                </div>
+                <!-- TAMBAHAN BARU: VOICE CLONING -->
+                <div style="padding:15px; background:rgba(175,82,222,0.05); border:1px solid rgba(175,82,222,0.2); border-radius:12px; display:flex; flex-direction:column; gap:10px;">
+                    <div style="font-weight:800; font-size:0.9rem; color:#AF52DE;"><i class="fa-solid fa-microphone-lines"></i> Voice Cloning (Upload Sample)</div>
+                    <div><label>Endpoint Add Voice (POST)</label><input type="text" id="prov-pathClone-audio" placeholder="Contoh: /v1/voices/add"></div>
+                    <div><label>Response Voice ID Path</label><input type="text" id="prov-responseVoiceId-audio" placeholder="Contoh: voice_id (Untuk ElevenLabs)"></div>
+                    <div style="font-size:0.75rem; color:var(--text-sec); line-height: 1.5;">
+                        <span style="color:var(--accent); font-weight:600;"><i class="fa-solid fa-circle-info"></i> Info:</span> Sistem akan mengirim file audio sebagai <code>multipart/form-data</code>. ID yang didapat akan disimpan ke database Klien. Anda bisa memanggil ID ini di Endpoint Text-to-Audio menggunakan variabel <code>{{voice_id}}</code> (Contoh: <code>/v1/text-to-speech/{{voice_id}}</code>).
+                    </div>
                 </div>
                 <!-- POLLING AUDIO -->
                 <div id="poll-box-audio" style="padding:15px; background:#111; color:#FFF; border-radius:12px; display:flex; flex-direction:column; gap:10px;">
@@ -3268,6 +3277,8 @@ function clearAllProviderInputs() {
     document.getElementById('prov-payloadCustom').value = '';
     document.getElementById('prov-pathCover-audio').value = '';
     document.getElementById('prov-payloadCover-audio').value = '';
+    document.getElementById('prov-pathClone-audio').value = '';
+    document.getElementById('prov-responseVoiceId-audio').value = '';
     document.getElementById('prov-responsePath-audio').value = '';
     document.getElementById('prov-statusUrl-audio').value = '';
     document.getElementById('prov-statusPath-audio').value = 'status';
@@ -3362,6 +3373,11 @@ window.editLyricshotProvider = function(val) {
         document.getElementById(`prov-pathCover-${safeType}`).value = p.endpointCover || '';
         document.getElementById(`prov-payloadCover-${safeType}`).value = p.payloadCoverTemplate || '';
         
+        if (safeType === 'audio') {
+            document.getElementById('prov-pathClone-audio').value = p.endpointClone || '';
+            document.getElementById('prov-responseVoiceId-audio').value = p.responseVoiceId || '';
+        }
+        
         // Set Polling Khusus Tab Ini Saja
         document.getElementById(`prov-responsePath-${safeType}`).value = p.responsePath || '';
         document.getElementById(`prov-statusUrl-${safeType}`).value = p.statusUrlTemplate || '';
@@ -3431,6 +3447,8 @@ window.saveProviderModal = async function() {
         
         // Khusus Audio
         payloadCustomTemplate: type === 'audio' ? document.getElementById('prov-payloadCustom').value.trim() : '',
+        endpointClone: type === 'audio' ? document.getElementById('prov-pathClone-audio').value.trim() : '',
+        responseVoiceId: type === 'audio' ? document.getElementById('prov-responseVoiceId-audio').value.trim() : '',
         
         // Polling (Hanya untuk Audio, Video, Image)
         responsePath: type !== 'llm' ? document.getElementById(`prov-responsePath-${type}`).value.trim() : '',
@@ -4331,16 +4349,18 @@ window.openUserModal = async (userId) => {
         const isMax = u.tier === 'max_lifetime' || u.tier === 'max';
         const htmlSafeNama = String(u.nama || '').replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
         const jsSafeNama = String(u.nama || '').replace(/\\/g, "\\\\").replace(/'/g, "\\'");
-        content.innerHTML = `<div style="display:grid; gap:16px;"><div><label>Nama Klien</label><input type="text" id="edit-nama" value="${htmlSafeNama}"></div><div><label>Email</label><input type="email" value="${u.email || ''}" readonly style="cursor:not-allowed;"></div><div><label>Paket Layanan</label><div class="custom-select-trigger" id="edit-tier-trigger" onclick="openCustomSelect('edit-tier')"><span id="edit-tier-label">${u.tier==='max_lifetime'||u.tier==='max'?'Max (Lifetime)':u.tier==='max_monthly'?'Max (Bulanan)':u.tier==='pro'?'Pro (Bulanan)':'Basic (Bulanan)'}</span><i class="fa-solid fa-chevron-down"></i></div><input type="hidden" id="edit-tier" value="${u.tier || 'basic'}"></div><div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;"><div><label>Sisa Kredit</label><input type="number" id="edit-kredit" value="${u.kredit !== undefined ? u.kredit : (u.dailyQuota || 0)}" min="0"></div><div><label>Isi Ulang Kredit</label><button class="btn btn-sm btn-warning" style="width:100%;" onclick="window.resetGenerateCount('${userId}', '${jsSafeNama}', '${u.tier || 'basic'}')"><i class="fa-solid fa-rotate-left"></i> Refresh Saldo</button></div></div><div id="edit-expiry-container" style="display: ${isMax ? 'none' : 'block'};"><label>Tanggal Expired</label><input type="date" id="edit-expiry" value="${expiryDateStr}"></div><div style="display:flex; gap:10px; margin-top:10px;"><button class="btn btn-primary" style="flex:1;" onclick="window.saveUserEdit('${userId}', '${jsSafeNama}')"><i class="fa-solid fa-floppy-disk"></i> Simpan</button><button class="btn" onclick="closeUserModal()" style="background:#EAEAEA; flex:1;">Batal</button></div></div>`;
+        const safeVoiceId = String(u.voice_id || '').replace(/"/g, "&quot;");
+        content.innerHTML = `<div style="display:grid; gap:16px;"><div><label>Nama Klien</label><input type="text" id="edit-nama" value="${htmlSafeNama}"></div><div><label>Email</label><input type="email" value="${u.email || ''}" readonly style="cursor:not-allowed;"></div><div><label>Paket Layanan</label><div class="custom-select-trigger" id="edit-tier-trigger" onclick="openCustomSelect('edit-tier')"><span id="edit-tier-label">${u.tier==='max_lifetime'||u.tier==='max'?'Max (Lifetime)':u.tier==='max_monthly'?'Max (Bulanan)':u.tier==='pro'?'Pro (Bulanan)':'Basic (Bulanan)'}</span><i class="fa-solid fa-chevron-down"></i></div><input type="hidden" id="edit-tier" value="${u.tier || 'basic'}"></div><div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;"><div><label>Sisa Kredit</label><input type="number" id="edit-kredit" value="${u.kredit !== undefined ? u.kredit : (u.dailyQuota || 0)}" min="0"></div><div><label>Isi Ulang Kredit</label><button class="btn btn-sm btn-warning" style="width:100%;" onclick="window.resetGenerateCount('${userId}', '${jsSafeNama}', '${u.tier || 'basic'}')"><i class="fa-solid fa-rotate-left"></i> Refresh Saldo</button></div></div><div id="edit-expiry-container" style="display: ${isMax ? 'none' : 'block'};"><label>Tanggal Expired</label><input type="date" id="edit-expiry" value="${expiryDateStr}"></div><div><label>Voice ID (Kloning Suara)</label><input type="text" id="edit-voiceid" value="${safeVoiceId}" placeholder="Kosongkan jika belum ada"></div><div style="display:flex; gap:10px; margin-top:10px;"><button class="btn btn-primary" style="flex:1;" onclick="window.saveUserEdit('${userId}', '${jsSafeNama}')"><i class="fa-solid fa-floppy-disk"></i> Simpan</button><button class="btn" onclick="closeUserModal()" style="background:#EAEAEA; flex:1;">Batal</button></div></div>`;
         window.CUSTOM_SELECT_OPTIONS['edit-tier'] = window.CUSTOM_SELECT_OPTIONS['uTier'];
     } catch(e) {}
 };
 window.saveUserEdit = async (userId, oldName) => {
     const nama = document.getElementById('edit-nama').value.trim(); const tier = document.getElementById('edit-tier').value;
     const kredit = parseInt(document.getElementById('edit-kredit').value) || 0; const expiryVal = document.getElementById('edit-expiry') ? document.getElementById('edit-expiry').value : '';
+    const voiceId = document.getElementById('edit-voiceid') ? document.getElementById('edit-voiceid').value.trim() : '';
     const expiryTs = (expiryVal && tier !== 'max_lifetime' && tier !== 'max') ? new Date(expiryVal + "T23:59:59").getTime() : null;
     if (!nama) { showToast("Nama tidak boleh kosong!", "warning"); return; }
-    try { await updateDoc(doc(db, "users", userId), { nama, tier, kredit: kredit, expiry: expiryTs }); await createLog({ type: 'info', host: 'Admin', request: 'EDIT_USER', message: `Mengedit klien: ${oldName} -> paket ${tier}` }); closeUserModal(); showToast("Data klien diperbarui!", "success"); } catch(e) { showToast("Gagal menyimpan", "danger"); }
+    try { await updateDoc(doc(db, "users", userId), { nama, tier, kredit: kredit, expiry: expiryTs, voice_id: voiceId }); await createLog({ type: 'info', host: 'Admin', request: 'EDIT_USER', message: `Mengedit klien: ${oldName} -> paket ${tier}` }); closeUserModal(); showToast("Data klien diperbarui!", "success"); } catch(e) { showToast("Gagal menyimpan", "danger"); }
 };
 window.resetGenerateCount = async (userId, nama, tier) => { 
     try { 
