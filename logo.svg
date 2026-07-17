@@ -1,24 +1,14 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 800" width="100%" height="100%">
-  <defs>
-    <!-- Gradasi Warna Biru sesuai Website Anda -->
-    <linearGradient id="bg-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#0044cc" /> <!-- Biru Tua -->
-      <stop offset="100%" stop-color="#0088ff" /> <!-- Biru Terang (Tombol Buat Lagu) -->
-    </linearGradient>
-    
-    <!-- Efek Bintik (Noise) ala SUNO -->
-    <filter id="noise">
-      <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="3" stitchTiles="stitch"/>
-      <feColorMatrix type="matrix" values="1 0 0 0 0, 0 1 0 0 0, 0 0 1 0 0, 0 0 0 0.15 0" />
-    </filter>
-  </defs>
-
-  <!-- Latar Belakang -->
-  <rect width="800" height="800" fill="url(#bg-gradient)" />
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 500" width="200" height="200">
+  <!-- Latar Belakang Hitam (Kotak melengkung ala aplikasi) -->
+  <rect width="500" height="500" rx="115" fill="#000000"/>
   
-  <!-- Lapisan Tekstur Bintik -->
-  <rect width="800" height="800" style="pointer-events:none;" filter="url(#noise)" opacity="0.3" />
-  
-  <!-- Teks KREAVERSE -->
-  <text x="50%" y="52%" font-family="Arial, Helvetica, sans-serif" font-size="105" font-weight="900" fill="#ffffff" text-anchor="middle" dominant-baseline="middle" letter-spacing="5">KREAVERSE</text>
+  <!-- Grup Huruf K dengan Efek Glitch TikTok -->
+  <g font-family="'Arial Black', 'Proxima Nova', sans-serif" font-size="320" font-weight="900" text-anchor="middle" dominant-baseline="central">
+    <!-- Bayangan Cyan (Kiri Atas) -->
+    <text x="47%" y="49%" fill="#25F4EE">K</text>
+    <!-- Bayangan Merah Neon (Kanan Bawah) -->
+    <text x="53%" y="51%" fill="#FE2C55">K</text>
+    <!-- Huruf Utama Putih (Tengah) -->
+    <text x="50%" y="50%" fill="#FFFFFF">K</text>
+  </g>
 </svg>
