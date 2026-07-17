@@ -2243,6 +2243,24 @@
                                 <input type="hidden" id="uploadFormatSelect" value="mp3">
                             </div>
 
+                            <!-- CHOOSE FORMAT FOR UPLOAD (NEW) -->
+                            <div style="margin-bottom: 20px; background: rgba(255,255,255,0.03); border: 1px dashed rgba(255,255,255,0.1); padding: 14px; border-radius: 16px;">
+                                <span style="font-size: 0.8rem; font-weight: 800; color: #cbd5e1; display: block; margin-bottom: 8px;"><i class="fa-solid fa-file-audio" style="color: #38bdf8;"></i> Pilih Format Enkripsi</span>
+                                <div class="custom-select-container" style="width: 100%;">
+                                    <div class="custom-select-trigger" onclick="window.toggleCustomSelect('uploadFormatDropdown')" style="background: rgba(0,0,0,0.3); color: #e2e8f0; border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; padding: 10px 14px; font-size: 0.75rem; min-height: auto; font-weight: 700; transition: 0.2s; display: flex; justify-content: space-between; align-items: center;">
+                                        <span id="uploadFormatSelectedLabel">⚡ Format: .MP3 (Rekomendasi - Paling Kecil)</span>
+                                        <i class="fa-solid fa-chevron-down"></i>
+                                    </div>
+                                    <div class="custom-select-options hidden" id="uploadFormatDropdown" style="background: #1e293b; border: 1px solid #334155; top: calc(100% + 4px); border-radius: 10px; z-index: 10120;">
+                                        <div class="custom-select-option selected" onclick="window.selectUploadFormat('mp3', '⚡ Format: .MP3 (Rekomendasi - Paling Kecil)')">⚡ Format: .MP3 (Rekomendasi - Paling Kecil)</div>
+                                        <div class="custom-select-option" onclick="window.selectUploadFormat('ogg', '🍃 Format: .OGG (Sangat Kecil & Ringan)')">🍃 Format: .OGG (Sangat Kecil & Ringan)</div>
+                                        <div class="custom-select-option" onclick="window.selectUploadFormat('m4a', '🎵 Format: .M4A (Kualitas Tinggi & Hemat)')">🎵 Format: .M4A (Kualitas Tinggi & Hemat)</div>
+                                        <div class="custom-select-option" onclick="window.selectUploadFormat('wav', '🔊 Format: .WAV (Asli - Ukuran Besar)')">🔊 Format: .WAV (Asli - Ukuran Besar)</div>
+                                    </div>
+                                </div>
+                                <input type="hidden" id="uploadFormatSelect" value="mp3">
+                            </div>
+
                             <!-- ACTION BUTTONS -->
                             <div style="display: flex; flex-direction: column; gap: 10px;">
                                 <div class="dsp-action-row">
@@ -6149,12 +6167,58 @@ async function processKreaverseAudio(file, isPreview = false, progressCallback) 
     brickwallLimiter.release.value = 0.1;
 
     masterGain.connect(brickwallLimiter);
-    brickwallLimiter.connect(offlineCtx.destination);
-    
-    // MULAI RENDER
-    source.start(0);
-    const renderedBuffer = await offlineCtx.startRendering();
-    return await encodeAudioBufferToMp3(renderedBuffer, progressCallback);
+            brickwallLimiter.connect(offlineCtx.destination);
+            
+            // MULAI RENDER
+            source.start(0);
+            const renderedBuffer = await offlineCtx.startRendering();
+
+            // Fungsi pembantu nested untuk konversi instan ke WAV (khusus preview)
+            const audioBufferToWavAsync = (buffer) => {
+                return new Promise(resolve => {
+                    setTimeout(() => {
+                        const numOfChan = buffer.numberOfChannels;
+                        const length = buffer.length * numOfChan * 2 + 44;
+                        const bufferArray = new ArrayBuffer(length);
+                        const view = new DataView(bufferArray);
+                        const channels = [];
+                        let i, sample, offset = 0, pos = 0;
+
+                        const setUint16 = (data) => { view.setUint16(pos, data, true); pos += 2; };
+                        const setUint32 = (data) => { view.setUint32(pos, data, true); pos += 4; };
+
+                        setUint32(0x46464952); setUint32(length - 8); setUint32(0x45564157);
+                        setUint32(0x20746d66); setUint32(16); setUint16(1); setUint16(numOfChan);
+                        setUint32(buffer.sampleRate); setUint32(buffer.sampleRate * 2 * numOfChan);
+                        setUint16(numOfChan * 2); setUint16(16); setUint32(0x61746164); setUint32(length - pos - 4);
+
+                        for (i = 0; i < buffer.numberOfChannels; i++) channels.push(buffer.getChannelData(i));
+
+                        while (pos < length) {
+                            for (i = 0; i < numOfChan; i++) {
+                                sample = Math.max(-1, Math.min(1, channels[i][offset]));
+                                sample = (0.5 + sample < 0 ? sample * 32768 : sample * 32767) | 0;
+                                view.setInt16(pos, sample, true); pos += 2;
+                            }
+                            offset++;
+                        }
+                        resolve(new Blob([bufferArray], { type: 'audio/wav' }));
+                    }, 10);
+                });
+            };
+            
+            if (isPreview) {
+                // Jika untuk preview, gunakan WAV encoder instan (0.1 detik) agar langsung berbunyi
+                return await audioBufferToWavAsync(renderedBuffer);
+            } else {
+                // Ambil format yang dipilih di dropdown DSP Studio modal
+                const targetFormat = document.getElementById('uploadFormatSelect') ? document.getElementById('uploadFormatSelect').value : 'mp3';
+                if (targetFormat === 'mp3') {
+                    return await encodeAudioBufferToMp3(renderedBuffer, progressCallback);
+                } else {
+                    return await audioBufferToWavAsync(renderedBuffer);
+                }
+            }
 }
 
 window.generateDspPreview = async function() {
