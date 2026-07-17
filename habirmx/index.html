@@ -8850,12 +8850,14 @@ window.startDspBypassAndUpload = async function() {
             const targetFormat = uploadFormatSelect ? uploadFormatSelect.value : 'mp3';
             let sizeInMb = 0;
 
-            if (targetFormat === 'mp3') {
-                // MP3 Terkompresi 128 kbps (Sangat Kecil)
+            if (targetFormat === 'mp3' || targetFormat === 'ogg' || targetFormat === 'm4a') {
+                // MP3/OGG/M4A Terkompresi 128 kbps (Sangat Kecil)
                 sizeInMb = (processedDuration * 128000) / (8 * 1024 * 1024);
             } else {
-                // WAV / OGG / M4A / FLAC (Sistem bypass menggunakkan WAV raw PCM 16-bit stereo)
-                const sizeInBytes = processedDuration * 44100 * 2 * 2;
+                // WAV / FLAC (Sistem bypass menggunakkan WAV raw PCM 16-bit stereo)
+                const sampleRate = 44100; // Standar WAV sample rate
+                const channels = 2; // Stereo
+                const sizeInBytes = processedDuration * sampleRate * channels * 2;
                 sizeInMb = sizeInBytes / (1024 * 1024);
             }
 
