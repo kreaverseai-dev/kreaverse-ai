@@ -1932,24 +1932,36 @@
                                 <!-- TAB CONTENT V1 BETA -->
                                 <div id="dspTabV1">
                                     <div style="margin-bottom: 20px;">
-                                        <div class="dsp-row-flex" style="margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                                        <div class="dsp-row-flex" style="margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
                                             <span style="font-size: 0.85rem; font-weight: 800; color: #e2e8f0;">⚙️ Pengaturan Engine (v1 Beta)</span>
                                             
-                                            <!-- CUSTOM DROPDOWN PRESET -->
-                                            <div class="custom-select-container" style="width: 220px;">
-                                                <div class="custom-select-trigger" onclick="window.toggleCustomSelect('presetDropdownV1')" style="background: rgba(0,0,0,0.3); color: #e2e8f0; border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 8px 12px; font-size: 0.75rem; min-height: auto;">
-                                                    <span id="presetSelectedLabelV1">🔥 Preset: Bypass Copy Lyrics</span>
-                                                    <i class="fa-solid fa-chevron-down"></i>
+                                            <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap; flex: 1; justify-content: flex-end;">
+                                                <!-- CUSTOM DROPDOWN PRESET -->
+                                                <div class="custom-select-container" style="width: 220px; z-index: 10110;">
+                                                    <div class="custom-select-trigger" onclick="window.toggleCustomSelect('presetDropdownV1')" style="background: rgba(255,255,255,0.05); color: #e2e8f0; border: 1px solid rgba(255,255,255,0.12); border-radius: 10px; padding: 10px 14px; font-size: 0.75rem; min-height: auto; font-weight: 700; transition: 0.2s;">
+                                                        <span id="presetSelectedLabelV1">🔥 Preset: Bypass Copy Lyrics</span>
+                                                        <i class="fa-solid fa-chevron-down"></i>
+                                                    </div>
+                                                    <div class="custom-select-options hidden" id="presetDropdownV1" style="background: #1e293b; border: 1px solid #334155; top: calc(100% + 4px); max-height: 250px; overflow-y: auto; padding: 6px; border-radius: 12px; z-index: 10111;">
+                                                        <div style="font-size: 0.65rem; color: #64748b; font-weight: 800; text-transform: uppercase; padding: 4px 10px; margin-bottom: 4px; letter-spacing: 0.5px;">Sistem Preset</div>
+                                                        <div class="custom-select-option" onclick="window.selectPresetOption('manual', 'Manual Setup')">Manual Setup</div>
+                                                        <div class="custom-select-option selected" onclick="window.selectPresetOption('bypass_lyrics', '🔥 Preset: Bypass Copy Lyrics')">🔥 Preset: Bypass Copy Lyrics</div>
+                                                        <div class="custom-select-option" onclick="window.selectPresetOption('preset1', 'Preset 1: Safe Bypass')">Preset 1: Safe Bypass</div>
+                                                        <div class="custom-select-option" onclick="window.selectPresetOption('preset2', 'Preset 2: Deep Stealth')">Preset 2: Deep Stealth</div>
+                                                        <div class="custom-select-option" onclick="window.selectPresetOption('preset3', 'Preset 3: Extreme Pitch & Time')">Preset 3: Extreme Pitch & Time</div>
+                                                        <div class="custom-select-option" onclick="window.selectPresetOption('preset4', 'Preset 4: Vocal Formant Focus')">Preset 4: Vocal Formant Focus</div>
+                                                        <div class="custom-select-option" onclick="window.selectPresetOption('preset5', 'Preset 5: Maximum Scramble')">Preset 5: Maximum Scramble</div>
+                                                        
+                                                        <div style="height: 1px; background: rgba(255,255,255,0.05); margin: 6px 0;"></div>
+                                                        <div style="font-size: 0.65rem; color: #38bdf8; font-weight: 800; text-transform: uppercase; padding: 4px 10px; margin-bottom: 4px; letter-spacing: 0.5px;">Preset Saya</div>
+                                                        <div id="customPresetsListContainer"></div>
+                                                    </div>
                                                 </div>
-                                                <div class="custom-select-options hidden" id="presetDropdownV1" style="background: #1e293b; border: 1px solid #334155; top: calc(100% + 4px);">
-                                                    <div class="custom-select-option" onclick="window.selectPresetOption('manual', 'Manual Setup')">Manual Setup</div>
-                                                    <div class="custom-select-option selected" onclick="window.selectPresetOption('bypass_lyrics', '🔥 Preset: Bypass Copy Lyrics')">🔥 Preset: Bypass Copy Lyrics</div>
-                                                    <div class="custom-select-option" onclick="window.selectPresetOption('preset1', 'Preset 1: Safe Bypass')">Preset 1: Safe Bypass</div>
-                                                    <div class="custom-select-option" onclick="window.selectPresetOption('preset2', 'Preset 2: Deep Stealth')">Preset 2: Deep Stealth</div>
-                                                    <div class="custom-select-option" onclick="window.selectPresetOption('preset3', 'Preset 3: Extreme Pitch & Time')">Preset 3: Extreme Pitch & Time</div>
-                                                    <div class="custom-select-option" onclick="window.selectPresetOption('preset4', 'Preset 4: Vocal Formant Focus')">Preset 4: Vocal Formant Focus</div>
-                                                    <div class="custom-select-option" onclick="window.selectPresetOption('preset5', 'Preset 5: Maximum Scramble')">Preset 5: Maximum Scramble</div>
-                                                </div>
+                                                
+                                                <!-- TOMBOL SIMPAN PRESET -->
+                                                <button type="button" onclick="window.openSavePresetModal()" style="background: rgba(56, 189, 248, 0.15); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.3); padding: 8px 12px; border-radius: 10px; font-size: 0.72rem; font-weight: 800; cursor: pointer; display: flex; align-items: center; gap: 6px; height: 36px; transition: 0.2s;" onmouseover="this.style.background='rgba(56, 189, 248, 0.25)'" onmouseout="this.style.background='rgba(56, 189, 248, 0.15)'">
+                                                    <i class="fa-solid fa-floppy-disk"></i> Simpan
+                                                </button>
                                             </div>
                                         </div>
                                         
@@ -2212,6 +2224,24 @@
                                     </div>
                                 </div> <!-- END OF dspTabV2 -->
                             </div> <!-- END OF dspTabsContentContainer -->
+
+                            <!-- CHOOSE FORMAT FOR UPLOAD (NEW) -->
+                            <div style="margin-bottom: 20px; background: rgba(255,255,255,0.03); border: 1px dashed rgba(255,255,255,0.1); padding: 14px; border-radius: 16px;">
+                                <span style="font-size: 0.8rem; font-weight: 800; color: #cbd5e1; display: block; margin-bottom: 8px;"><i class="fa-solid fa-file-audio" style="color: #38bdf8;"></i> Pilih Format Enkripsi</span>
+                                <div class="custom-select-container" style="width: 100%;">
+                                    <div class="custom-select-trigger" onclick="window.toggleCustomSelect('uploadFormatDropdown')" style="background: rgba(0,0,0,0.3); color: #e2e8f0; border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; padding: 10px 14px; font-size: 0.75rem; min-height: auto; font-weight: 700; transition: 0.2s; display: flex; justify-content: space-between; align-items: center;">
+                                        <span id="uploadFormatSelectedLabel">⚡ Format: .MP3 (Rekomendasi - Paling Kecil)</span>
+                                        <i class="fa-solid fa-chevron-down"></i>
+                                    </div>
+                                    <div class="custom-select-options hidden" id="uploadFormatDropdown" style="background: #1e293b; border: 1px solid #334155; top: calc(100% + 4px); border-radius: 10px; z-index: 10120;">
+                                        <div class="custom-select-option selected" onclick="window.selectUploadFormat('mp3', '⚡ Format: .MP3 (Rekomendasi - Paling Kecil)')">⚡ Format: .MP3 (Rekomendasi - Paling Kecil)</div>
+                                        <div class="custom-select-option" onclick="window.selectUploadFormat('ogg', '🍃 Format: .OGG (Sangat Kecil & Ringan)')">🍃 Format: .OGG (Sangat Kecil & Ringan)</div>
+                                        <div class="custom-select-option" onclick="window.selectUploadFormat('m4a', '🎵 Format: .M4A (Kualitas Tinggi & Hemat)')">🎵 Format: .M4A (Kualitas Tinggi & Hemat)</div>
+                                        <div class="custom-select-option" onclick="window.selectUploadFormat('wav', '🔊 Format: .WAV (Asli - Ukuran Besar)')">🔊 Format: .WAV (Asli - Ukuran Besar)</div>
+                                    </div>
+                                </div>
+                                <input type="hidden" id="uploadFormatSelect" value="mp3">
+                            </div>
 
                             <!-- ACTION BUTTONS -->
                             <div style="display: flex; flex-direction: column; gap: 10px;">
@@ -6208,7 +6238,11 @@ window.startDspBypassAndUpload = async function() {
                     finalDurStr = formatTime(origPlayer.duration);
                 }
                 
-                await uploadBlobToCloudinary(mp3Blob, rawAudioFile.name, true, finalDurStr);
+                const targetFormat = document.getElementById('uploadFormatSelect') ? document.getElementById('uploadFormatSelect').value : 'mp3';
+                const cleanName = rawAudioFile.name.replace(/\.[^/.]+$/, "");
+                const uploadName = cleanName + "." + targetFormat;
+                
+                await uploadBlobToCloudinary(mp3Blob, uploadName, true, finalDurStr);
                 
                 updateTopProgress(100, "Selesai");
                 await new Promise(r => setTimeout(r, 1000));
@@ -8164,7 +8198,7 @@ window.startDspBypassAndUpload = async function() {
             
             const options = document.getElementById('presetDropdownV1').querySelectorAll('.custom-select-option');
             options.forEach(opt => {
-                if (opt.innerText === label) opt.classList.add('selected');
+                if (opt.innerText === label || opt.innerHTML.includes(label)) opt.classList.add('selected');
                 else opt.classList.remove('selected');
             });
             
@@ -8190,6 +8224,17 @@ window.startDspBypassAndUpload = async function() {
                 document.getElementById('tgQuantumV1').checked = tg[4]; document.getElementById('tgPhoneticV1').checked = tg[5];
             };
 
+            if (val.startsWith('custom_')) {
+                const name = val.replace('custom_', '');
+                const raw = localStorage.getItem('kreaverse_custom_presets_v1');
+                const customPresets = raw ? JSON.parse(raw) : {};
+                const preset = customPresets[name];
+                if (preset) {
+                    setValues(preset.t, preset.p, preset.tm, preset.s, preset.v, preset.r, preset.tg);
+                }
+                return;
+            }
+
             // UPDATE PRESET ANTI-COPYRIGHT SESUAI SCREENSHOT
             switch(val) {
                 case 'bypass_lyrics': setValues(1.15, -200, 59, 79, 49, 30, [false, true, true, true, false, false]); break;
@@ -8200,6 +8245,112 @@ window.startDspBypassAndUpload = async function() {
                 case 'preset5': setValues(1.12, -300, 50, 20, 30, 25, [true, true, true, true, true, true]); break;
             }
         };
+
+        // KUMPULAN FITUR MANAGEMEN PRESET KUSTOM SAYA (LOCALSTORAGE)
+        window.loadCustomPresets = function() {
+            const container = document.getElementById('customPresetsListContainer');
+            if (!container) return;
+            
+            const raw = localStorage.getItem('kreaverse_custom_presets_v1');
+            const customPresets = raw ? JSON.parse(raw) : {};
+            
+            let html = '';
+            const keys = Object.keys(customPresets);
+            
+            if (keys.length === 0) {
+                html = `<div style="font-size: 0.7rem; color: #64748b; padding: 6px 10px; font-style: italic;">Belum ada preset kustom</div>`;
+            } else {
+                keys.forEach(key => {
+                    html += `
+                        <div class="custom-select-option" style="display: flex; justify-content: space-between; align-items: center; padding: 8px 10px; margin-bottom: 2px;" onclick="window.selectPresetOption('custom_${key}', '⭐ Preset: ${key}')">
+                            <span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: 1; font-weight: 700;">⭐ ${key}</span>
+                            <span onclick="event.stopPropagation(); window.deleteCustomPreset('${key}')" style="color: #ef4444; font-size: 1.1rem; font-weight: 900; padding: 2px 6px; cursor: pointer; transition: 0.2s;" title="Hapus Preset">&times;</span>
+                        </div>
+                    `;
+                });
+            }
+            container.innerHTML = html;
+        };
+
+        window.openSavePresetModal = function() {
+            const name = prompt("Masukkan nama untuk preset kustom Anda:", "");
+            if (name === null) return;
+            const trimmedName = name.trim();
+            if (!trimmedName) {
+                alert("Nama preset tidak boleh kosong!");
+                return;
+            }
+
+            const raw = localStorage.getItem('kreaverse_custom_presets_v1');
+            const customPresets = raw ? JSON.parse(raw) : {};
+
+            customPresets[trimmedName] = {
+                t: document.getElementById('sliderTempoV1').value,
+                p: document.getElementById('sliderPitchV1').value,
+                tm: document.getElementById('sliderTimbreV1').value,
+                s: document.getElementById('sliderStegoV1').value,
+                v: document.getElementById('sliderVoidV1').value,
+                r: document.getElementById('sliderReverbV1').value,
+                tg: [
+                    document.getElementById('tgTemporalV1').checked,
+                    document.getElementById('tgMirageV1').checked,
+                    document.getElementById('tgAntiMonoV1').checked,
+                    document.getElementById('tgSpectralV1').checked,
+                    document.getElementById('tgQuantumV1').checked,
+                    document.getElementById('tgPhoneticV1').checked
+                ]
+            };
+
+            localStorage.setItem('kreaverse_custom_presets_v1', JSON.stringify(customPresets));
+            window.loadCustomPresets();
+            window.selectPresetOption('custom_' + trimmedName, '⭐ Preset: ' + trimmedName);
+            
+            if (typeof showIphoneToast === 'function') {
+                showIphoneToast("Preset Disimpan", `Preset "${trimmedName}" berhasil disimpan ke browser memory.`, "fa-floppy-disk");
+            } else {
+                alert(`Preset "${trimmedName}" berhasil disimpan!`);
+            }
+        };
+
+        window.deleteCustomPreset = function(name) {
+            if (!confirm(`Hapus preset "${name}"?`)) return;
+
+            const raw = localStorage.getItem('kreaverse_custom_presets_v1');
+            const customPresets = raw ? JSON.parse(raw) : {};
+            delete customPresets[name];
+
+            localStorage.setItem('kreaverse_custom_presets_v1', JSON.stringify(customPresets));
+            window.loadCustomPresets();
+
+            const currentLabel = document.getElementById('presetSelectedLabelV1').innerText;
+            if (currentLabel === '⭐ Preset: ' + name) {
+                window.selectPresetOption('manual', 'Manual Setup');
+            }
+            
+            if (typeof showIphoneToast === 'function') {
+                showIphoneToast("Preset Dihapus", "Preset kustom berhasil dihapus.", "fa-trash");
+            }
+        };
+
+        // Event handler untuk pemrosesan pilihan format unggah baru
+        window.selectUploadFormat = function(val, label) {
+            document.getElementById('uploadFormatSelect').value = val;
+            document.getElementById('uploadFormatSelectedLabel').innerText = label;
+            document.getElementById('uploadFormatDropdown').classList.add('hidden');
+            
+            const options = document.getElementById('uploadFormatDropdown').querySelectorAll('.custom-select-option');
+            options.forEach(opt => {
+                if (opt.innerText === label) opt.classList.add('selected');
+                else opt.classList.remove('selected');
+            });
+        };
+
+        // Muat preset kustom saat halaman dimuat pertama kali
+        document.addEventListener('DOMContentLoaded', () => {
+            setTimeout(() => {
+                window.loadCustomPresets();
+            }, 800);
+        });
     </script>
 
 <!-- ============================================================ -->
