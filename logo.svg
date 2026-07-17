@@ -1,15 +1,24 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="-20 -20 100 100" width="512" height="512">
-  <!-- Background Putih Solid yang Diperluas agar tidak hitam di HP -->
-  <rect x="-50" y="-50" width="200" height="200" fill="#ffffff" />
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 800" width="100%" height="100%">
   <defs>
-    <linearGradient id="kreaGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#D97757" />
-      <stop offset="50%" stop-color="#AF52DE" />
-      <stop offset="100%" stop-color="#007AFF" />
+    <!-- Gradasi Warna Biru sesuai Website Anda -->
+    <linearGradient id="bg-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0044cc" /> <!-- Biru Tua -->
+      <stop offset="100%" stop-color="#0088ff" /> <!-- Biru Terang (Tombol Buat Lagu) -->
     </linearGradient>
+    
+    <!-- Efek Bintik (Noise) ala SUNO -->
+    <filter id="noise">
+      <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="3" stitchTiles="stitch"/>
+      <feColorMatrix type="matrix" values="1 0 0 0 0, 0 1 0 0 0, 0 0 1 0 0, 0 0 0 0.15 0" />
+    </filter>
   </defs>
-  <g>
-    <path d="M 30,10 Q 30,30 50,30 Q 30,30 30,50 Q 30,30 10,30 Q 30,30 30,10 Z" fill="url(#kreaGradient)" />
-    <path d="M 30,17 Q 30,30 43,30 Q 30,30 30,43 Q 30,30 17,30 Q 30,30 30,17 Z" fill="url(#kreaGradient)" transform="rotate(45, 30, 30)" opacity="0.85" />
-  </g>
+
+  <!-- Latar Belakang -->
+  <rect width="800" height="800" fill="url(#bg-gradient)" />
+  
+  <!-- Lapisan Tekstur Bintik -->
+  <rect width="800" height="800" style="pointer-events:none;" filter="url(#noise)" opacity="0.3" />
+  
+  <!-- Teks KREAVERSE -->
+  <text x="50%" y="52%" font-family="Arial, Helvetica, sans-serif" font-size="105" font-weight="900" fill="#ffffff" text-anchor="middle" dominant-baseline="middle" letter-spacing="5">KREAVERSE</text>
 </svg>
