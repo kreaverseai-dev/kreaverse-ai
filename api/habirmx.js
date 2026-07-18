@@ -164,8 +164,23 @@ module.exports = async (req, res) => {
                 formData.append("model", "whisper-large-v3-turbo");
                 formData.append("temperature", "0.0");
                 
-                // FIX 1: Pancingan Multi-Bahasa agar AI tahu ini lirik lagu, bukan video YouTube
-                const promptHint = title ? `Lyrics of the song ${title}. Lirik lagu. 歌詞. 가사. Letras.` : "Lyrics of the song. Lirik lagu. 歌詞. 가사. Letras.";
+                // FIX 1: Pancingan Konteks (Solusi 3 - Forced Alignment via Prompt)
+                // Ambil lirik yang di-paste user dari frontend (bisa dari 'lyrics' atau 'inputText')
+                const pastedLyrics = lyrics || inputText || ""; 
+                
+                let promptHint = title ? `Lyrics of the song ${title}. Lirik lagu. ` : "Lyrics of the song. Lirik lagu. ";
+                
+                if (pastedLyrics.trim() !== "") {
+                    // Jika user mem-paste lirik dari Google, jadikan itu sebagai "contekan" utama.
+                    // Whisper memiliki batas token untuk prompt (sekitar 224 token). 
+                    // Kita ambil ~800 karakter pertama saja sudah cukup untuk memandu AI agar tidak halusinasi sampai akhir lagu.
+                    const safeLyrics = pastedLyrics.substring(0, 800).replace(/\n/g, ' ');
+                    promptHint += `Berikut adalah lirik yang benar, tolong sesuaikan transkripsi dengan teks ini: ${safeLyrics}`;
+                } else {
+                    // Fallback jika user tidak paste lirik (kosong)
+                    promptHint += "歌詞. 가사. Letras.";
+                }
+
                 formData.append("prompt", promptHint);
 
                 const whisperRes = await fetch("https://api.groq.com/openai/v1/audio/transcriptions", {
