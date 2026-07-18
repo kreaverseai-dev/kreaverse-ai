@@ -4769,8 +4769,8 @@
             const llmDropdown = document.getElementById('llmDropdown');
             const llmSelectedLabel = document.getElementById('llmSelectedLabel');
             
-            providerSelectedLabel.innerText = "Memuat provider...";
-            llmSelectedLabel.innerText = "Memuat model chat...";
+            if (providerSelectedLabel) providerSelectedLabel.innerText = "Memuat provider...";
+            if (llmSelectedLabel) llmSelectedLabel.innerText = "Memuat model chat...";
 
             try {
                 onSnapshot(doc(db, "settings", "api_providers"), (docSnap) => {
@@ -4783,8 +4783,9 @@
                             const type = String(m.serviceType).toLowerCase();
                             return type === "audio" || type === "music" || type === "text-to-audio";
                         });
+                        
                         if (globalAudioProviders.length > 0) {
-                            providerSelectedLabel.innerText = "Pilih Provider AI...";
+                            if (providerSelectedLabel) providerSelectedLabel.innerText = "Pilih Provider AI...";
                             
                             // INJEKSI OPSI AUTO-FAILOVER DI PALING ATAS
                             let optionsHtml = `<div class="custom-select-option" style="color:var(--accent-color); background:rgba(0,122,255,0.05);" onclick="window.selectProviderOption('auto_pool', 'Kreaverse AI 5.5 PRO (Auto)')">Kreaverse AI 5.5 PRO (Auto)</div>`;
@@ -4793,35 +4794,28 @@
                                 <div class="custom-select-option" onclick="window.selectProviderOption('${m.value}', '${m.label.replace(/'/g, "\\'")}')">${m.label}</div>
                             `).join('');
                             
-                            providerDropdown.innerHTML = optionsHtml;
+                            if (providerDropdown) providerDropdown.innerHTML = optionsHtml;
                             
                             // Set default ke Auto Pool jika belum ada yang dipilih
-                            if (!document.getElementById('providerSelect').value) {
-                                document.getElementById('providerSelect').value = 'auto_pool';
-                                providerSelectedLabel.innerText = 'Kreaverse AI 5.5 PRO (Auto)';
+                            const providerSelectInput = document.getElementById('providerSelect');
+                            if (providerSelectInput && !providerSelectInput.value) {
+                                providerSelectInput.value = 'auto_pool';
+                                if (providerSelectedLabel) providerSelectedLabel.innerText = 'Kreaverse AI 5.5 PRO (Auto)';
                             }
                         } else {
-                            providerSelectedLabel.innerText = "Tidak ada provider aktif";
+                            if (providerSelectedLabel) providerSelectedLabel.innerText = "Tidak ada provider aktif";
                         }
 
                         // Fungsi Smart Formatter untuk merapikan nama model API bawaan
                         function formatLlmModelName(rawName) {
                             if (!rawName) return "";
-                            let name = rawName.replace(/[-_]/g, ' '); // Ganti strip/underscore jadi spasi
-                            
-                            // Kapitalisasi awal kata
+                            let name = rawName.replace(/[-_]/g, ' '); 
                             name = name.replace(/\b\w/g, l => l.toUpperCase());
-                            
-                            // Rapikan versi dan parameter khusus
                             name = name.replace(/Llama 3 1/gi, 'Llama 3.1');
                             name = name.replace(/Llama3/gi, 'Llama 3');
                             name = name.replace(/Deepseek/gi, 'DeepSeek');
                             name = name.replace(/V3 1/gi, 'V3.1');
-                            
-                            // Huruf besar untuk 'B' (Billion parameters)
                             name = name.replace(/\b(\d+)b\b/gi, '$1B');
-                            
-                            // Bungkus kata varian ke dalam kurung
                             const variants = ['Instant', 'Instruct', 'Pro', 'Chat', 'Ultra', 'Lite', 'Base'];
                             variants.forEach(v => {
                                 const regex = new RegExp(`\\b${v}\\b`, 'i');
@@ -4829,16 +4823,11 @@
                                     name = name.replace(regex, '').trim() + ` (${v})`;
                                 }
                             });
-                            
-                            // Gabungkan parameter dengan varian di dalam kurung (contoh: 8B (Instant) -> (8B Instant))
-                            // Menggunakan regex yang aman agar lolos dari sensor kurung Habi Studio
                             name = name.replace(/\b(\d+B)\s*\((.*?)\)/i, '($1 $2)');
-                            
-                            // Bersihkan spasi ganda
                             return name.replace(/\s+/g, ' ').trim();
                         }
 
-                        // Filter LLM Providers (Menampilkan SEMUA Model dari setiap Provider + Fitur Otomatis)
+                        // Filter LLM Providers
                         globalLlmProviders = list.filter(m => {
                             if (!m.serviceType) return false;
                             const type = String(m.serviceType).toLowerCase();
@@ -4846,9 +4835,8 @@
                         });
                         
                         if (globalLlmProviders.length > 0) {
-                            llmSelectedLabel.innerText = "Pilih Model Chat AI...";
+                            if (llmSelectedLabel) llmSelectedLabel.innerText = "Pilih Model Chat AI...";
                             
-                            // Tambahkan opsi Otomatis di paling atas (Gunakan auto_pool agar backend paham)
                             let llmOptionsHtml = `<div class="custom-select-option" style="color:var(--accent-color); background:rgba(0,122,255,0.05);" onclick="window.selectLlmOption('auto_pool', 'auto_pool', 'Otomatis (Auto Fallback)')">
                                 <span style="font-weight:800;"><i class="fa-solid fa-wand-magic-sparkles"></i> Otomatis (Auto Fallback)</span>
                                 <span style="font-size:0.65rem; color:#94a3b8; display:block; margin-top:2px;">Mencari model & server aktif secara otomatis</span>
@@ -4873,16 +4861,17 @@
                                 }
                             });
                             
-                            llmDropdown.innerHTML = llmOptionsHtml;
+                            if (llmDropdown) llmDropdown.innerHTML = llmOptionsHtml;
                             
-                            // Set default ke Otomatis
-                            if (!document.getElementById('llmSelect').value) {
-                                document.getElementById('llmSelect').value = 'auto_pool';
-                                document.getElementById('llmModelSelect').value = 'auto_pool';
-                                llmSelectedLabel.innerText = 'Otomatis (Auto Fallback)';
+                            const llmSelectInput = document.getElementById('llmSelect');
+                            const llmModelSelectInput = document.getElementById('llmModelSelect');
+                            if (llmSelectInput && !llmSelectInput.value) {
+                                llmSelectInput.value = 'auto_pool';
+                                if (llmModelSelectInput) llmModelSelectInput.value = 'auto_pool';
+                                if (llmSelectedLabel) llmSelectedLabel.innerText = 'Otomatis (Auto Fallback)';
                             }
                         } else {
-                            llmSelectedLabel.innerText = "Tidak ada model chat aktif";
+                            if (llmSelectedLabel) llmSelectedLabel.innerText = "Tidak ada model chat aktif";
                         }
 
                         // RESTORE SAVED STATE (LOCAL STORAGE)
@@ -4898,12 +4887,15 @@
                                 const savedModel = localStorage.getItem('kreaverse_last_model');
                                 if (savedModel) {
                                     setTimeout(() => {
-                                        const modelOpts = document.getElementById('modelDropdown').querySelectorAll('.custom-select-option');
-                                        modelOpts.forEach(opt => {
-                                            if (opt.innerText.includes(savedModel) || savedModel.includes(opt.innerText.split(' - ')[0])) {
-                                                opt.click();
-                                            }
-                                        });
+                                        const modelDropdownEl = document.getElementById('modelDropdown');
+                                        if (modelDropdownEl) {
+                                            const modelOpts = modelDropdownEl.querySelectorAll('.custom-select-option');
+                                            modelOpts.forEach(opt => {
+                                                if (opt.innerText.includes(savedModel) || savedModel.includes(opt.innerText.split(' - ')[0])) {
+                                                    opt.click();
+                                                }
+                                            });
+                                        }
                                     }, 200);
                                 }
                             }
@@ -4920,12 +4912,12 @@
                         }, 100);
 
                     } else {
-                        providerSelectedLabel.innerText = "Gagal memuat provider";
-                        llmSelectedLabel.innerText = "Gagal memuat model chat";
+                        if (providerSelectedLabel) providerSelectedLabel.innerText = "Gagal memuat provider";
+                        if (llmSelectedLabel) llmSelectedLabel.innerText = "Gagal memuat model chat";
                     }
                 });
             } catch (e) {
-                providerSelectedLabel.innerText = "Gagal memuat provider";
+                if (providerSelectedLabel) providerSelectedLabel.innerText = "Gagal memuat provider";
             }
         }
 
