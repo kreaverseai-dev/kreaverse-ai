@@ -1,105 +1,165 @@
-import fetch from 'node-fetch';
+const admin = require("firebase-admin");
 
-// FUNGSI PINTAR: Mengambil API Key langsung dari Database Firebase Anda!
-async function getApiKeyFromFirebase(providerName) {
-    const projectId = "kreaverse-ai0107";
-    const apiKey = "AIzaSyAO8JV4jkJmbHChYvjUCS7wqfVbKr94tHM";
-    // Menggunakan Firestore REST API agar tidak perlu install library tambahan
-    const url = `https://firestore.googleapis.com/v1/projects/${projectId}/databases/(default)/documents:runQuery?key=${apiKey}`;
-    
-    const query = {
-        structuredQuery: {
-            from: [{ collectionId: "api_keys" }],
-            where: {
-                compositeFilter: {
-                    op: "AND",
-                    filters: [
-                        { fieldFilter: { field: { fieldPath: "provider" }, op: "EQUAL", value: { stringValue: providerName } } },
-                        { fieldFilter: { field: { fieldPath: "status" }, op: "EQUAL", value: { stringValue: "aktif" } } }
-                    ]
-                }
-            },
-            orderBy: [{ field: { fieldPath: "priority" }, direction: "ASCENDING" }],
-            limit: 1
+// ============================================================
+// INISIALISASI FIREBASE ADMIN (Sama persis dengan Habi RMX)
+// ============================================================
+try {
+    if (!admin.apps.length) {
+        let rawKey = process.env.FIREBASE_SERVICE_ACCOUNT_KEY || process.env.FIREBASE_SERVICE_ACCOUNT || process.env.FIREBASE_ACCOUNT || "{}";
+        let serviceAccount;
+        
+        try {
+            serviceAccount = JSON.parse(rawKey);
+            if (serviceAccount.private_key) {
+                serviceAccount.private_key = serviceAccount.private_key.replace(/\\n/g, '\n');
+            }
+        } catch (e) {
+            const emailMatch = rawKey.match(/"client_email"\s*:\s*"([^"]+)"/);
+            const projectMatch = rawKey.match(/"project_id"\s*:\s*"([^"]+)"/);
+            const keyMatch = rawKey.match(/-----BEGIN PRIVATE KEY-----(.*?)-----END PRIVATE KEY-----/s);
+            
+            if (emailMatch && projectMatch && keyMatch) {
+                const cleanKeyBody = keyMatch[1].replace(/\s+/g, '\n').trim();
+                const formattedKey = `-----BEGIN PRIVATE KEY-----\n${cleanKeyBody}\n-----END PRIVATE KEY-----\n`;
+                
+                serviceAccount = {
+                    client_email: emailMatch[1],
+                    project_id: projectMatch[1],
+                    private_key: formattedKey
+                };
+            } else {
+                throw new Error("Gagal mengekstrak kredensial dari FIREBASE_ACCOUNT");
+            }
         }
-    };
 
-    try {
-        const res = await fetch(url, { method: 'POST', body: JSON.stringify(query) });
-        const data = await res.json();
-        if (data && data[0] && data[0].document) {
-            return data[0].document.fields.key.stringValue; // Mengembalikan API Key yang aktif
-        }
-    } catch (e) {
-        console.error("Gagal mengambil API Key dari DB:", e);
+        admin.initializeApp({
+            credential: admin.credential.cert(serviceAccount),
+            databaseURL: process.env.FIREBASE_DATABASE_URL
+        });
     }
-    return null;
+} catch (err) {
+    console.error("Gagal Inisialisasi Firebase Admin:", err.message);
 }
 
-export default async function handler(req, res) {
-    if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
+const db = admin.firestore();
 
-    const { text, voiceId, provider, stability } = req.body;
-    if (!text || !voiceId || !provider) return res.status(400).json({ error: 'Data tidak lengkap' });
+// Fungsi untuk mengambil API Key dari Database Admin
+async function getActiveApiKey(providerName) {
+    const keysQuery = await db.collection("api_keys")
+        .where("provider", "==", providerName)
+        .where("status", "==", "aktif")
+        .get();
+
+    if (keysQuery.empty) return null;
+
+    // Urutkan berdasarkan prioritas (1 paling tinggi)
+    const sortedKeysDocs = keysQuery.docs.sort((a, b) => (a.data().priority || 1) - (b.data().priority || 1));
+    return { id: sortedKeysDocs[0].id, key: sortedKeysDocs[0].data().key };
+}
+
+module.exports = async (req, res) => {
+    // CORS Headers
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+
+    if (req.method === 'OPTIONS') {
+        return res.status(200).end();
+    }
+
+    if (req.method !== 'POST') {
+        return res.status(405).json({ error: 'Method not allowed' });
+    }
+
+    let body = req.body;
+    if (typeof body === 'string') {
+        try { body = JSON.parse(body); } catch (e) { body = {}; }
+    }
+
+    const { text, voiceId, provider, stability } = body;
+
+    if (!text || !voiceId || !provider) {
+        return res.status(400).json({ error: 'Text, Voice ID, dan Provider wajib diisi' });
+    }
 
     try {
         let audioBuffer;
         const provName = provider.toLowerCase();
+        let usedApiKeyDocId = null;
 
         // ==========================================
         // 1. ROUTING LOGIC: ELEVENLABS
         // ==========================================
         if (provName.includes('eleven')) {
-            // AMBIL API KEY DARI DASHBOARD ADMIN!
-            const ELEVENLABS_API_KEY = await getApiKeyFromFirebase("ElevenLabs");
-            if (!ELEVENLABS_API_KEY) throw new Error("API Key ElevenLabs tidak ditemukan di Database Admin atau statusnya mati.");
+            const apiKeyData = await getActiveApiKey("ElevenLabs");
+            if (!apiKeyData) throw new Error("API Key ElevenLabs tidak ditemukan di Database Admin atau statusnya mati.");
+            usedApiKeyDocId = apiKeyData.id;
 
             const response = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`, {
                 method: 'POST',
-                headers: { 'Accept': 'audio/mpeg', 'xi-api-key': ELEVENLABS_API_KEY, 'Content-Type': 'application/json' },
+                headers: { 'Accept': 'audio/mpeg', 'xi-api-key': apiKeyData.key, 'Content-Type': 'application/json' },
                 body: JSON.stringify({ text: text, model_id: "eleven_multilingual_v2", voice_settings: { stability: stability ? (stability / 100) : 0.5, similarity_boost: 0.75 } })
             });
-            if (!response.ok) throw new Error(`ElevenLabs Error: ${response.statusText}`);
-            audioBuffer = await response.buffer();
+
+            if (!response.ok) {
+                const errText = await response.text();
+                // Auto-Kill Key jika saldo habis
+                if (errText.toLowerCase().includes('quota') || errText.toLowerCase().includes('insufficient')) {
+                    await db.collection("api_keys").doc(usedApiKeyDocId).update({ status: "mati" });
+                }
+                throw new Error(`ElevenLabs Error: ${response.statusText}`);
+            }
+            
+            const arrayBuffer = await response.arrayBuffer();
+            audioBuffer = Buffer.from(arrayBuffer);
         } 
         
         // ==========================================
         // 2. ROUTING LOGIC: OPENAI TTS
         // ==========================================
         else if (provName.includes('openai')) {
-            // AMBIL API KEY DARI DASHBOARD ADMIN!
-            const OPENAI_API_KEY = await getApiKeyFromFirebase("OpenAI TTS");
-            if (!OPENAI_API_KEY) throw new Error("API Key OpenAI tidak ditemukan di Database Admin.");
+            const apiKeyData = await getActiveApiKey("OpenAI TTS");
+            if (!apiKeyData) throw new Error("API Key OpenAI TTS tidak ditemukan di Database Admin.");
+            usedApiKeyDocId = apiKeyData.id;
 
             const response = await fetch(`https://api.openai.com/v1/audio/speech`, {
                 method: 'POST',
-                headers: { 'Authorization': `Bearer ${OPENAI_API_KEY}`, 'Content-Type': 'application/json' },
+                headers: { 'Authorization': `Bearer ${apiKeyData.key}`, 'Content-Type': 'application/json' },
                 body: JSON.stringify({ model: "tts-1", input: text, voice: voiceId })
             });
-            if (!response.ok) throw new Error(`OpenAI Error: ${response.statusText}`);
-            audioBuffer = await response.buffer();
+
+            if (!response.ok) {
+                const errText = await response.text();
+                if (errText.toLowerCase().includes('quota') || errText.toLowerCase().includes('insufficient')) {
+                    await db.collection("api_keys").doc(usedApiKeyDocId).update({ status: "mati" });
+                }
+                throw new Error(`OpenAI Error: ${response.statusText}`);
+            }
+            
+            const arrayBuffer = await response.arrayBuffer();
+            audioBuffer = Buffer.from(arrayBuffer);
         } 
 
         // ==========================================
         // 3. ROUTING LOGIC: GOOGLE TTS
         // ==========================================
         else if (provName.includes('google')) {
-            // AMBIL API KEY DARI DASHBOARD ADMIN!
-            const GOOGLE_API_KEY = await getApiKeyFromFirebase("Google TTS");
-            if (!GOOGLE_API_KEY) throw new Error("API Key Google TTS tidak ditemukan di Database Admin.");
+            const apiKeyData = await getActiveApiKey("Google TTS");
+            if (!apiKeyData) throw new Error("API Key Google TTS tidak ditemukan di Database Admin.");
 
             const response = await fetch(`https://texttospeech.googleapis.com/v1/text:synthesize`, {
                 method: 'POST',
-                headers: { 'X-Goog-Api-Key': GOOGLE_API_KEY, 'Content-Type': 'application/json' },
+                headers: { 'X-Goog-Api-Key': apiKeyData.key, 'Content-Type': 'application/json' },
                 body: JSON.stringify({ input: { text: text }, voice: { languageCode: "id-ID", name: voiceId }, audioConfig: { audioEncoding: "MP3" } })
             });
+
             if (!response.ok) throw new Error(`Google TTS Error: ${response.statusText}`);
             const data = await response.json();
             audioBuffer = Buffer.from(data.audioContent, 'base64');
         }
 
         // ==========================================
-        // 4. ROUTING LOGIC: HUGGING FACE (GRATIS, TANPA API KEY)
+        // 4. ROUTING LOGIC: HUGGING FACE (GRATIS)
         // ==========================================
         else if (provName.includes('huggingface') || provName.includes('hf') || provName.includes('lainnya') || voiceId.includes('hf.space')) {
             const response = await fetch(voiceId, {
@@ -109,6 +169,7 @@ export default async function handler(req, res) {
                     data: [ text, "id", null, "https://www.w3schools.com/html/horse.mp3", false ]
                 })
             });
+
             if (!response.ok) throw new Error(`Hugging Face Error: ${response.statusText}`);
             const data = await response.json();
             let audioFileUrl = data.data[0].name || data.data[0]; 
@@ -116,8 +177,10 @@ export default async function handler(req, res) {
                 const baseUrl = voiceId.replace('/api/predict', '');
                 audioFileUrl = audioFileUrl.startsWith('/') ? baseUrl + audioFileUrl : baseUrl + '/file=' + audioFileUrl;
             }
+            
             const audioRes = await fetch(audioFileUrl);
-            audioBuffer = await audioRes.buffer();
+            const arrayBuffer = await audioRes.arrayBuffer();
+            audioBuffer = Buffer.from(arrayBuffer);
         }
         
         else {
@@ -131,4 +194,4 @@ export default async function handler(req, res) {
         console.error("TTS Error:", error);
         res.status(500).json({ error: error.message });
     }
-}
+};
