@@ -164,7 +164,8 @@ module.exports = async (req, res) => {
                 formData.append("model", "whisper-large-v3-turbo");
                 formData.append("temperature", "0.0");
                 
-                const promptHint = title ? `Lirik lagu: ${title}` : "Transkripsi lirik lagu vokal jernih.";
+                // FIX 1: Pancingan Multi-Bahasa agar AI tahu ini lirik lagu, bukan video YouTube
+                const promptHint = title ? `Lyrics of the song ${title}. Lirik lagu. 歌詞. 가사. Letras.` : "Lyrics of the song. Lirik lagu. 歌詞. 가사. Letras.";
                 formData.append("prompt", promptHint);
 
                 const whisperRes = await fetch("https://api.groq.com/openai/v1/audio/transcriptions", {
@@ -178,7 +179,27 @@ module.exports = async (req, res) => {
 
                 if (!whisperData.text) throw new Error("Suara tidak terdeteksi atau audio kosong.");
 
-                return res.status(200).json({ success: true, result: whisperData.text });
+                // FIX 2: Filter Pembersih Halusinasi (Post-Processing)
+                let cleanText = whisperData.text;
+                
+                // Hapus halusinasi subtitle YouTube (berbagai bahasa)
+                cleanText = cleanText.replace(/Terima kasih telah menonton!?/gi, "");
+                cleanText = cleanText.replace(/Thanks for watching!?/gi, "");
+                cleanText = cleanText.replace(/Terima kasih!?/gi, "");
+                cleanText = cleanText.replace(/Subtitle by .+/gi, "");
+                cleanText = cleanText.replace(/Subtitles by .+/gi, "");
+                
+                // Hapus halusinasi credit title Mandarin (Penulis lirik, Komposer, dll) tanpa menghapus lirik Mandarin asli
+                cleanText = cleanText.replace(/作词.*?(\n|$)/g, ""); // Lyricist
+                cleanText = cleanText.replace(/作曲.*?(\n|$)/g, ""); // Composer
+                cleanText = cleanText.replace(/编曲.*?(\n|$)/g, ""); // Arranger
+                
+                // Bersihkan spasi berlebih akibat penghapusan
+                cleanText = cleanText.replace(/\n\s*\n/g, '\n').trim();
+
+                if (!cleanText) throw new Error("Lirik tidak terdeteksi. Pastikan audio memiliki vokal yang jelas.");
+
+                return res.status(200).json({ success: true, result: cleanText });
             } catch (err) {
                 return res.status(500).json({ error: err.message });
             }
