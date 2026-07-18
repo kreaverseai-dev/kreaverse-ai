@@ -164,24 +164,23 @@ module.exports = async (req, res) => {
                 formData.append("model", "whisper-large-v3-turbo");
                 formData.append("temperature", "0.0");
                 
-                // FIX 1: Pancingan Konteks (Solusi 3 - Forced Alignment via Prompt)
-                // Ambil lirik yang di-paste user dari frontend (bisa dari 'lyrics' atau 'inputText')
+                // FIX 1: Pancingan Konteks (Revisi Anti-Halusinasi)
                 const pastedLyrics = lyrics || inputText || ""; 
-                
-                let promptHint = title ? `Lyrics of the song ${title}. Lirik lagu. ` : "Lyrics of the song. Lirik lagu. ";
+                let promptHint = "";
                 
                 if (pastedLyrics.trim() !== "") {
-                    // Jika user mem-paste lirik dari Google, jadikan itu sebagai "contekan" utama.
-                    // Whisper memiliki batas token untuk prompt (sekitar 224 token). 
-                    // Kita ambil ~800 karakter pertama saja sudah cukup untuk memandu AI agar tidak halusinasi sampai akhir lagu.
-                    const safeLyrics = pastedLyrics.substring(0, 800).replace(/\n/g, ' ');
-                    promptHint += `Berikut adalah lirik yang benar, tolong sesuaikan transkripsi dengan teks ini: ${safeLyrics}`;
+                    // JANGAN beri instruksi. Berikan lirik murni saja agar Whisper menjadikannya "kamus"
+                    // Kita batasi 500 karakter agar tidak over-token
+                    promptHint = pastedLyrics.substring(0, 500).replace(/\n/g, ', ');
                 } else {
-                    // Fallback jika user tidak paste lirik (kosong)
-                    promptHint += "歌詞. 가사. Letras.";
+                    promptHint = title ? `${title}, lirik lagu, musik.` : "Lirik lagu, musik.";
                 }
 
                 formData.append("prompt", promptHint);
+                
+                // FIX 2: Parameter Anti-Looping (Sangat penting untuk lagu)
+                // Mencegah AI mengulang-ulang kata yang sama saat mendengar instrumen panjang
+                formData.append("condition_on_previous_text", "false");
 
                 const whisperRes = await fetch("https://api.groq.com/openai/v1/audio/transcriptions", {
                     method: "POST",
