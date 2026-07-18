@@ -197,7 +197,10 @@ module.exports = async (req, res) => {
                 // Bersihkan spasi berlebih akibat penghapusan
                 cleanText = cleanText.replace(/\n\s*\n/g, '\n').trim();
 
-                if (!cleanText) throw new Error("Lirik tidak terdeteksi. Pastikan audio memiliki vokal yang jelas.");
+                // FIX 3: Jangan lempar error 500 jika kosong. Berikan teks fallback yang elegan.
+                if (!cleanText) {
+                    cleanText = "[Musik Instrumental / Vokal tidak terdengar jelas oleh AI]";
+                }
 
                 return res.status(200).json({ success: true, result: cleanText });
             } catch (err) {
