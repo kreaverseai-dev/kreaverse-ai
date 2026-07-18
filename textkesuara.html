@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Text to Speech - Kreaverse AI</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --bg: #F9F9F9; --surface: #FFFFFF; --text: #111111; --text-sec: #666666;
+            --border: #E5E5E5; --accent: #111111; --accent-hover: #333333;
+            --radius: 16px;
+        }
+        * { box-sizing: border-box; font-family: 'Inter', sans-serif; margin: 0; padding: 0; }
+        body { background: var(--bg); color: var(--text); display: flex; justify-content: center; padding: 20px; }
+        
+        .app-container {
+            width: 100%; max-width: 600px; background: var(--surface); 
+            border-radius: 24px; box-shadow: 0 10px 40px rgba(0,0,0,0.05);
+            overflow: hidden; display: flex; flex-direction: column;
+            min-height: 85vh; border: 1px solid var(--border);
+        }
+
+        /* Header */
+        .header { padding: 20px 24px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); }
+        .header-title { font-weight: 600; font-size: 1.1rem; display: flex; align-items: center; gap: 10px; }
+        .credit-badge { background: #F0F0F0; padding: 6px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; color: var(--text-sec); }
+
+        /* Text Area */
+        .input-area { padding: 24px; flex: 1; display: flex; flex-direction: column; }
+        textarea { 
+            width: 100%; flex: 1; min-height: 150px; border: none; resize: none; 
+            font-size: 1.2rem; line-height: 1.5; color: var(--text); outline: none;
+        }
+        textarea::placeholder { color: #B0B0B0; }
+
+        /* Settings Panel (Bottom) */
+        .settings-panel { background: #FAFAFA; border-top: 1px solid var(--border); padding: 24px; border-radius: 24px 24px 0 0; margin-top: -20px; }
+        
+        /* Voice Selector */
+        .voice-selector { 
+            background: var(--surface); border: 1px solid var(--border); padding: 12px 16px; 
+            border-radius: 12px; display: flex; justify-content: space-between; align-items: center; 
+            cursor: pointer; margin-bottom: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.02);
+        }
+        .voice-info { display: flex; align-items: center; gap: 12px; }
+        .voice-avatar { width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%); }
+        .voice-name { font-weight: 600; font-size: 0.95rem; }
+        .voice-prov { font-size: 0.75rem; color: var(--text-sec); background: #EEE; padding: 2px 6px; border-radius: 4px; }
+
+        /* Sliders */
+        .slider-group { margin-bottom: 20px; }
+        .slider-header { display: flex; justify-content: space-between; font-size: 0.85rem; font-weight: 600; margin-bottom: 8px; }
+        .slider-labels { display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--text-sec); margin-top: 4px; }
+        input[type=range] { width: 100%; accent-color: var(--accent); }
+
+        /* Generate Button */
+        .btn-generate { 
+            width: 100%; background: var(--accent); color: #FFF; border: none; 
+            padding: 16px; border-radius: 12px; font-size: 1rem; font-weight: 600; 
+            cursor: pointer; transition: 0.2s; display: flex; justify-content: center; align-items: center; gap: 10px;
+        }
+        .btn-generate:hover { background: var(--accent-hover); }
+        .btn-generate:disabled { background: #CCC; cursor: not-allowed; }
+
+        /* Audio Player */
+        .audio-result { margin-top: 20px; display: none; }
+        audio { width: 100%; height: 40px; outline: none; }
+
+        /* Modal Voice Selection */
+        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: none; justify-content: center; align-items: flex-end; z-index: 100; }
+        .modal-content { background: #FFF; width: 100%; max-width: 600px; height: 70vh; border-radius: 24px 24px 0 0; padding: 20px; display: flex; flex-direction: column; animation: slideUp 0.3s ease; }
+        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+        .voice-item { padding: 15px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
+        .voice-item:hover { background: #F9F9F9; }
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+    <div class="header">
+        <div class="header-title"><i class="fa-solid fa-layer-group"></i> Text to Speech</div>
+        <div class="credit-badge"><i class="fa-solid fa-coins" style="color:#F59E0B;"></i> 5000 Credits</div>
+    </div>
+
+    <div class="input-area">
+        <textarea id="textInput" placeholder="Start typing here or paste any text you want to turn into lifelike speech..."></textarea>
+    </div>
+
+    <div class="settings-panel">
+        <!-- Voice Selector -->
+        <div class="voice-selector" onclick="openVoiceModal()">
+            <div class="voice-info">
+                <div class="voice-avatar"></div>
+                <div>
+                    <div class="voice-name" id="selectedVoiceName">Pilih Suara...</div>
+                    <div class="voice-prov" id="selectedVoiceProv">Provider</div>
+                </div>
+            </div>
+            <i class="fa-solid fa-chevron-right" style="color:var(--text-sec);"></i>
+        </div>
+
+        <!-- Hidden Inputs for Backend -->
+        <input type="hidden" id="selectedVoiceId" value="">
+        <input type="hidden" id="selectedProvider" value="">
+
+        <!-- Sliders (UI Only, Backend will map this) -->
+        <div class="slider-group">
+            <div class="slider-header"><span>Stability</span></div>
+            <input type="range" id="stability" min="0" max="100" value="50">
+            <div class="slider-labels"><span>More variable</span><span>More stable</span></div>
+        </div>
+        <div class="slider-group">
+            <div class="slider-header"><span>Similarity / Speed</span></div>
+            <input type="range" id="similarity" min="0" max="100" value="75">
+            <div class="slider-labels"><span>Low</span><span>High</span></div>
+        </div>
+
+        <button class="btn-generate" id="btnGenerate" onclick="generateSpeech()">
+            Generate speech
+        </button>
+
+        <div class="audio-result" id="audioResult">
+            <audio id="audioPlayer" controls></audio>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Pilih Suara -->
+<div class="modal-overlay" id="voiceModal" onclick="closeVoiceModal(event)">
+    <div class="modal-content">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+            <h3 style="font-weight:600;">Pilih Suara</h3>
+            <button onclick="document.getElementById('voiceModal').style.display='none'" style="background:none; border:none; font-size:1.5rem; cursor:pointer;">&times;</button>
+        </div>
+        <div style="overflow-y:auto; flex:1;" id="voiceListContainer">
+            <div style="text-align:center; padding:20px; color:#999;">Memuat suara dari database...</div>
+        </div>
+    </div>
+</div>
+
+<!-- FIREBASE SDK -->
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+    import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+
+    // GANTI DENGAN CONFIG FIREBASE ANDA
+    const firebaseConfig = {
+        apiKey: "AIzaSyAO8JV4jkJmbHChYvjUCS7wqfVbKr94tHM",
+        authDomain: "kreaverse-ai0107.firebaseapp.com",
+        projectId: "kreaverse-ai0107"
+    };
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    let availableVoices = [];
+
+    // Ambil Suara Publik dari Database Admin
+    async function loadVoices() {
+        const snap = await getDocs(collection(db, "tts_public_voices"));
+        let html = "";
+        snap.forEach(doc => {
+            const v = doc.data();
+            availableVoices.push(v);
+            html += `
+                <div class="voice-item" onclick="selectVoice('${v.name}', '${v.voiceId}', '${v.provider}')">
+                    <div class="voice-info">
+                        <div class="voice-avatar"></div>
+                        <div>
+                            <div class="voice-name">${v.name}</div>
+                            <div class="voice-prov">${v.provider} • ${v.gender}</div>
+                        </div>
+                    </div>
+                    <i class="fa-solid fa-play" style="color:var(--text-sec);"></i>
+                </div>
+            `;
+        });
+        document.getElementById('voiceListContainer').innerHTML = html;
+        
+        // Set Default Voice
+        if(availableVoices.length > 0) {
+            selectVoice(availableVoices[0].name, availableVoices[0].voiceId, availableVoices[0].provider);
+        }
+    }
+
+    window.openVoiceModal = () => document.getElementById('voiceModal').style.display = 'flex';
+    window.closeVoiceModal = (e) => { if(e.target.id === 'voiceModal') document.getElementById('voiceModal').style.display = 'none'; }
+    
+    window.selectVoice = (name, id, provider) => {
+        document.getElementById('selectedVoiceName').innerText = name;
+        document.getElementById('selectedVoiceProv').innerText = provider;
+        document.getElementById('selectedVoiceId').value = id;
+        document.getElementById('selectedProvider').value = provider;
+        document.getElementById('voiceModal').style.display = 'none';
+    }
+
+    window.generateSpeech = async () => {
+        const text = document.getElementById('textInput').value.trim();
+        const voiceId = document.getElementById('selectedVoiceId').value;
+        const provider = document.getElementById('selectedProvider').value;
+        const btn = document.getElementById('btnGenerate');
+
+        if(!text) return alert("Ketik teks terlebih dahulu!");
+        if(!voiceId) return alert("Pilih suara terlebih dahulu!");
+
+        btn.disabled = true;
+        btn.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin"></i> Generating...`;
+
+        try {
+            // INI AKAN MENEMBAK BACKEND VERCEL ANDA (NAMA FILE SUDAH DISESUAIKAN)
+            const response = await fetch('/api/textkesuara', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    text: text,
+                    voiceId: voiceId,
+                    provider: provider,
+                    stability: document.getElementById('stability').value
+                })
+            });
+
+            if(!response.ok) throw new Error("Gagal generate audio");
+
+            // Mengubah response menjadi file audio yang bisa diputar
+            const blob = await response.blob();
+            const audioUrl = URL.createObjectURL(blob);
+            
+            const player = document.getElementById('audioPlayer');
+            player.src = audioUrl;
+            document.getElementById('audioResult').style.display = 'block';
+            player.play();
+
+        } catch (error) {
+            alert("Error: " + error.message);
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = `Generate speech`;
+        }
+    }
+
+    loadVoices();
+</script>
+</body>
+</html>
