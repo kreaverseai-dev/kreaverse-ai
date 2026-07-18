@@ -25,7 +25,7 @@
         /* Header */
         .header { padding: 20px 24px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); }
         .header-title { font-weight: 600; font-size: 1.1rem; display: flex; align-items: center; gap: 10px; }
-        .credit-badge { background: #F0F0F0; padding: 6px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; color: var(--text-sec); }
+        .credit-badge { background: #F0F0F0; padding: 6px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; color: var(--text-sec); display: flex; align-items: center; gap: 6px; }
 
         /* Text Area */
         .input-area { padding: 24px; flex: 1; display: flex; flex-direction: column; }
@@ -45,7 +45,7 @@
             cursor: pointer; margin-bottom: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.02);
         }
         .voice-info { display: flex; align-items: center; gap: 12px; }
-        .voice-avatar { width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%); }
+        .voice-avatar { width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%); display: flex; align-items: center; justify-content: center; color: #fff; font-size: 0.8rem; font-weight: bold; }
         .voice-name { font-weight: 600; font-size: 0.95rem; }
         .voice-prov { font-size: 0.75rem; color: var(--text-sec); background: #EEE; padding: 2px 6px; border-radius: 4px; }
 
@@ -61,12 +61,14 @@
             padding: 16px; border-radius: 12px; font-size: 1rem; font-weight: 600; 
             cursor: pointer; transition: 0.2s; display: flex; justify-content: center; align-items: center; gap: 10px;
         }
-        .btn-generate:hover { background: var(--accent-hover); }
+        .btn-generate:hover:not(:disabled) { background: var(--accent-hover); }
         .btn-generate:disabled { background: #CCC; cursor: not-allowed; }
 
         /* Audio Player */
-        .audio-result { margin-top: 20px; display: none; }
+        .audio-result { margin-top: 20px; display: none; flex-direction: column; gap: 10px; }
         audio { width: 100%; height: 40px; outline: none; }
+        .btn-download { background: #10B981; color: #FFF; text-decoration: none; padding: 12px; border-radius: 10px; font-weight: 600; font-size: 0.9rem; display: flex; justify-content: center; align-items: center; gap: 8px; transition: 0.2s; }
+        .btn-download:hover { background: #059669; }
 
         /* Modal Voice Selection */
         .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: none; justify-content: center; align-items: flex-end; z-index: 100; }
@@ -80,19 +82,23 @@
 
 <div class="app-container">
     <div class="header">
-        <div class="header-title"><i class="fa-solid fa-layer-group"></i> Text to Speech</div>
-        <div class="credit-badge"><i class="fa-solid fa-coins" style="color:#F59E0B;"></i> 5000 Credits</div>
+        <div class="header-title" onclick="window.location.href='/index.html'" style="cursor:pointer;">
+            <i class="fa-solid fa-arrow-left"></i> Text to Speech
+        </div>
+        <div class="credit-badge" id="creditBadgeText">
+            <i class="fa-solid fa-circle-notch fa-spin"></i> Memuat...
+        </div>
     </div>
 
     <div class="input-area">
-        <textarea id="textInput" placeholder="Start typing here or paste any text you want to turn into lifelike speech..."></textarea>
+        <textarea id="textInput" placeholder="Ketik teks di sini untuk diubah menjadi suara AI yang natural..."></textarea>
     </div>
 
     <div class="settings-panel">
         <!-- Voice Selector -->
         <div class="voice-selector" onclick="openVoiceModal()">
             <div class="voice-info">
-                <div class="voice-avatar"></div>
+                <div class="voice-avatar" id="selectedVoiceAvatar">AI</div>
                 <div>
                     <div class="voice-name" id="selectedVoiceName">Pilih Suara...</div>
                     <div class="voice-prov" id="selectedVoiceProv">Provider</div>
@@ -105,25 +111,20 @@
         <input type="hidden" id="selectedVoiceId" value="">
         <input type="hidden" id="selectedProvider" value="">
 
-        <!-- Sliders (UI Only, Backend will map this) -->
+        <!-- Sliders -->
         <div class="slider-group">
             <div class="slider-header"><span>Stability</span></div>
             <input type="range" id="stability" min="0" max="100" value="50">
             <div class="slider-labels"><span>More variable</span><span>More stable</span></div>
         </div>
-        <div class="slider-group">
-            <div class="slider-header"><span>Similarity / Speed</span></div>
-            <input type="range" id="similarity" min="0" max="100" value="75">
-            <div class="slider-labels"><span>Low</span><span>High</span></div>
-        </div>
 
         <button class="btn-generate" id="btnGenerate" onclick="generateSpeech()">
-            Generate speech
+            Generate speech (5 Kredit)
         </button>
 
         <div class="audio-result" id="audioResult">
             <audio id="audioPlayer" controls></audio>
-            <a id="downloadBtn" href="#" download="Kreaverse_Voice.mp3" class="btn-generate" style="margin-top:15px; background:#10B981; text-decoration:none; display:none;">
+            <a id="downloadBtn" href="#" download="Kreaverse_Voice.mp3" class="btn-download">
                 <i class="fa-solid fa-download"></i> Download Audio
             </a>
         </div>
@@ -138,17 +139,33 @@
             <button onclick="document.getElementById('voiceModal').style.display='none'" style="background:none; border:none; font-size:1.5rem; cursor:pointer;">&times;</button>
         </div>
         <div style="overflow-y:auto; flex:1;" id="voiceListContainer">
-            <div style="text-align:center; padding:20px; color:#999;">Memuat suara dari database...</div>
+            <div style="text-align:center; padding:20px; color:#999;"><i class="fa-solid fa-circle-notch fa-spin"></i> Memuat suara dari database...</div>
         </div>
     </div>
 </div>
 
-<!-- FIREBASE SDK -->
+<!-- FIREBASE SDK & LOGIC -->
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-    import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+    import { getFirestore, collection, getDocs, doc, onSnapshot, updateDoc, increment } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
-    // GANTI DENGAN CONFIG FIREBASE ANDA
+    // ==========================================
+    // 1. PROTEKSI HALAMAN (CEK LOGIN)
+    // ==========================================
+    const isLoggedIn = localStorage.getItem('kreaverse_logged_in') === 'true';
+    if (!isLoggedIn) {
+        window.location.href = '/login.html'; // Ganti dengan URL halaman login Anda jika berbeda
+    }
+
+    const userId = localStorage.getItem('kreaverse_user_id');
+    const userRole = localStorage.getItem('kreaverse_role');
+    const userTier = localStorage.getItem('kreaverse_tier') || 'basic';
+    let currentCredits = 0;
+    let userCustomVoiceId = null;
+
+    // ==========================================
+    // 2. FIREBASE INIT
+    // ==========================================
     const firebaseConfig = {
         apiKey: "AIzaSyAO8JV4jkJmbHChYvjUCS7wqfVbKr94tHM",
         authDomain: "kreaverse-ai0107.firebaseapp.com",
@@ -159,17 +176,87 @@
 
     let availableVoices = [];
 
-    // Ambil Suara Publik dari Database Admin
-    async function loadVoices() {
-        const snap = await getDocs(collection(db, "tts_public_voices"));
+    // ==========================================
+    // 3. MONITOR KREDIT & CUSTOM VOICE REAL-TIME
+    // ==========================================
+    if (userId) {
+        onSnapshot(doc(db, "users", userId), (docSnap) => {
+            if (docSnap.exists()) {
+                const data = docSnap.data();
+                currentCredits = data.kredit !== undefined ? data.kredit : (data.dailyQuota || 0);
+                userCustomVoiceId = data.voice_id || null;
+                
+                // Update UI Badge Kredit
+                const creditBadge = document.getElementById('creditBadgeText');
+                if (userTier.includes('max') || userRole === 'admin') {
+                    creditBadge.innerHTML = `<i class="fa-solid fa-crown" style="color:#F59E0B;"></i> Unlimited`;
+                } else {
+                    creditBadge.innerHTML = `<i class="fa-solid fa-coins" style="color:#F59E0B;"></i> ${currentCredits} Credits`;
+                }
+
+                // Kunci tombol jika kredit habis
+                const btnGen = document.getElementById('btnGenerate');
+                if (currentCredits < 5 && userRole !== 'admin' && !userTier.includes('max')) {
+                    btnGen.disabled = true;
+                    btnGen.innerHTML = `<i class="fa-solid fa-lock"></i> Saldo Tidak Cukup`;
+                } else {
+                    btnGen.disabled = false;
+                    btnGen.innerHTML = `Generate speech (5 Kredit)`;
+                }
+
+                // Refresh daftar suara jika ada perubahan custom voice
+                renderVoiceList();
+            }
+        });
+    }
+
+    // ==========================================
+    // 4. AMBIL SUARA PUBLIK DARI DATABASE
+    // ==========================================
+    async function loadPublicVoices() {
+        try {
+            const snap = await getDocs(collection(db, "tts_public_voices"));
+            availableVoices = [];
+            snap.forEach(doc => {
+                availableVoices.push(doc.data());
+            });
+            renderVoiceList();
+            
+            // Set Default Voice jika belum ada yang dipilih
+            if(availableVoices.length > 0 && !document.getElementById('selectedVoiceId').value) {
+                selectVoice(availableVoices[0].name, availableVoices[0].voiceId, availableVoices[0].provider);
+            }
+        } catch (e) {
+            console.error("Gagal memuat suara:", e);
+        }
+    }
+
+    function renderVoiceList() {
         let html = "";
-        snap.forEach(doc => {
-            const v = doc.data();
-            availableVoices.push(v);
+        
+        // Jika klien punya suara kloning sendiri, taruh di paling atas!
+        if (userCustomVoiceId) {
+            html += `
+                <div class="voice-item" style="background: rgba(217,119,87,0.05); border: 1px solid rgba(217,119,87,0.2); border-radius: 12px; margin-bottom: 10px;" onclick="selectVoice('Suara Saya (Kloning)', '${userCustomVoiceId}', 'HuggingFace')">
+                    <div class="voice-info">
+                        <div class="voice-avatar" style="background: var(--accent);"><i class="fa-solid fa-user"></i></div>
+                        <div>
+                            <div class="voice-name" style="color: var(--accent);">Suara Saya (Kloning)</div>
+                            <div class="voice-prov">Custom Voice • Pribadi</div>
+                        </div>
+                    </div>
+                    <i class="fa-solid fa-check-circle" style="color:var(--accent);"></i>
+                </div>
+            `;
+        }
+
+        // Render suara publik
+        availableVoices.forEach(v => {
+            const initial = v.name.charAt(0).toUpperCase();
             html += `
                 <div class="voice-item" onclick="selectVoice('${v.name}', '${v.voiceId}', '${v.provider}')">
                     <div class="voice-info">
-                        <div class="voice-avatar"></div>
+                        <div class="voice-avatar">${initial}</div>
                         <div>
                             <div class="voice-name">${v.name}</div>
                             <div class="voice-prov">${v.provider} • ${v.gender}</div>
@@ -179,12 +266,8 @@
                 </div>
             `;
         });
-        document.getElementById('voiceListContainer').innerHTML = html;
         
-        // Set Default Voice
-        if(availableVoices.length > 0) {
-            selectVoice(availableVoices[0].name, availableVoices[0].voiceId, availableVoices[0].provider);
-        }
+        document.getElementById('voiceListContainer').innerHTML = html || `<div style="text-align:center; padding:20px; color:#999;">Belum ada suara tersedia.</div>`;
     }
 
     window.openVoiceModal = () => document.getElementById('voiceModal').style.display = 'flex';
@@ -195,9 +278,13 @@
         document.getElementById('selectedVoiceProv').innerText = provider;
         document.getElementById('selectedVoiceId').value = id;
         document.getElementById('selectedProvider').value = provider;
+        document.getElementById('selectedVoiceAvatar').innerText = name.charAt(0).toUpperCase();
         document.getElementById('voiceModal').style.display = 'none';
     }
 
+    // ==========================================
+    // 5. PROSES GENERATE & POTONG SALDO
+    // ==========================================
     window.generateSpeech = async () => {
         const text = document.getElementById('textInput').value.trim();
         const voiceId = document.getElementById('selectedVoiceId').value;
@@ -207,11 +294,17 @@
         if(!text) return alert("Ketik teks terlebih dahulu!");
         if(!voiceId) return alert("Pilih suara terlebih dahulu!");
 
+        // Cek saldo sekali lagi sebelum proses
+        if (currentCredits < 5 && userRole !== 'admin' && !userTier.includes('max')) {
+            return alert("Saldo kredit Anda tidak mencukupi!");
+        }
+
         btn.disabled = true;
-        btn.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin"></i> Generating...`;
+        btn.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin"></i> Memproses AI...`;
+        document.getElementById('audioResult').style.display = 'none';
 
         try {
-            // INI AKAN MENEMBAK BACKEND VERCEL ANDA (NAMA FILE SUDAH DISESUAIKAN)
+            // Tembak Backend Vercel
             const response = await fetch('/api/textkesuara', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -223,32 +316,39 @@
                 })
             });
 
-            if(!response.ok) throw new Error("Gagal generate audio");
+            if(!response.ok) throw new Error("Gagal generate audio dari server.");
 
-            // Mengubah response menjadi file audio yang bisa diputar
+            // Tampilkan Audio & Tombol Download
             const blob = await response.blob();
             const audioUrl = URL.createObjectURL(blob);
             
             const player = document.getElementById('audioPlayer');
             player.src = audioUrl;
-            document.getElementById('audioResult').style.display = 'block';
             
-            // Menampilkan tombol download dan memasukkan link audio
             const downloadBtn = document.getElementById('downloadBtn');
             downloadBtn.href = audioUrl;
-            downloadBtn.style.display = 'flex';
-
+            
+            document.getElementById('audioResult').style.display = 'flex';
             player.play();
+
+            // POTONG SALDO KLIEN DI DATABASE (-5 Kredit)
+            if (userRole !== 'admin' && !userTier.includes('max')) {
+                await updateDoc(doc(db, "users", userId), {
+                    kredit: increment(-5),
+                    generateCount: increment(1)
+                });
+            }
 
         } catch (error) {
             alert("Error: " + error.message);
         } finally {
             btn.disabled = false;
-            btn.innerHTML = `Generate speech`;
+            btn.innerHTML = `Generate speech (5 Kredit)`;
         }
     }
 
-    loadVoices();
+    // Jalankan saat halaman dimuat
+    loadPublicVoices();
 </script>
 </body>
 </html>
