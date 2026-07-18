@@ -1486,19 +1486,7 @@
                         <input type="hidden" id="modelSelect" value="">
                     </div>
 
-                    <!-- LLM CHAT AI SELECTOR -->
-                    <div class="input-group" style="margin-bottom: 0;">
-                        <label>Agents Chat (Untuk Magic Wand):</label>
-                        <div class="custom-select-container">
-                            <div class="custom-select-trigger" onclick="window.toggleCustomSelect('llmDropdown')">
-                                <span id="llmSelectedLabel">Memuat model chat...</span>
-                                <i class="fa-solid fa-chevron-down"></i>
-                            </div>
-                            <div class="custom-select-options hidden" id="llmDropdown"></div>
-                        </div>
-                        <input type="hidden" id="llmSelect" value="">
-                        <input type="hidden" id="llmModelSelect" value="">
-                    </div>
+                    <!-- LLM CHAT AI SELECTOR DIHAPUS (OTOMATIS DARI BACKEND) -->
                 </div>
             </div>
 
@@ -2387,11 +2375,14 @@
                 <label for="lyricsInput">
                     <span style="line-height: 1.2;">Lyrics of<br>music *</span>
                     <div style="display: flex; gap: 6px;">
-                        <button type="button" class="magic-wand-btn" style="background: rgba(16, 185, 129, 0.1); color: #10B981; border-color: rgba(16, 185, 129, 0.2); padding: 4px 8px; font-size: 0.7rem;" onclick="encryptLyrics()" title="Sisipkan Karakter Tak Kasat Mata (Anti-Sensor)">
-                            <i class="fa-solid fa-user-secret"></i> Encrypt
+                        <button type="button" class="magic-wand-btn" style="background: rgba(139, 92, 246, 0.1); color: #8b5cf6; border-color: rgba(139, 92, 246, 0.2); padding: 4px 8px; font-size: 0.7rem;" onclick="detectLyrics()" title="Deteksi Lirik dari Audio">
+                            <i class="fa-solid fa-ear-listen"></i> Deteksi Lirik
                         </button>
                         <button type="button" class="magic-wand-btn" style="padding: 4px 8px; font-size: 0.7rem;" onclick="triggerMagicWand('lyrics')" title="Rapikan Struktur Lagu via AI">
                             <i class="fa-solid fa-wand-magic-sparkles"></i> AI
+                        </button>
+                        <button type="button" class="magic-wand-btn" style="background: rgba(16, 185, 129, 0.1); color: #10B981; border-color: rgba(16, 185, 129, 0.2); padding: 4px 8px; font-size: 0.7rem;" onclick="encryptLyrics()" title="Bypass Filter NLP">
+                            <i class="fa-solid fa-user-secret"></i> Encrypt
                         </button>
                         <button type="button" class="action-icon-btn" style="padding: 4px 8px; font-size: 0.7rem;" onclick="clearInput('lyricsInput', 'lyricsCounter', 5000)" title="Hapus Teks">
                             <i class="fa-solid fa-trash-can"></i>
@@ -2399,7 +2390,10 @@
                     </div>
                 </label>
                 <div style="font-size: 0.7rem; color: var(--accent-color); margin-bottom: 6px; font-weight: 600; background: rgba(0, 122, 255, 0.05); padding: 6px 10px; border-radius: 6px; border: 1px solid rgba(0, 122, 255, 0.1); line-height: 1.4;">
-                    <i class="fa-solid fa-circle-info"></i> <b>Urutan yang benar:</b> Ketik lirik &rarr; Klik <b>AI</b> &rarr; Klik <b>Encrypt</b> &rarr; Buat Lagu.
+                    <i class="fa-solid fa-circle-info"></i> <b>Panduan:</b> Jika kosong, klik <b>Deteksi Lirik</b> untuk mengambil lirik dari audio. Lalu klik <b>AI</b> untuk menata bait. Jika terkena Copyright, klik <b>Encrypt</b>.
+                </div>
+                <div id="detectLyricsProgress" class="hidden" style="font-size: 0.75rem; color: #8b5cf6; margin-bottom: 6px; font-weight: 600; background: rgba(139, 92, 246, 0.05); padding: 8px 12px; border-radius: 8px; border: 1px solid rgba(139, 92, 246, 0.2); display: flex; align-items: center; gap: 8px;">
+                    <i class="fa-solid fa-circle-notch fa-spin"></i> <span id="detectLyricsStatus">Mendengarkan audio...</span>
                 </div>
                 <textarea id="lyricsInput" placeholder="Tuliskan lirik lagu Anda sendiri di sini..." style="height: 140px;" maxlength="5000" oninput="updateCounter('lyricsInput', 'lyricsCounter', 5000)"></textarea>
                 <span class="char-counter" id="lyricsCounter">0/5000</span>
@@ -6395,7 +6389,7 @@ window.startDspBypassAndUpload = async function() {
         };
 
 // ============================================================
-        // LYRIC ENCRYPTOR (VISUAL-HOMOGLYPH & ZERO-WIDTH SPACE BYPASS)
+        // LYRIC ENCRYPTOR (ZERO-WIDTH SPACE BYPASS - AMAN UNTUK PELAFALAN)
         // ============================================================
         window.encryptLyrics = function() {
             const lyricsEl = document.getElementById('lyricsInput');
@@ -6409,35 +6403,12 @@ window.startDspBypassAndUpload = async function() {
             // Bersihkan karakter tak kasat mata lama agar tidak menumpuk
             text = text.replace(/[\u200B-\u200D\uFEFF\u200E\u200F]/g, '');
 
-            // Homoglyph Mapping Table (Indonesian/English common vowels to Cyrillic lookalikes)
-            // Karakter Cyrillic ini tampak 100% identik di browser, namun bernilai unicode berbeda
-            const homoglyphs = {
-                'a': 'а', 'A': 'А',
-                'e': 'е', 'E': 'Е',
-                'i': 'і', 'I': 'І',
-                'o': 'о', 'O': 'О',
-                'c': 'с', 'C': 'С',
-                'p': 'р', 'P': 'Р',
-                'y': 'у', 'Y': 'У',
-                'x': 'х', 'X': 'Х'
-            };
-
-            // Vowel Stretch Mapping (Phonetic Variation)
-            const vowelStretch = {
-                'a': ['a', 'aa', 'ah'],
-                'e': ['e', 'ee', 'eh'],
-                'i': ['i', 'ii', 'ih'],
-                'o': ['o', 'oo', 'oh'],
-                'u': ['u', 'uu', 'uh']
-            };
-
             let encryptedText = "";
-            let inBracket = false; // Jangan enkripsi tag seperti Verse atau Chorus
+            let inBracket = false; // Jangan enkripsi tag seperti [Verse] atau [Chorus]
 
             for (let i = 0; i < text.length; i++) {
                 let char = text[i];
                 
-                // Gunakan Hex Unicode \x5B dan \x5D agar sistem Habi Studio tidak error
                 if (char === '\x5B') inBracket = true;
                 if (char === '\x5D') {
                     inBracket = false;
@@ -6450,39 +6421,20 @@ window.startDspBypassAndUpload = async function() {
                     continue;
                 }
 
-                let lowerChar = char.toLowerCase();
+                encryptedText += char;
                 
-                // Vowel Stretch (30% chance - Ditingkatkan)
-                if (vowelStretch[lowerChar] && Math.random() > 0.70) {
-                    const stretchArr = vowelStretch[lowerChar];
-                    let stretched = stretchArr[Math.floor(Math.random() * stretchArr.length)];
-                    if (char === char.toUpperCase()) stretched = stretched.toUpperCase();
-                    char = stretched;
-                }
-                
-                // Homoglyph & Zero-Width Injection
-                for(let j=0; j < char.length; j++) {
-                    let subChar = char[j];
-                    if (homoglyphs[subChar] && Math.random() > 0.3) { // 70% chance untuk homoglyph
-                        subChar = homoglyphs[subChar];
-                    }
-                    encryptedText += subChar;
-                    
-                    // Sisipkan variasi karakter tak kasat mata (Zero-Width Joiner, Non-Joiner, dll)
-                    if (subChar !== ' ' && subChar !== '\n' && i < text.length - 1) {
-                        // Kumpulan Unicode tak terlihat yang merusak sistem regex AI
-                        const separators = ['\u200B', '\u200C', '\u200D', '\u2060', '\u2063', '\u2064'];
-                        if (Math.random() > 0.5) { // 50% chance tiap huruf disisipi
-                            const randomSep = separators[Math.floor(Math.random() * separators.length)];
-                            encryptedText += randomSep;
-                        }
+                // Sisipkan Zero-Width Non-Joiner (\u200C) di antara huruf.
+                // Karakter ini tidak terlihat dan tidak merusak pelafalan Suno AI, tapi merusak deteksi teks NLP.
+                if (char !== ' ' && char !== '\n' && i < text.length - 1) {
+                    if (Math.random() > 0.3) { // 70% chance tiap huruf disisipi
+                        encryptedText += '\u200C';
                     }
                 }
             }
 
             lyricsEl.value = encryptedText;
             updateCounter('lyricsInput', 'lyricsCounter', 5000);
-            showIphoneToast("Enkripsi Premium Berhasil", "Lirik berhasil dialterasi! AI Copyright tidak akan bisa membaca teks ini.", "fa-shield-halved");
+            showIphoneToast("Bypass Berhasil", "Susunan karakter berhasil diubah tanpa merusak pelafalan nyanyian AI.", "fa-shield-halved");
         };
 
         async function encodeAudioBufferToMp3(audioBuffer, progressCallback) {
@@ -7352,26 +7304,77 @@ window.startDspBypassAndUpload = async function() {
         };
 
         // ============================================================
-        // MAGIC WAND (AUTO-EDIT LIRIK & STYLE VIA LLM + AUTO TRANSCRIPTION WHISPER)
+        // DETEKSI LIRIK (ASR WHISPER)
+        // ============================================================
+        window.detectLyrics = async function() {
+            if (!isLoggedIn || !currentUser) {
+                showIphoneToast("Akses Ditolak", "Silakan login terlebih dahulu.", "fa-lock");
+                return;
+            }
+
+            if (!rawAudioFile && !selectedAudioUrl) {
+                showIphoneToast("Error", "Silakan unggah audio referensi terlebih dahulu untuk mendeteksi lirik!", "fa-triangle-exclamation");
+                return;
+            }
+
+            const inputEl = document.getElementById('lyricsInput');
+            const progressBox = document.getElementById('detectLyricsProgress');
+            const statusText = document.getElementById('detectLyricsStatus');
+            const btn = event.currentTarget;
+            const originalBtnHtml = btn.innerHTML;
+
+            btn.disabled = true;
+            inputEl.disabled = true;
+            progressBox.classList.remove('hidden');
+            statusText.innerText = "Mengunggah Audio...";
+
+            try {
+                let finalAudioUrl = selectedAudioUrl;
+                if (!finalAudioUrl && rawAudioFile) {
+                    let finalDurStr = "0:00";
+                    const origPlayer = document.getElementById('originalAudioPlayer');
+                    if (origPlayer && isFinite(origPlayer.duration) && origPlayer.duration > 0) {
+                        finalDurStr = formatTime(origPlayer.duration);
+                    }
+                    await uploadBlobToCloudinary(rawAudioFile, rawAudioFile.name, false, finalDurStr);
+                    finalAudioUrl = selectedAudioUrl; 
+                }
+
+                statusText.innerText = "AI sedang mendengarkan lagu...";
+                
+                const response = await fetch('/api/habirmx', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: 'detect_lyrics',
+                        audioUrl: finalAudioUrl,
+                        title: document.getElementById('titleInput') ? document.getElementById('titleInput').value.trim() : ""
+                    })
+                });
+
+                const data = await response.json();
+                if (!response.ok) throw new Error(data.error || "Gagal mendeteksi lirik.");
+
+                inputEl.value = data.result;
+                updateCounter('lyricsInput', 'lyricsCounter', 5000);
+                showIphoneToast("Selesai", "Lirik berhasil dideteksi! Silakan klik tombol AI untuk menata baitnya.", "fa-circle-check");
+
+            } catch (err) {
+                showIphoneToast("ASR Gagal", err.message, "fa-circle-xmark");
+            } finally {
+                inputEl.disabled = false;
+                btn.disabled = false;
+                btn.innerHTML = originalBtnHtml;
+                progressBox.classList.add('hidden');
+            }
+        };
+
+        // ============================================================
+        // MAGIC WAND (AUTO-EDIT LIRIK & STYLE VIA LLM)
         // ============================================================
         window.triggerMagicWand = async function(type) {
             if (!isLoggedIn || !currentUser) {
                 showIphoneToast("Akses Ditolak", "Silakan login terlebih dahulu untuk menggunakan AI.", "fa-lock");
-                setTimeout(() => { window.location.href = "/login/index.html"; }, 2000);
-                return;
-            }
-
-            const llmProviderId = document.getElementById('llmSelect').value;
-            const llmModelId = document.getElementById('llmModelSelect').value;
-            if (!llmProviderId) {
-                showIphoneToast("Error", "Silakan pilih Model Chat AI terlebih dahulu!", "fa-triangle-exclamation");
-                return;
-            }
-
-            const currentMode = document.getElementById('modeGenerateBtn').classList.contains('active') ? 'generate' : 'cover';
-            
-            if (currentMode === 'cover' && !selectedAudioUrl) {
-                showIphoneToast("Akses Ditolak", "Silakan unggah audio referensi terlebih dahulu sebelum menggunakan AI di mode Cover.", "fa-lock");
                 return;
             }
 
@@ -7379,113 +7382,28 @@ window.startDspBypassAndUpload = async function() {
             const inputEl = document.getElementById(inputId);
             const originalText = inputEl.value.trim();
 
+            if (!originalText) {
+                showIphoneToast("Error", `Silakan isi ${type === 'style' ? 'Style of Music' : 'Lyrics'} terlebih dahulu sebelum menggunakan AI.`, "fa-triangle-exclamation");
+                return;
+            }
+
             const btn = event.currentTarget;
             const originalBtnHtml = btn.innerHTML;
             btn.disabled = true;
             btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> AI...';
             inputEl.disabled = true;
 
-            // JALUR 1: JIKA KOLOM LIRIK KOSONG (OTOMATIS TRANSKRIPSI WHISPER + STRUKTUR LLM)
-            if (type === 'lyrics' && !originalText) {
-                if (!rawAudioFile && !selectedAudioUrl) {
-                    inputEl.disabled = false;
-                    btn.disabled = false;
-                    btn.innerHTML = originalBtnHtml;
-                    showIphoneToast("Error", "Silakan unggah audio referensi terlebih dahulu untuk transkripsi otomatis!", "fa-triangle-exclamation");
-                    return;
-                }
-
-                showIphoneToast("ASR Whisper Aktif", "AI sedang mendengarkan & menyalin suara lagu...", "fa-microphone-lines");
-
-                try {
-                    // Pastikan audio sudah terupload ke Cloudinary agar backend bisa mendownloadnya
-                    let finalAudioUrl = selectedAudioUrl;
-                    if (!finalAudioUrl && rawAudioFile) {
-                        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Mengunggah Audio...';
-                        let finalDurStr = "0:00";
-                        const origPlayer = document.getElementById('originalAudioPlayer');
-                        if (origPlayer && isFinite(origPlayer.duration) && origPlayer.duration > 0) {
-                            finalDurStr = formatTime(origPlayer.duration);
-                        }
-                        // Upload ke Cloudinary
-                        await uploadBlobToCloudinary(rawAudioFile, rawAudioFile.name, false, finalDurStr);
-                        finalAudioUrl = selectedAudioUrl; // selectedAudioUrl otomatis terisi oleh fungsi uploadBlobToCloudinary
-                    }
-
-                    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> AI Mendengarkan...';
-                    
-                    const vocalGenderVal = document.getElementById('vocalGenderSelect').value;
-                    
-                    // Tembak Backend Habi RMX (Backend yang akan memproses Whisper + LLM sekaligus)
-                    const response = await fetch('/api/habirmx', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            action: 'magic_wand',
-                            providerId: llmProviderId,
-                            modelId: llmModelId,
-                            llmType: 'lyrics',
-                            inputText: "", // Kosongkan agar backend tahu ini mode ASR
-                            audioUrl: finalAudioUrl, // Kirim URL audio ke backend
-                            vocalGender: vocalGenderVal,
-                            currentMode: currentMode,
-                            title: document.getElementById('titleInput') ? document.getElementById('titleInput').value.trim() : ""
-                        })
-                    });
-
-                    const data = await response.json();
-                    if (!response.ok) throw new Error(data.error || "Gagal merapikan lirik.");
-
-                    let finalResult = data.result.trim();
-                    inputEl.value = "";
-                    let i = 0;
-                    const chunkSize = 15; 
-                    
-                    function typeWriter() {
-                        if (i < finalResult.length) {
-                            inputEl.value += finalResult.substring(i, i + chunkSize);
-                            i += chunkSize;
-                            setTimeout(typeWriter, 1); 
-                        } else {
-                            inputEl.disabled = false;
-                            btn.disabled = false;
-                            btn.innerHTML = originalBtnHtml;
-                            updateCounter(inputId, 'lyricsCounter', 5000);
-                            showIphoneToast("Selesai", "Lirik otomatis berhasil disusun oleh AI!", "fa-circle-check");
-                        }
-                    }
-                    typeWriter();
-
-                } catch (err) {
-                    inputEl.disabled = false;
-                    btn.disabled = false;
-                    btn.innerHTML = originalBtnHtml;
-                    showIphoneToast("ASR Gagal", err.message, "fa-circle-xmark");
-                }
-                return;
-            }
-
-            // JALUR 2: JIKA KOLOM SUDAH TERISI / UNTUK GAYA MUSIK (LAMA)
-            if (!originalText) {
-                inputEl.disabled = false;
-                btn.disabled = false;
-                btn.innerHTML = originalBtnHtml;
-                showIphoneToast("Error", `Silakan isi ${type === 'style' ? 'Style of Music' : 'Lyrics'} terlebih dahulu sebelum menggunakan AI.`, "fa-triangle-exclamation");
-                return;
-            }
-
-            showIphoneToast("Magic Wand Hack", "AI sedang merombak teks Anda...", "fa-wand-magic-sparkles");
+            showIphoneToast("Magic Wand", "AI sedang merombak teks Anda...", "fa-wand-magic-sparkles");
 
             try {
                 const vocalGenderVal = document.getElementById('vocalGenderSelect').value;
+                const currentMode = document.getElementById('modeGenerateBtn').classList.contains('active') ? 'generate' : 'cover';
 
                 const response = await fetch('/api/habirmx', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         action: 'magic_wand',
-                        providerId: llmProviderId,
-                        modelId: llmModelId,
                         llmType: type,
                         inputText: originalText,
                         vocalGender: vocalGenderVal,
