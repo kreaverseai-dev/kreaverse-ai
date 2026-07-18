@@ -7398,65 +7398,25 @@ window.startDspBypassAndUpload = async function() {
                 showIphoneToast("ASR Whisper Aktif", "AI sedang mendengarkan & menyalin suara lagu...", "fa-microphone-lines");
 
                 try {
-                    // 1. Ambil File Audio (bisa dari rawAudioFile lokal atau download dari URL)
-                    let audioBlob = rawAudioFile;
-                    if (!audioBlob && selectedAudioUrl) {
-                        const fetchRes = await fetch(selectedAudioUrl);
-                        audioBlob = await fetchRes.blob();
-                    }
-
-                    // 2. Ambil Kunci API Groq Whisper secara otomatis dan aman dari database Firestore
-                    let groqKey = "";
-                    try {
-                        const collections = ["api_keys", "keys", "database_keys", "api_providers"];
-                        for (let col of collections) {
-                            const snap = await getDocs(collection(db, col));
-                            snap.forEach(docSnap => {
-                                const d = docSnap.data();
-                                const name = (d.provider || d.name || d.id || "").toLowerCase();
-                                if (name.includes("groq") || name.includes("whisper")) {
-                                    if (d.apiKey) groqKey = d.apiKey;
-                                    else if (d.key) groqKey = d.key;
-                                }
-                            });
-                            if (groqKey) break;
+                    // Pastikan audio sudah terupload ke Cloudinary agar backend bisa mendownloadnya
+                    let finalAudioUrl = selectedAudioUrl;
+                    if (!finalAudioUrl && rawAudioFile) {
+                        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Mengunggah Audio...';
+                        let finalDurStr = "0:00";
+                        const origPlayer = document.getElementById('originalAudioPlayer');
+                        if (origPlayer && isFinite(origPlayer.duration) && origPlayer.duration > 0) {
+                            finalDurStr = formatTime(origPlayer.duration);
                         }
-                    } catch(e) {
-                        console.warn("Firestore fetch key fallback:", e);
+                        // Upload ke Cloudinary
+                        await uploadBlobToCloudinary(rawAudioFile, rawAudioFile.name, false, finalDurStr);
+                        finalAudioUrl = selectedAudioUrl; // selectedAudioUrl otomatis terisi oleh fungsi uploadBlobToCloudinary
                     }
 
-                    if (!groqKey) {
-                        throw new Error("Kunci API Groq Whisper tidak ditemukan di database. Pastikan sudah didaftarkan di tab Audio!");
-                    }
-
-                    // 3. Kirim ke API Groq Whisper (ASR) dengan parameter anti-halusinasi & pendeteksi bahasa dinamis (multibahasa)
-                const songTitle = document.getElementById('titleInput') ? document.getElementById('titleInput').value.trim() : "";
-                const songStyle = document.getElementById('styleInput') ? document.getElementById('styleInput').value.trim() : "";
-                const whisperPrompt = songTitle || songStyle 
-                    ? `Lirik lagu bersih: ${songTitle}. Gaya musik: ${songStyle}. Transkripsi nyanyian tanpa subtitle cues.`
-                    : "Lirik lagu bersih, transkripsi nyanyian tanpa subtitle cues, clean lyrics transcript.";
-
-                const formData = new FormData();
-                formData.append("file", audioBlob, "audio.mp3");
-                formData.append("model", "whisper-large-v3");
-                formData.append("temperature", "0.0"); // Mengunci akurasi agar AI tidak berhalusinasi melantur saat ada musik instrumental
-                formData.append("prompt", whisperPrompt); // Petunjuk dinamis mengikuti judul & gaya lagu (Arab, Jawa, Madura, Inggris, Indonesia, dll)
-
-                const whisperResponse = await fetch("https://api.groq.com/openai/v1/audio/transcriptions", {
-                    method: "POST",
-                    headers: { "Authorization": `Bearer ${groqKey}` },
-                    body: formData
-                });
-                    
-                    const whisperData = await whisperResponse.json();
-                    if (!whisperResponse.ok) throw new Error(whisperData.error?.message || "Gagal transkripsi audio.");
-
-                    const rawText = whisperData.text;
-
-                    // 4. Kirim teks mentah dari Whisper ke LLM (Groq Llama 3.1) untuk ditata & diberi tag struktur lagu
-                    showIphoneToast("Merapikan lirik", "Menyusun struktur lagu (Intro, Verse, Chorus)...", "fa-wand-magic-sparkles");
+                    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> AI Mendengarkan...';
                     
                     const vocalGenderVal = document.getElementById('vocalGenderSelect').value;
+                    
+                    // Tembak Backend Habi RMX (Backend yang akan memproses Whisper + LLM sekaligus)
                     const response = await fetch('/api/habirmx', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
@@ -7465,9 +7425,11 @@ window.startDspBypassAndUpload = async function() {
                             providerId: llmProviderId,
                             modelId: llmModelId,
                             llmType: 'lyrics',
-                            inputText: rawText,
+                            inputText: "", // Kosongkan agar backend tahu ini mode ASR
+                            audioUrl: finalAudioUrl, // Kirim URL audio ke backend
                             vocalGender: vocalGenderVal,
-                            currentMode: currentMode
+                            currentMode: currentMode,
+                            title: document.getElementById('titleInput') ? document.getElementById('titleInput').value.trim() : ""
                         })
                     });
 
