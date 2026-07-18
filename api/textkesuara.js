@@ -1,6 +1,7 @@
 import fetch from 'node-fetch';
 
 export default async function handler(req, res) {
+    // Hanya menerima request POST
     if (req.method !== 'POST') {
         return res.status(405).json({ error: 'Method not allowed' });
     }
@@ -12,17 +13,18 @@ export default async function handler(req, res) {
     }
 
     try {
-        // CATATAN: Di versi produksi, Anda harus mengambil API Key dari Firebase.
-        // Untuk contoh ini, kita asumsikan Anda menyimpannya di Environment Variables Vercel.
+        // Mengambil API Key dari Environment Variables Vercel
         const ELEVENLABS_API_KEY = process.env.ELEVENLABS_API_KEY; 
         const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
+        const GOOGLE_API_KEY = process.env.GOOGLE_API_KEY;
 
         let audioBuffer;
+        const provName = provider.toLowerCase();
 
         // ==========================================
-        // ROUTING LOGIC: JIKA PROVIDER ELEVENLABS
+        // 1. ROUTING LOGIC: ELEVENLABS
         // ==========================================
-        if (provider.toLowerCase().includes('eleven')) {
+        if (provName.includes('eleven')) {
             const response = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`, {
                 method: 'POST',
                 headers: {
@@ -34,7 +36,7 @@ export default async function handler(req, res) {
                     text: text,
                     model_id: "eleven_multilingual_v2",
                     voice_settings: {
-                        stability: stability / 100, // Konversi 0-100 ke 0.0-1.0
+                        stability: stability ? (stability / 100) : 0.5,
                         similarity_boost: 0.75
                     }
                 })
@@ -45,9 +47,9 @@ export default async function handler(req, res) {
         } 
         
         // ==========================================
-        // ROUTING LOGIC: JIKA PROVIDER OPENAI
+        // 2. ROUTING LOGIC: OPENAI TTS
         // ==========================================
-        else if (provider.toLowerCase().includes('openai')) {
+        else if (provName.includes('openai')) {
             const response = await fetch(`https://api.openai.com/v1/audio/speech`, {
                 method: 'POST',
                 headers: {
@@ -64,12 +66,39 @@ export default async function handler(req, res) {
             if (!response.ok) throw new Error(`OpenAI Error: ${response.statusText}`);
             audioBuffer = await response.buffer();
         } 
+
+        // ==========================================
+        // 3. ROUTING LOGIC: GOOGLE TTS (BASE64)
+        // ==========================================
+        else if (provName.includes('google')) {
+            const response = await fetch(`https://texttospeech.googleapis.com/v1/text:synthesize`, {
+                method: 'POST',
+                headers: {
+                    'X-Goog-Api-Key': GOOGLE_API_KEY,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    input: { text: text },
+                    voice: { languageCode: "id-ID", name: voiceId }, // contoh: "id-ID-Wavenet-A"
+                    audioConfig: { audioEncoding: "MP3" }
+                })
+            });
+
+            if (!response.ok) throw new Error(`Google TTS Error: ${response.statusText}`);
+            const data = await response.json();
+            
+            // Mengubah teks sandi Base64 dari Google menjadi file MP3
+            audioBuffer = Buffer.from(data.audioContent, 'base64');
+        }
         
+        // ==========================================
+        // JIKA PROVIDER TIDAK DIKENAL
+        // ==========================================
         else {
-            return res.status(400).json({ error: 'Provider tidak didukung' });
+            return res.status(400).json({ error: 'Provider belum didukung oleh sistem backend.' });
         }
 
-        // Mengembalikan file audio langsung ke Frontend
+        // Mengembalikan file audio MP3 langsung ke Frontend
         res.setHeader('Content-Type', 'audio/mpeg');
         res.send(audioBuffer);
 
