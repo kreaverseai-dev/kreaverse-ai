@@ -672,6 +672,9 @@
             <i class="fa-solid fa-key" style="width:18px;"></i> Integrasi API DB
             <span id="api-count-badge" class="badge badge-gray" style="margin-left:auto; font-size:0.7rem; padding:4px 8px;">0</span>
         </div>
+        <div class="nav-item" onclick="nav('tts')">
+            <i class="fa-solid fa-microphone-lines" style="width:18px;"></i> Text Ke Suara
+        </div>
         <div class="nav-item" onclick="nav('downloader')">
             <i class="fa-solid fa-cloud-arrow-down" style="width:18px;"></i> Server Downloader
         </div>
@@ -932,6 +935,66 @@
                                 </thead>
                                 <tbody id="apiDeadTable">
                                     <tr><td colspan="5" style="text-align:center; padding:40px; color:var(--text-sec);">Memuat...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TEXT KE SUARA TAB -->
+            <div id="tab-tts" class="section">
+                <!-- PANEL 1: SUARA PUBLIK (BAWAAN) -->
+                <div class="panel">
+                    <div class="panel-head">
+                        <div class="panel-title"><i class="fa-solid fa-volume-high" style="color:var(--info);"></i> Daftar Suara Publik (Bawaan)</div>
+                        <button class="btn btn-sm btn-success" onclick="window.addPublicVoice()"><i class="fa-solid fa-plus"></i> Tambah Suara</button>
+                    </div>
+                    <div class="panel-body" style="padding:0;">
+                        <div style="padding:15px 25px; font-size:0.85rem; color:var(--text-sec); border-bottom:1px solid var(--border); background:#FAFAFC; line-height: 1.5;">
+                            Tambahkan Voice ID dari berbagai provider (ElevenLabs, OpenAI, dll) di sini. Suara ini akan muncul di menu dropdown website klien dan bisa digunakan oleh semua pengguna secara gratis tanpa memotong kuota kloning.
+                        </div>
+                        <div class="table-responsive">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Nama Suara</th>
+                                        <th>Provider</th>
+                                        <th>Voice ID</th>
+                                        <th>Kategori/Gender</th>
+                                        <th style="text-align:right;">Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="publicVoicesTable">
+                                    <tr><td colspan="5" style="text-align:center; padding:20px; color:var(--text-sec);">Memuat data suara...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PANEL 2: MONITOR KLONING SUARA KLIEN -->
+                <div class="panel">
+                    <div class="panel-head">
+                        <div class="panel-title"><i class="fa-solid fa-users-viewfinder" style="color:var(--accent);"></i> Monitor Kloning Suara Klien</div>
+                    </div>
+                    <div class="panel-body" style="padding:0;">
+                        <div style="padding:15px 25px; font-size:0.85rem; color:var(--text-sec); border-bottom:1px solid var(--border); background:#FAFAFC; line-height: 1.5;">
+                            Daftar klien yang telah mengupload sampel suara sendiri (Custom Voice). <strong>Penting:</strong> Jika kuota ElevenLabs Anda penuh, hapus Voice ID klien yang sudah tidak aktif di sini untuk mengosongkan ruang.
+                        </div>
+                        <div class="table-responsive">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Nama Klien</th>
+                                        <th>Email</th>
+                                        <th>Voice ID (Kloning)</th>
+                                        <th>Paket</th>
+                                        <th style="text-align:right;">Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="clonedVoicesTable">
+                                    <tr><td colspan="5" style="text-align:center; padding:20px; color:var(--text-sec);">Memuat data kloning...</td></tr>
                                 </tbody>
                             </table>
                         </div>
@@ -5754,6 +5817,123 @@ window.openHfHelpModal = () => document.getElementById('hf-help-modal').classLis
                 btn.disabled = false; btn.innerHTML = `<i class="fa-solid fa-floppy-disk"></i> Simpan Konfigurasi Banner`;
             }
         };
+
+        // ============================================================
+        // MODUL TEXT KE SUARA (TTS & VOICE CLONING)
+        // ============================================================
+        let globalPublicVoices = [];
+
+        function setupRealtimeTTS() {
+            // 1. Monitor Suara Publik
+            onSnapshot(collection(db, "tts_public_voices"), snapshot => {
+                globalPublicVoices = [];
+                let html = "";
+                snapshot.forEach(docSnap => {
+                    const d = docSnap.data();
+                    globalPublicVoices.push({ id: docSnap.id, ...d });
+                    
+                    let provBadge = `<span class="badge badge-gray">${d.provider}</span>`;
+                    if(d.provider.toLowerCase().includes('eleven')) provBadge = `<span class="badge badge-blue">ElevenLabs</span>`;
+                    else if(d.provider.toLowerCase().includes('openai')) provBadge = `<span class="badge badge-green">OpenAI</span>`;
+
+                    html += `
+                        <tr>
+                            <td style="font-weight:700;">${d.name}</td>
+                            <td>${provBadge}</td>
+                            <td style="font-family:monospace; font-size:0.85rem; color:var(--text-sec);">${d.voiceId}</td>
+                            <td><span class="badge" style="background:#F4F5F7; color:var(--text-sec); border:1px solid var(--border);">${d.gender}</span></td>
+                            <td style="text-align:right;">
+                                <button class="btn btn-sm btn-info" onclick="window.editPublicVoice('${docSnap.id}')" style="margin-right:5px;"><i class="fa-solid fa-pen"></i></button>
+                                <button class="btn btn-sm btn-danger" onclick="window.deletePublicVoice('${docSnap.id}', '${d.name}')"><i class="fa-solid fa-trash"></i></button>
+                            </td>
+                        </tr>
+                    `;
+                });
+                document.getElementById('publicVoicesTable').innerHTML = html || `<tr><td colspan="5" style="text-align:center; padding:20px; color:var(--text-sec);">Belum ada suara publik terdaftar.</td></tr>`;
+            });
+
+            // 2. Monitor Suara Kloning Klien (Diambil dari rawUsersDataGlobal)
+            setInterval(() => {
+                const tbody = document.getElementById('clonedVoicesTable');
+                if(!tbody || !rawUsersDataGlobal) return;
+                
+                let html = "";
+                const clonedUsers = rawUsersDataGlobal.filter(u => u.voice_id && u.voice_id.trim() !== "");
+                
+                clonedUsers.forEach(u => {
+                    let tierBadge = `<span class="badge tier-free">Free</span>`;
+                    if (u.tier === "max_lifetime" || u.tier === "max") tierBadge = `<span class="badge tier-max">Max</span>`;
+                    else if (u.tier === "pro") tierBadge = `<span class="badge tier-pro">Pro</span>`;
+                    else if (u.tier === "basic") tierBadge = `<span class="badge tier-basic">Basic</span>`;
+
+                    html += `
+                        <tr>
+                            <td style="font-weight:700;">${u.nama}</td>
+                            <td style="font-size:0.85rem; color:var(--text-sec);">${u.email}</td>
+                            <td style="font-family:monospace; font-size:0.85rem; color:var(--accent); font-weight:700;">${u.voice_id}</td>
+                            <td>${tierBadge}</td>
+                            <td style="text-align:right;">
+                                <button class="btn btn-sm btn-danger" onclick="window.deleteClientVoice('${u.id}', '${u.nama}')"><i class="fa-solid fa-trash-can"></i> Hapus Suara</button>
+                            </td>
+                        </tr>
+                    `;
+                });
+                tbody.innerHTML = html || `<tr><td colspan="5" style="text-align:center; padding:20px; color:var(--text-sec);">Belum ada klien yang melakukan kloning suara.</td></tr>`;
+            }, 2000); // Update tiap 2 detik menyesuaikan data user
+        }
+
+        window.addPublicVoice = function() {
+            const inputs = [
+                { id: 'name', label: 'Nama Suara (Tampil di Klien)', placeholder: 'Contoh: Budi - Pembaca Berita', value: '' },
+                { id: 'provider', label: 'Provider API', type: 'select', options: [{value:'ElevenLabs', label:'ElevenLabs'}, {value:'OpenAI', label:'OpenAI TTS'}, {value:'Google', label:'Google TTS'}, {value:'Lainnya', label:'Provider Lainnya'}], value: 'ElevenLabs' },
+                { id: 'voiceId', label: 'Voice ID / Model ID', placeholder: 'Contoh: pNInz6obbfdGcgqILrmY', value: '' },
+                { id: 'gender', label: 'Kategori / Gender', type: 'select', options: [{value:'Pria', label:'Pria'}, {value:'Wanita', label:'Wanita'}, {value:'Robot/Karakter', label:'Robot/Karakter'}], value: 'Pria' }
+            ];
+            openMultiInputModal("Tambah Suara Publik", "Suara ini bisa dipakai semua klien.", inputs, async (res) => {
+                if(!res.name || !res.voiceId) { showToast("Nama dan Voice ID wajib diisi!", "warning"); return; }
+                try {
+                    await addDoc(collection(db, "tts_public_voices"), { name: res.name.trim(), provider: res.provider, voiceId: res.voiceId.trim(), gender: res.gender, createdAt: Date.now() });
+                    showToast("Suara publik ditambahkan!", "success");
+                } catch(e) { showToast("Gagal menambah suara", "danger"); }
+            });
+        };
+
+        window.editPublicVoice = function(id) {
+            const v = globalPublicVoices.find(x => x.id === id);
+            if(!v) return;
+            const inputs = [
+                { id: 'name', label: 'Nama Suara', value: v.name },
+                { id: 'provider', label: 'Provider API', type: 'select', options: [{value:'ElevenLabs', label:'ElevenLabs'}, {value:'OpenAI', label:'OpenAI TTS'}, {value:'Google', label:'Google TTS'}, {value:'Lainnya', label:'Provider Lainnya'}], value: v.provider },
+                { id: 'voiceId', label: 'Voice ID / Model ID', value: v.voiceId },
+                { id: 'gender', label: 'Kategori / Gender', type: 'select', options: [{value:'Pria', label:'Pria'}, {value:'Wanita', label:'Wanita'}, {value:'Robot/Karakter', label:'Robot/Karakter'}], value: v.gender }
+            ];
+            openMultiInputModal("Edit Suara Publik", "Perbarui data suara.", inputs, async (res) => {
+                if(!res.name || !res.voiceId) { showToast("Nama dan Voice ID wajib diisi!", "warning"); return; }
+                try {
+                    await updateDoc(doc(db, "tts_public_voices", id), { name: res.name.trim(), provider: res.provider, voiceId: res.voiceId.trim(), gender: res.gender });
+                    showToast("Suara diperbarui!", "success");
+                } catch(e) { showToast("Gagal memperbarui", "danger"); }
+            });
+        };
+
+        window.deletePublicVoice = function(id, name) {
+            confirmAction(`Hapus suara publik "${name}"?`, async () => {
+                try { await deleteDoc(doc(db, "tts_public_voices", id)); showToast("Suara dihapus!", "success"); } 
+                catch(e) { showToast("Gagal menghapus", "danger"); }
+            });
+        };
+
+        window.deleteClientVoice = function(userId, userName) {
+            confirmAction(`Hapus data kloning suara milik ${userName}? (Pastikan Anda juga menghapusnya di dashboard ElevenLabs jika ingin mengembalikan kuota).`, async () => {
+                try {
+                    await updateDoc(doc(db, "users", userId), { voice_id: deleteField() });
+                    showToast(`Suara kloning ${userName} berhasil dihapus dari database!`, "success");
+                } catch(e) { showToast("Gagal menghapus suara klien", "danger"); }
+            });
+        };
+
+        // Panggil fungsi setup saat modul dimuat
+        setTimeout(() => { setupRealtimeTTS(); }, 2000);
 
         // Daftarkan listener otentikasi mandiri (Sangat aman & modular)
         onAuthStateChanged(auth, user => {
