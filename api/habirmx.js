@@ -141,14 +141,55 @@ module.exports = async (req, res) => {
         const { action, email, providerId, modelId, title, prompt, instrumental, lyrics, audioUrl, options, llmType, inputText, vocalGender, currentMode } = body;
 
         // ============================================================
-        // ROUTE 1: MAGIC WAND (AUTO-EDIT LIRIK & STYLE VIA LLM)
+        // ROUTE 1: MAGIC WAND (AUTO-EDIT LIRIK & STYLE VIA LLM + ASR WHISPER)
         // ============================================================
         if (action === 'magic_wand') {
-            if (!providerId || !inputText || !llmType) {
+            if (!providerId || !llmType) {
                 return res.status(400).json({ error: 'Parameter tidak lengkap untuk Magic Wand.' });
             }
 
+            let finalInputText = inputText || "";
+
             try {
+                // --- LOGIKA ASR (WHISPER) JIKA INPUT TEKS KOSONG TAPI ADA AUDIO ---
+                if (llmType === 'lyrics' && !finalInputText && audioUrl) {
+                    const whisperKeysQuery = await db.collection("api_keys").where("provider", "==", "Groq Whisper").where("status", "==", "aktif").get();
+                    if (whisperKeysQuery.empty) {
+                        throw new Error("API Key untuk Groq Whisper tidak ditemukan atau mati. Pastikan sudah didaftarkan di Dashboard Admin.");
+                    }
+                    const whisperKeysDocs = whisperKeysQuery.docs.sort((a, b) => (a.data().priority || 1) - (b.data().priority || 1));
+                    const whisperKey = whisperKeysDocs[0].data().key;
+
+                    const audioFetch = await fetch(audioUrl);
+                    if (!audioFetch.ok) throw new Error("Gagal mengunduh audio referensi untuk ditranskripsi.");
+                    const audioBlob = await audioFetch.blob();
+
+                    const formData = new FormData();
+                    formData.append("file", audioBlob, "audio.mp3");
+                    formData.append("model", "whisper-large-v3-turbo");
+                    formData.append("temperature", "0.0");
+                    
+                    const promptHint = title ? `Lirik lagu: ${title}` : "Transkripsi lirik lagu vokal jernih.";
+                    formData.append("prompt", promptHint);
+
+                    const whisperRes = await fetch("https://api.groq.com/openai/v1/audio/transcriptions", {
+                        method: "POST",
+                        headers: { "Authorization": `Bearer ${whisperKey}` },
+                        body: formData
+                    });
+
+                    const whisperData = await whisperRes.json();
+                    if (!whisperRes.ok) throw new Error(whisperData.error?.message || "Gagal transkripsi audio via Whisper.");
+
+                    finalInputText = whisperData.text;
+                    if (!finalInputText) throw new Error("Suara tidak terdeteksi atau audio kosong.");
+                }
+
+                if (!finalInputText) {
+                    return res.status(400).json({ error: 'Teks input atau Audio Referensi wajib diisi.' });
+                }
+                // ------------------------------------------------------------------
+
                 const providersDoc = await db.collection("settings").doc("api_providers").get();
                 const allProviders = providersDoc.data().list || [];
                 
@@ -172,9 +213,9 @@ module.exports = async (req, res) => {
                 if (llmType === 'style') {
                     // Logika Dinamis untuk Vokal (Hanya diisi jika user meminta)
                     let genderInstruction = "";
-                    if (vocalGender === 'female' || inputText.toLowerCase().includes('cewek') || inputText.toLowerCase().includes('wanita') || inputText.toLowerCase().includes('perempuan') || inputText.toLowerCase().includes('female')) {
+                    if (vocalGender === 'female' || finalInputText.toLowerCase().includes('cewek') || finalInputText.toLowerCase().includes('wanita') || finalInputText.toLowerCase().includes('perempuan') || finalInputText.toLowerCase().includes('female')) {
                         genderInstruction = "beautiful female vocal, clear female singer, perfectly mixed vocals, zero noise, ";
-                    } else if (vocalGender === 'male' || inputText.toLowerCase().includes('cowok') || inputText.toLowerCase().includes('pria') || inputText.toLowerCase().includes('laki') || inputText.toLowerCase().includes('male')) {
+                    } else if (vocalGender === 'male' || finalInputText.toLowerCase().includes('cowok') || finalInputText.toLowerCase().includes('pria') || finalInputText.toLowerCase().includes('laki') || finalInputText.toLowerCase().includes('male')) {
                         genderInstruction = "deep male vocal, clear male singer, perfectly mixed vocals, zero noise, ";
                     }
 
@@ -247,7 +288,7 @@ ATURAN MUTLAK:
                         
                         for (const currentModel of targetModels) {
                             try {
-                                const variables = { model: currentModel, systemPrompt: systemPrompt, prompt: inputText };
+                                const variables = { model: currentModel, systemPrompt: systemPrompt, prompt: finalInputText };
                                 let rawBody = llmProvider.payloadTemplate || `{"model": "{{model}}", "messages": [{"role": "system", "content": "{{systemPrompt}}"}, {"role": "user", "content": "{{prompt}}"}]}`;
                                 let parsedBodyString = renderTemplate(rawBody, variables);
                                 const finalPayload = JSON.parse(parsedBodyString);
