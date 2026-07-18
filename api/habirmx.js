@@ -141,61 +141,72 @@ module.exports = async (req, res) => {
         const { action, email, providerId, modelId, title, prompt, instrumental, lyrics, audioUrl, options, llmType, inputText, vocalGender, currentMode } = body;
 
         // ============================================================
-        // ROUTE 1: MAGIC WAND (AUTO-EDIT LIRIK & STYLE VIA LLM + ASR WHISPER)
+        // ROUTE 1A: DETEKSI LIRIK (ASR WHISPER)
+        // ============================================================
+        if (action === 'detect_lyrics') {
+            if (!audioUrl) {
+                return res.status(400).json({ error: 'Audio URL wajib diisi untuk deteksi lirik.' });
+            }
+            try {
+                const whisperKeysQuery = await db.collection("api_keys").where("provider", "==", "Groq Whisper").where("status", "==", "aktif").get();
+                if (whisperKeysQuery.empty) {
+                    throw new Error("API Key untuk Groq Whisper tidak ditemukan atau mati. Pastikan sudah didaftarkan di Dashboard Admin.");
+                }
+                const whisperKeysDocs = whisperKeysQuery.docs.sort((a, b) => (a.data().priority || 1) - (b.data().priority || 1));
+                const whisperKey = whisperKeysDocs[0].data().key;
+
+                const audioFetch = await fetch(audioUrl);
+                if (!audioFetch.ok) throw new Error("Gagal mengunduh audio referensi untuk ditranskripsi.");
+                const audioBlob = await audioFetch.blob();
+
+                const formData = new FormData();
+                formData.append("file", audioBlob, "audio.mp3");
+                formData.append("model", "whisper-large-v3-turbo");
+                formData.append("temperature", "0.0");
+                
+                const promptHint = title ? `Lirik lagu: ${title}` : "Transkripsi lirik lagu vokal jernih.";
+                formData.append("prompt", promptHint);
+
+                const whisperRes = await fetch("https://api.groq.com/openai/v1/audio/transcriptions", {
+                    method: "POST",
+                    headers: { "Authorization": `Bearer ${whisperKey}` },
+                    body: formData
+                });
+
+                const whisperData = await whisperRes.json();
+                if (!whisperRes.ok) throw new Error(whisperData.error?.message || "Gagal transkripsi audio via Whisper.");
+
+                if (!whisperData.text) throw new Error("Suara tidak terdeteksi atau audio kosong.");
+
+                return res.status(200).json({ success: true, result: whisperData.text });
+            } catch (err) {
+                return res.status(500).json({ error: err.message });
+            }
+        }
+
+        // ============================================================
+        // ROUTE 1B: MAGIC WAND (AUTO-EDIT LIRIK & STYLE VIA LLM)
         // ============================================================
         if (action === 'magic_wand') {
-            if (!providerId || !llmType) {
-                return res.status(400).json({ error: 'Parameter tidak lengkap untuk Magic Wand.' });
+            if (!llmType) {
+                return res.status(400).json({ error: 'Parameter llmType wajib diisi untuk Magic Wand.' });
             }
 
+            // FIX: Jika providerId kosong dari frontend, otomatis gunakan auto_pool
+            const finalProviderId = providerId || 'auto_pool';
             let finalInputText = inputText || "";
 
             try {
-                // --- LOGIKA ASR (WHISPER) JIKA INPUT TEKS KOSONG TAPI ADA AUDIO ---
-                if (llmType === 'lyrics' && !finalInputText && audioUrl) {
-                    const whisperKeysQuery = await db.collection("api_keys").where("provider", "==", "Groq Whisper").where("status", "==", "aktif").get();
-                    if (whisperKeysQuery.empty) {
-                        throw new Error("API Key untuk Groq Whisper tidak ditemukan atau mati. Pastikan sudah didaftarkan di Dashboard Admin.");
-                    }
-                    const whisperKeysDocs = whisperKeysQuery.docs.sort((a, b) => (a.data().priority || 1) - (b.data().priority || 1));
-                    const whisperKey = whisperKeysDocs[0].data().key;
-
-                    const audioFetch = await fetch(audioUrl);
-                    if (!audioFetch.ok) throw new Error("Gagal mengunduh audio referensi untuk ditranskripsi.");
-                    const audioBlob = await audioFetch.blob();
-
-                    const formData = new FormData();
-                    formData.append("file", audioBlob, "audio.mp3");
-                    formData.append("model", "whisper-large-v3-turbo");
-                    formData.append("temperature", "0.0");
-                    
-                    const promptHint = title ? `Lirik lagu: ${title}` : "Transkripsi lirik lagu vokal jernih.";
-                    formData.append("prompt", promptHint);
-
-                    const whisperRes = await fetch("https://api.groq.com/openai/v1/audio/transcriptions", {
-                        method: "POST",
-                        headers: { "Authorization": `Bearer ${whisperKey}` },
-                        body: formData
-                    });
-
-                    const whisperData = await whisperRes.json();
-                    if (!whisperRes.ok) throw new Error(whisperData.error?.message || "Gagal transkripsi audio via Whisper.");
-
-                    finalInputText = whisperData.text;
-                    if (!finalInputText) throw new Error("Suara tidak terdeteksi atau audio kosong.");
-                }
-
                 if (!finalInputText) {
-                    return res.status(400).json({ error: 'Teks input atau Audio Referensi wajib diisi.' });
+                    return res.status(400).json({ error: 'Teks input wajib diisi untuk menggunakan AI.' });
                 }
-                // ------------------------------------------------------------------
 
                 const providersDoc = await db.collection("settings").doc("api_providers").get();
                 const allProviders = providersDoc.data().list || [];
                 
                 // 1. Kumpulkan provider LLM (Mendukung Auto Fallback)
                 let llmProvidersToTry = [];
-                if (providerId === 'auto_pool') {
+                if (finalProviderId === 'auto_pool') {
                     llmProvidersToTry = allProviders.filter(p => {
                         if (!p.serviceType) return false;
                         const type = String(p.serviceType).toLowerCase();
@@ -203,7 +214,7 @@ module.exports = async (req, res) => {
                     });
                     if (llmProvidersToTry.length === 0) return res.status(500).json({ error: 'Tidak ada provider LLM aktif untuk Auto Fallback.' });
                 } else {
-                    const specificProvider = allProviders.find(p => p.value === providerId);
+                    const specificProvider = allProviders.find(p => p.value === finalProviderId);
                     if (!specificProvider) return res.status(500).json({ error: 'Provider LLM tidak ditemukan.' });
                     llmProvidersToTry = [specificProvider];
                 }
@@ -280,7 +291,7 @@ ATURAN MUTLAK:
                     if (modelList.length === 0) modelList = ["default"];
 
                     let targetModels = modelList;
-                    if (providerId !== 'auto_pool' && modelId && modelList.includes(modelId)) {
+                    if (finalProviderId !== 'auto_pool' && modelId && modelList.includes(modelId)) {
                         targetModels = [modelId]; 
                     }
 
