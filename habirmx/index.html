@@ -2374,17 +2374,17 @@
             <div class="input-group" id="lyricsFieldWrapper">
                 <label for="lyricsInput">
                     <span style="line-height: 1.2;">Lyrics of<br>music *</span>
-                    <div style="display: flex; gap: 6px;">
-                        <button type="button" class="magic-wand-btn" style="background: rgba(139, 92, 246, 0.1); color: #8b5cf6; border-color: rgba(139, 92, 246, 0.2); padding: 4px 8px; font-size: 0.7rem;" onclick="detectLyrics()" title="Deteksi Lirik dari Audio">
-                            <i class="fa-solid fa-ear-listen"></i> Deteksi Lirik
+                    <div style="display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end;">
+                        <button type="button" class="magic-wand-btn" style="background: rgba(139, 92, 246, 0.1); color: #8b5cf6; border-color: rgba(139, 92, 246, 0.2); padding: 4px 8px; font-size: 0.7rem; white-space: nowrap;" onclick="detectLyrics()" title="Deteksi Lirik dari Audio">
+                            <i class="fa-solid fa-ear-listen"></i> Deteksi
                         </button>
-                        <button type="button" class="magic-wand-btn" style="padding: 4px 8px; font-size: 0.7rem;" onclick="triggerMagicWand('lyrics')" title="Rapikan Struktur Lagu via AI">
+                        <button type="button" class="magic-wand-btn" style="padding: 4px 8px; font-size: 0.7rem; white-space: nowrap;" onclick="triggerMagicWand('lyrics')" title="Rapikan Struktur Lagu via AI">
                             <i class="fa-solid fa-wand-magic-sparkles"></i> AI
                         </button>
-                        <button type="button" class="magic-wand-btn" style="background: rgba(16, 185, 129, 0.1); color: #10B981; border-color: rgba(16, 185, 129, 0.2); padding: 4px 8px; font-size: 0.7rem;" onclick="encryptLyrics()" title="Bypass Filter NLP">
+                        <button type="button" class="magic-wand-btn" style="background: rgba(16, 185, 129, 0.1); color: #10B981; border-color: rgba(16, 185, 129, 0.2); padding: 4px 8px; font-size: 0.7rem; white-space: nowrap;" onclick="encryptLyrics()" title="Bypass Filter NLP">
                             <i class="fa-solid fa-user-secret"></i> Encrypt
                         </button>
-                        <button type="button" class="action-icon-btn" style="padding: 4px 8px; font-size: 0.7rem;" onclick="clearInput('lyricsInput', 'lyricsCounter', 5000)" title="Hapus Teks">
+                        <button type="button" class="action-icon-btn" style="padding: 4px 8px; font-size: 0.7rem; white-space: nowrap;" onclick="clearInput('lyricsInput', 'lyricsCounter', 5000)" title="Hapus Teks">
                             <i class="fa-solid fa-trash-can"></i>
                         </button>
                     </div>
