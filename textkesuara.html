@@ -123,6 +123,9 @@
 
         <div class="audio-result" id="audioResult">
             <audio id="audioPlayer" controls></audio>
+            <a id="downloadBtn" href="#" download="Kreaverse_Voice.mp3" class="btn-generate" style="margin-top:15px; background:#10B981; text-decoration:none; display:none;">
+                <i class="fa-solid fa-download"></i> Download Audio
+            </a>
         </div>
     </div>
 </div>
@@ -229,6 +232,12 @@
             const player = document.getElementById('audioPlayer');
             player.src = audioUrl;
             document.getElementById('audioResult').style.display = 'block';
+            
+            // Menampilkan tombol download dan memasukkan link audio
+            const downloadBtn = document.getElementById('downloadBtn');
+            downloadBtn.href = audioUrl;
+            downloadBtn.style.display = 'flex';
+
             player.play();
 
         } catch (error) {
