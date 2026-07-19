@@ -2375,8 +2375,8 @@
                 <label for="lyricsInput">
                     <span style="line-height: 1.2;">Lyrics of<br>music *</span>
                     <div style="display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end;">
-                        <button type="button" class="magic-wand-btn" style="background: rgba(139, 92, 246, 0.1); color: #8b5cf6; border-color: rgba(139, 92, 246, 0.2); padding: 4px 8px; font-size: 0.7rem; white-space: nowrap;" onclick="detectLyrics()" title="Deteksi Lirik dari Audio">
-                            <i class="fa-solid fa-ear-listen"></i> Deteksi
+                        <button type="button" id="btnSyncDetect" class="magic-wand-btn" style="background: rgba(139, 92, 246, 0.1); color: #8b5cf6; border-color: rgba(139, 92, 246, 0.2); padding: 4px 8px; font-size: 0.7rem; white-space: nowrap; transition: all 0.3s ease;" onclick="handleSyncDetectClick()" title="Deteksi Lirik dari Audio">
+                            <i class="fa-solid fa-ear-listen" id="iconSyncDetect"></i> <span id="textSyncDetect">Deteksi</span>
                         </button>
                         <button type="button" class="magic-wand-btn" style="padding: 4px 8px; font-size: 0.7rem; white-space: nowrap;" onclick="triggerMagicWand('lyrics')" title="Rapikan Struktur Lagu via AI">
                             <i class="fa-solid fa-wand-magic-sparkles"></i> AI
@@ -2384,18 +2384,18 @@
                         <button type="button" class="magic-wand-btn" style="background: rgba(16, 185, 129, 0.1); color: #10B981; border-color: rgba(16, 185, 129, 0.2); padding: 4px 8px; font-size: 0.7rem; white-space: nowrap;" onclick="encryptLyrics()" title="Bypass Filter NLP">
                             <i class="fa-solid fa-user-secret"></i> Encrypt
                         </button>
-                        <button type="button" class="action-icon-btn" style="padding: 4px 8px; font-size: 0.7rem; white-space: nowrap;" onclick="clearInput('lyricsInput', 'lyricsCounter', 5000)" title="Hapus Teks">
+                        <button type="button" class="action-icon-btn" style="padding: 4px 8px; font-size: 0.7rem; white-space: nowrap;" onclick="clearInput('lyricsInput', 'lyricsCounter', 5000); window.checkLyricsState();" title="Hapus Teks">
                             <i class="fa-solid fa-trash-can"></i>
                         </button>
                     </div>
                 </label>
-                <div style="font-size: 0.7rem; color: var(--accent-color); margin-bottom: 6px; font-weight: 600; background: rgba(0, 122, 255, 0.05); padding: 6px 10px; border-radius: 6px; border: 1px solid rgba(0, 122, 255, 0.1); line-height: 1.4;">
-                    <i class="fa-solid fa-circle-info"></i> <b>Panduan:</b> Jika kosong, klik <b>Deteksi Lirik</b> untuk mengambil lirik dari audio. Lalu klik <b>AI</b> untuk menata bait. Jika terkena Copyright, klik <b>Encrypt</b>.
+                <div id="lyricsHelperText" style="font-size: 0.7rem; color: var(--accent-color); margin-bottom: 6px; font-weight: 600; background: rgba(0, 122, 255, 0.05); padding: 8px 12px; border-radius: 8px; border: 1px solid rgba(0, 122, 255, 0.1); line-height: 1.5; transition: all 0.3s ease;">
+                    <i class="fa-solid fa-circle-info"></i> <b>Panduan:</b> Biarkan kotak ini kosong lalu klik <b>Deteksi</b> untuk menebak lirik dari audio. <br><br><b>ATAU</b> paste lirik asli dari Google ke kotak ini, lalu klik <b>Sync Lirik</b> untuk menyinkronkan waktu lirik dengan lagu (Karaoke).
                 </div>
                 <div id="detectLyricsProgress" class="hidden" style="font-size: 0.75rem; color: #8b5cf6; margin-bottom: 6px; font-weight: 600; background: rgba(139, 92, 246, 0.05); padding: 8px 12px; border-radius: 8px; border: 1px solid rgba(139, 92, 246, 0.2); display: flex; align-items: center; gap: 8px;">
                     <i class="fa-solid fa-circle-notch fa-spin"></i> <span id="detectLyricsStatus">Mendengarkan audio...</span>
                 </div>
-                <textarea id="lyricsInput" placeholder="Tuliskan lirik lagu Anda sendiri di sini..." style="height: 140px;" maxlength="5000" oninput="updateCounter('lyricsInput', 'lyricsCounter', 5000)"></textarea>
+                <textarea id="lyricsInput" placeholder="Tuliskan lirik lagu Anda sendiri di sini..." style="height: 140px;" maxlength="5000" oninput="updateCounter('lyricsInput', 'lyricsCounter', 5000); window.checkLyricsState();"></textarea>
                 <span class="char-counter" id="lyricsCounter">0/5000</span>
             </div>
 
@@ -7292,6 +7292,141 @@ window.startDspBypassAndUpload = async function() {
             if (input) {
                 input.value = '';
                 updateCounter(inputId, counterId, maxLen);
+            }
+        };
+
+        // ============================================================
+        // LOGIKA TOMBOL PINTAR (SMART SYNC & DETECT)
+        // ============================================================
+        window.checkLyricsState = function() {
+            const text = document.getElementById('lyricsInput').value.trim();
+            const btn = document.getElementById('btnSyncDetect');
+            const icon = document.getElementById('iconSyncDetect');
+            const spanText = document.getElementById('textSyncDetect');
+            const helper = document.getElementById('lyricsHelperText');
+
+            if (!btn || !helper) return;
+
+            if (text.length > 0) {
+                // MODE SYNC (Jika kotak ada isinya)
+                btn.style.background = 'rgba(239, 68, 68, 0.1)';
+                btn.style.color = '#ef4444';
+                btn.style.borderColor = 'rgba(239, 68, 68, 0.2)';
+                icon.className = 'fa-solid fa-stopwatch';
+                spanText.innerText = 'Sync Lirik';
+                btn.title = 'Sinkronkan waktu lirik dengan lagu';
+                
+                helper.innerHTML = '<i class="fa-solid fa-stopwatch"></i> <b>Smart Sync Aktif:</b> Klik tombol <b>Sync Lirik</b> di atas untuk mencocokkan teks ini dengan ketukan lagu secara otomatis.';
+                helper.style.color = '#ef4444';
+                helper.style.background = 'rgba(239, 68, 68, 0.05)';
+                helper.style.borderColor = 'rgba(239, 68, 68, 0.1)';
+            } else {
+                // MODE DETEKSI (Jika kotak kosong)
+                btn.style.background = 'rgba(139, 92, 246, 0.1)';
+                btn.style.color = '#8b5cf6';
+                btn.style.borderColor = 'rgba(139, 92, 246, 0.2)';
+                icon.className = 'fa-solid fa-ear-listen';
+                spanText.innerText = 'Deteksi';
+                btn.title = 'Deteksi Lirik dari Audio';
+                
+                helper.innerHTML = '<i class="fa-solid fa-circle-info"></i> <b>Panduan:</b> Biarkan kotak ini kosong lalu klik <b>Deteksi</b> untuk menebak lirik dari audio. <br><br><b>ATAU</b> paste lirik asli dari Google ke kotak ini, lalu klik <b>Sync Lirik</b> untuk menyinkronkan waktu lirik dengan lagu (Karaoke).';
+                helper.style.color = 'var(--accent-color)';
+                helper.style.background = 'rgba(0, 122, 255, 0.05)';
+                helper.style.borderColor = 'rgba(0, 122, 255, 0.1)';
+            }
+        };
+
+        window.handleSyncDetectClick = function() {
+            const text = document.getElementById('lyricsInput').value.trim();
+            if (text.length > 0) {
+                window.syncLyrics();
+            } else {
+                window.detectLyrics();
+            }
+        };
+
+        window.syncLyrics = async function() {
+            if (!isLoggedIn || !currentUser) {
+                showIphoneToast("Akses Ditolak", "Silakan login terlebih dahulu.", "fa-lock");
+                return;
+            }
+
+            if (!rawAudioFile && !selectedAudioUrl) {
+                showIphoneToast("Error", "Silakan unggah audio referensi terlebih dahulu untuk sinkronisasi!", "fa-triangle-exclamation");
+                return;
+            }
+
+            const inputEl = document.getElementById('lyricsInput');
+            const progressBox = document.getElementById('detectLyricsProgress');
+            const statusText = document.getElementById('detectLyricsStatus');
+            const btn = document.getElementById('btnSyncDetect');
+            const originalBtnHtml = btn.innerHTML;
+
+            const originalLyrics = inputEl.value.trim();
+
+            btn.disabled = true;
+            inputEl.disabled = true;
+            progressBox.classList.remove('hidden');
+            
+            // Ubah warna progress box jadi merah (tema Sync)
+            progressBox.style.color = '#ef4444';
+            progressBox.style.background = 'rgba(239, 68, 68, 0.05)';
+            progressBox.style.borderColor = 'rgba(239, 68, 68, 0.2)';
+            statusText.innerText = "Menyiapkan Audio...";
+
+            try {
+                let finalAudioUrl = selectedAudioUrl;
+                if (!finalAudioUrl && rawAudioFile) {
+                    let finalDurStr = "0:00";
+                    const origPlayer = document.getElementById('originalAudioPlayer');
+                    if (origPlayer && isFinite(origPlayer.duration) && origPlayer.duration > 0) {
+                        finalDurStr = formatTime(origPlayer.duration);
+                    }
+                    await uploadBlobToCloudinary(rawAudioFile, rawAudioFile.name, false, finalDurStr);
+                    finalAudioUrl = selectedAudioUrl; 
+                }
+
+                statusText.innerText = "AI sedang menyinkronkan waktu...";
+                
+                const response = await fetch('/api/habirmx', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: 'sync_lyrics',
+                        audioUrl: finalAudioUrl,
+                        lyrics: originalLyrics
+                    })
+                });
+
+                const data = await response.json();
+                if (!response.ok) throw new Error(data.error || "Gagal sinkronisasi lirik.");
+
+                // Format hasil JSON ke format LRC standar [mm:ss.xx]
+                let lrcText = "";
+                data.result.forEach(line => {
+                    let m = Math.floor(line.start / 60).toString().padStart(2, '0');
+                    let s = (line.start % 60).toFixed(2).padStart(5, '0'); 
+                    lrcText += `[${m}:${s}] ${line.text}\n`;
+                });
+
+                inputEl.value = lrcText.trim();
+                updateCounter('lyricsInput', 'lyricsCounter', 5000);
+                showIphoneToast("Selesai", "Lirik berhasil disinkronkan dengan lagu!", "fa-stopwatch");
+
+            } catch (err) {
+                showIphoneToast("Sync Gagal", err.message, "fa-circle-xmark");
+            } finally {
+                inputEl.disabled = false;
+                btn.disabled = false;
+                btn.innerHTML = originalBtnHtml;
+                progressBox.classList.add('hidden');
+                
+                // Kembalikan warna progress box ke ungu (tema Deteksi)
+                progressBox.style.color = '#8b5cf6';
+                progressBox.style.background = 'rgba(139, 92, 246, 0.05)';
+                progressBox.style.borderColor = 'rgba(139, 92, 246, 0.2)';
+                
+                window.checkLyricsState(); // Kembalikan state tombol
             }
         };
 
