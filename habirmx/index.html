@@ -7388,13 +7388,21 @@ window.startDspBypassAndUpload = async function() {
 
                 statusText.innerText = "AI sedang menyinkronkan waktu...";
                 
+                // Ambil durasi asli dari player audio
+                let audioDurSec = 240; // Default 4 menit
+                const origPlayer = document.getElementById('originalAudioPlayer');
+                if (origPlayer && isFinite(origPlayer.duration) && origPlayer.duration > 0) {
+                    audioDurSec = origPlayer.duration;
+                }
+                
                 const response = await fetch('/api/habirmx', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         action: 'sync_lyrics',
                         audioUrl: finalAudioUrl,
-                        lyrics: originalLyrics
+                        lyrics: originalLyrics,
+                        audioDuration: audioDurSec
                     })
                 });
 
