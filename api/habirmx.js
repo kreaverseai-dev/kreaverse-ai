@@ -270,102 +270,85 @@ module.exports = async (req, res) => {
                     throw new Error("AI tidak mendeteksi suara vokal pada lagu ini.");
                 }
                 
-                // 1. Bersihkan lirik user (Pisahkan tag dan lirik murni)
-                const rawUserLines = lyrics.split('\n').map(l => l.trim()).filter(l => l !== "");
-                
-                // 2. Filter segment Whisper dari halusinasi ekstrim
+                // 1. Filter segment Whisper dari halusinasi ekstrim
                 let validSegments = segments.filter(seg => {
                     let t = seg.text.toLowerCase();
                     if (t.includes("terima kasih") || t.includes("thanks for") || t.includes("subtitle")) return false;
-                    // Filter ketat: Buang suara aneh yang durasinya < 1 detik dan katanya < 3 huruf
-                    if (seg.end - seg.start < 1.0 && t.replace(/[^a-z]/gi, '').length < 3) return false; 
+                    if (seg.end - seg.start < 0.5 && t.replace(/[^a-z]/gi, '').length < 3) return false; 
                     return true;
                 });
 
-                // 3. Buat Slot Waktu Vokal (Memecah durasi AI menjadi slot-slot kecil)
-                let timeSlots = [];
-                for (let seg of validSegments) {
-                    let duration = seg.end - seg.start;
-                    // Asumsi 1 baris lirik butuh waktu sekitar 3.5 detik untuk dinyanyikan
-                    let chunks = Math.max(1, Math.round(duration / 3.5)); 
-                    let step = duration / chunks;
+                // 2. Buat format LRC Kasar (Berisi bahasa alien dari Whisper tapi waktunya akurat)
+                let roughLrc = "";
+                validSegments.forEach(seg => {
+                    let m = Math.floor(seg.start / 60).toString().padStart(2, '0');
+                    let s = (seg.start % 60).toFixed(2).padStart(5, '0');
+                    roughLrc += `[${m}:${s}] ${seg.text.trim()}\n`;
+                });
+
+                // 3. PANGGIL AI KE-2 (LLM) UNTUK MEMPERBAIKI BAHASA ALIEN SECARA OTOMATIS
+                const providersDoc = await db.collection("settings").doc("api_providers").get();
+                const allProviders = providersDoc.data().list || [];
+                const llmProviders = allProviders.filter(p => p.serviceType && (p.serviceType.toLowerCase() === "llm" || p.serviceType.toLowerCase() === "text"));
+                
+                if (llmProviders.length > 0) {
+                    const llmProvider = llmProviders[0]; // Gunakan LLM pertama yang tersedia
+                    const keysQuery = await db.collection("api_keys").where("provider", "==", llmProvider.value).where("status", "==", "aktif").get();
                     
-                    for(let i = 0; i < chunks; i++) {
-                        timeSlots.push({
-                            start: seg.start + (i * step),
-                            end: seg.start + ((i + 1) * step)
+                    if (!keysQuery.empty) {
+                        const llmKey = keysQuery.docs[0].data().key;
+                        let activeModel = llmProvider.models ? llmProvider.models.split(',')[0].trim() : "default";
+
+                        const systemPrompt = `Kamu adalah AI Audio Engineer jenius. Tugasmu adalah memperbaiki lirik berantakan hasil transkripsi AI (Input A) menggunakan lirik asli yang benar (Input B).
+ATURAN MUTLAK:
+1. Pertahankan SEMUA timestamp [mm:ss.xx] dari Input A. Jangan diubah waktunya.
+2. Ganti kata-kata alien/berantakan di Input A dengan kata-kata dari Input B yang paling masuk akal.
+3. Jika penyanyi mengulang lirik di Input A, ulang juga lirik dari Input B.
+4. Jika ada jeda waktu lebih dari 8 detik antar baris, sisipkan baris baru: [mm:ss.xx] [Instrumental]
+5. Jawab HANYA dengan teks berformat LRC. Dilarang keras memberikan penjelasan, basa-basi, atau komentar apapun.`;
+
+                        const userPrompt = `INPUT B (Lirik Asli yang Benar):\n${lyrics}\n\nINPUT A (Transkripsi Berantakan dengan Waktu):\n${roughLrc}`;
+
+                        const variables = { model: activeModel, systemPrompt: systemPrompt, prompt: userPrompt };
+                        let rawBody = llmProvider.payloadTemplate || `{"model": "{{model}}", "messages": [{"role": "system", "content": "{{systemPrompt}}"}, {"role": "user", "content": "{{prompt}}"}]}`;
+                        const finalPayload = JSON.parse(renderTemplate(rawBody, variables));
+
+                        const headers = { "Content-Type": "application/json" };
+                        const headerName = llmProvider.headerName || "Authorization";
+                        headers[headerName] = (llmProvider.headerValue || "Bearer {apiKey}").replace("{apiKey}", llmKey);
+
+                        const llmRes = await fetch(`${llmProvider.baseUrl}${llmProvider.endpoint}`, {
+                            method: 'POST', headers: headers, body: JSON.stringify(finalPayload)
                         });
-                    }
-                }
 
-                let formattedLyrics = [];
-                let slotIndex = 0;
-                let lastEnd = 0;
-
-                // 4. Distribusikan Lirik User ke Slot Waktu secara Berurutan
-                for (let i = 0; i < rawUserLines.length; i++) {
-                    let line = rawUserLines[i];
-                    let isTag = line.match(/^\[.*\]$/);
-
-                    // Jika ini tag [Chorus] dll, langsung tempel tanpa memakan slot waktu
-                    if (isTag) {
-                        formattedLyrics.push({
-                            id: i + 1,
-                            start: parseFloat(lastEnd.toFixed(2)),
-                            end: parseFloat(lastEnd.toFixed(2)),
-                            text: line
-                        });
-                        continue;
-                    }
-
-                    if (slotIndex < timeSlots.length) {
-                        let slot = timeSlots[slotIndex];
-
-                        // Deteksi Jeda Instrumen (> 8 detik)
-                        if (slot.start - lastEnd > 8.0) {
-                            formattedLyrics.push({
-                                id: 'inst_' + i,
-                                start: parseFloat(lastEnd.toFixed(2)),
-                                end: parseFloat(slot.start.toFixed(2)),
-                                text: "[Instrumental]"
-                            });
+                        const llmData = await llmRes.json();
+                        if (llmRes.ok) {
+                            let finalLrc = "";
+                            if (llmData.choices && llmData.choices[0].message) finalLrc = llmData.choices[0].message.content;
+                            else if (llmData.candidates && llmData.candidates[0].content) finalLrc = llmData.candidates[0].content.parts[0].text;
+                            
+                            if (finalLrc) {
+                                // Bersihkan jika AI masih bandel ngasih basa-basi
+                                finalLrc = finalLrc.replace(/```lrc/g, '').replace(/```/g, '').trim();
+                                
+                                // Kembalikan langsung ke frontend dalam bentuk string LRC
+                                return res.status(200).json({ success: true, isLrcString: true, result: finalLrc });
+                            }
                         }
-
-                        formattedLyrics.push({
-                            id: i + 1,
-                            start: parseFloat(slot.start.toFixed(2)),
-                            end: parseFloat(slot.end.toFixed(2)),
-                            text: line // 100% MENGGUNAKAN TEKS USER, TEKS AI DIBUANG TOTAL
-                        });
-                        
-                        lastEnd = slot.end;
-                        slotIndex++;
-                    } else {
-                        // Jika slot waktu AI habis tapi lirik user masih ada (AI terpotong di tengah lagu)
-                        let remainingTime = audioDurationSec - lastEnd;
-                        let remainingLines = rawUserLines.length - i;
-                        // Beri waktu sisa secara proporsional (Maksimal 4 detik per baris)
-                        let timePerLine = Math.min(4.0, Math.max(2.0, remainingTime / remainingLines));
-                        let subEnd = lastEnd + timePerLine;
-                        
-                        formattedLyrics.push({
-                            id: i + 1,
-                            start: parseFloat(lastEnd.toFixed(2)),
-                            end: parseFloat(subEnd.toFixed(2)),
-                            text: line
-                        });
-                        lastEnd = subEnd;
                     }
                 }
 
-                // 5. Outro Instrumental
-                if (audioDurationSec - lastEnd > 5.0) {
-                    formattedLyrics.push({
-                        id: 'outro',
-                        start: parseFloat(lastEnd.toFixed(2)),
-                        end: parseFloat(audioDurationSec.toFixed(2)),
-                        text: "[Instrumental]"
-                    });
+                // 4. FALLBACK JIKA LLM GAGAL (Kembali ke mode distribusi proporsional)
+                let formattedLyrics = [];
+                let lastEnd = 0;
+                const cleanUserLines = lyrics.split('\n').map(l => l.trim()).filter(l => l !== "");
+                
+                for (let i = 0; i < cleanUserLines.length; i++) {
+                    let line = cleanUserLines[i];
+                    let timePerLine = audioDurationSec / cleanUserLines.length;
+                    let subEnd = lastEnd + timePerLine;
+                    formattedLyrics.push({ id: i + 1, start: parseFloat(lastEnd.toFixed(2)), end: parseFloat(subEnd.toFixed(2)), text: line });
+                    lastEnd = subEnd;
                 }
 
                 return res.status(200).json({ success: true, result: formattedLyrics });
