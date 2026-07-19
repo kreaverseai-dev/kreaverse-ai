@@ -230,6 +230,9 @@ module.exports = async (req, res) => {
                 return res.status(400).json({ error: 'Audio URL dan Teks Lirik wajib diisi untuk sinkronisasi.' });
             }
 
+            // Ambil durasi asli dari frontend (fallback 4 menit jika gagal)
+            const audioDurationSec = body.audioDuration || 240; 
+
             try {
                 const whisperKeysQuery = await db.collection("api_keys").where("provider", "==", "Groq Whisper").where("status", "==", "aktif").get();
                 if (whisperKeysQuery.empty) {
@@ -267,22 +270,48 @@ module.exports = async (req, res) => {
                     throw new Error("AI tidak mendeteksi suara vokal pada lagu ini.");
                 }
                 
-                const cleanUserLines = lyrics.split('\n')
-                    .map(l => l.trim())
-                    .filter(l => l !== "" && !l.match(/^\[.*\]$/));
+                // Bersihkan baris kosong, TAPI biarkan tag [Chorus] dll untuk ditampilkan
+                const cleanUserLines = lyrics.split('\n').map(l => l.trim()).filter(l => l !== "");
 
                 let formattedLyrics = [];
                 let userIndex = 0;
+                let lastEnd = 0;
 
                 for (let i = 0; i < segments.length; i++) {
                     let seg = segments[i];
-                    let segDuration = seg.end - seg.start;
                     
+                    // FITUR BARU: DETEKSI JEDA INSTRUMEN (> 8 Detik)
+                    if (seg.start - lastEnd > 8.0) {
+                        formattedLyrics.push({
+                            id: 'inst_' + i,
+                            start: parseFloat(lastEnd.toFixed(2)),
+                            end: parseFloat(seg.start.toFixed(2)),
+                            text: "[🎵 Instrumental / Jeda Musik]"
+                        });
+                    }
+
+                    let segDuration = seg.end - seg.start;
                     let wordCount = seg.text.trim().split(/\s+/).length;
                     let linesInThisSegment = Math.max(1, Math.round(wordCount / 5)); 
 
                     for (let j = 0; j < linesInThisSegment; j++) {
                         if (userIndex < cleanUserLines.length) {
+                            let currentLine = cleanUserLines[userIndex];
+                            let isTag = currentLine.match(/^\[.*\]$/); // Cek apakah ini tag seperti [Chorus]
+
+                            // Jika ini tag, jangan beri durasi nyanyi, langsung tempel saja
+                            if (isTag) {
+                                formattedLyrics.push({
+                                    id: userIndex + 1,
+                                    start: parseFloat(lastEnd.toFixed(2)),
+                                    end: parseFloat(lastEnd.toFixed(2)),
+                                    text: currentLine
+                                });
+                                userIndex++;
+                                j--; // Jangan hitung tag sebagai baris lirik yang dinyanyikan
+                                continue;
+                            }
+
                             let timePerLine = segDuration / linesInThisSegment;
                             let subStart = seg.start + (j * timePerLine);
                             let subEnd = subStart + timePerLine;
@@ -291,24 +320,46 @@ module.exports = async (req, res) => {
                                 id: userIndex + 1,
                                 start: parseFloat(subStart.toFixed(2)),
                                 end: parseFloat(subEnd.toFixed(2)),
-                                text: cleanUserLines[userIndex] 
+                                text: currentLine 
                             });
+                            lastEnd = subEnd;
                             userIndex++;
                         }
                     }
+                    lastEnd = seg.end;
                 }
 
-                while (userIndex < cleanUserLines.length) {
-                    let lastEnd = formattedLyrics.length > 0 ? formattedLyrics[formattedLyrics.length - 1].end : 0;
-                    if (lastEnd === 0) lastEnd = 10.0; 
+                // FITUR BARU: JIKA AI TERPOTONG, PAKSA SISA LIRIK MASUK KE SISA DURASI LAGU
+                if (userIndex < cleanUserLines.length) {
+                    let remainingTime = audioDurationSec - lastEnd;
+                    // Jika sisa waktu tidak masuk akal (misal < 5 detik), beri waktu standar
+                    if (remainingTime < 5) remainingTime = (cleanUserLines.length - userIndex) * 4.0; 
+                    
+                    let timePerRemainingLine = remainingTime / (cleanUserLines.length - userIndex);
 
-                    formattedLyrics.push({
-                        id: userIndex + 1,
-                        start: parseFloat(lastEnd.toFixed(2)),
-                        end: parseFloat((lastEnd + 4.0).toFixed(2)), 
-                        text: cleanUserLines[userIndex]
-                    });
-                    userIndex++;
+                    while (userIndex < cleanUserLines.length) {
+                        let currentLine = cleanUserLines[userIndex];
+                        let isTag = currentLine.match(/^\[.*\]$/);
+
+                        if (isTag) {
+                            formattedLyrics.push({
+                                id: userIndex + 1,
+                                start: parseFloat(lastEnd.toFixed(2)),
+                                end: parseFloat(lastEnd.toFixed(2)),
+                                text: currentLine
+                            });
+                        } else {
+                            let subEnd = lastEnd + timePerRemainingLine;
+                            formattedLyrics.push({
+                                id: userIndex + 1,
+                                start: parseFloat(lastEnd.toFixed(2)),
+                                end: parseFloat(subEnd.toFixed(2)),
+                                text: currentLine
+                            });
+                            lastEnd = subEnd;
+                        }
+                        userIndex++;
+                    }
                 }
 
                 return res.status(200).json({ success: true, result: formattedLyrics });
