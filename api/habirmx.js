@@ -270,8 +270,8 @@ module.exports = async (req, res) => {
                     throw new Error("AI tidak mendeteksi suara vokal pada lagu ini.");
                 }
                 
-                // 1. Bersihkan lirik user
-                const rawUserLines = lyrics.split('\n').map(l => l.trim()).filter(l => l !== "");
+                // 1. Bersihkan lirik user dari baris kosong dan tag
+                const cleanUserLines = lyrics.split('\n').map(l => l.trim()).filter(l => l !== "" && !l.match(/^\[.*\]$/));
 
                 // 2. Filter segment Whisper dari halusinasi ekstrim
                 let validSegments = segments.filter(seg => {
@@ -281,95 +281,99 @@ module.exports = async (req, res) => {
                     return true;
                 });
 
-                // 3. Buat Peta Waktu per Kata (Word-Level Time Map) dari Audio Asli
-                let wordTimeSlots = [];
-                for (let seg of validSegments) {
-                    let words = seg.text.trim().split(/\s+/);
-                    if (words.length === 0) continue;
-                    let timePerWord = (seg.end - seg.start) / words.length;
-                    for (let w = 0; w < words.length; w++) {
-                        wordTimeSlots.push({
-                            start: seg.start + (w * timePerWord),
-                            end: seg.start + ((w + 1) * timePerWord)
-                        });
+                // Fungsi untuk menghitung kemiripan teks (Sorensen-Dice coefficient)
+                function getSimilarity(s1, s2) {
+                    let longer = s1.toLowerCase(); let shorter = s2.toLowerCase();
+                    if (s1.length < s2.length) { longer = s2.toLowerCase(); shorter = s1.toLowerCase(); }
+                    let longerLength = longer.length;
+                    if (longerLength === 0) return 1.0;
+                    let costs = new Array();
+                    for (let i = 0; i <= shorter.length; i++) {
+                        let lastValue = i;
+                        for (let j = 0; j <= longer.length; j++) {
+                            if (i === 0) costs[j] = j;
+                            else {
+                                if (j > 0) {
+                                    let newValue = costs[j - 1];
+                                    if (longer.charAt(j - 1) !== shorter.charAt(i - 1))
+                                        newValue = Math.min(Math.min(newValue, lastValue), costs[j]) + 1;
+                                    costs[j - 1] = lastValue; lastValue = newValue;
+                                }
+                            }
+                        }
+                        if (i > 0) costs[shorter.length] = lastValue;
                     }
+                    return (longerLength - costs[shorter.length]) / parseFloat(longerLength);
                 }
 
                 let formattedLyrics = [];
-                let slotIndex = 0;
                 let lastEnd = 0;
 
-                // 4. Distribusikan Lirik User ke Waktu Asli Audio
-                for (let i = 0; i < rawUserLines.length; i++) {
-                    let line = rawUserLines[i];
-                    let isTag = line.match(/^\[.*\]$/);
-
-                    // Jika ini tag [Chorus] dll, langsung tempel tanpa memakan waktu nyanyi
-                    if (isTag) {
+                for (let seg of validSegments) {
+                    // DETEKSI JEDA INSTRUMEN (> 5 Detik)
+                    if (seg.start - lastEnd > 5.0 && lastEnd > 0) {
                         formattedLyrics.push({
-                            id: i + 1,
                             start: parseFloat(lastEnd.toFixed(2)),
-                            end: parseFloat(lastEnd.toFixed(2)),
-                            text: line
+                            text: "[Instrumental]"
                         });
-                        continue;
                     }
 
-                    let lineWordCount = line.split(/\s+/).length;
+                    // FIX CLUMPING: Pecah segment AI yang terlalu panjang menjadi potongan kecil
+                    let whisperWords = seg.text.trim().split(/\s+/);
+                    let subSegments = [];
 
-                    if (slotIndex < wordTimeSlots.length) {
-                        let startSlot = wordTimeSlots[slotIndex];
+                    if (whisperWords.length > 6) {
+                        // Pecah menjadi sekitar 4-6 kata per baris agar mudah dicocokkan dengan lirik Google
+                        let chunks = Math.ceil(whisperWords.length / 5);
+                        let chunkSize = Math.ceil(whisperWords.length / chunks);
+                        let timePerWord = (seg.end - seg.start) / whisperWords.length;
 
-                        // Deteksi Jeda Instrumen (> 5 detik)
-                        if (startSlot.start - lastEnd > 5.0 && lastEnd > 0) {
-                            formattedLyrics.push({
-                                id: 'inst_' + i,
-                                start: parseFloat(lastEnd.toFixed(2)),
-                                end: parseFloat(startSlot.start.toFixed(2)),
-                                text: "[Instrumental]"
+                        for (let i = 0; i < whisperWords.length; i += chunkSize) {
+                            let chunkWords = whisperWords.slice(i, i + chunkSize);
+                            subSegments.push({
+                                text: chunkWords.join(" "),
+                                start: seg.start + (i * timePerWord),
+                                end: seg.start + ((i + chunkWords.length) * timePerWord)
                             });
                         }
-
-                        let endSlotIndex = Math.min(slotIndex + lineWordCount - 1, wordTimeSlots.length - 1);
-                        let endSlot = wordTimeSlots[endSlotIndex];
-
-                        formattedLyrics.push({
-                            id: i + 1,
-                            start: parseFloat(startSlot.start.toFixed(2)),
-                            end: parseFloat(endSlot.end.toFixed(2)),
-                            text: line // 100% MENGGUNAKAN TEKS USER
-                        });
-
-                        lastEnd = endSlot.end;
-                        slotIndex += lineWordCount;
                     } else {
-                        // Jika slot waktu AI habis tapi lirik user masih ada
-                        let remainingTime = audioDurationSec - lastEnd;
-                        let remainingLines = rawUserLines.length - i;
-                        let timePerLine = Math.min(4.0, Math.max(2.0, remainingTime / remainingLines));
-                        let subEnd = lastEnd + timePerLine;
-                        
-                        formattedLyrics.push({
-                            id: i + 1,
-                            start: parseFloat(lastEnd.toFixed(2)),
-                            end: parseFloat(subEnd.toFixed(2)),
-                            text: line
-                        });
-                        lastEnd = subEnd;
+                        subSegments.push({ text: seg.text, start: seg.start, end: seg.end });
                     }
+
+                    // PROSES PENCOCOKAN (MATCHING)
+                    for (let subSeg of subSegments) {
+                        let bestMatchText = subSeg.text;
+                        let highestScore = 0;
+
+                        // Cari baris lirik Google yang paling mirip dengan potongan suara ini
+                        for (let userLine of cleanUserLines) {
+                            let score = getSimilarity(subSeg.text, userLine);
+                            if (score > highestScore) {
+                                highestScore = score;
+                                bestMatchText = userLine;
+                            }
+                        }
+
+                        // Jika kemiripan > 25%, gunakan ejaan sempurna dari Google. Jika tidak, pakai teks AI (Ad-lib)
+                        let finalText = (highestScore > 0.25) ? bestMatchText : subSeg.text;
+
+                        formattedLyrics.push({
+                            start: parseFloat(subSeg.start.toFixed(2)),
+                            text: finalText
+                        });
+                    }
+                    lastEnd = seg.end;
                 }
 
-                // 5. Outro Instrumental
+                // OUTRO INSTRUMENTAL
                 if (audioDurationSec - lastEnd > 5.0) {
                     formattedLyrics.push({
-                        id: 'outro',
                         start: parseFloat(lastEnd.toFixed(2)),
-                        end: parseFloat(audioDurationSec.toFixed(2)),
                         text: "[Instrumental]"
                     });
                 }
 
-                // 6. Format ke LRC String agar langsung siap pakai di Frontend
+                // Format ke LRC String
                 let lrcText = "";
                 formattedLyrics.forEach(item => {
                     let m = Math.floor(item.start / 60).toString().padStart(2, '0');
