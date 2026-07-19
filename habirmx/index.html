@@ -9197,6 +9197,20 @@ window.startDspBypassAndUpload = async function() {
             showIphoneToast("Magic Wand Hack", "AI sedang merombak teks Anda...", "fa-wand-magic-sparkles");
 
             try {
+                let finalAudioUrl = selectedAudioUrl;
+                // Jika mode cover dan merapikan lirik, pastikan audio terupload agar AI bisa mendengarnya
+                if (currentMode === 'cover' && type === 'lyrics' && !finalAudioUrl && rawAudioFile) {
+                    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Upload Audio...';
+                    let finalDurStr = "0:00";
+                    const origPlayer = document.getElementById('originalAudioPlayer');
+                    if (origPlayer && isFinite(origPlayer.duration) && origPlayer.duration > 0) {
+                        finalDurStr = formatTime(origPlayer.duration);
+                    }
+                    await uploadBlobToCloudinary(rawAudioFile, rawAudioFile.name, false, finalDurStr);
+                    finalAudioUrl = selectedAudioUrl;
+                    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> AI...';
+                }
+
                 const vocalGenderVal = document.getElementById('vocalGenderSelect').value;
 
                 const response = await fetch('/api/habirmx', {
@@ -9209,7 +9223,8 @@ window.startDspBypassAndUpload = async function() {
                         llmType: type,
                         inputText: originalText,
                         vocalGender: vocalGenderVal,
-                        currentMode: currentMode
+                        currentMode: currentMode,
+                        audioUrl: finalAudioUrl // Kirim URL audio ke backend
                     })
                 });
 
