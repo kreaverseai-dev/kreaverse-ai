@@ -223,6 +223,103 @@ module.exports = async (req, res) => {
         }
 
         // ============================================================
+        // ROUTE 1A-2: SINKRONISASI LIRIK (SMART SYNC ALGORITHM VIA GROQ)
+        // ============================================================
+        if (action === 'sync_lyrics') {
+            if (!audioUrl || !lyrics) {
+                return res.status(400).json({ error: 'Audio URL dan Teks Lirik wajib diisi untuk sinkronisasi.' });
+            }
+
+            try {
+                const whisperKeysQuery = await db.collection("api_keys").where("provider", "==", "Groq Whisper").where("status", "==", "aktif").get();
+                if (whisperKeysQuery.empty) {
+                    throw new Error("API Key untuk Groq Whisper tidak ditemukan atau mati.");
+                }
+                const whisperKeysDocs = whisperKeysQuery.docs.sort((a, b) => (a.data().priority || 1) - (b.data().priority || 1));
+                const whisperKey = whisperKeysDocs[0].data().key;
+
+                const audioFetch = await fetch(audioUrl);
+                if (!audioFetch.ok) throw new Error("Gagal mengunduh audio referensi.");
+                const audioBlob = await audioFetch.blob();
+
+                const formData = new FormData();
+                formData.append("file", audioBlob, "audio.mp3");
+                formData.append("model", "whisper-large-v3-turbo");
+                formData.append("temperature", "0.0");
+                
+                formData.append("language", "id"); 
+                formData.append("response_format", "verbose_json");
+                formData.append("condition_on_previous_text", "false");
+                
+                const promptHint = lyrics.substring(0, 400).replace(/\n/g, ', ');
+                formData.append("prompt", "Ini adalah lagu panjang. Lanjutkan transkripsi sampai akhir musik. " + promptHint); 
+
+                const whisperRes = await fetch("https://api.groq.com/openai/v1/audio/transcriptions", {
+                    method: "POST",
+                    headers: { "Authorization": `Bearer ${whisperKey}` },
+                    body: formData
+                });
+
+                const whisperData = await whisperRes.json();
+                if (!whisperRes.ok) throw new Error(whisperData.error?.message || "Gagal sinkronisasi via Groq.");
+
+                const segments = whisperData.segments;
+                if (!segments || segments.length === 0) {
+                    throw new Error("AI tidak mendeteksi suara vokal pada lagu ini.");
+                }
+                
+                const cleanUserLines = lyrics.split('\n')
+                    .map(l => l.trim())
+                    .filter(l => l !== "" && !l.match(/^\[.*\]$/));
+
+                let formattedLyrics = [];
+                let userIndex = 0;
+
+                for (let i = 0; i < segments.length; i++) {
+                    let seg = segments[i];
+                    let segDuration = seg.end - seg.start;
+                    
+                    let wordCount = seg.text.trim().split(/\s+/).length;
+                    let linesInThisSegment = Math.max(1, Math.round(wordCount / 5)); 
+
+                    for (let j = 0; j < linesInThisSegment; j++) {
+                        if (userIndex < cleanUserLines.length) {
+                            let timePerLine = segDuration / linesInThisSegment;
+                            let subStart = seg.start + (j * timePerLine);
+                            let subEnd = subStart + timePerLine;
+
+                            formattedLyrics.push({
+                                id: userIndex + 1,
+                                start: parseFloat(subStart.toFixed(2)),
+                                end: parseFloat(subEnd.toFixed(2)),
+                                text: cleanUserLines[userIndex] 
+                            });
+                            userIndex++;
+                        }
+                    }
+                }
+
+                while (userIndex < cleanUserLines.length) {
+                    let lastEnd = formattedLyrics.length > 0 ? formattedLyrics[formattedLyrics.length - 1].end : 0;
+                    if (lastEnd === 0) lastEnd = 10.0; 
+
+                    formattedLyrics.push({
+                        id: userIndex + 1,
+                        start: parseFloat(lastEnd.toFixed(2)),
+                        end: parseFloat((lastEnd + 4.0).toFixed(2)), 
+                        text: cleanUserLines[userIndex]
+                    });
+                    userIndex++;
+                }
+
+                return res.status(200).json({ success: true, result: formattedLyrics });
+
+            } catch (err) {
+                return res.status(500).json({ error: "Gagal sinkronisasi lirik: " + err.message });
+            }
+        }
+
+        // ============================================================
         // ROUTE 1B: MAGIC WAND (AUTO-EDIT LIRIK & STYLE VIA LLM)
         // ============================================================
         if (action === 'magic_wand') {
