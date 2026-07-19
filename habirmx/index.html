@@ -7409,13 +7409,19 @@ window.startDspBypassAndUpload = async function() {
                 const data = await response.json();
                 if (!response.ok) throw new Error(data.error || "Gagal sinkronisasi lirik.");
 
-                // Format hasil JSON ke format LRC standar [mm:ss.xx]
                 let lrcText = "";
-                data.result.forEach(line => {
-                    let m = Math.floor(line.start / 60).toString().padStart(2, '0');
-                    let s = (line.start % 60).toFixed(2).padStart(5, '0'); 
-                    lrcText += `[${m}:${s}] ${line.text}\n`;
-                });
+                
+                // Cek apakah backend mengembalikan string LRC langsung (Mode Canggih LLM)
+                if (data.isLrcString) {
+                    lrcText = data.result;
+                } else {
+                    // Fallback jika backend mengembalikan array
+                    data.result.forEach(line => {
+                        let m = Math.floor(line.start / 60).toString().padStart(2, '0');
+                        let s = (line.start % 60).toFixed(2).padStart(5, '0'); 
+                        lrcText += `[${m}:${s}] ${line.text}\n`;
+                    });
+                }
 
                 inputEl.value = lrcText.trim();
                 updateCounter('lyricsInput', 'lyricsCounter', 5000);
