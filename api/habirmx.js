@@ -247,9 +247,8 @@ module.exports = async (req, res) => {
                 formData.append("model", "whisper-large-v3-turbo");
                 formData.append("temperature", "0.0");
                 
-                formData.append("language", "id"); 
+                // Biarkan AI mendeteksi bahasa secara otomatis (Support Inggris, Arab, Jawa, dll)
                 formData.append("response_format", "verbose_json");
-                formData.append("condition_on_previous_text", "false");
                 
                 const promptHint = lyrics.substring(0, 400).replace(/\n/g, ', ');
                 formData.append("prompt", "Ini adalah lagu panjang. Lanjutkan transkripsi sampai akhir musik. " + promptHint); 
