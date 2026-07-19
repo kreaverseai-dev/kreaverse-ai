@@ -270,10 +270,18 @@ module.exports = async (req, res) => {
                     throw new Error("AI tidak mendeteksi suara vokal pada lagu ini.");
                 }
                 
-                // Bersihkan lirik user dari baris kosong dan tag
+                // 1. Bersihkan lirik user dari baris kosong dan tag
                 const cleanUserLines = lyrics.split('\n').map(l => l.trim()).filter(l => l !== "" && !l.match(/^\[.*\]$/));
 
-                // Fungsi untuk menghitung kemiripan teks (Levenshtein Distance)
+                // 2. Filter segment Whisper dari halusinasi (Penyakit bawaan AI)
+                let validSegments = segments.filter(seg => {
+                    let t = seg.text.toLowerCase();
+                    if (t.includes("terima kasih") || t.includes("thanks for") || t.includes("subtitle")) return false;
+                    if (seg.end - seg.start < 0.5 && t.trim().length < 3) return false;
+                    return true;
+                });
+
+                // Fungsi untuk menghitung kemiripan teks
                 function getSimilarity(s1, s2) {
                     let longer = s1.toLowerCase(); let shorter = s2.toLowerCase();
                     if (s1.length < s2.length) { longer = s2.toLowerCase(); shorter = s1.toLowerCase(); }
@@ -301,48 +309,66 @@ module.exports = async (req, res) => {
                 let formattedLyrics = [];
                 let lastEnd = 0;
 
-                for (let i = 0; i < segments.length; i++) {
-                    let seg = segments[i];
-                    
+                for (let seg of validSegments) {
                     // DETEKSI JEDA INSTRUMEN (> 8 Detik)
                     if (seg.start - lastEnd > 8.0) {
                         formattedLyrics.push({
-                            id: 'inst_' + i,
+                            id: 'inst_' + formattedLyrics.length,
                             start: parseFloat(lastEnd.toFixed(2)),
                             end: parseFloat(seg.start.toFixed(2)),
                             text: "[Instrumental]"
                         });
                     }
 
-                    let whisperText = seg.text.trim();
-                    let bestMatchText = whisperText; // Default pakai teks AI jika tidak ada yang cocok
-                    let highestScore = 0;
+                    // FIX CLUMPING: Pecah segment AI yang terlalu panjang menjadi potongan kecil
+                    let whisperWords = seg.text.trim().split(/\s+/);
+                    let subSegments = [];
 
-                    // Cari baris lirik user yang paling mirip dengan yang didengar AI
-                    for (let userLine of cleanUserLines) {
-                        let score = getSimilarity(whisperText, userLine);
-                        if (score > highestScore) {
-                            highestScore = score;
-                            bestMatchText = userLine;
+                    if (whisperWords.length > 7) {
+                        // Pecah menjadi sekitar 5-6 kata per baris agar mudah dicocokkan dengan lirik Google
+                        let chunkSize = Math.ceil(whisperWords.length / Math.ceil(whisperWords.length / 6));
+                        let timePerWord = (seg.end - seg.start) / whisperWords.length;
+
+                        for (let i = 0; i < whisperWords.length; i += chunkSize) {
+                            let chunkWords = whisperWords.slice(i, i + chunkSize);
+                            subSegments.push({
+                                text: chunkWords.join(" "),
+                                start: seg.start + (i * timePerWord),
+                                end: seg.start + ((i + chunkWords.length) * timePerWord)
+                            });
                         }
+                    } else {
+                        subSegments.push({ text: seg.text, start: seg.start, end: seg.end });
                     }
 
-                    // Jika kemiripannya di atas 30%, gunakan lirik asli dari user (Anti-Typo)
-                    // Jika di bawah 30%, berarti AI mendengar kata lain (adlib/improvisasi), biarkan pakai teks AI
-                    let finalText = (highestScore > 0.30) ? bestMatchText : whisperText;
+                    // PROSES PENCOCOKAN (MATCHING)
+                    for (let subSeg of subSegments) {
+                        let bestMatchText = subSeg.text;
+                        let highestScore = 0;
 
-                    formattedLyrics.push({
-                        id: i + 1,
-                        start: parseFloat(seg.start.toFixed(2)),
-                        end: parseFloat(seg.end.toFixed(2)),
-                        text: finalText
-                    });
+                        // Cari baris lirik Google yang paling mirip dengan potongan suara ini
+                        for (let userLine of cleanUserLines) {
+                            let score = getSimilarity(subSeg.text, userLine);
+                            if (score > highestScore) {
+                                highestScore = score;
+                                bestMatchText = userLine;
+                            }
+                        }
 
+                        // Jika kemiripan > 30%, gunakan ejaan sempurna dari Google. Jika tidak, pakai teks AI (Ad-lib)
+                        let finalText = (highestScore > 0.30) ? bestMatchText : subSeg.text;
+
+                        formattedLyrics.push({
+                            id: formattedLyrics.length + 1,
+                            start: parseFloat(subSeg.start.toFixed(2)),
+                            end: parseFloat(subSeg.end.toFixed(2)),
+                            text: finalText
+                        });
+                    }
                     lastEnd = seg.end;
                 }
 
-                // FITUR BARU: OUTRO INSTRUMENTAL (Memastikan timer pas sampai akhir lagu)
-                // Jika lagu masih tersisa lebih dari 5 detik setelah penyanyi selesai bernyanyi
+                // OUTRO INSTRUMENTAL
                 if (audioDurationSec - lastEnd > 5.0) {
                     formattedLyrics.push({
                         id: 'outro',
