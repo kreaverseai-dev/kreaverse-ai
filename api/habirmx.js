@@ -417,7 +417,7 @@ Output ONLY the comma-separated prompt tags. No conversational text.`;
                 
                 } else if (llmType === 'lyrics') {
                     if (currentMode === 'generate') {
-                        systemPrompt = `Kamu adalah Penulis Lagu (Songwriter) Profesional pemenang Grammy dan Ahli Lirik Viral. Tugasmu: Buat lirik lagu ORIGINAL yang lengkap, panjang, puitis, dan terasa sangat "manusiawi" berdasarkan input user.
+                    systemPrompt = `Kamu adalah Penulis Lagu (Songwriter) Profesional pemenang Grammy dan Ahli Lirik Viral. Tugasmu: Buat lirik lagu ORIGINAL yang lengkap, panjang, puitis, dan terasa sangat "manusiawi" berdasarkan input user.
 ATURAN MUTLAK:
 1. ANALISIS INPUT: 
    - Jika user menempelkan LIRIK LAGU FULL (lagu terkenal), JANGAN salin liriknya (hindari Copyright). Tulis ulang lirik BARU dengan makna, cerita, pesan, dan emosi (vibe) yang SAMA PERSIS, tapi gunakan pilihan kata yang lebih indah, puitis, dan berpotensi viral.
@@ -426,17 +426,37 @@ ATURAN MUTLAK:
 3. STRUKTUR WAJIB SUNO AI: Gunakan tag meta standar di dalam kurung siku: [Intro], [Verse 1], [Pre-Chorus], [Chorus], [Verse 2], [Chorus], [Bridge], [Guitar Solo] atau [Drop] atau [Instrumental], [Chorus], [Outro].
 4. Buat lirik layaknya manusia asli: puitis, memiliki rima (AABB/ABAB), emosional, dan pas dengan ketukan nada. Pastikan liriknya cukup panjang untuk durasi 3-4 menit.
 5. Jawab HANYA dengan lirik lagunya saja. Dilarang keras memberikan penjelasan, judul, atau basa-basi di awal maupun di akhir.`;
-                    } else {
-                        systemPrompt = `Kamu adalah Music Arranger & Vocal Director Profesional. Tugasmu: Merapikan teks lirik mentah hasil transkripsi AI agar siap dinyanyikan oleh AI (Suno) untuk fitur COVER LAGU.
-ATURAN MUTLAK:
-1. BERSIHKAN LIRIK: Hapus SEMUA teks metadata, terjemahan, atau label bahasa yang salah tangkap (seperti "[Bahasa Mandarin:]", "[Bahasa Indonesia:]", "Terjemahan:", dll). Sisakan HANYA lirik lagunya saja.
-2. JANGAN mengubah makna atau kata-kata asli dari lirik lagunya.
-3. TUGAS UTAMA: Analisis pola kalimat, rima, dan bait untuk menyisipkan tag struktur lagu secara akurat dan logis.
-4. MENCEGAH NYANYI TERLALU CEPAT: Suno sering langsung bernyanyi. Kamu WAJIB menambahkan tag [Long Instrumental Intro] atau [Intro] di baris paling atas sebelum lirik dimulai.
-5. JEDA MUSIK: Sisipkan tag jeda musik seperti [Melodic Interlude], [Instrumental Break], atau [Guitar Solo] di antara bait (misal antara Chorus dan Verse 2) agar lagu memiliki nafas dan sesuai dengan struktur lagu asli pada umumnya.
-6. STRUKTUR LENGKAP: Gunakan tag [Verse], [Pre-Chorus], [Chorus], [Bridge], dan akhiri dengan [Outro] lalu [End]. Sesuaikan penempatannya dengan logika lagu aslinya.
-7. Jawab HANYA dengan lirik yang sudah disisipkan tag struktur. Dilarang keras memberikan basa-basi, penjelasan, atau komentar.`;
+                } else {
+                    // MODE COVER: KECERDASAN BUATAN GANDA (WHISPER + LLM)
+                    let whisperText = "";
+                    if (audioUrl) {
+                        try {
+                            const wQuery = await db.collection("api_keys").where("provider", "==", "Groq Whisper").where("status", "==", "aktif").get();
+                            if (!wQuery.empty) {
+                                const wKey = wQuery.docs[0].data().key;
+                                const aFetch = await fetch(audioUrl);
+                                const aBlob = await aFetch.blob();
+                                const fData = new FormData();
+                                fData.append("file", aBlob, "audio.mp3");
+                                fData.append("model", "whisper-large-v3-turbo");
+                                const wRes = await fetch("https://api.groq.com/openai/v1/audio/transcriptions", { method: "POST", headers: { "Authorization": `Bearer ${wKey}` }, body: fData });
+                                const wData = await wRes.json();
+                                if (wData.text) whisperText = wData.text;
+                            }
+                        } catch(e) { console.log("Whisper in Magic Wand failed", e); }
                     }
+
+                    systemPrompt = `Kamu adalah Music Arranger Profesional. Tugasmu menyusun ulang lirik mentah dari user agar sesuai dengan lagu aslinya.
+ATURAN MUTLAK:
+1. User memberikan "Lirik Mentah" (ejaan benar tapi susunan salah).
+2. Sistem memberikan "Transkripsi Audio" (susunan benar tapi ejaan mungkin halusinasi/salah).
+3. TUGASMU: Susun ulang Lirik Mentah agar pengulangannya (A-B-A-B) persis mengikuti Transkripsi Audio!
+4. Jika penyanyi mengulang bait 3x di Transkripsi, tulis bait itu 3x menggunakan ejaan Lirik Mentah.
+5. Sisipkan tag [Intro], [Verse], [Chorus], [Instrumental] di tempat yang tepat.
+6. Jawab HANYA dengan lirik yang sudah tersusun rapi. Dilarang memberi penjelasan atau basa-basi.`;
+                    
+                    finalInputText = `LIRIK MENTAH USER:\n${inputText}\n\nTRANSKRIPSI AUDIO (Acuan Pengulangan):\n${whisperText || "Gunakan instingmu untuk menata lirik ini"}`;
+                }
                 }
 
                 let resultText = "";
