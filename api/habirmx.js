@@ -270,96 +270,86 @@ module.exports = async (req, res) => {
                     throw new Error("AI tidak mendeteksi suara vokal pada lagu ini.");
                 }
                 
-                // Bersihkan baris kosong, TAPI biarkan tag [Chorus] dll untuk ditampilkan
-                const cleanUserLines = lyrics.split('\n').map(l => l.trim()).filter(l => l !== "");
+                // Bersihkan lirik user dari baris kosong dan tag
+                const cleanUserLines = lyrics.split('\n').map(l => l.trim()).filter(l => l !== "" && !l.match(/^\[.*\]$/));
+
+                // Fungsi untuk menghitung kemiripan teks (Levenshtein Distance)
+                function getSimilarity(s1, s2) {
+                    let longer = s1.toLowerCase(); let shorter = s2.toLowerCase();
+                    if (s1.length < s2.length) { longer = s2.toLowerCase(); shorter = s1.toLowerCase(); }
+                    let longerLength = longer.length;
+                    if (longerLength === 0) return 1.0;
+                    let costs = new Array();
+                    for (let i = 0; i <= shorter.length; i++) {
+                        let lastValue = i;
+                        for (let j = 0; j <= longer.length; j++) {
+                            if (i === 0) costs[j] = j;
+                            else {
+                                if (j > 0) {
+                                    let newValue = costs[j - 1];
+                                    if (longer.charAt(j - 1) !== shorter.charAt(i - 1))
+                                        newValue = Math.min(Math.min(newValue, lastValue), costs[j]) + 1;
+                                    costs[j - 1] = lastValue; lastValue = newValue;
+                                }
+                            }
+                        }
+                        if (i > 0) costs[shorter.length] = lastValue;
+                    }
+                    return (longerLength - costs[shorter.length]) / parseFloat(longerLength);
+                }
 
                 let formattedLyrics = [];
-                let userIndex = 0;
                 let lastEnd = 0;
 
                 for (let i = 0; i < segments.length; i++) {
                     let seg = segments[i];
                     
-                    // FITUR BARU: DETEKSI JEDA INSTRUMEN (> 8 Detik)
+                    // DETEKSI JEDA INSTRUMEN (> 8 Detik)
                     if (seg.start - lastEnd > 8.0) {
                         formattedLyrics.push({
                             id: 'inst_' + i,
                             start: parseFloat(lastEnd.toFixed(2)),
                             end: parseFloat(seg.start.toFixed(2)),
-                            text: "[🎵 Instrumental / Jeda Musik]"
+                            text: "[Instrumental]"
                         });
                     }
 
-                    let segDuration = seg.end - seg.start;
-                    let wordCount = seg.text.trim().split(/\s+/).length;
-                    let linesInThisSegment = Math.max(1, Math.round(wordCount / 5)); 
+                    let whisperText = seg.text.trim();
+                    let bestMatchText = whisperText; // Default pakai teks AI jika tidak ada yang cocok
+                    let highestScore = 0;
 
-                    for (let j = 0; j < linesInThisSegment; j++) {
-                        if (userIndex < cleanUserLines.length) {
-                            let currentLine = cleanUserLines[userIndex];
-                            let isTag = currentLine.match(/^\[.*\]$/); // Cek apakah ini tag seperti [Chorus]
-
-                            // Jika ini tag, jangan beri durasi nyanyi, langsung tempel saja
-                            if (isTag) {
-                                formattedLyrics.push({
-                                    id: userIndex + 1,
-                                    start: parseFloat(lastEnd.toFixed(2)),
-                                    end: parseFloat(lastEnd.toFixed(2)),
-                                    text: currentLine
-                                });
-                                userIndex++;
-                                j--; // Jangan hitung tag sebagai baris lirik yang dinyanyikan
-                                continue;
-                            }
-
-                            let timePerLine = segDuration / linesInThisSegment;
-                            let subStart = seg.start + (j * timePerLine);
-                            let subEnd = subStart + timePerLine;
-
-                            formattedLyrics.push({
-                                id: userIndex + 1,
-                                start: parseFloat(subStart.toFixed(2)),
-                                end: parseFloat(subEnd.toFixed(2)),
-                                text: currentLine 
-                            });
-                            lastEnd = subEnd;
-                            userIndex++;
+                    // Cari baris lirik user yang paling mirip dengan yang didengar AI
+                    for (let userLine of cleanUserLines) {
+                        let score = getSimilarity(whisperText, userLine);
+                        if (score > highestScore) {
+                            highestScore = score;
+                            bestMatchText = userLine;
                         }
                     }
+
+                    // Jika kemiripannya di atas 30%, gunakan lirik asli dari user (Anti-Typo)
+                    // Jika di bawah 30%, berarti AI mendengar kata lain (adlib/improvisasi), biarkan pakai teks AI
+                    let finalText = (highestScore > 0.30) ? bestMatchText : whisperText;
+
+                    formattedLyrics.push({
+                        id: i + 1,
+                        start: parseFloat(seg.start.toFixed(2)),
+                        end: parseFloat(seg.end.toFixed(2)),
+                        text: finalText
+                    });
+
                     lastEnd = seg.end;
                 }
 
-                // FITUR BARU: JIKA AI TERPOTONG, PAKSA SISA LIRIK MASUK KE SISA DURASI LAGU
-                if (userIndex < cleanUserLines.length) {
-                    let remainingTime = audioDurationSec - lastEnd;
-                    // Jika sisa waktu tidak masuk akal (misal < 5 detik), beri waktu standar
-                    if (remainingTime < 5) remainingTime = (cleanUserLines.length - userIndex) * 4.0; 
-                    
-                    let timePerRemainingLine = remainingTime / (cleanUserLines.length - userIndex);
-
-                    while (userIndex < cleanUserLines.length) {
-                        let currentLine = cleanUserLines[userIndex];
-                        let isTag = currentLine.match(/^\[.*\]$/);
-
-                        if (isTag) {
-                            formattedLyrics.push({
-                                id: userIndex + 1,
-                                start: parseFloat(lastEnd.toFixed(2)),
-                                end: parseFloat(lastEnd.toFixed(2)),
-                                text: currentLine
-                            });
-                        } else {
-                            let subEnd = lastEnd + timePerRemainingLine;
-                            formattedLyrics.push({
-                                id: userIndex + 1,
-                                start: parseFloat(lastEnd.toFixed(2)),
-                                end: parseFloat(subEnd.toFixed(2)),
-                                text: currentLine
-                            });
-                            lastEnd = subEnd;
-                        }
-                        userIndex++;
-                    }
+                // FITUR BARU: OUTRO INSTRUMENTAL (Memastikan timer pas sampai akhir lagu)
+                // Jika lagu masih tersisa lebih dari 5 detik setelah penyanyi selesai bernyanyi
+                if (audioDurationSec - lastEnd > 5.0) {
+                    formattedLyrics.push({
+                        id: 'outro',
+                        start: parseFloat(lastEnd.toFixed(2)),
+                        end: parseFloat(audioDurationSec.toFixed(2)),
+                        text: "[Instrumental]"
+                    });
                 }
 
                 return res.status(200).json({ success: true, result: formattedLyrics });
