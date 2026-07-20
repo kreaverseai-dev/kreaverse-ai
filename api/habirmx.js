@@ -48,24 +48,20 @@ function getValueByPath(obj, path) {
 }
 
 function renderTemplate(templateStr, variables) {
-    // Regex untuk mencari {{key}} atau {{key:angka}} (contoh: {{prompt:390}})
     return templateStr.replace(/\{\{([a-zA-Z0-9_]+)(?::(\d+))?\}\}/g, (match, key, limitStr) => {
         let safeValue = variables[key] || "";
         if (typeof safeValue === 'string') {
-            // Fitur Smart Truncate (Potong aman tanpa merusak kata)
             if (limitStr) {
                 const limit = parseInt(limitStr, 10);
                 if (safeValue.length > limit) {
                     let cutStr = safeValue.substring(0, limit - 3);
                     let lastSpace = cutStr.lastIndexOf(' ');
-                    // Pastikan spasi tidak terlalu jauh di belakang agar potongannya proporsional
                     if (lastSpace > limit * 0.7) {
                         cutStr = cutStr.substring(0, lastSpace);
                     }
                     safeValue = cutStr + "...";
                 }
             }
-            
             safeValue = safeValue
                 .replace(/\\/g, '\\\\')
                 .replace(/"/g, '\\"')
@@ -77,7 +73,6 @@ function renderTemplate(templateStr, variables) {
     });
 }
 
-// Fallback pencarian URL Audio jika path di Admin salah
 function findAudioUrlRecursively(obj) {
     if (!obj || typeof obj !== 'object') return null;
     const targetKeys = ['audioUrl', 'audio_url', 'videoUrl', 'video_url', 'download_url', 'url', 'play_url', 'file_url', 'suno_audio_url'];
@@ -97,7 +92,6 @@ function findAudioUrlRecursively(obj) {
     return null;
 }
 
-// Fallback pencarian pesan Error
 function extractErrorString(obj) {
     if (!obj) return null;
     if (typeof obj === 'string') return obj;
@@ -144,16 +138,11 @@ module.exports = async (req, res) => {
         // ROUTE 1A: DETEKSI LIRIK (ASR WHISPER)
         // ============================================================
         if (action === 'detect_lyrics') {
-            if (!audioUrl) {
-                return res.status(400).json({ error: 'Audio URL wajib diisi untuk deteksi lirik.' });
-            }
+            if (!audioUrl) return res.status(400).json({ error: 'Audio URL wajib diisi untuk deteksi lirik.' });
             try {
                 const whisperKeysQuery = await db.collection("api_keys").where("provider", "==", "Groq Whisper").where("status", "==", "aktif").get();
-                if (whisperKeysQuery.empty) {
-                    throw new Error("API Key untuk Groq Whisper tidak ditemukan atau mati. Pastikan sudah didaftarkan di Dashboard Admin.");
-                }
-                const whisperKeysDocs = whisperKeysQuery.docs.sort((a, b) => (a.data().priority || 1) - (b.data().priority || 1));
-                const whisperKey = whisperKeysDocs[0].data().key;
+                if (whisperKeysQuery.empty) throw new Error("API Key untuk Groq Whisper tidak ditemukan atau mati.");
+                const whisperKey = whisperKeysQuery.docs.sort((a, b) => (a.data().priority || 1) - (b.data().priority || 1))[0].data().key;
 
                 const audioFetch = await fetch(audioUrl);
                 if (!audioFetch.ok) throw new Error("Gagal mengunduh audio referensi untuk ditranskripsi.");
@@ -164,57 +153,26 @@ module.exports = async (req, res) => {
                 formData.append("model", "whisper-large-v3-turbo");
                 formData.append("temperature", "0.0");
                 
-                // FIX 1: Pancingan Konteks (Revisi Anti-Halusinasi)
                 const pastedLyrics = lyrics || inputText || ""; 
-                let promptHint = "";
-                
-                if (pastedLyrics.trim() !== "") {
-                    // JANGAN beri instruksi. Berikan lirik murni saja agar Whisper menjadikannya "kamus"
-                    // Kita batasi 500 karakter agar tidak over-token
-                    promptHint = pastedLyrics.substring(0, 500).replace(/\n/g, ', ');
-                } else {
-                    promptHint = title ? `${title}, lirik lagu, musik.` : "Lirik lagu, musik.";
-                }
+                let promptHint = pastedLyrics.trim() !== "" ? pastedLyrics.substring(0, 500).replace(/\n/g, ', ') : (title ? `${title}, lirik lagu, musik.` : "Lirik lagu, musik.");
 
                 formData.append("prompt", promptHint);
-                
-                // FIX 2: Parameter Anti-Looping (Sangat penting untuk lagu)
-                // Mencegah AI mengulang-ulang kata yang sama saat mendengar instrumen panjang
                 formData.append("condition_on_previous_text", "false");
 
                 const whisperRes = await fetch("https://api.groq.com/openai/v1/audio/transcriptions", {
-                    method: "POST",
-                    headers: { "Authorization": `Bearer ${whisperKey}` },
-                    body: formData
+                    method: "POST", headers: { "Authorization": `Bearer ${whisperKey}` }, body: formData
                 });
 
                 const whisperData = await whisperRes.json();
                 if (!whisperRes.ok) throw new Error(whisperData.error?.message || "Gagal transkripsi audio via Whisper.");
-
                 if (!whisperData.text) throw new Error("Suara tidak terdeteksi atau audio kosong.");
 
-                // FIX 2: Filter Pembersih Halusinasi (Post-Processing)
                 let cleanText = whisperData.text;
-                
-                // Hapus halusinasi subtitle YouTube (berbagai bahasa)
-                cleanText = cleanText.replace(/Terima kasih telah menonton!?/gi, "");
-                cleanText = cleanText.replace(/Thanks for watching!?/gi, "");
-                cleanText = cleanText.replace(/Terima kasih!?/gi, "");
-                cleanText = cleanText.replace(/Subtitle by .+/gi, "");
-                cleanText = cleanText.replace(/Subtitles by .+/gi, "");
-                
-                // Hapus halusinasi credit title Mandarin (Penulis lirik, Komposer, dll) tanpa menghapus lirik Mandarin asli
-                cleanText = cleanText.replace(/作词.*?(\n|$)/g, ""); // Lyricist
-                cleanText = cleanText.replace(/作曲.*?(\n|$)/g, ""); // Composer
-                cleanText = cleanText.replace(/编曲.*?(\n|$)/g, ""); // Arranger
-                
-                // Bersihkan spasi berlebih akibat penghapusan
+                cleanText = cleanText.replace(/Terima kasih telah menonton!?/gi, "").replace(/Thanks for watching!?/gi, "").replace(/Terima kasih!?/gi, "").replace(/Subtitle by .+/gi, "").replace(/Subtitles by .+/gi, "");
+                cleanText = cleanText.replace(/作词.*?(\n|$)/g, "").replace(/作曲.*?(\n|$)/g, "").replace(/编曲.*?(\n|$)/g, "");
                 cleanText = cleanText.replace(/\n\s*\n/g, '\n').trim();
 
-                // FIX 3: Jangan lempar error 500 jika kosong. Berikan teks fallback yang elegan.
-                if (!cleanText) {
-                    cleanText = "[Musik Instrumental / Vokal tidak terdengar jelas oleh AI]";
-                }
+                if (!cleanText) cleanText = "[Musik Instrumental / Vokal tidak terdengar jelas oleh AI]";
 
                 return res.status(200).json({ success: true, result: cleanText });
             } catch (err) {
@@ -223,23 +181,15 @@ module.exports = async (req, res) => {
         }
 
         // ============================================================
-        // ROUTE 1A-2: SINKRONISASI LIRIK (SMART SYNC ALGORITHM VIA GROQ)
+        // ROUTE 1A-2: SINKRONISASI LIRIK
         // ============================================================
         if (action === 'sync_lyrics') {
-            if (!audioUrl || !lyrics) {
-                return res.status(400).json({ error: 'Audio URL dan Teks Lirik wajib diisi untuk sinkronisasi.' });
-            }
-
-            // Ambil durasi asli dari frontend (fallback 4 menit jika gagal)
+            if (!audioUrl || !lyrics) return res.status(400).json({ error: 'Audio URL dan Teks Lirik wajib diisi untuk sinkronisasi.' });
             const audioDurationSec = body.audioDuration || 240; 
-
             try {
                 const whisperKeysQuery = await db.collection("api_keys").where("provider", "==", "Groq Whisper").where("status", "==", "aktif").get();
-                if (whisperKeysQuery.empty) {
-                    throw new Error("API Key untuk Groq Whisper tidak ditemukan atau mati.");
-                }
-                const whisperKeysDocs = whisperKeysQuery.docs.sort((a, b) => (a.data().priority || 1) - (b.data().priority || 1));
-                const whisperKey = whisperKeysDocs[0].data().key;
+                if (whisperKeysQuery.empty) throw new Error("API Key untuk Groq Whisper tidak ditemukan atau mati.");
+                const whisperKey = whisperKeysQuery.docs.sort((a, b) => (a.data().priority || 1) - (b.data().priority || 1))[0].data().key;
 
                 const audioFetch = await fetch(audioUrl);
                 if (!audioFetch.ok) throw new Error("Gagal mengunduh audio referensi.");
@@ -249,31 +199,22 @@ module.exports = async (req, res) => {
                 formData.append("file", audioBlob, "audio.mp3");
                 formData.append("model", "whisper-large-v3-turbo");
                 formData.append("temperature", "0.0");
-                
-                // Biarkan AI mendeteksi bahasa secara otomatis (Support Inggris, Arab, Jawa, dll)
                 formData.append("response_format", "verbose_json");
                 
                 const promptHint = lyrics.substring(0, 400).replace(/\n/g, ', ');
                 formData.append("prompt", "Ini adalah lagu panjang. Lanjutkan transkripsi sampai akhir musik. " + promptHint); 
 
                 const whisperRes = await fetch("https://api.groq.com/openai/v1/audio/transcriptions", {
-                    method: "POST",
-                    headers: { "Authorization": `Bearer ${whisperKey}` },
-                    body: formData
+                    method: "POST", headers: { "Authorization": `Bearer ${whisperKey}` }, body: formData
                 });
 
                 const whisperData = await whisperRes.json();
                 if (!whisperRes.ok) throw new Error(whisperData.error?.message || "Gagal sinkronisasi via Groq.");
 
                 const segments = whisperData.segments;
-                if (!segments || segments.length === 0) {
-                    throw new Error("AI tidak mendeteksi suara vokal pada lagu ini.");
-                }
+                if (!segments || segments.length === 0) throw new Error("AI tidak mendeteksi suara vokal pada lagu ini.");
                 
-                // 1. Bersihkan lirik user
                 const rawUserLines = lyrics.split('\n').map(l => l.trim()).filter(l => l !== "");
-
-                // 2. Filter segment Whisper dari halusinasi ekstrim
                 let validSegments = segments.filter(seg => {
                     let t = seg.text.toLowerCase();
                     if (t.includes("terima kasih") || t.includes("thanks for") || t.includes("subtitle")) return false;
@@ -281,17 +222,13 @@ module.exports = async (req, res) => {
                     return true;
                 });
 
-                // 3. Buat Peta Waktu per Kata (Word-Level Time Map) dari Audio Asli
                 let wordTimeSlots = [];
                 for (let seg of validSegments) {
                     let words = seg.text.trim().split(/\s+/);
                     if (words.length === 0) continue;
                     let timePerWord = (seg.end - seg.start) / words.length;
                     for (let w = 0; w < words.length; w++) {
-                        wordTimeSlots.push({
-                            start: seg.start + (w * timePerWord),
-                            end: seg.start + ((w + 1) * timePerWord)
-                        });
+                        wordTimeSlots.push({ start: seg.start + (w * timePerWord), end: seg.start + ((w + 1) * timePerWord) });
                     }
                 }
 
@@ -299,77 +236,41 @@ module.exports = async (req, res) => {
                 let slotIndex = 0;
                 let lastEnd = 0;
 
-                // 4. Distribusikan Lirik User ke Waktu Asli Audio
                 for (let i = 0; i < rawUserLines.length; i++) {
                     let line = rawUserLines[i];
                     let isTag = line.match(/^\[.*\]$/);
 
-                    // Jika ini tag [Chorus] dll, langsung tempel tanpa memakan waktu nyanyi
                     if (isTag) {
-                        formattedLyrics.push({
-                            id: i + 1,
-                            start: parseFloat(lastEnd.toFixed(2)),
-                            end: parseFloat(lastEnd.toFixed(2)),
-                            text: line
-                        });
+                        formattedLyrics.push({ id: i + 1, start: parseFloat(lastEnd.toFixed(2)), end: parseFloat(lastEnd.toFixed(2)), text: line });
                         continue;
                     }
-
                     let lineWordCount = line.split(/\s+/).length;
-
                     if (slotIndex < wordTimeSlots.length) {
                         let startSlot = wordTimeSlots[slotIndex];
-
-                        // Deteksi Jeda Instrumen (> 5 detik)
                         if (startSlot.start - lastEnd > 5.0 && lastEnd > 0) {
-                            formattedLyrics.push({
-                                id: 'inst_' + i,
-                                start: parseFloat(lastEnd.toFixed(2)),
-                                end: parseFloat(startSlot.start.toFixed(2)),
-                                text: "[Instrumental]"
-                            });
+                            formattedLyrics.push({ id: 'inst_' + i, start: parseFloat(lastEnd.toFixed(2)), end: parseFloat(startSlot.start.toFixed(2)), text: "[Instrumental]" });
                         }
-
                         let endSlotIndex = Math.min(slotIndex + lineWordCount - 1, wordTimeSlots.length - 1);
                         let endSlot = wordTimeSlots[endSlotIndex];
 
-                        formattedLyrics.push({
-                            id: i + 1,
-                            start: parseFloat(startSlot.start.toFixed(2)),
-                            end: parseFloat(endSlot.end.toFixed(2)),
-                            text: line // 100% MENGGUNAKAN TEKS USER
-                        });
-
+                        formattedLyrics.push({ id: i + 1, start: parseFloat(startSlot.start.toFixed(2)), end: parseFloat(endSlot.end.toFixed(2)), text: line });
                         lastEnd = endSlot.end;
                         slotIndex += lineWordCount;
                     } else {
-                        // Jika slot waktu AI habis tapi lirik user masih ada
                         let remainingTime = audioDurationSec - lastEnd;
                         let remainingLines = rawUserLines.length - i;
                         let timePerLine = Math.min(4.0, Math.max(2.0, remainingTime / remainingLines));
                         let subEnd = lastEnd + timePerLine;
                         
-                        formattedLyrics.push({
-                            id: i + 1,
-                            start: parseFloat(lastEnd.toFixed(2)),
-                            end: parseFloat(subEnd.toFixed(2)),
-                            text: line
-                        });
+                        formattedLyrics.push({ id: i + 1, start: parseFloat(lastEnd.toFixed(2)), end: parseFloat(subEnd.toFixed(2)), text: line });
                         lastEnd = subEnd;
                     }
                 }
 
-                // 5. Outro Instrumental
                 if (audioDurationSec - lastEnd > 5.0) {
-                    formattedLyrics.push({
-                        id: 'outro',
-                        start: parseFloat(lastEnd.toFixed(2)),
-                        end: parseFloat(audioDurationSec.toFixed(2)),
-                        text: "[Instrumental]"
-                    });
+                    formattedLyrics.push({ id: 'outro', start: parseFloat(lastEnd.toFixed(2)), end: parseFloat(audioDurationSec.toFixed(2)), text: "[Instrumental]" });
                 }
 
-                // 6. Format ke LRC String agar langsung siap pakai di Frontend
                 let lrcText = "";
                 formattedLyrics.forEach(item => {
                     let m = Math.floor(item.start / 60).toString().padStart(2, '0');
@@ -378,9 +279,6 @@ module.exports = async (req, res) => {
                 });
 
                 return res.status(200).json({ success: true, isLrcString: true, result: lrcText.trim() });
-
-                return res.status(200).json({ success: true, result: formattedLyrics });
-
             } catch (err) {
                 return res.status(500).json({ error: "Gagal sinkronisasi lirik: " + err.message });
             }
@@ -390,41 +288,29 @@ module.exports = async (req, res) => {
         // ROUTE 1B: MAGIC WAND (AUTO-EDIT LIRIK & STYLE VIA LLM)
         // ============================================================
         if (action === 'magic_wand') {
-            if (!llmType) {
-                return res.status(400).json({ error: 'Parameter llmType wajib diisi untuk Magic Wand.' });
-            }
+            if (!llmType) return res.status(400).json({ error: 'Parameter llmType wajib diisi untuk Magic Wand.' });
 
-            // FIX: Jika providerId kosong dari frontend, otomatis gunakan auto_pool
             const finalProviderId = providerId || 'auto_pool';
             let finalInputText = inputText || "";
 
             try {
-                if (!finalInputText) {
-                    return res.status(400).json({ error: 'Teks input wajib diisi untuk menggunakan AI.' });
-                }
+                if (!finalInputText) return res.status(400).json({ error: 'Teks input wajib diisi untuk menggunakan AI.' });
 
                 const providersDoc = await db.collection("settings").doc("api_providers").get();
                 const allProviders = providersDoc.data().list || [];
                 
-                // 1. Kumpulkan provider LLM (Mendukung Auto Fallback)
                 let llmProvidersToTry = [];
                 if (finalProviderId === 'auto_pool') {
-                    llmProvidersToTry = allProviders.filter(p => {
-                        if (!p.serviceType) return false;
-                        const type = String(p.serviceType).toLowerCase();
-                        return type === "llm" || type === "text" || type === "chat";
-                    });
-                    if (llmProvidersToTry.length === 0) return res.status(500).json({ error: 'Tidak ada provider LLM aktif untuk Auto Fallback.' });
+                    llmProvidersToTry = allProviders.filter(p => p.serviceType && (String(p.serviceType).toLowerCase() === "llm" || String(p.serviceType).toLowerCase() === "text" || String(p.serviceType).toLowerCase() === "chat"));
+                    if (llmProvidersToTry.length === 0) return res.status(500).json({ error: 'Tidak ada provider LLM aktif.' });
                 } else {
                     const specificProvider = allProviders.find(p => p.value === finalProviderId);
                     if (!specificProvider) return res.status(500).json({ error: 'Provider LLM tidak ditemukan.' });
                     llmProvidersToTry = [specificProvider];
                 }
 
-                // 2. Siapkan System Prompt (Otak AI Habi RMX)
                 let systemPrompt = "";
                 if (llmType === 'style') {
-                    // Logika Dinamis untuk Vokal (Hanya diisi jika user meminta)
                     let genderInstruction = "";
                     if (vocalGender === 'female' || finalInputText.toLowerCase().includes('cewek') || finalInputText.toLowerCase().includes('wanita') || finalInputText.toLowerCase().includes('perempuan') || finalInputText.toLowerCase().includes('female')) {
                         genderInstruction = "beautiful female vocal, clear female singer, perfectly mixed vocals, zero noise, ";
@@ -445,137 +331,90 @@ Output ONLY the comma-separated prompt tags. No conversational text.`;
                 
                 } else if (llmType === 'lyrics') {
                     if (currentMode === 'generate') {
-                    systemPrompt = `Kamu adalah Penulis Lagu (Songwriter) Profesional pemenang Grammy dan Ahli Lirik Viral. Tugasmu: Buat lirik lagu ORIGINAL yang lengkap, panjang, puitis, dan terasa sangat "manusiawi" berdasarkan input user.
+                        systemPrompt = `Kamu adalah Penulis Lagu (Songwriter) Profesional pemenang Grammy dan Ahli Lirik Viral. Tugasmu: Buat lirik lagu ORIGINAL yang lengkap, panjang, puitis, dan terasa sangat "manusiawi" berdasarkan input user.
 ATURAN MUTLAK:
-1. ANALISIS INPUT: 
-   - Jika user menempelkan LIRIK LAGU FULL (lagu terkenal), JANGAN salin liriknya (hindari Copyright). Tulis ulang lirik BARU dengan makna, cerita, pesan, dan emosi (vibe) yang SAMA PERSIS, tapi gunakan pilihan kata yang lebih indah, puitis, dan berpotensi viral.
-   - Jika user memberikan IDE/TEMA (misal: "lagu sedih", "sholawat", "galau"), buatkan lirik dari nol yang sangat menyentuh hati, bermakna dalam, dan tidak kaku (seperti tulisan manusia asli yang sedang curhat atau berdoa).
-2. JANGAN PERNAH memasukkan nama genre (seperti "Lagu Dangdut", "Ini Sholawat", "Lagu Pop") ke dalam teks lirik! Terapkan *nuansa* bahasanya saja.
-3. STRUKTUR WAJIB SUNO AI: Gunakan tag meta standar di dalam kurung siku: [Intro], [Verse 1], [Pre-Chorus], [Chorus], [Verse 2], [Chorus], [Bridge], [Guitar Solo] atau [Drop] atau [Instrumental], [Chorus], [Outro].
-4. Buat lirik layaknya manusia asli: puitis, memiliki rima (AABB/ABAB), emosional, dan pas dengan ketukan nada. Pastikan liriknya cukup panjang untuk durasi 3-4 menit.
-5. Jawab HANYA dengan lirik lagunya saja. Dilarang keras memberikan penjelasan, judul, atau basa-basi di awal maupun di akhir.`;
-                } else {
-                    // MODE COVER: KECERDASAN BUATAN GANDA (WHISPER + LLM)
-                    let whisperText = "";
-                    if (audioUrl) {
-                        try {
-                            const wQuery = await db.collection("api_keys").where("provider", "==", "Groq Whisper").where("status", "==", "aktif").get();
-                            if (!wQuery.empty) {
-                                const wKey = wQuery.docs[0].data().key;
-                                const aFetch = await fetch(audioUrl);
-                                const aBlob = await aFetch.blob();
-                                const fData = new FormData();
-                                fData.append("file", aBlob, "audio.mp3");
-                                fData.append("model", "whisper-large-v3-turbo");
-                                const wRes = await fetch("https://api.groq.com/openai/v1/audio/transcriptions", { method: "POST", headers: { "Authorization": `Bearer ${wKey}` }, body: fData });
-                                const wData = await wRes.json();
-                                if (wData.text) whisperText = wData.text;
-                            }
-                        } catch(e) { console.log("Whisper in Magic Wand failed", e); }
-                    }
-
-                    systemPrompt = `Kamu adalah Music Arranger Profesional. Tugasmu menyusun ulang lirik mentah dari user agar sesuai dengan lagu aslinya.
+1. ANALISIS INPUT: Jika user menempelkan LIRIK LAGU FULL (lagu terkenal), JANGAN salin liriknya (hindari Copyright). Tulis ulang lirik BARU dengan makna, cerita, pesan, dan emosi (vibe) yang SAMA PERSIS, tapi gunakan pilihan kata yang lebih indah, puitis, dan berpotensi viral. Jika user memberikan IDE/TEMA, buatkan lirik dari nol yang sangat menyentuh hati.
+2. JANGAN PERNAH memasukkan nama genre (seperti "Lagu Dangdut") ke dalam teks lirik!
+3. STRUKTUR WAJIB SUNO AI: Gunakan tag meta standar: [Intro], [Verse 1], [Pre-Chorus], [Chorus], [Bridge], [Guitar Solo] atau [Instrumental], [Outro].
+4. Buat lirik layaknya manusia asli: puitis, rima bagus, dan emosional.
+5. Jawab HANYA dengan lirik lagunya saja.`;
+                    } else {
+                        let whisperText = "";
+                        if (audioUrl) {
+                            try {
+                                const wQuery = await db.collection("api_keys").where("provider", "==", "Groq Whisper").where("status", "==", "aktif").get();
+                                if (!wQuery.empty) {
+                                    const wKey = wQuery.docs[0].data().key;
+                                    const aFetch = await fetch(audioUrl);
+                                    const aBlob = await aFetch.blob();
+                                    const fData = new FormData();
+                                    fData.append("file", aBlob, "audio.mp3");
+                                    fData.append("model", "whisper-large-v3-turbo");
+                                    const wRes = await fetch("https://api.groq.com/openai/v1/audio/transcriptions", { method: "POST", headers: { "Authorization": `Bearer ${wKey}` }, body: fData });
+                                    const wData = await wRes.json();
+                                    if (wData.text) whisperText = wData.text;
+                                }
+                            } catch(e) { }
+                        }
+                        systemPrompt = `Kamu adalah Music Arranger Profesional. Tugasmu menyusun ulang lirik mentah dari user agar sesuai dengan lagu aslinya.
 ATURAN MUTLAK:
 1. User memberikan "Lirik Mentah" (ejaan benar tapi susunan salah).
 2. Sistem memberikan "Transkripsi Audio" (susunan benar tapi ejaan mungkin halusinasi/salah).
 3. TUGASMU: Susun ulang Lirik Mentah agar pengulangannya (A-B-A-B) persis mengikuti Transkripsi Audio!
 4. Jika penyanyi mengulang bait 3x di Transkripsi, tulis bait itu 3x menggunakan ejaan Lirik Mentah.
 5. Sisipkan tag [Intro], [Verse], [Chorus], [Instrumental] di tempat yang tepat.
-6. Jawab HANYA dengan lirik yang sudah tersusun rapi. Dilarang memberi penjelasan atau basa-basi.`;
-                    
-                    finalInputText = `LIRIK MENTAH USER:\n${inputText}\n\nTRANSKRIPSI AUDIO (Acuan Pengulangan):\n${whisperText || "Gunakan instingmu untuk menata lirik ini"}`;
-                }
+6. Jawab HANYA dengan lirik yang sudah tersusun rapi.`;
+                        finalInputText = `LIRIK MENTAH USER:\n${inputText}\n\nTRANSKRIPSI AUDIO (Acuan Pengulangan):\n${whisperText || "Gunakan instingmu untuk menata lirik ini"}`;
+                    }
                 }
 
                 let resultText = "";
                 let success = false;
                 let lastError = "";
 
-                // 3. Looping Eksekusi (Provider -> API Key -> Model)
                 for (const llmProvider of llmProvidersToTry) {
                     const keysQuery = await db.collection("api_keys").where("provider", "==", llmProvider.value).where("status", "==", "aktif").get();
                     const sortedKeysDocs = keysQuery.docs.sort((a, b) => (a.data().priority || 1) - (b.data().priority || 1));
-                    
-                    if (sortedKeysDocs.length === 0) {
-                        lastError = `API Key untuk ${llmProvider.label || llmProvider.value} habis atau tidak aktif.`;
-                        continue; 
-                    }
+                    if (sortedKeysDocs.length === 0) { lastError = `API Key untuk ${llmProvider.label || llmProvider.value} habis.`; continue; }
 
-                    let modelList = [];
-                    if (llmProvider.models) {
-                        modelList = llmProvider.models.split(',').map(m => m.trim()).filter(m => m);
-                        modelList.sort((a, b) => {
-                            const numA = parseFloat(a.match(/\d+(\.\d+)?/)?.[0] || 0);
-                            const numB = parseFloat(b.match(/\d+(\.\d+)?/)?.[0] || 0);
-                            return numB - numA; 
-                        });
-                    }
-                    if (modelList.length === 0) modelList = ["default"];
-
-                    let targetModels = modelList;
-                    if (finalProviderId !== 'auto_pool' && modelId && modelList.includes(modelId)) {
-                        targetModels = [modelId]; 
-                    }
+                    let modelList = llmProvider.models ? llmProvider.models.split(',').map(m => m.trim()).filter(m => m).sort((a, b) => parseFloat(b.match(/\d+(\.\d+)?/)?.[0] || 0) - parseFloat(a.match(/\d+(\.\d+)?/)?.[0] || 0)) : ["default"];
+                    let targetModels = (finalProviderId !== 'auto_pool' && modelId && modelList.includes(modelId)) ? [modelId] : modelList;
 
                     for (const keyDoc of sortedKeysDocs) {
                         const activeApiKey = keyDoc.data().key;
-                        
                         for (const currentModel of targetModels) {
                             try {
                                 const variables = { model: currentModel, systemPrompt: systemPrompt, prompt: finalInputText };
-                                let rawBody = llmProvider.payloadTemplate || `{"model": "{{model}}", "messages": [{"role": "system", "content": "{{systemPrompt}}"}, {"role": "user", "content": "{{prompt}}"}]}`;
-                                let parsedBodyString = renderTemplate(rawBody, variables);
+                                let parsedBodyString = renderTemplate(llmProvider.payloadTemplate || `{"model": "{{model}}", "messages": [{"role": "system", "content": "{{systemPrompt}}"}, {"role": "user", "content": "{{prompt}}"}]}`, variables);
                                 const finalPayload = JSON.parse(parsedBodyString);
 
                                 const headers = { "Content-Type": "application/json" };
-                                const headerName = llmProvider.headerName || "Authorization";
-                                const headerValueTemplate = llmProvider.headerValue || "Bearer {apiKey}";
-                                headers[headerName] = headerValueTemplate.replace("{apiKey}", activeApiKey);
+                                headers[llmProvider.headerName || "Authorization"] = (llmProvider.headerValue || "Bearer {apiKey}").replace("{apiKey}", activeApiKey);
 
-                                const response = await fetch(`${llmProvider.baseUrl}${llmProvider.endpoint}`, {
-                                    method: 'POST', headers: headers, body: JSON.stringify(finalPayload)
-                                });
-
+                                const response = await fetch(`${llmProvider.baseUrl}${llmProvider.endpoint}`, { method: 'POST', headers: headers, body: JSON.stringify(finalPayload) });
                                 const resData = await response.json();
                                 
-                                if (!response.ok || (resData.code && resData.code !== 200)) {
-                                    const errMsg = getValueByPath(resData, llmProvider.errorPath) || extractErrorString(resData) || "API Error";
-                                    throw new Error(errMsg);
-                                }
+                                if (!response.ok || (resData.code && resData.code !== 200)) throw new Error(getValueByPath(resData, llmProvider.errorPath) || extractErrorString(resData) || "API Error");
 
-                                if (resData.choices && resData.choices[0].message) {
-                                    resultText = resData.choices[0].message.content;
-                                } else if (resData.candidates && resData.candidates[0].content) {
-                                    resultText = resData.candidates[0].content.parts[0].text;
-                                } else {
-                                    resultText = JSON.stringify(resData);
-                                }
+                                if (resData.choices && resData.choices[0].message) resultText = resData.choices[0].message.content;
+                                else if (resData.candidates && resData.candidates[0].content) resultText = resData.candidates[0].content.parts[0].text;
+                                else resultText = JSON.stringify(resData);
 
-                                success = true;
-                                break; 
-
+                                success = true; break; 
                             } catch (e) {
                                 lastError = e.message;
-                                const lowerErr = lastError.toLowerCase();
-                                // Fitur Auto-Kill API Key jika saldo habis
-                                if (lowerErr.includes('insufficient') || lowerErr.includes('balance') || lowerErr.includes('quota') || lowerErr.includes('credit')) {
+                                if (lastError.toLowerCase().includes('insufficient') || lastError.toLowerCase().includes('balance') || lastError.toLowerCase().includes('quota') || lastError.toLowerCase().includes('credit')) {
                                     try { await db.collection("api_keys").doc(keyDoc.id).update({ status: "mati" }); } catch(err){}
-                                    break; // Lanjut ke API Key berikutnya karena saldo key ini habis
+                                    break; 
                                 }
-                                console.warn(`Model ${currentModel} di ${llmProvider.value} gagal: ${lastError}`);
                             }
                         }
-                        if (success) break; // Berhenti mencari API key jika sudah sukses
+                        if (success) break;
                     }
-                    if (success) break; // Berhenti mencari Provider jika sudah sukses
+                    if (success) break;
                 }
-
-                if (!success) {
-                    throw new Error(`Semua model LLM gagal merespons. Error terakhir: ${lastError}`);
-                }
-
+                if (!success) throw new Error(`Semua model LLM gagal merespons. Error terakhir: ${lastError}`);
                 return res.status(200).json({ success: true, result: resultText.trim() });
-
             } catch (err) {
                 return res.status(500).json({ error: err.message });
             }
@@ -596,28 +435,17 @@ ATURAN MUTLAK:
                 if (sortedKeysDocs.length === 0) throw new Error("API Key KIE.ai habis atau tidak aktif.");
                 const activeApiKey = sortedKeysDocs[0].data().key;
 
-                const headers = {
-                    "Content-Type": "application/json",
-                    "Authorization": `Bearer ${activeApiKey}`
-                };
+                const headers = { "Content-Type": "application/json", "Authorization": `Bearer ${activeApiKey}` };
 
                 if (action === 'generate_phrase') {
                     const { voiceUrl, vocalStartS, vocalEndS } = body;
                     if (!voiceUrl) throw new Error("voiceUrl wajib diisi.");
                     
-                    const payload = {
-                        voiceUrl: voiceUrl,
-                        vocalStartS: vocalStartS || 0,
-                        vocalEndS: vocalEndS || 30,
-                        language: "id"
-                    };
-
                     const response = await fetch(`${kieProvider.baseUrl}/api/v1/voice/validate`, {
-                        method: 'POST', headers, body: JSON.stringify(payload)
+                        method: 'POST', headers, body: JSON.stringify({ voiceUrl: voiceUrl, vocalStartS: vocalStartS || 0, vocalEndS: vocalEndS || 30, language: "id" })
                     });
                     const resData = await response.json();
                     if (!response.ok || resData.code !== 200) throw new Error(resData.msg || "Gagal generate phrase");
-                    
                     return res.status(200).json({ success: true, taskId: resData.data.taskId });
                 }
 
@@ -625,21 +453,11 @@ ATURAN MUTLAK:
                     const { taskId, verifyUrl, voiceName, description, style } = body;
                     if (!taskId || !verifyUrl) throw new Error("taskId dan verifyUrl wajib diisi.");
 
-                    const payload = {
-                        taskId: taskId,
-                        verifyUrl: verifyUrl,
-                        voiceName: voiceName || "My Custom Voice",
-                        description: description || "Kreaverse Voice Clone",
-                        style: style || "",
-                        singerSkillLevel: "beginner"
-                    };
-
                     const response = await fetch(`${kieProvider.baseUrl}/api/v1/voice/generate`, {
-                        method: 'POST', headers, body: JSON.stringify(payload)
+                        method: 'POST', headers, body: JSON.stringify({ taskId: taskId, verifyUrl: verifyUrl, voiceName: voiceName || "My Custom Voice", description: description || "Kreaverse Voice Clone", style: style || "", singerSkillLevel: "beginner" })
                     });
                     const resData = await response.json();
                     if (!response.ok || resData.code !== 200) throw new Error(resData.msg || "Gagal create voice");
-                    
                     return res.status(200).json({ success: true, taskId: resData.data.taskId });
                 }
 
@@ -647,24 +465,25 @@ ATURAN MUTLAK:
                     const { taskId, audioId, name, description, vocalStart, vocalEnd } = body;
                     if (!taskId || !audioId || !name || !description) throw new Error("Parameter persona tidak lengkap.");
 
-                    const payload = {
-                        taskId: taskId,
-                        audioId: audioId,
-                        name: name,
-                        description: description,
-                        vocalStart: vocalStart || 0,
-                        vocalEnd: vocalEnd || 30
-                    };
-
                     const response = await fetch(`${kieProvider.baseUrl}/api/v1/generate/generate-persona`, {
-                        method: 'POST', headers, body: JSON.stringify(payload)
+                        method: 'POST', headers, body: JSON.stringify({ taskId: taskId, audioId: audioId, name: name, description: description, vocalStart: vocalStart || 0, vocalEnd: vocalEnd || 30 })
                     });
                     const resData = await response.json();
                     if (!response.ok || resData.code !== 200) throw new Error(resData.msg || "Gagal create persona");
                     
-                    return res.status(200).json({ success: true, personaId: resData.data.personaId });
-                }
+                    const newPersonaId = resData.data.personaId;
+                    const activeKeyDocId = sortedKeysDocs[0].id;
+                    
+                    // SIMPAN KEPEMILIKAN: Catat API Key mana yang membuat suara ini (Tanpa ganggu frontend)
+                    try {
+                        await db.collection("persona_keys").doc(newPersonaId).set({
+                            keyDocId: activeKeyDocId,
+                            createdAt: Date.now()
+                        });
+                    } catch(e) { console.error("Gagal simpan mapping persona:", e); }
 
+                    return res.status(200).json({ success: true, personaId: newPersonaId });
+                }
             } catch (err) {
                 return res.status(500).json({ error: err.message });
             }
@@ -673,58 +492,63 @@ ATURAN MUTLAK:
         // ============================================================
         // ROUTE 2: GENERATE MUSIC (DYNAMIC PROVIDER SUPPORT)
         // ============================================================
-        if (!email || !prompt) {
-            return res.status(400).json({ error: 'Parameter email dan prompt wajib diisi!' });
-        }
+        if (!email || !prompt) return res.status(400).json({ error: 'Parameter email dan prompt wajib diisi!' });
 
         try {
             const usersRef = db.collection("users");
             const userQuery = await usersRef.where("email", "==", email).get();
             if (userQuery.empty) return res.status(403).json({ error: 'Akses ditolak: Klien tidak terdaftar!' });
-            
             const userDoc = userQuery.docs[0];
             const userData = userDoc.data();
 
-            if (userData.expiry && userData.expiry < Date.now() && userData.tier !== 'max_lifetime') {
-                return res.status(403).json({ error: 'Masa aktif paket premium Anda telah kedaluwarsa!' });
-            }
-            if (userData.dailyQuota > 0 && userData.generateCount >= userData.dailyQuota) {
-                return res.status(403).json({ error: 'Batas kuota harian pembuatan lagu Anda telah habis!' });
-            }
+            if (userData.expiry && userData.expiry < Date.now() && userData.tier !== 'max_lifetime') return res.status(403).json({ error: 'Masa aktif paket premium Anda telah kedaluwarsa!' });
+            if (userData.dailyQuota > 0 && userData.generateCount >= userData.dailyQuota) return res.status(403).json({ error: 'Batas kuota harian pembuatan lagu Anda telah habis!' });
 
             const providersDoc = await db.collection("settings").doc("api_providers").get();
             const allProviders = providersDoc.data().list || [];
-            
-            const audioProviders = allProviders.filter(p => {
-                if (!p.serviceType) return true;
-                const type = String(p.serviceType).toLowerCase();
-                return type === "audio" || type === "music" || type === "text-to-audio";
-            });
+            const audioProviders = allProviders.filter(p => !p.serviceType || String(p.serviceType).toLowerCase() === "audio" || String(p.serviceType).toLowerCase() === "music" || String(p.serviceType).toLowerCase() === "text-to-audio");
 
             if (audioProviders.length === 0) return res.status(500).json({ error: 'Belum ada provider Audio terdaftar.' });
 
             const targetProviderId = providerId || modelId;
             const isAutoPool = (targetProviderId === 'auto_pool');
-            
-            let providersToTry = [];
-            if (isAutoPool) {
-                providersToTry = audioProviders; // Coba semua provider jika mode Auto
-            } else {
-                const strictProvider = audioProviders.find(p => p.value === targetProviderId);
-                if (!strictProvider) return res.status(500).json({ error: 'Provider spesifik tidak ditemukan di database.' });
-                providersToTry = [strictProvider]; // Mode Strict: Hanya coba 1 provider ini
-            }
+            let providersToTry = isAutoPool ? audioProviders : [audioProviders.find(p => p.value === targetProviderId)].filter(Boolean);
+
+            if (providersToTry.length === 0) return res.status(500).json({ error: 'Provider spesifik tidak ditemukan di database.' });
 
             let taskResponse = null;
             let successfulProvider = null;
             let lastErrorMessage = "Tidak ada respons dari server.";
             let keyFoundAndUsed = false;
 
+            // CEK KEPEMILIKAN SUARA DI DATABASE (Berlaku hanya jika opsi Voice dipakai)
+            let requiredKeyDocId = null;
+            if (options && options.personaId) {
+                try {
+                    const personaDoc = await db.collection("persona_keys").doc(options.personaId).get();
+                    if (personaDoc.exists) {
+                        requiredKeyDocId = personaDoc.data().keyDocId;
+                    }
+                } catch(e) { console.error("Gagal cek persona:", e); }
+            }
+
             for (let i = 0; i < providersToTry.length; i++) {
                 let currentProvider = providersToTry[i];
                 
                 const keysQuery = await db.collection("api_keys").where("provider", "==", currentProvider.value).where("status", "==", "aktif").get();
-                const sortedKeysDocs = keysQuery.docs.sort((a, b) => (a.data().priority || 1) - (b.data().priority || 1));
+                let sortedKeysDocs = keysQuery.docs.sort((a, b) => (a.data().priority || 1) - (b.data().priority || 1));
+
+                // FILTER KHUSUS VOICE: Paksa sistem hanya melirik API Key si pembuat suara
+                if (requiredKeyDocId) {
+                    const specificKeyDoc = sortedKeysDocs.find(k => k.id === requiredKeyDocId);
+                    if (specificKeyDoc) {
+                        sortedKeysDocs = [specificKeyDoc]; // Kunci sistem ke API Key ini saja
+                    } else {
+                        sortedKeysDocs = []; // Kosongkan agar loop key tidak berjalan
+                        lastErrorMessage = "Server penyimpanan untuk Suara ini sedang penuh. Silakan kembali ke menu 'Kloning Voice' untuk me-refresh suara Anda ke server baru.";
+                        if (isAutoPool) break; // Hentikan pencarian Auto-Fallback
+                    }
+                }
 
                 let activeModel = "V5_5";
                 if (currentProvider.models) {
@@ -740,7 +564,6 @@ ATURAN MUTLAK:
                         if (audioUrl && currentProvider.endpointCover) endpointPath = currentProvider.endpointCover;
                         let providerUrl = `${currentProvider.baseUrl}${endpointPath}`;
 
-                        // INJEKSI GENDER OTOMATIS
                         let finalStylePrompt = prompt || "";
                         let finalLyrics = lyrics || "";
                         const selectedGender = vocalGender || (options && options.vocalGender) || "not_specified";
@@ -748,137 +571,73 @@ ATURAN MUTLAK:
                         let vocalGenderShort = "";
                         if (selectedGender.toLowerCase() === 'female') {
                             vocalGenderShort = "f";
-                            if (!finalStylePrompt.toLowerCase().includes('female')) {
-                                finalStylePrompt = "female vocal, female singer, " + finalStylePrompt;
-                            }
-                            if (!finalLyrics.toLowerCase().includes('[female')) {
-                                finalLyrics = "[Female Vocal]\n" + finalLyrics;
-                            }
+                            if (!finalStylePrompt.toLowerCase().includes('female')) finalStylePrompt = "female vocal, female singer, " + finalStylePrompt;
+                            if (!finalLyrics.toLowerCase().includes('[female')) finalLyrics = "[Female Vocal]\n" + finalLyrics;
                         } else if (selectedGender.toLowerCase() === 'male') {
                             vocalGenderShort = "m";
-                            if (!finalStylePrompt.toLowerCase().includes('male')) {
-                                finalStylePrompt = "male vocal, male singer, " + finalStylePrompt;
-                            }
-                            if (!finalLyrics.toLowerCase().includes('[male')) {
-                                finalLyrics = "[Male Vocal]\n" + finalLyrics;
-                            }
+                            if (!finalStylePrompt.toLowerCase().includes('male')) finalStylePrompt = "male vocal, male singer, " + finalStylePrompt;
+                            if (!finalLyrics.toLowerCase().includes('[male')) finalLyrics = "[Male Vocal]\n" + finalLyrics;
                         }
 
                         let rawBody = currentProvider.payloadTemplate || "{}";
-                        
-                        // Aktifkan Payload Custom jika user mengisi lirik (Custom Mode ON)
-                        if (finalLyrics && finalLyrics.trim() !== "" && currentProvider.payloadCustomTemplate) {
-                            rawBody = currentProvider.payloadCustomTemplate;
-                        }
-                        
-                        // Aktifkan Payload Cover jika user upload audio
-                        if (audioUrl && currentProvider.payloadCoverTemplate) {
-                            rawBody = currentProvider.payloadCoverTemplate;
-                        }
+                        if (finalLyrics && finalLyrics.trim() !== "" && currentProvider.payloadCustomTemplate) rawBody = currentProvider.payloadCustomTemplate;
+                        if (audioUrl && currentProvider.payloadCoverTemplate) rawBody = currentProvider.payloadCoverTemplate;
 
                         const variables = {
-                            title: title || "Untitled Song", 
-                            prompt: finalStylePrompt, 
-                            lyrics: finalLyrics, 
-                            audioUrl: audioUrl || "",
-                            videoUrl: audioUrl || "", 
-                            uploadUrl: audioUrl || "", 
-                            customMode: finalLyrics ? "true" : "false", 
-                            instrumental: instrumental ? "true" : "false", 
-                            negativeTags: options?.negativeTags || "",
-                            vocalGender: selectedGender, 
-                            vocalGenderShort: vocalGenderShort, 
-                            styleWeight: options?.styleWeight || "0.5",
-                            weirdness: options?.weirdness || "0.5", 
-                            audioWeight: options?.audioWeight || "0.5",
-                            personaId: options?.personaId || "", 
-                            model: activeModel
+                            title: title || "Untitled Song", prompt: finalStylePrompt, lyrics: finalLyrics, 
+                            audioUrl: audioUrl || "", videoUrl: audioUrl || "", uploadUrl: audioUrl || "", 
+                            customMode: finalLyrics ? "true" : "false", instrumental: instrumental ? "true" : "false", 
+                            negativeTags: options?.negativeTags || "", vocalGender: selectedGender, vocalGenderShort: vocalGenderShort, 
+                            styleWeight: options?.styleWeight || "0.5", weirdness: options?.weirdness || "0.5", audioWeight: options?.audioWeight || "0.5",
+                            personaId: options?.personaId || "", model: activeModel
                         };
                         
                         let parsedBodyString = renderTemplate(rawBody, variables);
                         const finalPayload = JSON.parse(parsedBodyString);
 
                         const headers = { "Content-Type": "application/json" };
-                        const headerName = currentProvider.headerName || "Authorization";
-                        const headerValueTemplate = currentProvider.headerValue || "Bearer {apiKey}";
-                        headers[headerName] = headerValueTemplate.replace("{apiKey}", activeApiKey);
+                        headers[currentProvider.headerName || "Authorization"] = (currentProvider.headerValue || "Bearer {apiKey}").replace("{apiKey}", activeApiKey);
 
                         let fetchBody = JSON.stringify(finalPayload);
-                        
-                        // FIX FASTAPI: Auto-Convert JSON ke URL-Encoded Form (Khusus untuk endpoint yang menolak JSON murni)
                         if (finalPayload._send_as_form) {
                             delete finalPayload._send_as_form;
                             headers["Content-Type"] = "application/x-www-form-urlencoded";
                             const formParams = new URLSearchParams();
-                            for (const key in finalPayload) {
-                                formParams.append(key, finalPayload[key]);
-                            }
+                            for (const key in finalPayload) formParams.append(key, finalPayload[key]);
                             fetchBody = formParams.toString();
                         }
 
                         const response = await fetch(providerUrl, { method: 'POST', headers: headers, body: fetchBody });
-
                         let resData = {};
-                        const contentType = response.headers.get("content-type");
-                        if (contentType && contentType.includes("application/json")) {
-                            resData = await response.json();
-                        } else {
-                            throw new Error(`Provider mengembalikan respons non-JSON`);
-                        }
+                        if (response.headers.get("content-type")?.includes("application/json")) resData = await response.json();
+                        else throw new Error(`Provider mengembalikan respons non-JSON`);
 
                         if (!response.ok || (resData.code && resData.code !== 200)) {
-                            const errMsg = getValueByPath(resData, currentProvider.errorPath) || extractErrorString(resData) || "API Error";
-                            throw new Error(errMsg);
+                            throw new Error(getValueByPath(resData, currentProvider.errorPath) || extractErrorString(resData) || "API Error");
                         }
 
-                        const execMode = currentProvider.execMode || 'async';
-
-                        // LOGIKA MODE SYNCHRONOUS (Langsung dapat URL)
-                        if (execMode === 'sync') {
-                            let audioUrlVal = getValueByPath(resData, currentProvider.statusVideoUrlPath || "audioUrl");
-                            if (!audioUrlVal) audioUrlVal = findAudioUrlRecursively(resData);
-                            
-                            if (!audioUrlVal) {
-                                throw new Error("URL Audio tidak ditemukan pada respons Synchronous API.");
-                            }
+                        if (currentProvider.execMode === 'sync') {
+                            let audioUrlVal = getValueByPath(resData, currentProvider.statusVideoUrlPath || "audioUrl") || findAudioUrlRecursively(resData);
+                            if (!audioUrlVal) throw new Error("URL Audio tidak ditemukan pada respons Synchronous API.");
 
                             let tracks = [];
                             let extractedArray = getValueByPath(resData, currentProvider.statusVideoUrlPath?.split('.').slice(0, -1).join('.'));
-                            
                             if (Array.isArray(extractedArray)) {
-                                tracks = extractedArray.map(item => ({
-                                    audioUrl: item.audio_url || item.audioUrl || item.url || audioUrlVal,
-                                    imageUrl: item.image_url || item.imageUrl || "https://i.postimg.cc/Jh211FTG/46cc61ec-de7f-4c62-8245-946e22312d2b.jpg"
-                                })).filter(t => t.audioUrl);
+                                tracks = extractedArray.map(item => ({ audioUrl: item.audio_url || item.audioUrl || item.url || audioUrlVal, imageUrl: item.image_url || item.imageUrl || "https://i.postimg.cc/Jh211FTG/46cc61ec-de7f-4c62-8245-946e22312d2b.jpg" })).filter(t => t.audioUrl);
                             } else {
                                 tracks.push({ audioUrl: audioUrlVal, imageUrl: "https://i.postimg.cc/Jh211FTG/46cc61ec-de7f-4c62-8245-946e22312d2b.jpg" });
                             }
 
-                            taskResponse = { 
-                                status: "completed",
-                                provider: currentProvider.value,
-                                tracks: tracks,
-                                raw: resData
-                            };
-                            successfulProvider = currentProvider;
-                            keyFoundAndUsed = true;
-                            break;
+                            taskResponse = { status: "completed", provider: currentProvider.value, tracks: tracks, raw: resData };
+                            successfulProvider = currentProvider; keyFoundAndUsed = true; break;
 
                         } else {
-                            // LOGIKA MODE ASYNCHRONOUS (Task ID & Polling)
-                            const responsePath = currentProvider.responsePath || "id";
-                            let taskId = getValueByPath(resData, responsePath);
-                            
-                            // Fallback pencarian ID
-                            if (!taskId) taskId = resData.data?.taskId || resData.taskId || resData.data?.task_id || resData.task_id || resData.data?.id || resData.id;
-                            
+                            let taskId = getValueByPath(resData, currentProvider.responsePath || "id") || resData.data?.taskId || resData.taskId || resData.data?.task_id || resData.task_id || resData.data?.id || resData.id;
                             if (taskId) {
                                 taskResponse = { taskId, provider: currentProvider.value };
-                                successfulProvider = currentProvider;
-                                keyFoundAndUsed = true;
-                                break;
+                                successfulProvider = currentProvider; keyFoundAndUsed = true; break;
                             } else {
-                                throw new Error("Task ID tidak ditemukan dalam respons API. Periksa Payload Template di Dashboard Admin.");
+                                throw new Error("Task ID tidak ditemukan dalam respons API.");
                             }
                         }
 
@@ -895,6 +654,13 @@ ATURAN MUTLAK:
                                     message: `API Key otomatis dimatikan karena saldo habis. Pesan: ${lastErrorMessage}`, timestamp: Date.now()
                                 });
                             } catch(e) {}
+                            
+                            // CUSTOM ERROR JIKA KEY MATI (Tutup info dari user publik)
+                            if (requiredKeyDocId) {
+                                lastErrorMessage = "Server penyimpanan untuk Suara ini baru saja penuh (Auto-Kill). Silakan buat / kloning ulang suara Anda di menu 'Kloning Voice' agar dipindah ke server baru.";
+                            } else {
+                                lastErrorMessage = "Antrean server sedang penuh. Mengalihkan ke jalur AI lain..."; // Rahasiakan alasan saldo habis
+                            }
                         } else {
                             await db.collection("system_logs").add({
                                 type: "error", host: currentProvider.value, request: isAutoPool ? "GENERATE_MUSIC_FAILOVER" : "GENERATE_MUSIC_STRICT",
@@ -903,28 +669,26 @@ ATURAN MUTLAK:
                         }
                     }
                 }
-
-                if (keyFoundAndUsed) break; // Berhenti mencari provider lain jika sudah sukses
+                if (keyFoundAndUsed) break; 
             }
 
             if (!taskResponse) {
                 if (isAutoPool) {
-                    return res.status(502).json({ error: 'Seluruh server AI sedang sibuk atau kehabisan kunci akses. Silakan coba lagi.' });
+                    return res.status(502).json({ error: 'Seluruh server AI sedang sibuk memproses antrean. Silakan coba lagi beberapa saat.' });
                 } else {
-                    return res.status(502).json({ error: `Server yang Anda pilih gagal merespons: ${lastErrorMessage}` });
+                    let finalOutputError = lastErrorMessage;
+                    // Jaga-jaga agar error "Saldo Habis" tidak bocor ke user saat mode strict provider
+                    if (finalOutputError.toLowerCase().includes('insufficient') || finalOutputError.toLowerCase().includes('balance') || finalOutputError.toLowerCase().includes('quota')) {
+                        finalOutputError = "Server sedang penuh atau antrean terlalu panjang. Silakan coba beberapa saat lagi.";
+                    }
+                    return res.status(502).json({ error: `Server yang Anda pilih gagal merespons: ${finalOutputError}` });
                 }
             }
 
             await userDoc.ref.update({ generateCount: FieldValue.increment(1) });
-
-            await db.collection("system_logs").add({
-                type: "success", host: successfulProvider.value, request: "GENERATE_MUSIC",
-                message: `Klien ${userData.nama} sukses memicu aransemen lagu. Mode: ${successfulProvider.execMode || 'async'}`,
-                timestamp: Date.now()
-            });
+            await db.collection("system_logs").add({ type: "success", host: successfulProvider.value, request: "GENERATE_MUSIC", message: `Klien ${userData.nama} sukses memicu aransemen lagu.`, timestamp: Date.now() });
 
             return res.status(200).json(taskResponse);
-
         } catch (globalErr) {
             return res.status(500).json({ error: globalErr.message });
         }
@@ -934,10 +698,9 @@ ATURAN MUTLAK:
     // METODE GET: ASYNCHRONOUS STATUS CHECK (POLLING STATUS)
     // ============================================================
     if (req.method === 'GET') {
-        const { taskId, provider, email, action } = req.query; // FITUR REFUND: Email ditangkap di sini
+        const { taskId, provider, email, action } = req.query; 
         if (!taskId) return res.status(400).json({ error: 'taskId wajib dilampirkan!' });
 
-        // ROUTE GET KHUSUS VOICE & PERSONA
         if (action === 'check_phrase' || action === 'check_voice') {
             try {
                 const providersDoc = await db.collection("settings").doc("api_providers").get();
@@ -981,47 +744,28 @@ ATURAN MUTLAK:
 
             const keysQuery = await db.collection("api_keys").where("provider", "==", provider).where("status", "==", "aktif").limit(1).get();
             if (keysQuery.empty) return res.status(502).json({ error: 'Tidak ada API Key aktif.' });
-
             const apiKey = keysQuery.docs[0].data().key;
 
-            let statusUrl = activeProvider.statusUrlTemplate || "{baseUrl}/v1/tasks/{taskId}";
-            statusUrl = statusUrl.replace("{baseUrl}", activeProvider.baseUrl).replace("{taskId}", taskId);
+            const statusUrl = activeProvider.statusUrlTemplate?.replace("{baseUrl}", activeProvider.baseUrl).replace("{taskId}", taskId) || `${activeProvider.baseUrl}/v1/tasks/${taskId}`;
+            const finalStatusUrl = statusUrl + (statusUrl.includes('?') ? `&_t=${Date.now()}` : `?_t=${Date.now()}`);
 
-            const cacheBuster = statusUrl.includes('?') ? `&_t=${Date.now()}` : `?_t=${Date.now()}`;
-            const finalStatusUrl = statusUrl + cacheBuster;
+            const headers = { "Content-Type": "application/json", "Cache-Control": "no-store, no-cache", "Pragma": "no-cache" };
+            headers[activeProvider.headerName || "Authorization"] = (activeProvider.headerValue || "Bearer {apiKey}").replace("{apiKey}", apiKey);
 
-            const headers = { 
-                "Content-Type": "application/json",
-                "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate",
-                "Pragma": "no-cache",
-                "Expires": "0"
-            };
-            const headerName = activeProvider.headerName || "Authorization";
-            const headerValueTemplate = activeProvider.headerValue || "Bearer {apiKey}";
-            headers[headerName] = headerValueTemplate.replace("{apiKey}", apiKey);
-
-            const response = await fetch(finalStatusUrl, { 
-                method: 'GET', 
-                headers: headers,
-                cache: 'no-store' 
-            });
+            const response = await fetch(finalStatusUrl, { method: 'GET', headers: headers, cache: 'no-store' });
             
             let resData = {};
-            const contentType = response.headers.get("content-type");
-            if (contentType && contentType.includes("application/json")) {
+            if (response.headers.get("content-type")?.includes("application/json")) {
                 resData = await response.json();
             } else {
-                // TANGKAP ERROR 413 KIE.AI YANG BUKAN JSON (HTML/TEXT)
                 const textData = await response.text();
                 if (response.status === 413 || textData.includes('413') || textData.toLowerCase().includes('payload too large')) {
-                     return res.status(200).json({ status: "failed", audioUrl: null, reason: "Hak Cipta Terdeteksi: Lirik atau audio melanggar hak cipta. Silakan ubah lirik atau gunakan DSP Bypass.", raw: textData });
+                     return res.status(200).json({ status: "failed", audioUrl: null, reason: "Hak Cipta / Payload Terlalu Besar: Lirik atau audio melebihi batas yang diizinkan server AI.", raw: textData });
                 }
                 throw new Error(`Provider status mengembalikan respons non-JSON`);
             }
 
             let actualErrorMessage = getValueByPath(resData, activeProvider.errorPath) || extractErrorString(resData);
-
-            // TANGKAP JEBAKAN KIE.AI (HTTP 200 TAPI SUCCESSFLAG 2 / GAGAL)
             let isKieFailed = false;
             if (resData.data && (resData.data.successFlag === 2 || resData.data.status === "failed" || resData.data.errorCode)) {
                 isKieFailed = true;
@@ -1032,213 +776,113 @@ ATURAN MUTLAK:
                 const errMsg = actualErrorMessage || resData.msg || resData.message || resData.error || "API Error";
                 const lowerErr = String(errMsg).toLowerCase();
                 
-                // --- SISTEM ANTI-PANIK UNIVERSAL (UNTUK SEMUA PROVIDER) ---
-                // Mengatasi "Race Condition" / Delay Sinkronisasi Database di server pusat.
                 if (lowerErr.includes('not found') || response.status === 404 || resData.code === 404) {
                      return res.status(200).json({ status: "processing", audioUrl: null, reason: "Sinkronisasi antrean server AI...", raw: resData });
                 }
-                // -----------------------------------------------------------
                 
                 let translatedError = errMsg;
                 if (lowerErr.includes('copyright') || lowerErr.includes('lyrics contain') || lowerErr.includes('artist name') || lowerErr.includes('catalog') || lowerErr.includes('matches an existing')) {
-                    translatedError = "Hak Cipta Terdeteksi: Lirik atau audio melanggar hak cipta. Silakan ubah lirik atau gunakan fitur DSP Bypass.";
-                } else if (lowerErr.includes('insufficient') || lowerErr.includes('balance') || lowerErr.includes('credit')) {
-                    translatedError = "Saldo API server habis. Harap hubungi Admin.";
+                    // MENGGUNAKAN PESAN ERROR ASLI PROVIDER UNTUK COPY/LIRIK
+                    translatedError = `Moderasi AI / Hak Cipta Terdeteksi: ${errMsg}`;
+                } else if (lowerErr.includes('insufficient') || lowerErr.includes('balance') || lowerErr.includes('credit') || lowerErr.includes('quota') || lowerErr.includes('fund')) {
+                    // MENYEMBUNYIKAN ERROR SALDO HABIS DARI USER (Hanya ditunjukkan sebagai error sistem/sibuk)
+                    translatedError = "Server AI internal sedang penuh/maintenance. Silakan coba provider lain atau hubungi Admin.";
                 } else if (lowerErr.includes('too long') || lowerErr.includes('exceed')) {
-                    translatedError = "Durasi terlalu panjang atau prompt melebihi batas karakter.";
+                    translatedError = `Durasi/Batas Karakter Terlampaui: ${errMsg}`;
                 }
                 
-                // Jika error bersifat permanen, return 200 dengan status failed agar frontend stop polling
                 if (resData.code === 413 || resData.code === 400 || resData.code === 403 || lowerErr.includes('artist name') || lowerErr.includes('copyright') || lowerErr.includes('fail') || lowerErr.includes('error') || lowerErr.includes('reject') || lowerErr.includes('tags') || lowerErr.includes('matches an existing') || lowerErr.includes('catalog') || lowerErr.includes('insufficient') || lowerErr.includes('balance') || isKieFailed) {
-                    
-                    // --- SISTEM REFUND OTOMATIS: JIKA GAGAL DI AWAL (HTTP STATUS) ---
                     if (email) {
                         try {
                             const refundQuery = await db.collection("users").where("email", "==", email).get();
-                            if (!refundQuery.empty) {
-                                await refundQuery.docs[0].ref.update({ 
-                                    generateCount: FieldValue.increment(-1),
-                                    kredit: FieldValue.increment(50)
-                                });
-                                console.log(`[REFUND SUKSES] Saldo dikembalikan 50 Kredit (HTTP Error) untuk email: ${email}`);
-                            }
-                        } catch (refundErr) { console.error("Gagal melakukan refund:", refundErr); }
+                            if (!refundQuery.empty) await refundQuery.docs[0].ref.update({ generateCount: FieldValue.increment(-1), kredit: FieldValue.increment(50) });
+                        } catch (refundErr) {}
                     }
-                    // -----------------------------------------------------------------
-
                     return res.status(200).json({ status: "failed", audioUrl: null, reason: translatedError, raw: resData });
                 }
-                
                 return res.status(500).json({ error: translatedError, details: resData });
             }
 
-            // MENCARI STATUS MENGGUNAKAN JALUR DINAMIS DARI ADMIN PANEL
             let statusVal = getValueByPath(resData, activeProvider.statusResponsePath || "status");
             let extractedStatus = String(statusVal).toLowerCase().trim();
-
             if (!statusVal || extractedStatus === "null" || extractedStatus === "undefined" || extractedStatus === "") {
-                const rawStr = JSON.stringify(resData).toLowerCase();
-                const statusRegex = /"(?:status|state|task_status|taskstatus)"\s*:\s*"?([a-zA-Z0-9_-]+)"?/g;
-                let match;
-                while ((match = statusRegex.exec(rawStr)) !== null) {
-                    extractedStatus = match[1].trim();
-                }
+                const match = /"(?:status|state|task_status|taskstatus)"\s*:\s*"?([a-zA-Z0-9_-]+)"?/g.exec(JSON.stringify(resData).toLowerCase());
+                if (match) extractedStatus = match[1].trim();
             }
 
-            let completedValues = ["success", "finished", "completed", "done", "successful", "complete"];
-            if (activeProvider.statusCompletedValue) {
-                completedValues.push(...activeProvider.statusCompletedValue.toLowerCase().split(',').map(s => s.trim()));
-            }
-
-            let failedValues = ["failed", "error", "fail", "failure", "timeout", "canceled", "rejected", "generate_audio_failed", "unsuccessful", "banned", "moderation", "revoked"];
-            if (activeProvider.statusFailedValue) {
-                failedValues.push(...activeProvider.statusFailedValue.toLowerCase().split(',').map(s => s.trim()));
-            }
-
+            let completedValues = ["success", "finished", "completed", "done", "successful", "complete", ...(activeProvider.statusCompletedValue?.toLowerCase().split(',').map(s => s.trim()) || [])];
+            let failedValues = ["failed", "error", "fail", "failure", "timeout", "canceled", "rejected", "generate_audio_failed", "unsuccessful", "banned", "moderation", "revoked", ...(activeProvider.statusFailedValue?.toLowerCase().split(',').map(s => s.trim()) || [])];
             let processingValues = ["processing", "in_progress", "queued", "pending", "starting", "running", "submitted", "wait", "waiting", "active", "generating", "progress", "streaming", "text_success", "first_success"];
 
-            let isCompleted = false;
-            let isFailed = false;
-            let isProcessing = false;
+            let isCompleted = completedValues.includes(extractedStatus) || extractedStatus.includes("success") || extractedStatus.includes("complete") || extractedStatus.includes("done");
+            let isFailed = failedValues.includes(extractedStatus) || extractedStatus.includes("fail") || extractedStatus.includes("error") || extractedStatus.includes("reject") || extractedStatus.includes("cancel") || extractedStatus.includes("timeout") || extractedStatus.includes("ban");
+            let isProcessing = (!isCompleted && !isFailed) || processingValues.includes(extractedStatus) || extractedStatus.includes("process") || extractedStatus.includes("queue") || extractedStatus.includes("run") || extractedStatus.includes("wait");
 
-            if (processingValues.includes(extractedStatus) || extractedStatus.includes("process") || extractedStatus.includes("queue") || extractedStatus.includes("pend") || extractedStatus.includes("run") || extractedStatus.includes("wait") || extractedStatus.includes("start") || extractedStatus.includes("submit") || extractedStatus.includes("generat") || extractedStatus.includes("stream")) {
-                isProcessing = true;
-            } else if (failedValues.includes(extractedStatus) || extractedStatus.includes("fail") || extractedStatus.includes("error") || extractedStatus.includes("reject") || extractedStatus.includes("cancel") || extractedStatus.includes("timeout") || extractedStatus.includes("ban")) {
-                isFailed = true;
-            } else if (completedValues.includes(extractedStatus) || extractedStatus.includes("success") || extractedStatus.includes("complete") || extractedStatus.includes("done")) {
-                isCompleted = true;
-            }
-
-            if (actualErrorMessage) {
-                const lowerMsg = actualErrorMessage.toLowerCase();
-                if (lowerMsg.includes('fail') || lowerMsg.includes('error') || lowerMsg.includes('reject') || lowerMsg.includes('artist name') || lowerMsg.includes('copyright') || lowerMsg.includes('try again') || lowerMsg.includes('unauthorized') || lowerMsg.includes('insufficient') || lowerMsg.includes('tags') || lowerMsg.includes('matches an existing') || lowerMsg.includes('catalog')) {
-                    isFailed = true;
-                    isCompleted = false;
-                    isProcessing = false;
-                }
-            } else if (!isCompleted && !isFailed && !isProcessing) {
-                isProcessing = true; 
+            if (actualErrorMessage && (actualErrorMessage.toLowerCase().includes('fail') || actualErrorMessage.toLowerCase().includes('error') || actualErrorMessage.toLowerCase().includes('reject') || actualErrorMessage.toLowerCase().includes('artist name') || actualErrorMessage.toLowerCase().includes('copyright'))) {
+                isFailed = true; isCompleted = false; isProcessing = false;
             }
 
             let audioUrlVal = null;
             let tracks = [];
 
             if (isCompleted) {
-                // DINAMIS: Mengekstrak URL Audio berdasarkan pengaturan Admin
                 const targetPath = activeProvider.statusVideoUrlPath || "download_url";
                 let extractedMedia = getValueByPath(resData, targetPath);
-
-                // Cek apakah targetPath mengandung indeks array (contoh: data.sunoData.0.audioUrl)
                 const arrayMatch = targetPath.match(/(.*?)\.\d+\.(.*)/);
 
                 if (arrayMatch) {
-                    // Ekstrak semua data dari dalam array sekaligus (Bisa 2 lagu atau lebih)
-                    const arrayPath = arrayMatch[1]; 
-                    const propName = arrayMatch[2];  
-
-                    let extractedArray = getValueByPath(resData, arrayPath);
+                    let extractedArray = getValueByPath(resData, arrayMatch[1]);
                     if (Array.isArray(extractedArray) && extractedArray.length > 0) {
-                        tracks = extractedArray.map(item => ({
-                            audioId: item.id || item.audio_id || item.audioId || "",
-                            audioUrl: item[propName] || item.audio_url || item.audioUrl || item.url || item.download_url || "",
-                            imageUrl: item.image_url || item.imageUrl || item.cover_url || "https://i.postimg.cc/Jh211FTG/46cc61ec-de7f-4c62-8245-946e22312d2b.jpg"
-                        })).filter(t => t.audioUrl && typeof t.audioUrl === 'string' && t.audioUrl.startsWith('http'));
-
+                        tracks = extractedArray.map(item => ({ audioId: item.id || item.audio_id || item.audioId || "", audioUrl: item[arrayMatch[2]] || item.audio_url || item.audioUrl || item.url || item.download_url || "", imageUrl: item.image_url || item.imageUrl || item.cover_url || "https://i.postimg.cc/Jh211FTG/46cc61ec-de7f-4c62-8245-946e22312d2b.jpg" })).filter(t => t.audioUrl && typeof t.audioUrl === 'string' && t.audioUrl.startsWith('http'));
                         if (tracks.length > 0) audioUrlVal = tracks[0].audioUrl;
                     }
                 } else if (typeof extractedMedia === 'string' && extractedMedia.startsWith('http')) {
                     audioUrlVal = extractedMedia;
-                    tracks.push({ 
-                        audioId: resData.id || resData.audio_id || resData.audioId || taskId,
-                        audioUrl: audioUrlVal, 
-                        imageUrl: "https://i.postimg.cc/Jh211FTG/46cc61ec-de7f-4c62-8245-946e22312d2b.jpg" 
-                    });
+                    tracks.push({ audioId: resData.id || resData.audio_id || resData.audioId || taskId, audioUrl: audioUrlVal, imageUrl: "https://i.postimg.cc/Jh211FTG/46cc61ec-de7f-4c62-8245-946e22312d2b.jpg" });
                 }
 
-                // Fallback jika jalur dinamis admin salah/gagal
                 if (!audioUrlVal) {
                     audioUrlVal = findAudioUrlRecursively(resData);
-                    if (audioUrlVal) {
-                        tracks.push({ 
-                            audioId: resData.id || resData.audio_id || resData.audioId || taskId,
-                            audioUrl: audioUrlVal, 
-                            imageUrl: "https://i.postimg.cc/Jh211FTG/46cc61ec-de7f-4c62-8245-946e22312d2b.jpg" 
-                        });
-                    }
+                    if (audioUrlVal) tracks.push({ audioId: resData.id || resData.audio_id || resData.audioId || taskId, audioUrl: audioUrlVal, imageUrl: "https://i.postimg.cc/Jh211FTG/46cc61ec-de7f-4c62-8245-946e22312d2b.jpg" });
                 }
-
-                if (!audioUrlVal) {
-                    isCompleted = false;
-                    isProcessing = true;
-                }
+                if (!audioUrlVal) { isCompleted = false; isProcessing = true; }
             }
 
-            let finalStatus = "processing";
-            if (isCompleted) finalStatus = "completed";
-            else if (isFailed) finalStatus = "failed";
-
-            if (finalStatus !== "completed") {
-                audioUrlVal = null;
-            }
-
+            let finalStatus = isCompleted ? "completed" : (isFailed ? "failed" : "processing");
             let failReason = "Gagal diproses oleh provider.";
+
             if (isFailed) {
                 failReason = actualErrorMessage || "Dibatalkan oleh server AI. Status tidak dikenali: " + extractedStatus;
-                
                 if (typeof failReason === 'string') {
                     const lowerReason = failReason.toLowerCase();
                     if (lowerReason.includes('copyright') || lowerReason.includes('lyrics contain') || lowerReason.includes('matches an existing') || lowerReason.includes('artist name') || lowerReason.includes('catalog')) {
-                        failReason = "Hak Cipta Terdeteksi: Lirik atau lagu ini melanggar hak cipta. Silakan ubah lirik atau gunakan tombol merah 'Upload Audio Kreaverse AI' (DSP Bypass).";
+                        // TAMPILKAN ALASAN HAK CIPTA ASLI DARI PROVIDER
+                        failReason = `Sistem Moderasi / Filter AI: ${actualErrorMessage || failReason}`;
                     } else if (lowerReason.includes('too long') || (lowerReason.includes('duration') && lowerReason.includes('exceed'))) {
-                        failReason = "Durasi audio terlalu panjang. Maksimal 8 Menit.";
+                        failReason = `Batas Waktu/Karakter Berlebih: ${actualErrorMessage || failReason}`;
                     } else if (lowerReason.includes('unsupported')) {
-                        failReason = "Format audio tidak didukung atau parameter tidak valid.";
-                    } else if (lowerReason.includes('insufficient') || lowerReason.includes('balance') || lowerReason.includes('credit') || lowerReason.includes('fund')) {
-                        failReason = "Kredit API server habis. Harap hubungi Admin.";
+                        failReason = `Tipe/Format Tidak Sesuai: ${actualErrorMessage || failReason}`;
+                    } else if (lowerReason.includes('insufficient') || lowerReason.includes('balance') || lowerReason.includes('credit') || lowerReason.includes('fund') || lowerReason.includes('quota')) {
+                        // SEMBUNYIKAN SALDO HABIS (CUKUP DI LOG ADMIN, USER LIHAT INI:)
+                        failReason = "Server AI sedang sibuk memproses antrean panjang atau sedang maintenance. Silakan gunakan provider lain.";
                     }
                 }
                 
-                // PENCATATAN LOG ERROR DINAMIS (RAW ERROR JSON)
-                await db.collection("system_logs").add({
-                    type: "error", 
-                    host: activeProvider.value, 
-                    request: "POLLING_FAILED",
-                    message: `Tugas ${taskId} dibatalkan oleh mesin AI.`,
-                    details: typeof failReason === 'string' ? failReason : JSON.stringify(failReason),
-                    rawError: JSON.stringify(resData, null, 2),
-                    timestamp: Date.now()
-                });
+                await db.collection("system_logs").add({ type: "error", host: activeProvider.value, request: "POLLING_FAILED", message: `Tugas ${taskId} dibatalkan oleh mesin AI.`, details: typeof failReason === 'string' ? failReason : JSON.stringify(failReason), rawError: JSON.stringify(resData, null, 2), timestamp: Date.now() });
                 
-                // --- SISTEM REFUND OTOMATIS: JIKA GAGAL DI TENGAH JALAN (POLLING FAILED) ---
                 if (email) {
                     try {
                         const refundQuery = await db.collection("users").where("email", "==", email).get();
-                        if (!refundQuery.empty) {
-                            await refundQuery.docs[0].ref.update({ 
-                                generateCount: FieldValue.increment(-1),
-                                kredit: FieldValue.increment(50)
-                            });
-                            console.log(`[REFUND SUKSES] Saldo dikembalikan 50 Kredit (Polling Failed) untuk email: ${email} pada task: ${taskId}`);
-                        }
-                    } catch (refundErr) {
-                        console.error("Gagal melakukan refund:", refundErr);
-                    }
+                        if (!refundQuery.empty) await refundQuery.docs[0].ref.update({ generateCount: FieldValue.increment(-1), kredit: FieldValue.increment(50) });
+                    } catch (refundErr) { }
                 }
-                // -----------------------------------------------------------------------------
             }
 
-            return res.status(200).json({ 
-                status: finalStatus, 
-                audioUrl: audioUrlVal || null, 
-                tracks: tracks, 
-                reason: failReason, 
-                raw: resData 
-            });
+            return res.status(200).json({ status: finalStatus, audioUrl: finalStatus === "completed" ? audioUrlVal : null, tracks: tracks, reason: failReason, raw: resData });
 
         } catch (err) {
             return res.status(500).json({ error: err.message });
         }
     }
-
     return res.status(405).json({ error: 'Method Not Allowed' });
 };
