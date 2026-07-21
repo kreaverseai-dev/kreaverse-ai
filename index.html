@@ -405,6 +405,13 @@
     </div>
 
     <!-- =================================================== -->
+    <!-- VIEW 4: TOOL FRAME (AGAR AUDIO TIDAK MATI)          -->
+    <!-- =================================================== -->
+    <div id="view-tool" class="app-view">
+        <iframe id="app-iframe" src="" style="width: 100%; height: 100%; border: none; background: #FFF;"></iframe>
+    </div>
+
+    <!-- =================================================== -->
     <!-- BOTTOM NAVIGATION BAR (5 MENU SONNA STYLE)          -->
     <!-- =================================================== -->
     <nav class="bottom-nav">
@@ -451,7 +458,8 @@
         <header class="native-header">
             <div class="header-logo-text">New</div>
             <div style="display:flex; gap:10px; align-items:center;">
-                <div class="header-avatar" onclick="switchView('view-profile', document.querySelectorAll('.nav-item')[4])"><i class="fa-solid fa-user"></i></div>
+                <!-- ID ditambahkan agar bisa disinkronkan oleh Javascript -->
+                <div id="top-user-avatar-new" class="header-avatar hidden" onclick="switchView('view-profile', document.querySelectorAll('.nav-item')[4])">P</div>
             </div>
         </header>
         
@@ -488,6 +496,25 @@
             document.getElementById(viewId).classList.add('active');
             document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
             navElement.classList.add('active');
+        }
+
+        // FUNGSI AJAIB AGAR PINDAH HALAMAN TANPA REFRESH (LAGU TETAP HIDUP)
+        function openTool(url, navIndex) {
+            const iframe = document.getElementById('app-iframe');
+            // Hanya muat ulang jika URL-nya berbeda (agar lagu tidak kerestart jika klik menu yang sama)
+            if (!iframe.src.includes(url)) {
+                iframe.src = url; 
+            }
+            
+            // Tampilkan halaman Iframe
+            document.querySelectorAll('.app-view').forEach(el => el.classList.remove('active'));
+            document.getElementById('view-tool').classList.add('active');
+            
+            // Update warna menu bawah
+            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+            if(navIndex !== undefined) {
+                document.querySelectorAll('.nav-item')[navIndex].classList.add('active');
+            }
         }
     </script>
 
@@ -820,6 +847,14 @@
                     if(photoBase64) topUserAvatar.innerHTML = `<img src="${photoBase64}" alt="Avatar">`;
                     else topUserAvatar.innerHTML = initial;
                     topUserAvatar.classList.remove('hidden');
+                }
+                
+                // Sinkronisasi untuk halaman New
+                const topUserAvatarNew = document.getElementById('top-user-avatar-new');
+                if(topUserAvatarNew) {
+                    if(photoBase64) topUserAvatarNew.innerHTML = `<img src="${photoBase64}" alt="Avatar">`;
+                    else topUserAvatarNew.innerHTML = initial;
+                    topUserAvatarNew.classList.remove('hidden');
                 }
 
                 const userTierBadge = document.getElementById('user-tier-badge');
