@@ -38,14 +38,17 @@
         .app-view::-webkit-scrollbar { display: none; }
 
         /* =================================================== */
-        /* 2. HEADER (LOGO KIRI, PROFIL KANAN)                 */
+        /* 2. HEADER (LOGO BESAR, PROFIL KANAN)                */
         /* =================================================== */
         .native-header {
-            padding: 15px 20px 10px 20px; display: flex; justify-content: space-between; align-items: center;
+            padding: 20px 20px 10px 20px; display: flex; justify-content: space-between; align-items: center;
             background: #FFFFFF; position: sticky; top: 0; z-index: 30;
         }
+        .header-logo-text {
+            font-size: 2.2rem; font-weight: 800; color: #111111; letter-spacing: -1px;
+        }
         .header-avatar {
-            width: 40px; height: 40px; border-radius: 50%; background: #2E7D32; color: white;
+            width: 42px; height: 42px; border-radius: 50%; background: #2E7D32; color: white;
             display: flex; align-items: center; justify-content: center; font-size: 1.2rem; font-weight: 600;
             cursor: pointer; border: 2px solid #E5E5EA; overflow: hidden;
         }
@@ -68,10 +71,10 @@
         .btn-create-massive:active { transform: scale(0.96); }
 
         /* =================================================== */
-        /* 4. HORIZONTAL CHIPS (SONNA STYLE)                   */
+        /* 4. HORIZONTAL CHIPS (ANTI NABRAK LAYAR)             */
         /* =================================================== */
         .chips-container {
-            display: flex; gap: 10px; padding: 0 20px 20px 20px;
+            display: flex; gap: 12px; padding: 0 20px 20px 20px;
             overflow-x: auto; -webkit-overflow-scrolling: touch; scroll-snap-type: x mandatory;
         }
         .chips-container::-webkit-scrollbar { display: none; }
@@ -80,22 +83,26 @@
             font-size: 0.95rem; font-weight: 600; color: #111; display: flex; align-items: center; gap: 8px;
             white-space: nowrap; text-decoration: none; scroll-snap-align: start;
         }
-        .chip-item i { color: #111; font-size: 1.1rem; }
+        .chip-item i { color: #52525B; font-size: 1.1rem; } /* Warna ikon lebih soft */
 
         /* =================================================== */
-        /* 5. PROMO CARD & RECENT PROJECTS                     */
+        /* 5. PROMO CAROUSEL & RECENT PROJECTS                 */
         /* =================================================== */
-        .promo-card-wrapper { padding: 0 20px; margin-bottom: 15px; }
+        .promo-carousel {
+            display: flex; gap: 15px; padding: 0 20px 15px 20px;
+            overflow-x: auto; scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch;
+        }
+        .promo-carousel::-webkit-scrollbar { display: none; }
         .promo-card {
-            background: #F4F4F5; border-radius: 24px; display: flex; overflow: hidden;
-            text-decoration: none; color: #111; height: 140px;
+            min-width: 88%; /* 95% mirip Sonna */
+            background: #F4F4F5; border-radius: 20px; display: flex; overflow: hidden;
+            text-decoration: none; color: #111; height: 130px; scroll-snap-align: center;
         }
         .promo-card-content { padding: 20px; flex: 1; display: flex; flex-direction: column; justify-content: center; }
-        .promo-card-title { font-size: 1.1rem; font-weight: 700; margin-bottom: 8px; }
+        .promo-card-title { font-size: 1.1rem; font-weight: 700; margin-bottom: 6px; }
         .promo-card-desc { font-size: 0.85rem; color: #71717A; line-height: 1.4; }
         .promo-card-image {
-            width: 140px; background-image: url('https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=400&auto=format&fit=crop');
-            background-size: cover; background-position: center;
+            width: 130px; background-size: cover; background-position: center;
         }
         
         .pagination-dots { display: flex; justify-content: center; gap: 6px; margin-bottom: 25px; }
@@ -114,22 +121,23 @@
         }
 
         /* =================================================== */
-        /* 6. BOTTOM NAVIGATION                                */
+        /* 6. BOTTOM NAVIGATION (5 MENU SONNA STYLE)           */
         /* =================================================== */
         .bottom-nav {
             position: fixed; bottom: 0; left: 0; right: 0; height: 65px;
             background: #FFFFFF; border-top: 1px solid #F4F4F5; 
-            display: flex; justify-content: space-around; align-items: center;
-            z-index: 100; padding-bottom: env(safe-area-inset-bottom);
+            display: flex; justify-content: space-between; align-items: center;
+            z-index: 100; padding: 0 15px; padding-bottom: env(safe-area-inset-bottom);
         }
         .nav-item {
             display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
-            color: #A1A1AA; text-decoration: none; width: 60px; height: 100%;
+            color: #A1A1AA; text-decoration: none; flex: 1; height: 100%;
         }
-        .nav-item i { font-size: 1.4rem; transition: 0.2s; }
-        .nav-item span { font-size: 0.65rem; font-weight: 600; }
+        .nav-item i { font-size: 1.3rem; transition: 0.2s; }
+        .nav-item span { font-size: 0.65rem; font-weight: 600; margin-top: 2px; }
         .nav-item.active { color: #111111; }
-        .nav-item.active i { transform: scale(1.1); }
+        .nav-item.active i { transform: scale(1.1); color: #111111; }
+        .nav-creator i { background: linear-gradient(135deg, #D95040, #F59E0B); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
 
         /* =================================================== */
         /* 7. BOTTOM SHEET (START FROM SCRATCH)                */
@@ -200,49 +208,21 @@
 </head>
 <body>
 
-    <!-- SPLASH SCREEN DENGAN LOGO FLIXA -->
-    <div id="kreaverse-splash" style="position: fixed; inset: 0; background: #ffffff; z-index: 9999999; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: opacity 0.4s ease;">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 250 60" style="width: 200px; height: auto;">
-            <defs>
-                <linearGradient id="flixaMini" x1="0%" y1="100%" x2="100%" y2="0%">
-                    <stop offset="0%" stop-color="#1A1449" />
-                    <stop offset="50%" stop-color="#7B2956" />
-                    <stop offset="100%" stop-color="#D95040" />
-                </linearGradient>
-            </defs>
-            <rect x="0" y="5" width="50" height="50" rx="12" fill="url(#flixaMini)"/>
-            <path d="M 32 16 C 32 6, 19 6, 19 20 C 19 29, 23 32, 23 40" stroke="#FFFFFF" stroke-width="6" stroke-linecap="round" fill="none" />
-            <path d="M 12 25 Q 21 20 30 25" stroke="#FFFFFF" stroke-width="6" stroke-linecap="round" fill="none" />
-            <text x="65" y="34" font-family="'Inter', sans-serif" font-size="24" font-weight="900" fill="#111111" dominant-baseline="middle">Flixa AI</text>
-        </svg>
-    </div>
-    <script>
-        window.addEventListener('load', () => {
-            setTimeout(() => {
-                const splash = document.getElementById('kreaverse-splash');
-                if(splash) { splash.style.opacity = '0'; setTimeout(() => splash.remove(), 400); }
-            }, 1200);
-        });
-    </script>
+    <!-- Splash Screen Dihapus Sesuai Permintaan -->
 
     <!-- =================================================== -->
     <!-- VIEW 1: HOME / DASHBOARD                            -->
     <!-- =================================================== -->
     <div id="view-home" class="app-view active">
         <header class="native-header">
-            <!-- LOGO FLIXA DI KIRI ATAS -->
-            <div class="header-logo">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 250 60" style="width: 130px; height: auto;">
-                    <rect x="0" y="5" width="50" height="50" rx="12" fill="url(#flixaMini)"/>
-                    <path d="M 32 16 C 32 6, 19 6, 19 20 C 19 29, 23 32, 23 40" stroke="#FFFFFF" stroke-width="6" stroke-linecap="round" fill="none" />
-                    <path d="M 12 25 Q 21 20 30 25" stroke="#FFFFFF" stroke-width="6" stroke-linecap="round" fill="none" />
-                    <text x="65" y="34" font-family="'Inter', sans-serif" font-size="24" font-weight="900" fill="#111111" dominant-baseline="middle">Flixa AI</text>
-                </svg>
-            </div>
+            <!-- LOGO TEKS BESAR (MIRIP "HOME" DI SONNA) -->
+            <div class="header-logo-text">Flixa AI</div>
             
             <!-- FOTO PROFIL DI KANAN ATAS -->
-            <div id="top-user-avatar" class="header-avatar hidden" onclick="switchView('view-profile', document.querySelectorAll('.nav-item')[3])">P</div>
-            <div id="top-auth-btn" class="btn-masuk-notif header-login-btn">Masuk</div>
+            <div style="display:flex; gap:10px; align-items:center;">
+                <div id="top-auth-btn" class="btn-masuk-notif header-login-btn">Masuk</div>
+                <div id="top-user-avatar" class="header-avatar hidden" onclick="switchView('view-profile', document.querySelectorAll('.nav-item')[4])">P</div>
+            </div>
         </header>
 
         <div class="create-btn-container">
@@ -252,27 +232,33 @@
         </div>
 
         <div class="chips-container">
-            <a href="/chat/" class="chip-item"><i class="fa-solid fa-comment-dots"></i> Text To Speech</a>
-            <a href="/media-ai/" class="chip-item"><i class="fa-solid fa-image"></i> Image</a>
+            <a href="/chat/" class="chip-item"><i class="fa-solid fa-bars-staggered"></i> Text To Speech</a>
+            <a href="/media-ai/" class="chip-item"><i class="fa-regular fa-image"></i> Image</a>
             <a href="/lyricshot/" class="chip-item"><i class="fa-solid fa-video"></i> Video</a>
             <a href="/habirmx/" class="chip-item"><i class="fa-solid fa-music"></i> Music</a>
         </div>
 
-        <!-- KARTU PROMO (SONNA STYLE) -->
-        <div class="promo-card-wrapper">
+        <!-- KARTU PROMO BISA DIGESER (CAROUSEL) -->
+        <div class="promo-carousel">
             <a href="/media-ai/" class="promo-card">
                 <div class="promo-card-content">
                     <div class="promo-card-title">Flixa Web App</div>
                     <div class="promo-card-desc">flixa.app is now available! Access your creative studio on your...</div>
                 </div>
-                <div class="promo-card-image"></div>
+                <div class="promo-card-image" style="background-image: url('https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=400&auto=format&fit=crop');"></div>
+            </a>
+            <a href="/chat/" class="promo-card">
+                <div class="promo-card-content">
+                    <div class="promo-card-title">Go Pro or Max</div>
+                    <div class="promo-card-desc">Unlock more monthly credits, every premium voice and model...</div>
+                </div>
+                <div class="promo-card-image" style="background-image: url('https://images.unsplash.com/photo-1550684848-fac1c5b4e853?q=80&w=400&auto=format&fit=crop');"></div>
             </a>
         </div>
         
         <!-- TITIK NAVIGASI -->
         <div class="pagination-dots">
             <span class="dot active"></span>
-            <span class="dot"></span>
             <span class="dot"></span>
             <span class="dot"></span>
         </div>
@@ -300,6 +286,19 @@
         </div>
 
         <div class="profile-menu-list">
+            <!-- Menu Berkas & Inbox Dipindah Kesini -->
+            <a href="/berkas/" class="profile-menu-item" style="text-decoration:none;">
+                <div class="profile-menu-left"><i class="fa-solid fa-folder-open"></i> Berkas Saya</div>
+                <div class="profile-menu-right"><i class="fa-solid fa-chevron-right"></i></div>
+            </a>
+            <a href="/inbox/" class="profile-menu-item auth-required" id="inbox-link" style="text-decoration:none;">
+                <div class="profile-menu-left"><i class="fa-solid fa-bell"></i> Inbox Pengumuman</div>
+                <div class="profile-menu-right">
+                    <span id="notif-badge" class="hidden" style="background:#FF3B30; color:white; font-size:0.7rem; padding:2px 6px; border-radius:10px; margin-right:5px;">0</span>
+                    <i class="fa-solid fa-chevron-right"></i>
+                </div>
+            </a>
+            
             <div class="profile-menu-item" id="btn-trigger-vip">
                 <div class="profile-menu-left"><i class="fa-solid fa-crown" style="color:#F59E0B;"></i> Current plan</div>
                 <div class="profile-menu-right">Upgrade <i class="fa-solid fa-chevron-right"></i></div>
@@ -329,21 +328,23 @@
     </div>
 
     <!-- =================================================== -->
-    <!-- BOTTOM NAVIGATION BAR                               -->
+    <!-- BOTTOM NAVIGATION BAR (5 MENU SONNA STYLE)          -->
     <!-- =================================================== -->
     <nav class="bottom-nav">
         <a href="#" class="nav-item active" onclick="switchView('view-home', this)">
             <i class="fa-solid fa-house"></i><span>Home</span>
         </a>
-        <a href="/berkas/" class="nav-item">
-            <i class="fa-solid fa-folder-open"></i><span>Berkas</span>
+        <a href="#" class="nav-item" onclick="document.getElementById('create-sheet').classList.add('active')">
+            <i class="fa-solid fa-plus"></i><span>New</span>
         </a>
-        <a href="/inbox/" class="nav-item auth-required" id="inbox-link">
-            <i class="fa-solid fa-bell"></i><span>Inbox</span>
-            <span id="notif-badge" class="hidden" style="position:absolute; top:5px; right:25%; background:#FF3B30; color:white; font-size:0.5rem; padding:2px 5px; border-radius:10px;">0</span>
+        <a href="#" class="nav-item">
+            <i class="fa-regular fa-compass"></i><span>Explore</span>
+        </a>
+        <a href="#" class="nav-item">
+            <i class="fa-solid fa-layer-group"></i><span>Library</span>
         </a>
         <a href="#" class="nav-item" onclick="switchView('view-profile', this)">
-            <i class="fa-solid fa-user"></i><span>Profile</span>
+            <i class="fa-solid fa-circle nav-creator"></i><span>Creator</span>
         </a>
     </nav>
 
