@@ -74,13 +74,15 @@
         /* 4. HORIZONTAL CHIPS (SEJAJAR SEMPURNA DENGAN KARTU) */
         /* =================================================== */
         .chips-container {
-            display: flex; gap: 10px; padding: 0 20px 15px 20px; /* Kembali ke padding normal agar sejajar */
+            display: flex; gap: 10px; padding: 0 20px 15px 20px;
             overflow-x: auto; -webkit-overflow-scrolling: touch; scroll-snap-type: x mandatory;
             box-sizing: border-box; width: 100%;
         }
+        /* Trik agar saat digeser mentok kanan tidak terpotong */
+        .chips-container::after { content: ''; flex: 0 0 10px; } 
         .chips-container::-webkit-scrollbar { display: none; }
         .chip-item {
-            background: #F4F4F5; border: none; padding: 10px 16px; border-radius: 99px;
+            background: #F4F4F5; border: none; padding: 8px 16px; border-radius: 99px;
             font-size: 0.9rem; font-weight: 600; color: #111; display: flex; align-items: center; gap: 8px;
             white-space: nowrap; text-decoration: none; scroll-snap-align: start; flex-shrink: 0;
         }
@@ -101,17 +103,17 @@
         @keyframes shineSweep { 0% { left: -150%; } 100% { left: 200%; } }
 
         /* =================================================== */
-        /* HALAMAN NEW (PILL BANNERS SONNA STYLE - SLIM)       */
+        /* HALAMAN NEW (PILL BANNERS SONNA STYLE - SUPER SLIM) */
         /* =================================================== */
         .new-pill-list { display: flex; flex-direction: column; gap: 12px; padding: 0 20px 30px 20px; }
         .new-pill-card {
-            position: relative; width: 100%; height: 60px; border-radius: 99px; /* Diperkecil agar ramping */
+            position: relative; width: 100%; height: 52px; border-radius: 99px; /* Sangat ramping seperti Sonna */
             background: #F4F4F5; overflow: hidden; display: flex; align-items: center;
             text-decoration: none; color: #111;
         }
         .new-pill-text {
-            position: relative; z-index: 2; padding-left: 20px; font-weight: 600; font-size: 0.95rem;
-            display: flex; align-items: center; gap: 12px; width: 65%;
+            position: relative; z-index: 2; padding-left: 18px; font-weight: 600; font-size: 0.9rem;
+            display: flex; align-items: center; gap: 10px; width: 65%;
         }
         .new-pill-img {
             position: absolute; right: 0; top: 0; bottom: 0; width: 45%;
@@ -284,22 +286,22 @@
         </div>
 
         <div class="chips-container">
-            <a href="/chat/" class="chip-item"><i class="fa-solid fa-file-waveform"></i> Text To Speech</a>
-            <a href="/media-ai/" class="chip-item"><i class="fa-regular fa-image"></i> Image</a>
-            <a href="/lyricshot/" class="chip-item"><i class="fa-solid fa-video"></i> Video</a>
-            <a href="/habirmx/" class="chip-item"><i class="fa-solid fa-music"></i> Music</a>
+            <a href="#" onclick="openTool('/chat/', 0)" class="chip-item"><i class="fa-solid fa-file-waveform"></i> Text To Speech</a>
+            <a href="#" onclick="openTool('/media-ai/', 0)" class="chip-item"><i class="fa-regular fa-image"></i> Image</a>
+            <a href="#" onclick="openTool('/lyricshot/', 0)" class="chip-item"><i class="fa-solid fa-video"></i> Video</a>
+            <a href="#" onclick="openTool('/habirmx/', 0)" class="chip-item"><i class="fa-solid fa-music"></i> Music</a>
         </div>
 
         <!-- KARTU PROMO BISA DIGESER (CAROUSEL) -->
         <div class="promo-carousel" id="main-promo-carousel">
-            <a href="/media-ai/" class="promo-card">
+            <a href="#" onclick="openTool('/media-ai/', 0)" class="promo-card">
                 <div class="promo-card-content">
                     <div class="promo-card-title">Flixa Web App</div>
                     <div class="promo-card-desc">flixa.app is now available! Access your creative studio on your...</div>
                 </div>
                 <div class="promo-card-image" style="background-image: url('https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=400&auto=format&fit=crop');"></div>
             </a>
-            <a href="/chat/" class="promo-card">
+            <a href="#" onclick="openTool('/chat/', 0)" class="promo-card">
                 <div class="promo-card-content">
                     <div class="promo-card-title">Go Pro or Max</div>
                     <div class="promo-card-desc">Unlock more monthly credits, every premium voice and model...</div>
@@ -468,21 +470,21 @@
         </div>
         
         <div class="new-pill-list">
-            <a href="/chat/" class="new-pill-card">
+            <a href="#" onclick="openTool('/chat/', 1)" class="new-pill-card">
                 <div class="new-pill-text"><i class="fa-solid fa-file-waveform"></i> Text To Speech</div>
-                <div class="new-pill-img" style="background-image: url('https://images.unsplash.com/photo-1543857778-c4a1a3e0b2eb?q=80&w=400&auto=format&fit=crop');"></div>
+                <div class="new-pill-img" style="background-image: url('https://images.unsplash.com/photo-1550745165-9bc0b252726f?q=80&w=400&auto=format&fit=crop');"></div>
             </a>
-            <a href="/media-ai/" class="new-pill-card">
+            <a href="#" onclick="openTool('/media-ai/', 1)" class="new-pill-card">
                 <div class="new-pill-text"><i class="fa-regular fa-image"></i> Image</div>
-                <div class="new-pill-img" style="background-image: url('https://images.unsplash.com/photo-1513364776144-60967b0f800f?q=80&w=400&auto=format&fit=crop');"></div>
+                <div class="new-pill-img" style="background-image: url('https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=400&auto=format&fit=crop');"></div>
                 <div class="badge-new">NEW</div>
             </a>
-            <a href="/lyricshot/" class="new-pill-card">
+            <a href="#" onclick="openTool('/lyricshot/', 1)" class="new-pill-card">
                 <div class="new-pill-text"><i class="fa-solid fa-video"></i> Video</div>
-                <div class="new-pill-img" style="background-image: url('https://images.unsplash.com/photo-1469285994282-454ceb49e63c?q=80&w=400&auto=format&fit=crop');"></div>
+                <div class="new-pill-img" style="background-image: url('https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?q=80&w=400&auto=format&fit=crop');"></div>
                 <div class="badge-new">NEW</div>
             </a>
-            <a href="/habirmx/" class="new-pill-card">
+            <a href="#" onclick="openTool('/habirmx/', 1)" class="new-pill-card">
                 <div class="new-pill-text"><i class="fa-solid fa-music"></i> Music</div>
                 <div class="new-pill-img" style="background-image: url('https://images.unsplash.com/photo-1614613535308-eb5fbd3d2c17?q=80&w=400&auto=format&fit=crop');"></div>
                 <div class="badge-new">NEW</div>
