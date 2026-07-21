@@ -71,21 +71,56 @@
         .btn-create-massive:active { transform: scale(0.96); }
 
         /* =================================================== */
-        /* 4. HORIZONTAL CHIPS (SEJAJAR & ANTI NABRAK)         */
+        /* 4. HORIZONTAL CHIPS (SEJAJAR & ANTI NABRAK 100%)    */
         /* =================================================== */
         .chips-container {
-            display: flex; gap: 10px; padding: 0 20px 15px 20px;
+            display: flex; gap: 10px; padding: 0 0 15px 0; /* Padding kiri-kanan dipindah ke pseudo-element */
             overflow-x: auto; -webkit-overflow-scrolling: touch; scroll-snap-type: x mandatory;
             box-sizing: border-box; width: 100%;
         }
-        .chips-container::after { content: ''; padding-right: 10px; } /* Ruang kosong di akhir scroll */
+        .chips-container::before { content: ''; flex: 0 0 10px; } /* Jarak awal 20px (10px flex + 10px gap) */
+        .chips-container::after { content: ''; flex: 0 0 20px; } /* Jarak akhir agar tidak nabrak kanan */
         .chips-container::-webkit-scrollbar { display: none; }
         .chip-item {
-            background: #F4F4F5; border: none; padding: 10px 16px; border-radius: 99px;
-            font-size: 0.9rem; font-weight: 600; color: #111; display: flex; align-items: center; gap: 8px;
+            background: #F4F4F5; border: none; padding: 10px 18px; border-radius: 99px;
+            font-size: 0.95rem; font-weight: 600; color: #111; display: flex; align-items: center; gap: 10px;
             white-space: nowrap; text-decoration: none; scroll-snap-align: start;
         }
-        .chip-item i { color: #52525B; font-size: 1.05rem; }
+        .chip-item i { color: #111111; font-size: 1.1rem; }
+
+        /* =================================================== */
+        /* EFEK KILAUAN CAHAYA (SHINE EFFECT) PADA LOGO        */
+        /* =================================================== */
+        .logo-shine-wrapper { position: relative; display: inline-block; overflow: hidden; border-radius: 12px; }
+        .logo-shine-layer {
+            position: absolute; top: 0; left: -150%; width: 50%; height: 100%;
+            background: linear-gradient(to right, rgba(255,255,255,0) 0%, rgba(255,255,255,0.9) 50%, rgba(255,255,255,0) 100%);
+            transform: skewX(-25deg); z-index: 10; pointer-events: none;
+        }
+        .shine-anim-1 { animation: shineSweep 1.2s ease-in-out; }
+        .shine-anim-2 { animation: shineSweep 1.8s cubic-bezier(0.25, 0.1, 0.25, 1); }
+        .shine-anim-3 { animation: shineSweep 1s linear; }
+        @keyframes shineSweep { 0% { left: -150%; } 100% { left: 200%; } }
+
+        /* =================================================== */
+        /* HALAMAN NEW (PILL BANNERS SONNA STYLE)              */
+        /* =================================================== */
+        .new-pill-list { display: flex; flex-direction: column; gap: 16px; padding: 0 20px 30px 20px; }
+        .new-pill-card {
+            position: relative; width: 100%; height: 75px; border-radius: 99px;
+            background: #F4F4F5; overflow: hidden; display: flex; align-items: center;
+            text-decoration: none; color: #111;
+        }
+        .new-pill-text {
+            position: relative; z-index: 2; padding-left: 24px; font-weight: 700; font-size: 1.05rem;
+            display: flex; align-items: center; gap: 12px; width: 60%;
+        }
+        .new-pill-img {
+            position: absolute; right: 0; top: 0; bottom: 0; width: 50%;
+            background-size: cover; background-position: center;
+            -webkit-mask-image: linear-gradient(to right, transparent 0%, black 40%);
+            mask-image: linear-gradient(to right, transparent 0%, black 40%);
+        }
 
         /* =================================================== */
         /* 5. PROMO CAROUSEL & RECENT PROJECTS                 */
@@ -219,9 +254,10 @@
     <!-- =================================================== -->
     <div id="view-home" class="app-view active">
         <header class="native-header">
-            <!-- LOGO SVG FLIXA (UKURAN DISESUAIKAN) -->
-            <div class="header-logo">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 250 60" style="width: 115px; height: auto; display: block;">
+            <!-- LOGO SVG FLIXA (DIPERBESAR + EFEK KILAU) -->
+            <div class="header-logo logo-shine-wrapper">
+                <div id="logo-shine-layer" class="logo-shine-layer"></div>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 250 60" style="width: 130px; height: auto; display: block;">
                   <defs>
                     <linearGradient id="flixaMini" x1="0%" y1="100%" x2="100%" y2="0%">
                       <stop offset="0%" stop-color="#1A1449" />
@@ -250,7 +286,7 @@
         </div>
 
         <div class="chips-container">
-            <a href="/chat/" class="chip-item"><i class="fa-solid fa-bars-staggered"></i> Text To Speech</a>
+            <a href="/chat/" class="chip-item"><i class="fa-solid fa-file-waveform"></i> Text To Speech</a>
             <a href="/media-ai/" class="chip-item"><i class="fa-regular fa-image"></i> Image</a>
             <a href="/lyricshot/" class="chip-item"><i class="fa-solid fa-video"></i> Video</a>
             <a href="/habirmx/" class="chip-item"><i class="fa-solid fa-music"></i> Music</a>
@@ -377,7 +413,8 @@
         <a href="#" class="nav-item active" onclick="switchView('view-home', this)">
             <i class="fa-solid fa-house"></i><span>Home</span>
         </a>
-        <a href="#" class="nav-item" onclick="document.getElementById('create-sheet').classList.add('active')">
+        <!-- Tombol New sekarang membuka Halaman view-new -->
+        <a href="#" class="nav-item" onclick="switchView('view-new', this)">
             <i class="fa-solid fa-plus"></i><span>New</span>
         </a>
         <a href="#" class="nav-item">
@@ -391,35 +428,59 @@
         </a>
     </nav>
 
+    <!-- SCRIPT UNTUK EFEK KILAUAN LOGO (SHINE EFFECT) -->
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            setInterval(() => {
+                const shineLayer = document.getElementById('logo-shine-layer');
+                if(shineLayer) {
+                    // Hapus class animasi sebelumnya
+                    shineLayer.classList.remove('shine-anim-1', 'shine-anim-2', 'shine-anim-3');
+                    // Force reflow agar animasi bisa diulang
+                    void shineLayer.offsetWidth;
+                    // Pilih variasi animasi secara acak (1, 2, atau 3)
+                    const randomAnim = Math.floor(Math.random() * 3) + 1;
+                    shineLayer.classList.add('shine-anim-' + randomAnim);
+                }
+            }, 30000); // Muncul setiap 30 detik
+        });
+    </script>
+
     <!-- =================================================== -->
-    <!-- BOTTOM SHEET (START FROM SCRATCH)                   -->
+    <!-- VIEW 3: NEW (START FROM SCRATCH)                    -->
     <!-- =================================================== -->
-    <div class="bottom-sheet-overlay" id="create-sheet" onclick="this.classList.remove('active')">
-        <div class="bottom-sheet" onclick="event.stopPropagation()">
-            <div class="sheet-drag-handle"></div>
-            <div class="sheet-title">Start from scratch</div>
-            
-            <div class="sheet-banner-list">
-                <a href="/chat/" class="sheet-banner">
-                    <div class="sheet-banner-text"><i class="fa-solid fa-comment-dots"></i> Text To Speech</div>
-                    <div class="sheet-banner-img" style="background-image: url('https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=600&auto=format&fit=crop');"></div>
-                </a>
-                <a href="/media-ai/" class="sheet-banner">
-                    <div class="sheet-banner-text"><i class="fa-solid fa-image"></i> Image</div>
-                    <div class="sheet-banner-img" style="background-image: url('https://images.unsplash.com/photo-1550684848-fac1c5b4e853?q=80&w=600&auto=format&fit=crop');"></div>
-                    <div class="badge-new">NEW</div>
-                </a>
-                <a href="/lyricshot/" class="sheet-banner">
-                    <div class="sheet-banner-text"><i class="fa-solid fa-video"></i> Video</div>
-                    <div class="sheet-banner-img" style="background-image: url('https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?q=80&w=600&auto=format&fit=crop');"></div>
-                    <div class="badge-new">NEW</div>
-                </a>
-                <a href="/habirmx/" class="sheet-banner">
-                    <div class="sheet-banner-text"><i class="fa-solid fa-music"></i> Music</div>
-                    <div class="sheet-banner-img" style="background-image: url('https://images.unsplash.com/photo-1614613535308-eb5fbd3d2c17?q=80&w=600&auto=format&fit=crop');"></div>
-                    <div class="badge-new">NEW</div>
-                </a>
+    <div id="view-new" class="app-view">
+        <header class="native-header">
+            <div class="header-logo-text">New</div>
+            <div style="display:flex; gap:10px; align-items:center;">
+                <div class="header-avatar" onclick="switchView('view-profile', document.querySelectorAll('.nav-item')[4])"><i class="fa-solid fa-user"></i></div>
             </div>
+        </header>
+        
+        <div style="padding: 0 20px; font-size: 1.1rem; color: #8E8E93; font-weight: 600; margin-bottom: 16px;">
+            Start from scratch
+        </div>
+        
+        <div class="new-pill-list">
+            <a href="/chat/" class="new-pill-card">
+                <div class="new-pill-text"><i class="fa-solid fa-file-waveform"></i> Text To Speech</div>
+                <div class="new-pill-img" style="background-image: url('https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=600&auto=format&fit=crop');"></div>
+            </a>
+            <a href="/media-ai/" class="new-pill-card">
+                <div class="new-pill-text"><i class="fa-regular fa-image"></i> Image</div>
+                <div class="new-pill-img" style="background-image: url('https://images.unsplash.com/photo-1550684848-fac1c5b4e853?q=80&w=600&auto=format&fit=crop');"></div>
+                <div class="badge-new">NEW</div>
+            </a>
+            <a href="/lyricshot/" class="new-pill-card">
+                <div class="new-pill-text"><i class="fa-solid fa-video"></i> Video</div>
+                <div class="new-pill-img" style="background-image: url('https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?q=80&w=600&auto=format&fit=crop');"></div>
+                <div class="badge-new">NEW</div>
+            </a>
+            <a href="/habirmx/" class="new-pill-card">
+                <div class="new-pill-text"><i class="fa-solid fa-music"></i> Music</div>
+                <div class="new-pill-img" style="background-image: url('https://images.unsplash.com/photo-1614613535308-eb5fbd3d2c17?q=80&w=600&auto=format&fit=crop');"></div>
+                <div class="badge-new">NEW</div>
+            </a>
         </div>
     </div>
 
