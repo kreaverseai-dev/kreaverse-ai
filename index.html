@@ -41,22 +41,21 @@
         /* 2. HEADER (LOGO BESAR, PROFIL KANAN)                */
         /* =================================================== */
         .native-header {
-            /* Jarak atas diperbesar agar lebih lega seperti Sonna */
-            padding: calc(25px + env(safe-area-inset-top)) 20px 15px 20px; 
+            padding: calc(20px + env(safe-area-inset-top)) 20px 15px 20px; 
             display: flex; justify-content: space-between; align-items: center;
-            background: #FFFFFF; position: sticky; top: 0; z-index: 30;
+            background: transparent; position: sticky; top: 0; z-index: 30;
         }
         .header-logo-text {
-            font-size: 2.2rem; font-weight: 800; color: #111111; letter-spacing: -1px;
+            font-size: 34px; font-weight: 800; color: #111111; letter-spacing: -0.5px;
         }
         .header-avatar {
-            width: 40px; height: 40px; border-radius: 50%; background: #2E7D32; color: white;
-            display: flex; align-items: center; justify-content: center; font-size: 1.1rem; font-weight: 600;
+            width: 36px; height: 36px; border-radius: 50%; background: #2E7D32; color: white;
+            display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 600;
             cursor: pointer; border: 1px solid #E5E5EA; overflow: hidden;
         }
         .header-avatar img { width: 100%; height: 100%; object-fit: cover; }
         .header-login-btn {
-            font-size: 0.9rem; font-weight: 700; color: #D95040; cursor: pointer;
+            font-size: 14px; font-weight: 700; color: #D95040; cursor: pointer;
             background: rgba(217, 80, 64, 0.1); padding: 8px 16px; border-radius: 99px;
         }
 
@@ -75,11 +74,11 @@
         /* =================================================== */
         /* 3. CREATE BUTTON                                    */
         /* =================================================== */
-        .create-btn-container { padding: 10px 20px 25px 20px; display: flex; justify-content: center; }
+        .create-btn-container { padding: 5px 20px 20px 20px; display: flex; justify-content: center; }
         .btn-create-massive {
             background: #111111; color: #FFFFFF; border: none; border-radius: 99px;
-            padding: 16px 32px; font-size: 1.1rem; font-weight: 600; width: 100%;
-            display: flex; align-items: center; justify-content: center; gap: 10px;
+            padding: 16px; font-size: 15px; font-weight: 600; width: 100%;
+            display: flex; align-items: center; justify-content: center; gap: 8px;
             cursor: pointer; transition: transform 0.1s;
         }
         .btn-create-massive:active { transform: scale(0.96); }
@@ -88,18 +87,18 @@
         /* 4. HORIZONTAL CHIPS (ANTI NABRAK LAYAR)             */
         /* =================================================== */
         .chips-container {
-            display: flex; gap: 10px; padding: 0 20px 25px 20px !important; margin: 0;
+            display: flex; gap: 10px; padding: 0 20px 20px 20px !important; margin: 0;
             overflow-x: auto; -webkit-overflow-scrolling: touch; scroll-snap-type: x mandatory;
             box-sizing: border-box; width: 100%; scroll-padding-left: 20px;
         }
         .chips-container::after { content: ''; padding-right: 20px; } 
         .chips-container::-webkit-scrollbar { display: none; }
         .chip-item {
-            background: #F4F4F5; border: none; padding: 10px 16px; border-radius: 99px; margin: 0;
-            font-size: 0.9rem; font-weight: 600; color: #111; display: flex; align-items: center; gap: 8px;
+            background: #F4F4F5; border: none; padding: 12px 20px; border-radius: 99px; margin: 0;
+            font-size: 14px; font-weight: 600; color: #111; display: flex; align-items: center; gap: 8px;
             white-space: nowrap; text-decoration: none; scroll-snap-align: start; flex-shrink: 0;
         }
-        .chip-item i { color: #111111; font-size: 1.05rem; }
+        .chip-item i { color: #111111; font-size: 16px; }
 
         /* =================================================== */
         /* 5. PROMO CAROUSEL & RECENT PROJECTS                 */
@@ -113,163 +112,205 @@
         .promo-carousel::-webkit-scrollbar { display: none; }
         .promo-card {
             min-width: 88%; margin: 0;
-            background: #F4F4F5; border-radius: 20px; display: flex; overflow: hidden;
-            text-decoration: none; color: #111; height: 120px; scroll-snap-align: start;
+            background: #F4F4F5; border-radius: 24px; display: flex; overflow: hidden;
+            text-decoration: none; color: #111; height: 140px; scroll-snap-align: start;
         }
-        .promo-card-content { padding: 18px; flex: 1; display: flex; flex-direction: column; justify-content: center; }
-        .promo-card-title { font-size: 1.1rem; font-weight: 700; margin-bottom: 4px; }
-        .promo-card-desc { font-size: 0.85rem; color: #71717A; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-        .promo-card-image { width: 120px; background-size: cover; background-position: center; flex-shrink: 0; }
+        .promo-card-content { padding: 20px; flex: 1; display: flex; flex-direction: column; justify-content: center; }
+        .promo-card-title { font-size: 16px; font-weight: 700; margin-bottom: 6px; }
+        .promo-card-desc { font-size: 12px; color: #71717A; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+        .promo-card-image { width: 130px; background-size: cover; background-position: center; flex-shrink: 0; }
         
-        .pagination-dots { display: flex; justify-content: center; gap: 6px; margin-bottom: 30px; }
+        .pagination-dots { display: flex; justify-content: center; gap: 6px; margin-bottom: 25px; }
         .dot { width: 6px; height: 6px; border-radius: 50%; background: #D4D4D8; transition: 0.3s; }
         .dot.active { background: #111111; width: 16px; border-radius: 99px; }
 
         .section-title {
-            padding: 0 20px 15px 20px; font-size: 1.2rem; font-weight: 700; color: #111;
+            padding: 0 20px 15px 20px; font-size: 16px; font-weight: 700; color: #111;
             display: flex; justify-content: space-between; align-items: center;
         }
-        .section-title a { font-size: 0.9rem; color: #8E8E93; text-decoration: none; font-weight: 500; }
+        .section-title a { font-size: 13px; color: #8E8E93; text-decoration: none; font-weight: 500; }
         
+        /* Grid Recent Projects */
+        .projects-grid {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 0 20px 20px 20px;
+        }
+        .project-card {
+            border-radius: 16px; height: 160px; background-size: cover; background-position: center;
+            position: relative; overflow: hidden; text-decoration: none; color: white;
+            display: flex; flex-direction: column; justify-content: flex-end; padding: 12px;
+        }
+        .project-card::before {
+            content: ''; position: absolute; inset: 0;
+            background: linear-gradient(to top, rgba(0,0,0,0.7) 0%, transparent 50%); z-index: 1;
+        }
+        .project-card-content { position: relative; z-index: 2; }
+        .project-time { font-size: 10px; color: rgba(255,255,255,0.8); margin-bottom: 2px; }
+        .project-name { font-size: 13px; font-weight: 600; line-height: 1.2; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+        .project-icon { position: absolute; top: 12px; left: 12px; z-index: 2; font-size: 14px; }
+        .project-more { position: absolute; top: 12px; right: 12px; z-index: 2; font-size: 14px; }
+
         .empty-state {
-            text-align: center; color: #A1A1AA; font-size: 0.95rem; font-weight: 500;
+            text-align: center; color: #A1A1AA; font-size: 14px; font-weight: 500;
             margin-top: 40px; padding: 0 20px;
         }
 
         /* =================================================== */
-        /* 6. HALAMAN NEW (PILL BANNERS SONNA STYLE - SLIM)    */
+        /* 6. HALAMAN NEW (PILL BANNERS SONNA STYLE)           */
         /* =================================================== */
+        .new-subtitle { padding: 0 20px 16px 20px; font-size: 15px; color: #8E8E93; font-weight: 500; }
         .new-pill-list { display: flex; flex-direction: column; gap: 12px; padding: 0 20px 30px 20px; }
         .new-pill-card {
-            position: relative; width: 100%; height: 52px; border-radius: 99px;
+            position: relative; width: 100%; height: 64px; border-radius: 99px;
             background: #F4F4F5; overflow: hidden; display: flex; align-items: center;
             text-decoration: none; color: #111;
         }
         .new-pill-text {
-            position: relative; z-index: 2; padding-left: 18px; font-weight: 600; font-size: 0.9rem;
-            display: flex; align-items: center; gap: 10px; width: 65%;
+            position: relative; z-index: 2; padding-left: 20px; font-weight: 600; font-size: 15px;
+            display: flex; align-items: center; gap: 12px; width: 60%;
         }
+        .new-pill-text i { font-size: 16px; width: 20px; text-align: center; }
         .new-pill-img {
-            position: absolute; right: 0; top: 0; bottom: 0; width: 45%;
-            background-size: cover; background-position: center right;
-            -webkit-mask-image: linear-gradient(to right, transparent 0%, black 35%);
-            mask-image: linear-gradient(to right, transparent 0%, black 35%);
+            position: absolute; right: 0; top: 0; bottom: 0; width: 50%;
+            background-size: cover; background-position: center;
+            -webkit-mask-image: linear-gradient(to right, transparent 0%, black 40%);
+            mask-image: linear-gradient(to right, transparent 0%, black 40%);
+        }
+        .badge-new {
+            position: absolute; right: 16px; top: 50%; transform: translateY(-50%);
+            background: #FF5A00; color: white; font-size: 10px; font-weight: 800;
+            padding: 4px 8px; border-radius: 6px; z-index: 3; letter-spacing: 0.5px;
         }
 
         /* =================================================== */
-        /* 7. BOTTOM NAVIGATION (5 MENU SONNA STYLE)           */
+        /* 7. LIBRARY VIEW                                     */
+        /* =================================================== */
+        .library-top-cards {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 0 20px 25px 20px;
+        }
+        .lib-card {
+            border-radius: 16px; height: 110px; background-size: cover; background-position: center;
+            position: relative; text-decoration: none; overflow: hidden;
+        }
+        .lib-card-title {
+            position: absolute; top: 12px; left: 12px; color: white; font-weight: 700; font-size: 16px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+        .empty-state-lib {
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            text-align: center; padding: 40px 20px;
+        }
+        .empty-icon { font-size: 40px; color: #D4D4D8; margin-bottom: 16px; }
+        .empty-title { font-size: 16px; font-weight: 600; color: #71717A; margin-bottom: 4px; }
+        .empty-desc { font-size: 14px; color: #A1A1AA; margin-bottom: 20px; }
+
+        /* =================================================== */
+        /* 8. BOTTOM NAVIGATION (5 MENU SONNA STYLE)           */
         /* =================================================== */
         .bottom-nav {
             position: fixed; bottom: 0; left: 0; right: 0; height: 65px;
             background: #FFFFFF; border-top: 1px solid #F4F4F5; 
-            display: flex; justify-content: space-between; align-items: center;
-            z-index: 100; padding: 0 15px; padding-bottom: env(safe-area-inset-bottom);
+            display: flex; justify-content: space-around; align-items: center;
+            z-index: 100; padding-bottom: env(safe-area-inset-bottom);
         }
         .nav-item {
             display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
-            color: #A1A1AA; text-decoration: none; flex: 1; height: 100%;
+            color: #A1A1AA; text-decoration: none; width: 20%; height: 100%;
         }
-        .nav-item i { font-size: 1.3rem; transition: 0.2s; }
-        .nav-item span { font-size: 0.65rem; font-weight: 600; margin-top: 2px; }
+        .nav-item i { font-size: 20px; transition: 0.2s; }
+        .nav-item span { font-size: 10px; font-weight: 600; }
         .nav-item.active { color: #111111; }
-        .nav-item.active i { transform: scale(1.1); color: #111111; }
         
         /* IKON AVATAR DI MENU BAWAH (DINAMIS) */
         .nav-avatar {
-            width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
-            color: white; font-size: 0.8rem; font-weight: 700; overflow: hidden; border: 2px solid transparent; transition: 0.2s;
+            width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            color: white; font-size: 10px; font-weight: 700; overflow: hidden; border: 2px solid transparent; transition: 0.2s;
         }
-        .nav-item.active .nav-avatar { border-color: #111; transform: scale(1.1); }
+        .nav-item.active .nav-avatar { border-color: #111; }
         .nav-avatar img { width: 100%; height: 100%; object-fit: cover; }
 
         /* =================================================== */
-        /* 8. CREATOR VIEW (SONNA STYLE)                       */
+        /* 9. CREATOR VIEW (SONNA STYLE)                       */
         /* =================================================== */
         .creator-view {
-            background: #FFFFFF;
-            background-image: radial-gradient(circle at 80% -10%, rgba(217, 80, 64, 0.3) 0%, transparent 40%), 
-                              radial-gradient(circle at 20% 10%, rgba(123, 41, 86, 0.15) 0%, transparent 40%);
-            /* Menambahkan env(safe-area-inset-top) agar otomatis turun di bawah kamera */
+            background: linear-gradient(180deg, #E89A74 0%, #F3C2A9 15%, #FFFFFF 40%);
             height: 100%; padding: calc(20px + env(safe-area-inset-top)) 20px 20px 20px; overflow-y: auto;
         }
-        .creator-top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px; margin-top: 10px; }
+        .creator-top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
         .creator-credits {
-            background: rgba(255,255,255,0.8); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
-            padding: 10px 16px; border-radius: 99px; font-weight: 600; font-size: 0.95rem; color: #111;
-            display: flex; align-items: center; gap: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            background: rgba(255,255,255,0.9); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+            padding: 8px 16px; border-radius: 99px; font-weight: 600; font-size: 14px; color: #111;
+            display: flex; align-items: center; gap: 6px; box-shadow: 0 4px 15px rgba(0,0,0,0.05);
         }
-        .creator-actions { display: flex; gap: 12px; }
+        .creator-actions { display: flex; gap: 10px; }
         .creator-icon-btn {
-            width: 42px; height: 42px; border-radius: 50%; background: rgba(255,255,255,0.8); backdrop-filter: blur(10px);
-            display: flex; align-items: center; justify-content: center; font-size: 1.1rem; color: #111;
+            width: 40px; height: 40px; border-radius: 50%; background: rgba(255,255,255,0.9); backdrop-filter: blur(10px);
+            display: flex; align-items: center; justify-content: center; font-size: 16px; color: #111;
             box-shadow: 0 4px 15px rgba(0,0,0,0.05); cursor: pointer; transition: 0.2s;
         }
         .creator-icon-btn:active { transform: scale(0.95); }
 
         .creator-profile-row { display: flex; align-items: center; margin-bottom: 40px; }
         .creator-avatar {
-            width: 85px; height: 85px; border-radius: 50%; background: #2E7D32; color: white;
-            font-size: 2.5rem; font-weight: 500; display: flex; align-items: center; justify-content: center;
-            margin-right: 16px; overflow: hidden; flex-shrink: 0;
+            width: 72px; height: 72px; border-radius: 50%; background: #2E7D32; color: white;
+            font-size: 24px; font-weight: 500; display: flex; align-items: center; justify-content: center;
+            margin-right: 16px; overflow: hidden; flex-shrink: 0; border: 2px solid white; box-shadow: 0 4px 10px rgba(0,0,0,0.05);
         }
         .creator-avatar img { width: 100%; height: 100%; object-fit: cover; }
         .creator-info { flex: 1; }
-        .creator-name { font-size: 1.4rem; font-weight: 700; color: #111; margin-bottom: 2px; }
-        .creator-handle { font-size: 0.95rem; color: #71717A; }
+        .creator-name { font-size: 20px; font-weight: 700; color: #111; margin-bottom: 2px; }
+        .creator-handle { font-size: 14px; color: #71717A; }
         .creator-edit-btn {
-            background: #F4F4F5; padding: 8px 16px; border-radius: 99px; font-size: 0.85rem; font-weight: 600;
+            background: #F4F4F5; padding: 8px 16px; border-radius: 99px; font-size: 13px; font-weight: 600;
             display: flex; align-items: center; gap: 6px; color: #111; cursor: pointer;
         }
 
-        .creator-section-title { font-size: 1.2rem; font-weight: 700; color: #111; margin-bottom: 20px; }
-        
-        .creator-empty { display: flex; flex-direction: column; align-items: center; justify-content: center; margin-top: 80px; }
-        .creator-empty h4 { font-size: 1.1rem; color: #71717A; margin-bottom: 6px; font-weight: 600; }
-        .creator-empty p { font-size: 0.9rem; color: #A1A1AA; margin-bottom: 24px; }
+        .creator-empty { display: flex; flex-direction: column; align-items: center; justify-content: center; margin-top: 40px; }
+        .creator-empty h4 { font-size: 16px; color: #71717A; margin-bottom: 4px; font-weight: 600; margin-top: 0; }
+        .creator-empty p { font-size: 14px; color: #A1A1AA; margin-bottom: 20px; }
         .btn-create-black {
-            background: #111; color: #FFF; padding: 14px 32px; border-radius: 99px;
-            font-weight: 600; font-size: 1.05rem; display: flex; align-items: center; gap: 10px; cursor: pointer;
+            background: #111; color: #FFF; padding: 12px 24px; border-radius: 99px;
+            font-weight: 600; font-size: 14px; display: flex; align-items: center; gap: 8px; cursor: pointer; border: none;
         }
 
-        /* MENU SETTINGS (BOTTOM SHEET) */
+        /* =================================================== */
+        /* 10. BOTTOM SHEETS & MODALS (ASLI DARI KODE ANDA)    */
+        /* =================================================== */
         .profile-menu-list { padding: 0; }
         .profile-menu-item {
             display: flex; align-items: center; justify-content: space-between; padding: 18px 0;
-            border-bottom: 1px solid #E4E4E7; color: #111; font-weight: 600; font-size: 1rem; cursor: pointer;
+            border-bottom: 1px solid #E4E4E7; color: #111; font-weight: 600; font-size: 16px; cursor: pointer;
         }
         .profile-menu-item:last-child { border-bottom: none; }
         .profile-menu-left { display: flex; align-items: center; gap: 14px; }
-        .profile-menu-left i { width: 24px; text-align: center; color: #71717A; font-size: 1.2rem; }
-        .profile-menu-right { color: #A1A1AA; font-size: 1rem; display: flex; align-items: center; gap: 8px; }
+        .profile-menu-left i { width: 24px; text-align: center; color: #71717A; font-size: 18px; }
+        .profile-menu-right { color: #A1A1AA; font-size: 16px; display: flex; align-items: center; gap: 8px; }
 
-        /* HALAMAN EDIT PROFILE & PLAN TOGGLE */
         .edit-profile-content { padding: 0; display: flex; flex-direction: column; align-items: center; width: 100%; }
         .edit-avatar-large {
-            width: 90px; height: 90px; border-radius: 50%; color: white; font-size: 2.5rem; font-weight: 700;
+            width: 90px; height: 90px; border-radius: 50%; color: white; font-size: 32px; font-weight: 700;
             display: flex; align-items: center; justify-content: center; overflow: hidden;
         }
         .edit-avatar-large img { width: 100%; height: 100%; object-fit: cover; }
         
         .input-group { width: 100%; margin-top: 30px; }
-        .input-label { font-size: 0.85rem; color: #71717A; margin-bottom: 8px; display: block; text-align: center; }
+        .input-label { font-size: 13px; color: #71717A; margin-bottom: 8px; display: block; text-align: center; }
         .clean-input {
             width: 100%; border: none; border-bottom: 2px solid #E4E4E7; padding: 10px 0;
-            font-size: 1.2rem; text-align: center; outline: none; font-weight: 600; color: #111; transition: 0.2s; background: transparent;
+            font-size: 18px; text-align: center; outline: none; font-weight: 600; color: #111; transition: 0.2s; background: transparent;
         }
         .clean-input:focus { border-bottom-color: #111; }
         .btn-save-profile {
             background: #111; color: white; width: 100%; padding: 16px; border-radius: 99px;
-            font-weight: 600; font-size: 1.05rem; margin-top: 30px; border: none; cursor: pointer;
+            font-weight: 600; font-size: 16px; margin-top: 30px; border: none; cursor: pointer;
         }
         .btn-save-profile:active { transform: scale(0.98); }
 
-        /* PLAN TOGGLE SLIDER */
         .plan-toggle-container {
             background: #F4F4F5; border-radius: 99px; display: flex; position: relative;
             width: 220px; margin: 0 auto 24px auto; padding: 4px;
         }
         .plan-toggle-btn {
-            flex: 1; text-align: center; padding: 10px 0; font-weight: 600; font-size: 0.95rem;
+            flex: 1; text-align: center; padding: 10px 0; font-weight: 600; font-size: 14px;
             color: #71717A; z-index: 2; cursor: pointer; transition: 0.3s;
         }
         .plan-toggle-btn.active { color: #FFF; }
@@ -279,7 +320,6 @@
         }
         .plan-toggle-container.max-active .plan-toggle-slider { transform: translateX(100%); }
 
-        /* BOTTOM SHEET UMUM */
         .bottom-sheet-overlay {
             position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 999;
             opacity: 0; pointer-events: none; transition: 0.3s;
@@ -292,7 +332,34 @@
         }
         .bottom-sheet-overlay.active .bottom-sheet { bottom: 0; }
         .sheet-drag-handle { width: 40px; height: 5px; background: #E5E5EA; border-radius: 5px; margin: 0 auto 24px auto; }
-        .sheet-title { font-size: 1.1rem; color: #8E8E93; font-weight: 600; margin-bottom: 16px; padding-left: 4px; }
+        .sheet-title { font-size: 18px; color: #8E8E93; font-weight: 600; margin-bottom: 16px; padding-left: 4px; }
+
+        /* Modal Styles Asli */
+        .modal-overlay {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1000;
+            display: flex; align-items: center; justify-content: center;
+            opacity: 0; pointer-events: none; transition: 0.3s;
+        }
+        .modal-overlay.active { opacity: 1; pointer-events: auto; }
+        .modal-box {
+            background: #FFF; border-radius: 24px; padding: 24px; width: 90%; max-width: 400px;
+            transform: scale(0.9); transition: 0.3s; text-align: center;
+        }
+        .modal-overlay.active .modal-box { transform: scale(1); }
+        .modal-box h3 { margin-top: 0; margin-bottom: 10px; font-size: 20px; color: #111; }
+        .modal-box p { font-size: 14px; color: #666; margin-bottom: 20px; line-height: 1.5; }
+        .modal-actions { display: flex; gap: 12px; }
+        .modal-btn {
+            flex: 1; padding: 12px; border-radius: 99px; font-weight: 600; font-size: 14px;
+            border: none; cursor: pointer;
+        }
+        .modal-btn.cancel { background: #F4F4F5; color: #111; }
+        .modal-btn.confirm { background: #FF3B30; color: #FFF; }
+        .modal-actions-vert { display: flex; flex-direction: column; gap: 10px; }
+        .modal-btn.primary { background: #111; color: #FFF; text-decoration: none; display: block; padding: 12px; border-radius: 99px; }
+        .modal-btn.whatsapp { background: #25D366; color: #FFF; }
+        .hidden { display: none !important; }
+        .hidden-menu { display: none !important; }
     </style>
 </head>
 <body>
@@ -304,8 +371,8 @@
         <header class="native-header">
             <div class="header-logo logo-shine-wrapper">
                 <div id="logo-shine-layer" class="logo-shine-layer"></div>
-                <!-- Lebar SVG diperbesar menjadi 165px agar teksnya sebesar "Home" di Sonna -->
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 250 60" style="width: 165px; height: auto; display: block;">
+                <!-- LOGO ASLI ANDA, UKURAN DISESUAIKAN DENGAN TEKS "Home" SONNA -->
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 250 60" style="width: 140px; height: auto; display: block;">
                   <defs>
                     <linearGradient id="flixaMini" x1="0%" y1="100%" x2="100%" y2="0%">
                       <stop offset="0%" stop-color="#1A1449" />
@@ -316,7 +383,7 @@
                   <rect x="0" y="5" width="50" height="50" rx="12" fill="url(#flixaMini)"/>
                   <path d="M 32 16 C 32 6, 19 6, 19 20 C 19 29, 23 32, 23 40" stroke="#FFFFFF" stroke-width="6" stroke-linecap="round" fill="none" />
                   <path d="M 12 25 Q 21 20 30 25" stroke="#FFFFFF" stroke-width="6" stroke-linecap="round" fill="none" />
-                  <text x="65" y="34" font-family="'Arial Black', 'Montserrat', sans-serif" font-size="24" font-weight="900" fill="#111111" dominant-baseline="middle">Flixa AI</text>
+                  <text x="65" y="34" font-family="'Arial Black', 'Montserrat', sans-serif" font-size="28" font-weight="900" fill="#111111" dominant-baseline="middle">Flixa AI</text>
                 </svg>
             </div>
             
@@ -333,7 +400,7 @@
         </div>
 
         <div class="chips-container">
-            <a href="#" onclick="openTool('/chat/index.html', 0, 'Text To Speech')" class="chip-item"><i class="fa-solid fa-file-waveform"></i> Text To Speech</a>
+            <a href="#" onclick="openTool('/chat/index.html', 0, 'Text To Speech')" class="chip-item"><i class="fa-solid fa-bars-staggered"></i> Text To Speech</a>
             <a href="#" onclick="openTool('/media-ai/index.html', 0, 'Image Studio')" class="chip-item"><i class="fa-regular fa-image"></i> Image</a>
             <a href="#" onclick="openTool('/lyricshot/index.html', 0, 'Video Generator')" class="chip-item"><i class="fa-solid fa-video"></i> Video</a>
             <a href="#" onclick="openTool('/habirmx/index.html', 0, 'Music AI')" class="chip-item"><i class="fa-solid fa-music"></i> Music</a>
@@ -342,8 +409,8 @@
         <div class="promo-carousel" id="main-promo-carousel">
             <a href="#" onclick="openTool('/media-ai/index.html', 0, 'Flixa Web App')" class="promo-card">
                 <div class="promo-card-content">
-                    <div class="promo-card-title">Flixa Web App</div>
-                    <div class="promo-card-desc">flixa.app is now available! Access your creative studio on your...</div>
+                    <div class="promo-card-title">Hyper-Realistic Voice AI</div>
+                    <div class="promo-card-desc">Turn any script into emotional, studio-grade speech with lifelike voices in many languages.</div>
                 </div>
                 <div class="promo-card-image" style="background-image: url('https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=400&auto=format&fit=crop');"></div>
             </a>
@@ -366,26 +433,126 @@
             <a href="/berkas/">See all</a>
         </div>
 
-        <div class="empty-state">
-            No projects yet. Start creating!
+        <!-- Grid Recent Projects -->
+        <div class="projects-grid">
+            <a href="#" class="project-card" style="background-color: #9E9399;">
+                <i class="fa-solid fa-bars-staggered project-icon"></i>
+                <i class="fa-solid fa-ellipsis-vertical project-more"></i>
+                <div class="project-card-content">
+                    <div class="project-time">2m ago</div>
+                    <div class="project-name">Good morning, everyone. Thank y...</div>
+                </div>
+            </a>
+            <a href="#" class="project-card" style="background-image: url('https://images.unsplash.com/photo-1564890369478-c89ca6d9cde9?q=80&w=400&auto=format&fit=crop');">
+                <i class="fa-regular fa-image project-icon"></i>
+                <i class="fa-solid fa-ellipsis-vertical project-more"></i>
+                <div class="project-card-content">
+                    <div class="project-time">34m ago</div>
+                    <div class="project-name">Ultra-realistic premium matcha b...</div>
+                </div>
+            </a>
+            <a href="#" class="project-card" style="background-image: url('https://images.unsplash.com/photo-1550745165-9bc0b252726f?q=80&w=400&auto=format&fit=crop');">
+                <i class="fa-solid fa-music project-icon"></i>
+                <i class="fa-solid fa-ellipsis-vertical project-more"></i>
+                <div class="project-card-content">
+                    <div class="project-time">8h ago</div>
+                    <div class="project-name">Midnight Circuit</div>
+                </div>
+            </a>
+            <a href="#" class="project-card" style="background-image: url('https://images.unsplash.com/photo-1470071131384-001b85755b36?q=80&w=400&auto=format&fit=crop');">
+                <i class="fa-solid fa-video project-icon"></i>
+                <i class="fa-solid fa-ellipsis-vertical project-more"></i>
+                <div class="project-card-content">
+                    <div class="project-time">9h ago</div>
+                    <div class="project-name">Aerial drone shot at sunrise over a rugg...</div>
+                </div>
+            </a>
         </div>
     </div>
 
     <!-- =================================================== -->
-    <!-- VIEW 2: CREATOR VIEW (SONNA STYLE PROFILE)          -->
+    <!-- VIEW 2: NEW (START FROM SCRATCH)                    -->
+    <!-- =================================================== -->
+    <div id="view-new" class="app-view">
+        <header class="native-header">
+            <div class="header-logo-text">New</div>
+            <div style="display:flex; gap:10px; align-items:center;">
+                <div id="top-user-avatar-new" class="header-avatar hidden" onclick="switchView('view-profile', document.querySelectorAll('.nav-item')[4])">P</div>
+            </div>
+        </header>
+        
+        <div class="new-subtitle">Start from scratch</div>
+        
+        <div class="new-pill-list">
+            <a href="#" onclick="openTool('/chat/index.html', 1, 'Text To Speech')" class="new-pill-card">
+                <div class="new-pill-text"><i class="fa-solid fa-bars-staggered"></i> Text To Speech</div>
+                <div class="new-pill-img" style="background-image: url('https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=400&auto=format&fit=crop');"></div>
+            </a>
+            <a href="#" onclick="openTool('/media-ai/index.html', 1, 'Image Studio')" class="new-pill-card">
+                <div class="new-pill-text"><i class="fa-regular fa-image"></i> Image</div>
+                <div class="new-pill-img" style="background-image: url('https://images.unsplash.com/photo-1550745165-9bc0b252726f?q=80&w=400&auto=format&fit=crop');"></div>
+                <div class="badge-new">NEW</div>
+            </a>
+            <a href="#" onclick="openTool('/lyricshot/index.html', 1, 'Video Generator')" class="new-pill-card">
+                <div class="new-pill-text"><i class="fa-solid fa-video"></i> Video</div>
+                <div class="new-pill-img" style="background-image: url('https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?q=80&w=400&auto=format&fit=crop');"></div>
+                <div class="badge-new">NEW</div>
+            </a>
+            <a href="#" onclick="openTool('/habirmx/index.html', 1, 'Music AI')" class="new-pill-card">
+                <div class="new-pill-text"><i class="fa-solid fa-music"></i> Music</div>
+                <div class="new-pill-img" style="background-image: url('https://images.unsplash.com/photo-1614613535308-eb5fbd3d2c17?q=80&w=400&auto=format&fit=crop');"></div>
+                <div class="badge-new">NEW</div>
+            </a>
+        </div>
+    </div>
+
+    <!-- =================================================== -->
+    <!-- VIEW 3: LIBRARY                                     -->
+    <!-- =================================================== -->
+    <div id="view-library" class="app-view">
+        <header class="native-header">
+            <div class="header-logo-text">Library</div>
+            <div style="display:flex; gap:10px; align-items:center;">
+                <div id="top-user-avatar-lib" class="header-avatar hidden" onclick="switchView('view-profile', document.querySelectorAll('.nav-item')[4])">P</div>
+            </div>
+        </header>
+
+        <div class="library-top-cards">
+            <a href="#" class="lib-card" style="background-image: url('https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=400&auto=format&fit=crop');">
+                <div class="lib-card-title">Liked</div>
+            </a>
+            <a href="#" class="lib-card" style="background-image: url('https://images.unsplash.com/photo-1514525253161-7a46d19cd819?q=80&w=400&auto=format&fit=crop');">
+                <div class="lib-card-title">Playlist</div>
+            </a>
+        </div>
+
+        <div class="section-title" style="margin-top: 10px;">
+            <span>My Tracks</span>
+            <a href="#" style="color: #111;"><i class="fa-solid fa-bars-staggered"></i> All</a>
+        </div>
+
+        <div class="empty-state-lib">
+            <i class="fa-solid fa-music empty-icon"></i>
+            <div class="empty-title">No tracks yet.</div>
+            <div class="empty-desc">Tap Create to generate your first track!</div>
+        </div>
+    </div>
+
+    <!-- =================================================== -->
+    <!-- VIEW 4: CREATOR VIEW (SONNA STYLE PROFILE)          -->
     <!-- =================================================== -->
     <div id="view-profile" class="app-view creator-view">
         
         <!-- TOP BAR -->
         <div class="creator-top-bar">
             <div class="creator-credits">
-                <span style="font-size: 1.1rem; line-height: 1;">✦</span> <span id="creator-credits-text">9.960</span>
+                <i class="fa-solid fa-sparkles"></i> <span id="creator-credits-text">9.960</span>
             </div>
             <div class="creator-actions">
                 <div class="creator-icon-btn" onclick="shareProfile()"><i class="fa-solid fa-arrow-up-from-bracket"></i></div>
                 <div class="creator-icon-btn" id="inbox-link"><i class="fa-regular fa-bell"></i></div>
                 <div class="creator-icon-btn" onclick="document.getElementById('main-settings-sheet').classList.add('active')">
-                    <i class="fa-solid fa-bars-staggered"></i>
+                    <i class="fa-solid fa-equals"></i>
                 </div>
             </div>
         </div>
@@ -403,7 +570,7 @@
         </div>
 
         <!-- GENERATIONS SECTION -->
-        <div class="creator-section-title">Generations</div>
+        <div class="section-title" style="padding: 0; margin-bottom: 20px;">Generations</div>
         
         <div class="creator-empty">
             <h4>Nothing created yet</h4>
@@ -414,7 +581,49 @@
         </div>
     </div>
 
-    <!-- BOTTOM SHEET: MAIN SETTINGS (MENU LAMA DIPINDAH KESINI) -->
+    <!-- =================================================== -->
+    <!-- VIEW 5: TOOL FRAME (AGAR AUDIO TIDAK MATI)          -->
+    <!-- =================================================== -->
+    <div id="view-tool" class="app-view" style="bottom: 0; z-index: 200; display: flex; flex-direction: column;">
+        <div style="padding-top: env(safe-area-inset-top); background: #FFF; border-bottom: 1px solid #F4F4F5; z-index: 50;">
+            <div style="height: 55px; display: flex; align-items: center; justify-content: space-between; padding: 0 20px;">
+                <div style="width: 30px;"></div>
+                <div id="tool-title" style="font-weight: 700; font-size: 16px; color: #111;">Flixa AI</div>
+                <div onclick="closeTool()" style="width: 30px; height: 30px; display: flex; align-items: center; justify-content: flex-end; font-size: 20px; color: #111; cursor: pointer;">
+                    <i class="fa-solid fa-xmark"></i>
+                </div>
+            </div>
+        </div>
+        <iframe id="app-iframe" src="" style="flex: 1; width: 100%; border: none; background: #FFF;"></iframe>
+    </div>
+
+    <!-- =================================================== -->
+    <!-- BOTTOM NAVIGATION BAR (5 MENU SONNA STYLE)          -->
+    <!-- =================================================== -->
+    <nav class="bottom-nav">
+        <a href="#" class="nav-item active" onclick="switchView('view-home', this)">
+            <i class="fa-solid fa-house"></i><span>Home</span>
+        </a>
+        <a href="#" class="nav-item" onclick="switchView('view-new', this)">
+            <i class="fa-solid fa-plus"></i><span>New</span>
+        </a>
+        <a href="#" class="nav-item">
+            <i class="fa-regular fa-compass"></i><span>Explore</span>
+        </a>
+        <a href="#" class="nav-item" onclick="switchView('view-library', this)">
+            <i class="fa-solid fa-layer-group"></i><span>Library</span>
+        </a>
+        <a href="#" class="nav-item" onclick="switchView('view-profile', this)">
+            <div class="nav-avatar" id="bottom-nav-avatar" style="background: #F9A826;">U</div>
+            <span>Creator</span>
+        </a>
+    </nav>
+
+    <!-- =================================================== -->
+    <!-- BOTTOM SHEETS & MODALS (ASLI DARI KODE ANDA)        -->
+    <!-- =================================================== -->
+    
+    <!-- MAIN SETTINGS -->
     <div class="bottom-sheet-overlay" id="main-settings-sheet" onclick="this.classList.remove('active')">
         <div class="bottom-sheet" onclick="event.stopPropagation()" style="height: auto; max-height: 85dvh; overflow-y: auto;">
             <div class="sheet-drag-handle"></div>
@@ -451,17 +660,17 @@
         </div>
     </div>
 
-    <!-- BOTTOM SHEET: EDIT PROFILE -->
+    <!-- EDIT PROFILE -->
     <div class="bottom-sheet-overlay" id="edit-profile-sheet" onclick="this.classList.remove('active')">
         <div class="bottom-sheet" onclick="event.stopPropagation()" style="height: auto; padding-bottom: 20px;">
             <div class="sheet-drag-handle"></div>
             <div class="edit-profile-content">
-                <div class="edit-avatar-large" id="edit-ui-avatar" style="background: #7B2956; margin: 0 auto;">P</div>
+                <div class="edit-avatar-large" id="edit-ui-avatar" style="background: #F9A826; margin: 0 auto;">P</div>
                 
                 <div style="margin-top: 24px; width: 100%;">
-                    <div style="font-size: 0.85rem; color: #71717A; margin-bottom: 8px; text-align: center;">Change Profile Picture</div>
+                    <div style="font-size: 13px; color: #71717A; margin-bottom: 8px; text-align: center;">Change Profile Picture</div>
                     <div class="profile-menu-item" onclick="document.getElementById('hidden-profile-photo-input').click()" style="padding: 12px 0; border-bottom: none; justify-content: center; gap: 10px;">
-                        <i class="fa-regular fa-image" style="font-size: 1.2rem; color: #111;"></i>
+                        <i class="fa-regular fa-image" style="font-size: 20px; color: #111;"></i>
                         <span style="font-weight: 600; color: #111;">Choose from Gallery</span>
                     </div>
                     <input type="file" id="hidden-profile-photo-input" accept="image/*" style="display:none;">
@@ -477,12 +686,12 @@
         </div>
     </div>
 
-    <!-- BOTTOM SHEET: CHOOSE PLAN (SONNA STYLE) -->
+    <!-- CHOOSE PLAN -->
     <div class="bottom-sheet-overlay" id="vip-status-modal" onclick="this.classList.remove('active')">
         <div class="bottom-sheet" onclick="event.stopPropagation()" style="height: auto; padding-bottom: 20px;">
             <div class="sheet-drag-handle"></div>
-            <h3 style="text-align: center; font-size: 1.3rem; color: #111; margin-bottom: 8px;">Choose your plan</h3>
-            <p style="text-align: center; font-size: 0.9rem; color: #71717A; margin-bottom: 24px;">The best tools for your creative work</p>
+            <h3 style="text-align: center; font-size: 20px; color: #111; margin-bottom: 8px; margin-top: 0;">Choose your plan</h3>
+            <p style="text-align: center; font-size: 14px; color: #71717A; margin-bottom: 24px;">The best tools for your creative work</p>
             
             <div class="plan-toggle-container" id="plan-toggle">
                 <div class="plan-toggle-slider"></div>
@@ -491,99 +700,86 @@
             </div>
             
             <div style="display: flex; flex-direction: column; gap: 14px; margin-bottom: 30px; padding: 0 10px;">
-                <div style="display: flex; align-items: center; gap: 12px; font-size: 0.95rem; color: #111; font-weight: 500;"><i class="fa-solid fa-check" style="color: #111;"></i> <span id="plan-credits-text">102.000 monthly credits</span></div>
-                <div style="display: flex; align-items: center; gap: 12px; font-size: 0.95rem; color: #111; font-weight: 500;"><i class="fa-solid fa-check" style="color: #111;"></i> Commercial use</div>
-                <div style="display: flex; align-items: center; gap: 12px; font-size: 0.95rem; color: #111; font-weight: 500;"><i class="fa-solid fa-check" style="color: #111;"></i> Text to Speech</div>
-                <div style="display: flex; align-items: center; gap: 12px; font-size: 0.95rem; color: #111; font-weight: 500;"><i class="fa-solid fa-check" style="color: #111;"></i> Image Generation</div>
-                <div style="display: flex; align-items: center; gap: 12px; font-size: 0.95rem; color: #111; font-weight: 500;"><i class="fa-solid fa-check" style="color: #111;"></i> Music Generation</div>
+                <div style="display: flex; align-items: center; gap: 12px; font-size: 15px; color: #111; font-weight: 500;"><i class="fa-solid fa-check" style="color: #111;"></i> <span id="plan-credits-text">102.000 monthly credits</span></div>
+                <div style="display: flex; align-items: center; gap: 12px; font-size: 15px; color: #111; font-weight: 500;"><i class="fa-solid fa-check" style="color: #111;"></i> Commercial use</div>
+                <div style="display: flex; align-items: center; gap: 12px; font-size: 15px; color: #111; font-weight: 500;"><i class="fa-solid fa-check" style="color: #111;"></i> Text to Speech</div>
+                <div style="display: flex; align-items: center; gap: 12px; font-size: 15px; color: #111; font-weight: 500;"><i class="fa-solid fa-check" style="color: #111;"></i> Image Generation</div>
+                <div style="display: flex; align-items: center; gap: 12px; font-size: 15px; color: #111; font-weight: 500;"><i class="fa-solid fa-check" style="color: #111;"></i> Music Generation</div>
             </div>
             
-            <button id="btn-vip-whatsapp" style="width: 100%; padding: 16px; border-radius: 99px; font-weight: 600; font-size: 1.05rem; border: none; background: #111; color: #FFF; cursor: pointer; transition: 0.2s;">
+            <button id="btn-vip-whatsapp" style="width: 100%; padding: 16px; border-radius: 99px; font-weight: 600; font-size: 16px; border: none; background: #111; color: #FFF; cursor: pointer; transition: 0.2s;">
                 Upgrade to Pro
             </button>
         </div>
     </div>
 
-    <!-- =================================================== -->
-    <!-- VIEW 3: NEW (START FROM SCRATCH)                    -->
-    <!-- =================================================== -->
-    <div id="view-new" class="app-view">
-        <header class="native-header">
-            <div class="header-logo-text">New</div>
-            <div style="display:flex; gap:10px; align-items:center;">
-                <div id="top-user-avatar-new" class="header-avatar hidden" onclick="switchView('view-profile', document.querySelectorAll('.nav-item')[4])">P</div>
+    <!-- MODAL FEEDBACK -->
+    <div class="modal-overlay" id="feedback-modal">
+        <div class="modal-box" style="text-align: left;">
+            <h3 style="margin-bottom:8px; font-size: 20px; color: #111;">Kirim Masukan</h3>
+            <p style="font-size:14px; color: #666; line-height: 1.5; margin-bottom:24px;">Bantu kami meningkatkan Flixa AI dengan memberikan detail yang lengkap.</p>
+            <div style="margin-bottom: 20px;">
+                <label style="font-size:14px; font-weight:600; color:#444; display:block; margin-bottom:10px;">1. Jelaskan masukan Anda (Wajib)</label>
+                <textarea id="feedback-text" style="width: 100%; padding: 14px; border: 1px solid #EAEAEA; border-radius: 12px; outline: none; font-family: 'Inter', sans-serif; font-size: 14px; resize: none; background: #FFF;" rows="4" placeholder="Ketik masalah atau ide Anda secara lengkap..."></textarea>
             </div>
-        </header>
-        
-        <div style="padding: 0 20px; font-size: 1.1rem; color: #8E8E93; font-weight: 600; margin-bottom: 16px;">
-            Start from scratch
-        </div>
-        
-        <div class="new-pill-list">
-            <a href="#" onclick="openTool('/chat/index.html', 1, 'Text To Speech')" class="new-pill-card">
-                <div class="new-pill-text"><i class="fa-solid fa-file-waveform"></i> Text To Speech</div>
-                <div class="new-pill-img" style="background-image: url('https://images.unsplash.com/photo-1550745165-9bc0b252726f?q=80&w=400&auto=format&fit=crop');"></div>
-            </a>
-            <a href="#" onclick="openTool('/media-ai/index.html', 1, 'Image Studio')" class="new-pill-card">
-                <div class="new-pill-text"><i class="fa-regular fa-image"></i> Image</div>
-                <div class="new-pill-img" style="background-image: url('https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=400&auto=format&fit=crop');"></div>
-                <div class="badge-new">NEW</div>
-            </a>
-            <a href="#" onclick="openTool('/lyricshot/index.html', 1, 'Video Generator')" class="new-pill-card">
-                <div class="new-pill-text"><i class="fa-solid fa-video"></i> Video</div>
-                <div class="new-pill-img" style="background-image: url('https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?q=80&w=400&auto=format&fit=crop');"></div>
-                <div class="badge-new">NEW</div>
-            </a>
-            <a href="#" onclick="openTool('/habirmx/index.html', 1, 'Music AI')" class="new-pill-card">
-                <div class="new-pill-text"><i class="fa-solid fa-music"></i> Music</div>
-                <div class="new-pill-img" style="background-image: url('https://images.unsplash.com/photo-1614613535308-eb5fbd3d2c17?q=80&w=400&auto=format&fit=crop');"></div>
-                <div class="badge-new">NEW</div>
-            </a>
+            <div style="margin-bottom: 24px;">
+                <label style="font-size:14px; font-weight:600; color:#444; display:block; margin-bottom:6px;">2. Upload file Screenshot (Wajib)</label>
+                <div style="display: flex; align-items: center; gap: 12px;">
+                    <button id="btn-select-feedback-photo" style="background: #F4F4F4; border: 1px solid #EAEAEA; padding: 10px 16px; border-radius: 20px; font-size: 13px; font-weight: 600; color: #444; cursor: pointer; display: inline-flex; align-items: center; gap: 8px;">
+                        <i class="fa-solid fa-image"></i> Pilih Gambar
+                    </button>
+                    <span id="feedback-file-name" style="font-size:12px; color:#888; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 150px;">Belum ada file terpilih</span>
+                </div>
+                <input type="file" id="hidden-feedback-photo" accept="image/*" style="display:none;">
+                <img id="feedback-preview-img" class="hidden" style="width:100%; max-height:140px; object-fit:contain; margin-top:16px; border-radius:12px; border:1px solid #EAEAEA;">
+            </div>
+            <div style="display: flex; gap: 12px;">
+                <button id="btn-cancel-feedback" class="modal-btn cancel">Batal</button>
+                <button id="btn-save-feedback" disabled style="flex: 1; padding: 12px; border-radius: 99px; font-weight: 600; font-size: 14px; border: none; background: #7A7A7A; color: #FFF; cursor: not-allowed; transition: 0.2s;">Kirim</button>
+            </div>
         </div>
     </div>
 
-    <!-- =================================================== -->
-    <!-- VIEW 4: TOOL FRAME (AGAR AUDIO TIDAK MATI)          -->
-    <!-- =================================================== -->
-    <div id="view-tool" class="app-view" style="bottom: 0; z-index: 200; display: flex; flex-direction: column;">
-        <!-- Header dibungkus div baru dengan padding-top dinamis sesuai kamera HP -->
-        <div style="padding-top: env(safe-area-inset-top); background: #FFF; border-bottom: 1px solid #F4F4F5; z-index: 50;">
-            <div style="height: 55px; display: flex; align-items: center; justify-content: space-between; padding: 0 20px;">
-                <div style="width: 30px;"></div>
-                <div id="tool-title" style="font-weight: 700; font-size: 1.05rem; color: #111;">Flixa AI</div>
-                <div onclick="closeTool()" style="width: 30px; height: 30px; display: flex; align-items: center; justify-content: flex-end; font-size: 1.3rem; color: #111; cursor: pointer;">
-                    <i class="fa-solid fa-xmark"></i>
+    <!-- MODAL HELP -->
+    <div class="modal-overlay" id="help-info-modal">
+        <div class="modal-box" style="text-align: left; max-height: 80vh; overflow-y: auto;">
+            <h3>Pusat Bantuan</h3>
+            <div style="margin-bottom: 20px;">
+                <h4 style="font-size: 15px; margin-bottom: 6px;">Bagaimana Cara Menggunakan Website?</h4>
+                <p style="font-size: 13px; margin-bottom: 16px;">Gunakan kotak input di beranda untuk memulai obrolan AI dengan model cerdas, atau buka menu di sebelah kiri untuk menggunakan Studio Gambar, Pengunduh Media, maupun Email Sementara.</p>
+                <h4 style="font-size: 15px; margin-bottom: 6px;">Bagaimana Cara Mendapatkan Akses Login?</h4>
+                <p style="font-size: 13px; margin-bottom: 16px;">Flixa AI merupakan platform eksklusif. Untuk mendapatkan email login, silakan hubungi admin kami secara langsung melalui WhatsApp.</p>
+                <div style="background: #F4F4F5; padding: 12px; border-radius: 12px; display: flex; align-items: center; gap: 12px;">
+                    <i class="fa-brands fa-whatsapp" style="font-size: 24px; color: #25D366;"></i>
+                    <div>
+                        <strong style="display: block; font-size: 13px;">Hubungi WhatsApp Admin</strong>
+                        <p id="help-cs-title-display" style="margin: 0; margin-top: 2px; font-size: 12px; font-weight: 500;">Cs - Putri</p>
+                    </div>
                 </div>
             </div>
+            <div class="modal-actions-vert">
+                <button class="modal-btn whatsapp" id="btn-help-wa"><i class="fa-brands fa-whatsapp"></i> WhatsApp Admin</button>
+                <a href="/harga/index.html" class="modal-btn primary" style="text-align: center;">Lihat Harga Paket</a>
+                <button class="modal-btn cancel" id="btn-close-help-modal">Tutup</button>
+            </div>
         </div>
-        <!-- Iframe menggunakan flex: 1 agar otomatis mengisi sisa layar di bawah header -->
-        <iframe id="app-iframe" src="" style="flex: 1; width: 100%; border: none; background: #FFF;"></iframe>
+    </div>
+
+    <!-- MODAL LOGOUT -->
+    <div class="modal-overlay" id="logout-modal">
+        <div class="modal-box">
+            <h3>Konfirmasi Keluar</h3>
+            <p>Apakah Anda yakin ingin keluar dari akun Flixa AI?</p>
+            <div class="modal-actions">
+                <button class="modal-btn cancel" id="cancel-logout">Batal</button>
+                <button class="modal-btn confirm" id="confirm-logout">Keluar</button>
+            </div>
+        </div>
     </div>
 
     <!-- =================================================== -->
-    <!-- BOTTOM NAVIGATION BAR (5 MENU SONNA STYLE)          -->
+    <!-- SCRIPT UI & IFRAME                                  -->
     <!-- =================================================== -->
-    <nav class="bottom-nav">
-        <a href="#" class="nav-item active" onclick="switchView('view-home', this)">
-            <i class="fa-solid fa-house"></i><span>Home</span>
-        </a>
-        <a href="#" class="nav-item" onclick="switchView('view-new', this)">
-            <i class="fa-solid fa-plus"></i><span>New</span>
-        </a>
-        <a href="#" class="nav-item">
-            <i class="fa-regular fa-compass"></i><span>Explore</span>
-        </a>
-        <a href="#" class="nav-item">
-            <i class="fa-solid fa-layer-group"></i><span>Library</span>
-        </a>
-        <a href="#" class="nav-item" onclick="switchView('view-profile', this)">
-            <!-- IKON CREATOR DINAMIS -->
-            <div class="nav-avatar" id="bottom-nav-avatar" style="background: #7B2956;">U</div>
-            <span>Creator</span>
-        </a>
-    </nav>
-
-    <!-- SCRIPT UI & IFRAME -->
     <script>
         function switchView(viewId, navElement) {
             document.querySelectorAll('.app-view').forEach(el => el.classList.remove('active'));
@@ -607,12 +803,10 @@
         }
 
         function closeTool() {
-            // Tampilkan kembali menu navigasi bawah saat tool ditutup
             document.querySelector('.bottom-nav').style.display = 'flex';
             switchView('view-home', document.querySelectorAll('.nav-item')[0]);
         }
 
-        // FUNGSI SHARE (NATIVE WEB SHARE API)
         function shareProfile() {
             if (navigator.share) {
                 navigator.share({
@@ -621,11 +815,10 @@
                     url: 'https://kreaverse-ai.biz.id'
                 }).catch(console.error);
             } else {
-                showIphoneNotif('Info', 'Fitur berbagi tidak didukung di browser ini.', 'fa-circle-info');
+                alert('Fitur berbagi tidak didukung di browser ini.');
             }
         }
 
-        // FUNGSI TOGGLE PLAN (PRO / MAX)
         function switchPlan(plan) {
             const container = document.getElementById('plan-toggle');
             const btnPro = document.getElementById('btn-plan-pro');
@@ -649,7 +842,6 @@
         }
 
         document.addEventListener("DOMContentLoaded", () => {
-            // Logika Tombol WhatsApp Upgrade
             const btnVipWa = document.getElementById('btn-vip-whatsapp');
             if(btnVipWa) {
                 btnVipWa.addEventListener('click', () => {
@@ -686,70 +878,6 @@
     </script>
 
     <!-- =================================================== -->
-    <!-- MODAL FEEDBACK, HELP, LOGOUT (TETAP ADA)            -->
-    <!-- =================================================== -->
-    <div class="modal-overlay" id="feedback-modal">
-        <div class="modal-box spec-modal" style="border-radius: 24px; padding: 30px 24px; max-width: 400px;">
-            <h3 style="margin-bottom:8px; font-size: 1.3rem; color: #111;">Kirim Masukan</h3>
-            <p style="font-size:0.9rem; color: #666; line-height: 1.5; margin-bottom:24px;">Bantu kami meningkatkan Flixa AI dengan memberikan detail yang lengkap.</p>
-            <div style="text-align: left; margin-bottom: 20px;">
-                <label style="font-size:0.9rem; font-weight:600; color:#444; display:block; margin-bottom:10px;">1. Jelaskan masukan Anda (Wajib)</label>
-                <textarea id="feedback-text" style="width: 100%; padding: 14px; border: 1px solid #EAEAEA; border-radius: 12px; outline: none; font-family: 'Inter', sans-serif; font-size: 0.95rem; resize: none; background: #FFF;" rows="4" placeholder="Ketik masalah atau ide Anda secara lengkap..."></textarea>
-            </div>
-            <div style="text-align: left; margin-bottom: 24px;">
-                <label style="font-size:0.9rem; font-weight:600; color:#444; display:block; margin-bottom:6px;">2. Upload file Screenshot (Wajib)</label>
-                <div style="display: flex; align-items: center; gap: 12px;">
-                    <button id="btn-select-feedback-photo" style="background: #F4F4F4; border: 1px solid #EAEAEA; padding: 10px 16px; border-radius: 20px; font-size: 0.85rem; font-weight: 600; color: #444; cursor: pointer; display: inline-flex; align-items: center; gap: 8px;">
-                        <i class="fa-solid fa-image"></i> Pilih Gambar
-                    </button>
-                    <span id="feedback-file-name" style="font-size:0.8rem; color:#888; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 150px;">Belum ada file terpilih</span>
-                </div>
-                <input type="file" id="hidden-feedback-photo" accept="image/*" style="display:none;">
-                <img id="feedback-preview-img" class="hidden" style="width:100%; max-height:140px; object-fit:contain; margin-top:16px; border-radius:12px; border:1px solid #EAEAEA;">
-            </div>
-            <div style="display: flex; gap: 12px;">
-                <button id="btn-cancel-feedback" style="flex: 1; padding: 14px; border-radius: 24px; font-weight: 600; font-size: 0.95rem; border: none; background: #F4F4F4; color: #666; cursor: pointer;">Batal</button>
-                <button id="btn-save-feedback" disabled style="flex: 1; padding: 14px; border-radius: 24px; font-weight: 600; font-size: 0.95rem; border: none; background: #7A7A7A; color: #FFF; cursor: not-allowed; transition: 0.2s;">Kirim</button>
-            </div>
-        </div>
-    </div>
-
-    <div class="modal-overlay" id="help-info-modal">
-        <div class="modal-box spec-modal scrollable-modal-content">
-            <h3>Pusat Bantuan</h3>
-            <div class="help-rich-content">
-                <h4>Bagaimana Cara Menggunakan Website?</h4>
-                <p>Gunakan kotak input di beranda untuk memulai obrolan AI dengan model cerdas, atau buka menu di sebelah kiri untuk menggunakan Studio Gambar, Pengunduh Media, maupun Email Sementara.</p>
-                <h4>Bagaimana Cara Mendapatkan Akses Login?</h4>
-                <p>Flixa AI merupakan platform eksklusif. Untuk mendapatkan email login, silakan hubungi admin kami secara langsung melalui WhatsApp.</p>
-                <div class="help-contact-admin-box">
-                    <i class="fa-brands fa-whatsapp whatsapp-icon-help"></i>
-                    <div>
-                        <strong style="display: block; font-size: 0.85rem;">Hubungi WhatsApp Admin</strong>
-                        <p id="help-cs-title-display" style="margin-top: 2px; font-size: 0.8rem; font-weight: 500;">Cs - Putri</p>
-                    </div>
-                </div>
-            </div>
-            <div class="modal-actions-vert" style="margin-top:20px;">
-                <button class="modal-btn whatsapp" id="btn-help-wa"><i class="fa-brands fa-whatsapp"></i> WhatsApp Admin</button>
-                <a href="/harga/index.html" class="modal-btn primary">Lihat Harga Paket</a>
-                <button class="modal-btn cancel" id="btn-close-help-modal">Tutup</button>
-            </div>
-        </div>
-    </div>
-
-    <div class="modal-overlay" id="logout-modal">
-        <div class="modal-box">
-            <h3>Konfirmasi Keluar</h3>
-            <p>Apakah Anda yakin ingin keluar dari akun Flixa AI?</p>
-            <div class="modal-actions">
-                <button class="modal-btn cancel" id="cancel-logout">Batal</button>
-                <button class="modal-btn confirm" id="confirm-logout">Keluar</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- =================================================== -->
     <!-- SCRIPT FIREBASE ANDA (TIDAK DIUBAH SAMA SEKALI)     -->
     <!-- =================================================== -->
     <script type="module">
@@ -782,33 +910,7 @@
             const sessionStartTime = Date.now();
 
             function showIphoneNotif(title, desc, iconClass = 'fa-sparkles') {
-                const existing = document.getElementById('iphone-island-toast');
-                if (existing) existing.remove();
-
-                const toast = document.createElement('div');
-                toast.id = 'iphone-island-toast';
-                toast.className = 'iphone-toast-container';
-                
-                let iconColor = '#34C759'; 
-                if(iconClass.includes('fa-lock') || iconClass.includes('fa-triangle-exclamation')) iconColor = '#FF3B30';
-                if(iconClass.includes('fa-circle-info') || iconClass.includes('fa-circle-arrow-right') || iconClass.includes('fa-paper-plane') || iconClass.includes('fa-bullhorn')) iconColor = '#007AFF';
-
-                toast.innerHTML = `
-                    <div class="iphone-toast-icon" style="color: ${iconColor};">
-                        <i class="fa-solid ${iconClass}"></i>
-                    </div>
-                    <div class="iphone-toast-content">
-                        <span class="iphone-toast-title">${title}</span>
-                        <span class="iphone-toast-desc">${desc}</span>
-                    </div>
-                `;
-                document.body.appendChild(toast);
-                
-                setTimeout(() => { toast.classList.add('show'); }, 50);
-                setTimeout(() => {
-                    toast.classList.remove('show');
-                    setTimeout(() => toast.remove(), 400);
-                }, 4000);
+                alert(`${title}\n${desc}`); // Fallback alert jika CSS notif tidak ada
             }
 
             let isLoggedIn = localStorage.getItem('kreaverse_logged_in') === 'true'; 
@@ -816,8 +918,6 @@
             let savedName = localStorage.getItem('kreaverse_user_name') || '';
             let userId = localStorage.getItem('kreaverse_user_id') || '';
 
-            const uiUsername = document.getElementById('ui-username');
-            const uiPlan = document.getElementById('ui-plan');
             const authActionBtn = document.getElementById('auth-action-btn');
             const logoutActionBtn = document.getElementById('logout-action-btn');
             const topAuthBtn = document.getElementById('top-auth-btn');
@@ -919,19 +1019,16 @@
                 });
             }
 
-            // Array warna estetik untuk background avatar user
             const avatarColors = ['#D95040', '#7B2956', '#1A1449', '#059669', '#0284C7', '#7C3AED', '#D97706', '#BE123C'];
 
             function drawUserProfileUI(name, username, photoBase64, tier) {
                 const displayName = name || 'User';
-                // Jika username kosong, pakai nama depan saja untuk handle
                 const displayHandle = username ? '@' + username : '@' + displayName.split(' ')[0].toLowerCase();
                 const initial = displayName.charAt(0).toUpperCase();
                 
                 const colorIndex = initial.charCodeAt(0) % avatarColors.length;
                 const userColor = avatarColors[colorIndex];
 
-                // Update Teks di Creator View Baru
                 const creatorName = document.getElementById('creator-ui-name');
                 const creatorHandle = document.getElementById('creator-ui-handle');
                 if(creatorName) creatorName.innerText = displayName;
@@ -954,14 +1051,14 @@
                     }
                 };
 
-                updateAvatarEl('creator-ui-avatar'); // Avatar di Creator View
+                updateAvatarEl('creator-ui-avatar'); 
                 updateAvatarEl('top-user-avatar');
                 updateAvatarEl('top-user-avatar-new');
+                updateAvatarEl('top-user-avatar-lib');
                 updateAvatarEl('bottom-nav-avatar'); 
                 updateAvatarEl('edit-ui-avatar');    
             }
 
-            // LOGIKA SAVE PROFILE BARU (NATIVE STYLE)
             let uploadedPhotoBase64 = "";
             const hiddenPhotoInput = document.getElementById('hidden-profile-photo-input');
             
@@ -979,7 +1076,6 @@
                                 ctx.drawImage(img, 0, 0, 200, 200);
                                 uploadedPhotoBase64 = canvas.toDataURL('image/jpeg', 0.8);
                                 
-                                // Langsung preview di halaman edit
                                 const editAvatar = document.getElementById('edit-ui-avatar');
                                 if(editAvatar) {
                                     editAvatar.innerHTML = `<img src="${uploadedPhotoBase64}" alt="Avatar">`;
@@ -1010,7 +1106,6 @@
                             localStorage.setItem('kreaverse_user_name', nameVal);
                             drawUserProfileUI(nameVal, '', uploadedPhotoBase64, localStorage.getItem('kreaverse_tier') || 'basic');
                             
-                            // Tutup bottom sheet setelah save berhasil
                             document.getElementById('edit-profile-sheet').classList.remove('active');
                             showIphoneNotif('Success', 'Profile updated successfully', 'fa-user-check');
                         }).catch(err => {
@@ -1111,7 +1206,6 @@
             safeBindClick('btn-close-help-modal', () => { helpModal.classList.remove('active'); });
         });
 
-        // FUNGSI UNTUK INSTALL PWA
         window.installPWA = async () => {
             if (deferredPrompt) {
                 deferredPrompt.prompt();
@@ -1121,7 +1215,7 @@
                 }
                 deferredPrompt = null;
             } else {
-                showIphoneNotif('Info', 'Aplikasi sudah terinstal atau browser Anda tidak mendukung fitur ini.', 'fa-circle-info');
+                alert('Aplikasi sudah terinstal atau browser Anda tidak mendukung fitur ini.');
             }
         };
 
