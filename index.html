@@ -275,6 +275,21 @@
             background: #111; border-radius: 99px; transition: 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); z-index: 1;
         }
         .plan-toggle-container.max-active .plan-toggle-slider { transform: translateX(100%); }
+
+        /* BOTTOM SHEET UMUM */
+        .bottom-sheet-overlay {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 999;
+            opacity: 0; pointer-events: none; transition: 0.3s;
+        }
+        .bottom-sheet-overlay.active { opacity: 1; pointer-events: auto; }
+        .bottom-sheet {
+            position: absolute; bottom: -100%; left: 0; right: 0;
+            background: #FFFFFF; border-top-left-radius: 32px; border-top-right-radius: 32px;
+            padding: 20px 20px 40px 20px; transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .bottom-sheet-overlay.active .bottom-sheet { bottom: 0; }
+        .sheet-drag-handle { width: 40px; height: 5px; background: #E5E5EA; border-radius: 5px; margin: 0 auto 24px auto; }
+        .sheet-title { font-size: 1.1rem; color: #8E8E93; font-weight: 600; margin-bottom: 16px; padding-left: 4px; }
     </style>
 </head>
 <body>
@@ -353,7 +368,7 @@
     </div>
 
     <!-- =================================================== -->
-    <!-- VIEW 2: CREATOR VIEW (SONNA STYLE)                  -->
+    <!-- VIEW 2: CREATOR VIEW (SONNA STYLE PROFILE)          -->
     <!-- =================================================== -->
     <div id="view-profile" class="app-view creator-view">
         
@@ -389,7 +404,7 @@
         <div class="creator-empty">
             <h4>Nothing created yet</h4>
             <p>Start creating your first idea now</p>
-            <button class="btn-create-black" onclick="document.getElementById('create-sheet').classList.add('active')">
+            <button class="btn-create-black" onclick="switchView('view-new', document.querySelectorAll('.nav-item')[1])">
                 <i class="fa-solid fa-plus"></i> Create
             </button>
         </div>
@@ -432,6 +447,59 @@
         </div>
     </div>
 
+    <!-- BOTTOM SHEET: EDIT PROFILE -->
+    <div class="bottom-sheet-overlay" id="edit-profile-sheet" onclick="this.classList.remove('active')">
+        <div class="bottom-sheet" onclick="event.stopPropagation()" style="height: auto; padding-bottom: 20px;">
+            <div class="sheet-drag-handle"></div>
+            <div class="edit-profile-content">
+                <div class="edit-avatar-large" id="edit-ui-avatar" style="background: #7B2956; margin: 0 auto;">P</div>
+                
+                <div style="margin-top: 24px; width: 100%;">
+                    <div style="font-size: 0.85rem; color: #71717A; margin-bottom: 8px; text-align: center;">Change Profile Picture</div>
+                    <div class="profile-menu-item" onclick="document.getElementById('hidden-profile-photo-input').click()" style="padding: 12px 0; border-bottom: none; justify-content: center; gap: 10px;">
+                        <i class="fa-regular fa-image" style="font-size: 1.2rem; color: #111;"></i>
+                        <span style="font-weight: 600; color: #111;">Choose from Gallery</span>
+                    </div>
+                    <input type="file" id="hidden-profile-photo-input" accept="image/*" style="display:none;">
+                </div>
+                
+                <div class="input-group">
+                    <label class="input-label">Your Name</label>
+                    <input type="text" id="edit-name-input" class="clean-input" placeholder="Enter your name">
+                </div>
+                
+                <button class="btn-save-profile" id="btn-save-profile-native">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- BOTTOM SHEET: CHOOSE PLAN (SONNA STYLE) -->
+    <div class="bottom-sheet-overlay" id="vip-status-modal" onclick="this.classList.remove('active')">
+        <div class="bottom-sheet" onclick="event.stopPropagation()" style="height: auto; padding-bottom: 20px;">
+            <div class="sheet-drag-handle"></div>
+            <h3 style="text-align: center; font-size: 1.3rem; color: #111; margin-bottom: 8px;">Choose your plan</h3>
+            <p style="text-align: center; font-size: 0.9rem; color: #71717A; margin-bottom: 24px;">The best tools for your creative work</p>
+            
+            <div class="plan-toggle-container" id="plan-toggle">
+                <div class="plan-toggle-slider"></div>
+                <div class="plan-toggle-btn active" id="btn-plan-pro" onclick="switchPlan('pro')">Pro</div>
+                <div class="plan-toggle-btn" id="btn-plan-max" onclick="switchPlan('max')">Max</div>
+            </div>
+            
+            <div style="display: flex; flex-direction: column; gap: 14px; margin-bottom: 30px; padding: 0 10px;">
+                <div style="display: flex; align-items: center; gap: 12px; font-size: 0.95rem; color: #111; font-weight: 500;"><i class="fa-solid fa-check" style="color: #111;"></i> <span id="plan-credits-text">102.000 monthly credits</span></div>
+                <div style="display: flex; align-items: center; gap: 12px; font-size: 0.95rem; color: #111; font-weight: 500;"><i class="fa-solid fa-check" style="color: #111;"></i> Commercial use</div>
+                <div style="display: flex; align-items: center; gap: 12px; font-size: 0.95rem; color: #111; font-weight: 500;"><i class="fa-solid fa-check" style="color: #111;"></i> Text to Speech</div>
+                <div style="display: flex; align-items: center; gap: 12px; font-size: 0.95rem; color: #111; font-weight: 500;"><i class="fa-solid fa-check" style="color: #111;"></i> Image Generation</div>
+                <div style="display: flex; align-items: center; gap: 12px; font-size: 0.95rem; color: #111; font-weight: 500;"><i class="fa-solid fa-check" style="color: #111;"></i> Music Generation</div>
+            </div>
+            
+            <button id="btn-vip-whatsapp" style="width: 100%; padding: 16px; border-radius: 99px; font-weight: 600; font-size: 1.05rem; border: none; background: #111; color: #FFF; cursor: pointer; transition: 0.2s;">
+                Upgrade to Pro
+            </button>
+        </div>
+    </div>
+
     <!-- =================================================== -->
     <!-- VIEW 3: NEW (START FROM SCRATCH)                    -->
     <!-- =================================================== -->
@@ -467,32 +535,6 @@
                 <div class="new-pill-img" style="background-image: url('https://images.unsplash.com/photo-1614613535308-eb5fbd3d2c17?q=80&w=400&auto=format&fit=crop');"></div>
                 <div class="badge-new">NEW</div>
             </a>
-        </div>
-    </div>
-
-    <!-- BOTTOM SHEET: EDIT PROFILE -->
-    <div class="bottom-sheet-overlay" id="edit-profile-sheet" onclick="this.classList.remove('active')">
-        <div class="bottom-sheet" onclick="event.stopPropagation()" style="height: auto; padding-bottom: 20px;">
-            <div class="sheet-drag-handle"></div>
-            <div class="edit-profile-content">
-                <div class="edit-avatar-large" id="edit-ui-avatar" style="background: #7B2956; margin: 0 auto;">P</div>
-                
-                <div style="margin-top: 24px; width: 100%;">
-                    <div style="font-size: 0.85rem; color: #71717A; margin-bottom: 8px; text-align: center;">Change Profile Picture</div>
-                    <div class="profile-menu-item" onclick="document.getElementById('hidden-profile-photo-input').click()" style="padding: 12px 0; border-bottom: none; justify-content: center; gap: 10px;">
-                        <i class="fa-regular fa-image" style="font-size: 1.2rem; color: #111;"></i>
-                        <span style="font-weight: 600; color: #111;">Choose from Gallery</span>
-                    </div>
-                    <input type="file" id="hidden-profile-photo-input" accept="image/*" style="display:none;">
-                </div>
-                
-                <div class="input-group">
-                    <label class="input-label">Your Name</label>
-                    <input type="text" id="edit-name-input" class="clean-input" placeholder="Enter your name">
-                </div>
-                
-                <button class="btn-save-profile" id="btn-save-profile-native">Save</button>
-            </div>
         </div>
     </div>
 
@@ -561,7 +603,53 @@
             switchView('view-home', document.querySelectorAll('.nav-item')[0]);
         }
 
+        // FUNGSI SHARE (NATIVE WEB SHARE API)
+        function shareProfile() {
+            if (navigator.share) {
+                navigator.share({
+                    title: 'Flixa AI',
+                    text: 'I\'m making AI music & voices on Flixa 🎵 Try it free:',
+                    url: 'https://kreaverse-ai.biz.id'
+                }).catch(console.error);
+            } else {
+                showIphoneNotif('Info', 'Fitur berbagi tidak didukung di browser ini.', 'fa-circle-info');
+            }
+        }
+
+        // FUNGSI TOGGLE PLAN (PRO / MAX)
+        function switchPlan(plan) {
+            const container = document.getElementById('plan-toggle');
+            const btnPro = document.getElementById('btn-plan-pro');
+            const btnMax = document.getElementById('btn-plan-max');
+            const creditsText = document.getElementById('plan-credits-text');
+            const btnUpgrade = document.getElementById('btn-vip-whatsapp');
+
+            if(plan === 'max') {
+                container.classList.add('max-active');
+                btnPro.classList.remove('active');
+                btnMax.classList.add('active');
+                creditsText.innerText = '187.000 monthly credits';
+                btnUpgrade.innerText = 'Upgrade to Max';
+            } else {
+                container.classList.remove('max-active');
+                btnMax.classList.remove('active');
+                btnPro.classList.add('active');
+                creditsText.innerText = '102.000 monthly credits';
+                btnUpgrade.innerText = 'Upgrade to Pro';
+            }
+        }
+
         document.addEventListener("DOMContentLoaded", () => {
+            // Logika Tombol WhatsApp Upgrade
+            const btnVipWa = document.getElementById('btn-vip-whatsapp');
+            if(btnVipWa) {
+                btnVipWa.addEventListener('click', () => {
+                    const planName = document.getElementById('plan-toggle').classList.contains('max-active') ? 'MAX' : 'PRO';
+                    const textMessage = encodeURIComponent(`Halo Admin Flixa AI, saya ingin mengajukan peningkatan paket (UPGRADE) ke jenjang ${planName}.\n\nDetail Akun:\n- Email Klien: ${localStorage.getItem('kreaverse_user_email') || ''}\n- Nama Klien: ${localStorage.getItem('kreaverse_user_name') || ''}`);
+                    window.open(`https://wa.me/6285119821813?text=${textMessage}`, '_blank');
+                });
+            }
+
             const carousel = document.getElementById('main-promo-carousel');
             const dots = document.querySelectorAll('#promo-dots .dot');
             if(carousel && dots.length > 0) {
@@ -589,35 +677,8 @@
     </script>
 
     <!-- =================================================== -->
-    <!-- MODAL VIP, FEEDBACK, HELP, LOGOUT (TETAP ADA)       -->
+    <!-- MODAL FEEDBACK, HELP, LOGOUT (TETAP ADA)            -->
     <!-- =================================================== -->
-    <!-- BOTTOM SHEET: CHOOSE PLAN (SONNA STYLE) -->
-    <div class="bottom-sheet-overlay" id="vip-status-modal" onclick="this.classList.remove('active')">
-        <div class="bottom-sheet" onclick="event.stopPropagation()" style="height: auto; padding-bottom: 20px;">
-            <div class="sheet-drag-handle"></div>
-            <h3 style="text-align: center; font-size: 1.3rem; color: #111; margin-bottom: 8px;">Choose your plan</h3>
-            <p style="text-align: center; font-size: 0.9rem; color: #71717A; margin-bottom: 24px;">The best tools for your creative work</p>
-            
-            <div class="plan-toggle-container" id="plan-toggle">
-                <div class="plan-toggle-slider"></div>
-                <div class="plan-toggle-btn active" id="btn-plan-pro" onclick="switchPlan('pro')">Pro</div>
-                <div class="plan-toggle-btn" id="btn-plan-max" onclick="switchPlan('max')">Max</div>
-            </div>
-            
-            <div style="display: flex; flex-direction: column; gap: 14px; margin-bottom: 30px; padding: 0 10px;">
-                <div style="display: flex; align-items: center; gap: 12px; font-size: 0.95rem; color: #111; font-weight: 500;"><i class="fa-solid fa-check" style="color: #111;"></i> <span id="plan-credits-text">102.000 monthly credits</span></div>
-                <div style="display: flex; align-items: center; gap: 12px; font-size: 0.95rem; color: #111; font-weight: 500;"><i class="fa-solid fa-check" style="color: #111;"></i> Commercial use</div>
-                <div style="display: flex; align-items: center; gap: 12px; font-size: 0.95rem; color: #111; font-weight: 500;"><i class="fa-solid fa-check" style="color: #111;"></i> Text to Speech</div>
-                <div style="display: flex; align-items: center; gap: 12px; font-size: 0.95rem; color: #111; font-weight: 500;"><i class="fa-solid fa-check" style="color: #111;"></i> Image Generation</div>
-                <div style="display: flex; align-items: center; gap: 12px; font-size: 0.95rem; color: #111; font-weight: 500;"><i class="fa-solid fa-check" style="color: #111;"></i> Music Generation</div>
-            </div>
-            
-            <button id="btn-vip-whatsapp" style="width: 100%; padding: 16px; border-radius: 99px; font-weight: 600; font-size: 1.05rem; border: none; background: #111; color: #FFF; cursor: pointer; transition: 0.2s;">
-                Upgrade to Pro
-            </button>
-        </div>
-    </div>
-
     <div class="modal-overlay" id="feedback-modal">
         <div class="modal-box spec-modal" style="border-radius: 24px; padding: 30px 24px; max-width: 400px;">
             <h3 style="margin-bottom:8px; font-size: 1.3rem; color: #111;">Kirim Masukan</h3>
@@ -940,8 +1001,8 @@
                             localStorage.setItem('kreaverse_user_name', nameVal);
                             drawUserProfileUI(nameVal, '', uploadedPhotoBase64, localStorage.getItem('kreaverse_tier') || 'basic');
                             
-                            // Kembali ke halaman profil
-                            switchView('view-profile', document.querySelectorAll('.nav-item')[4]);
+                            // Tutup bottom sheet
+                            document.getElementById('edit-profile-sheet').classList.remove('active');
                             showIphoneNotif('Success', 'Profile updated successfully', 'fa-user-check');
                         }).catch(err => {
                             console.error(err);
