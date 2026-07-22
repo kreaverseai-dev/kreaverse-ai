@@ -41,7 +41,9 @@
         /* 2. HEADER (LOGO BESAR, PROFIL KANAN)                */
         /* =================================================== */
         .native-header {
-            padding: 15px 20px 10px 20px; display: flex; justify-content: space-between; align-items: center;
+            /* Menambahkan env(safe-area-inset-top) agar otomatis turun di bawah kamera */
+            padding: calc(15px + env(safe-area-inset-top)) 20px 10px 20px; 
+            display: flex; justify-content: space-between; align-items: center;
             background: #FFFFFF; position: sticky; top: 0; z-index: 30;
         }
         .header-logo-text {
@@ -187,7 +189,8 @@
             background: #FFFFFF;
             background-image: radial-gradient(circle at 80% -10%, rgba(217, 80, 64, 0.3) 0%, transparent 40%), 
                               radial-gradient(circle at 20% 10%, rgba(123, 41, 86, 0.15) 0%, transparent 40%);
-            height: 100%; padding: 20px; overflow-y: auto;
+            /* Menambahkan env(safe-area-inset-top) agar otomatis turun di bawah kamera */
+            height: 100%; padding: calc(20px + env(safe-area-inset-top)) 20px 20px 20px; overflow-y: auto;
         }
         .creator-top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px; margin-top: 10px; }
         .creator-credits {
@@ -541,15 +544,19 @@
     <!-- =================================================== -->
     <!-- VIEW 4: TOOL FRAME (AGAR AUDIO TIDAK MATI)          -->
     <!-- =================================================== -->
-    <div id="view-tool" class="app-view" style="bottom: 0; z-index: 200;">
-        <div style="position: absolute; top: 0; left: 0; right: 0; height: 55px; background: #FFF; display: flex; align-items: center; justify-content: space-between; padding: 0 20px; border-bottom: 1px solid #F4F4F5; z-index: 50;">
-            <div style="width: 30px;"></div>
-            <div id="tool-title" style="font-weight: 700; font-size: 1.05rem; color: #111;">Flixa AI</div>
-            <div onclick="closeTool()" style="width: 30px; height: 30px; display: flex; align-items: center; justify-content: flex-end; font-size: 1.3rem; color: #111; cursor: pointer;">
-                <i class="fa-solid fa-xmark"></i>
+    <div id="view-tool" class="app-view" style="bottom: 0; z-index: 200; display: flex; flex-direction: column;">
+        <!-- Header dibungkus div baru dengan padding-top dinamis sesuai kamera HP -->
+        <div style="padding-top: env(safe-area-inset-top); background: #FFF; border-bottom: 1px solid #F4F4F5; z-index: 50;">
+            <div style="height: 55px; display: flex; align-items: center; justify-content: space-between; padding: 0 20px;">
+                <div style="width: 30px;"></div>
+                <div id="tool-title" style="font-weight: 700; font-size: 1.05rem; color: #111;">Flixa AI</div>
+                <div onclick="closeTool()" style="width: 30px; height: 30px; display: flex; align-items: center; justify-content: flex-end; font-size: 1.3rem; color: #111; cursor: pointer;">
+                    <i class="fa-solid fa-xmark"></i>
+                </div>
             </div>
         </div>
-        <iframe id="app-iframe" src="" style="position: absolute; top: 55px; left: 0; right: 0; bottom: 0; width: 100%; height: calc(100% - 55px); border: none; background: #FFF;"></iframe>
+        <!-- Iframe menggunakan flex: 1 agar otomatis mengisi sisa layar di bawah header -->
+        <iframe id="app-iframe" src="" style="flex: 1; width: 100%; border: none; background: #FFF;"></iframe>
     </div>
 
     <!-- =================================================== -->
