@@ -7,25 +7,12 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        /* ========================================== */
-        /* RESET & BASE STYLES                        */
-        /* ========================================== */
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
-        /* Menggunakan 100dvh agar tidak tertutup keyboard di HP */
         body { background-color: #FFFFFF; color: #111; height: 100dvh; display: flex; flex-direction: column; overflow: hidden; }
         button { cursor: pointer; border: none; background: none; outline: none; }
 
-        /* ========================================== */
-        /* HEADER PROJECT (SONNA STYLE)               */
-        /* ========================================== */
-        .header {
-            display: flex; align-items: center; justify-content: space-between; padding: 15px 20px;
-        }
-        .header-left { display: flex; align-items: center; gap: 15px; font-size: 1.1rem; font-weight: 500; }
-        .back-btn { font-size: 1.3rem; color: #111; }
-        .header-right { display: flex; align-items: center; gap: 20px; font-size: 1.2rem; color: #111; position: relative; }
-        
-        .voice-selector-row { padding: 0 20px 10px 20px; }
+        /* HEADER (VOICE SELECTOR DI KIRI ATAS) */
+        .header { padding: 15px 20px; display: flex; align-items: center; }
         .voice-selector {
             display: inline-flex; align-items: center; gap: 8px;
             font-weight: 600; font-size: 0.95rem; color: #111; cursor: pointer;
@@ -35,27 +22,37 @@
             display: flex; align-items: center; justify-content: center; color: white; font-size: 0.7rem;
         }
 
-        /* ========================================== */
-        /* MAIN TEXT AREA & COUNTER                   */
-        /* ========================================== */
-        .main-editor { flex: 1; padding: 10px 20px; display: flex; flex-direction: column; }
+        /* MAIN EDITOR */
+        .main-editor { flex: 1; padding: 0 20px; display: flex; flex-direction: column; position: relative; }
         .text-input {
             flex: 1; width: 100%; border: none; outline: none; resize: none;
-            font-size: 1.1rem; color: #111; line-height: 1.5;
+            font-size: 1.1rem; color: #111; line-height: 1.5; padding-bottom: 120px; /* Ruang untuk bottom bar */
         }
         .text-input::placeholder { color: #A1A1AA; }
-        .char-counter { font-size: 0.85rem; color: #A1A1AA; font-weight: 500; padding-top: 10px; }
+        .char-counter { position: absolute; bottom: 120px; left: 20px; font-size: 0.8rem; color: #A1A1AA; font-weight: 500; }
 
-        /* ========================================== */
-        /* BOTTOM BAR (FLOATING CARD STYLE)           */
-        /* ========================================== */
-        .bottom-bar {
+        /* FLOATING BOTTOM BAR (SELALU DI ATAS) */
+        .floating-bottom-bar {
+            position: fixed; bottom: 0; left: 0; right: 0;
             padding: 15px 20px 20px 20px; display: flex; flex-direction: column; gap: 12px;
             background: #FFF; border-top-left-radius: 24px; border-top-right-radius: 24px;
-            box-shadow: 0 -4px 20px rgba(0,0,0,0.05); z-index: 50;
+            box-shadow: 0 -4px 20px rgba(0,0,0,0.08); z-index: 200; /* Z-index tinggi agar di atas settings */
         }
-        .cost-text { font-size: 0.85rem; color: #71717A; font-weight: 500; padding-left: 4px; }
         
+        /* STATUS BAR (CREDITS / COSTS) */
+        .status-bar { display: flex; justify-content: space-between; align-items: center; width: 100%; transition: 0.2s; }
+        
+        /* Tampilan saat kosong (Hitam) */
+        .status-empty {
+            background: #111; color: white; padding: 10px 16px; border-radius: 99px;
+            display: flex; align-items: center; justify-content: space-between; width: 100%; font-size: 0.85rem; font-weight: 500;
+        }
+        .status-empty i { color: #A1A1AA; margin-right: 8px; }
+        .badge-free { font-weight: 700; }
+
+        /* Tampilan saat mengetik (Teks biasa) */
+        .status-typing { display: none; font-size: 0.85rem; color: #71717A; font-weight: 500; padding-left: 4px; }
+
         .action-row { display: flex; gap: 12px; align-items: center; }
         .btn-settings-circle {
             width: 50px; height: 50px; border-radius: 50%; background: #F4F4F5;
@@ -70,95 +67,60 @@
         .btn-generate.ready { background: #111; color: #FFF; pointer-events: auto; }
         .btn-generate.ready:active { transform: scale(0.98); }
 
-        /* DROPDOWN MENU */
-        .project-dropdown {
-            position: absolute; top: 30px; right: 0; background: #FFF; border-radius: 16px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.15); padding: 8px; z-index: 150;
-            opacity: 0; pointer-events: none; transform: translateY(-10px); transition: 0.2s;
-            min-width: 140px;
-        }
-        .project-dropdown.active { opacity: 1; pointer-events: auto; transform: translateY(0); }
-        .dropdown-item { padding: 12px 16px; font-size: 0.95rem; color: #111; border-radius: 8px; cursor: pointer; text-align: left; }
-        .dropdown-item:active { background: #F4F4F5; }
-
-        /* ========================================== */
-        /* SLIDER RANGE (SPEED & PITCH)               */
-        /* ========================================== */
-        .custom-slider {
-            -webkit-appearance: none; width: 100%; height: 6px; background: #E4E4E7; 
-            border-radius: 5px; outline: none; margin-top: 10px; margin-bottom: 15px;
-        }
-        .custom-slider::-webkit-slider-thumb {
-            -webkit-appearance: none; appearance: none; width: 22px; height: 22px; 
-            border-radius: 50%; background: #111; cursor: pointer; 
-            border: 3px solid #FFF; box-shadow: 0 2px 6px rgba(0,0,0,0.2);
-        }
-
-        /* ========================================== */
-        /* BOTTOM SHEET (SETTINGS)                    */
-        /* ========================================== */
+        /* BOTTOM SHEET (SETTINGS) */
         .sheet-overlay {
-            position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 100;
+            position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 100; /* Di bawah floating bar */
             opacity: 0; pointer-events: none; transition: 0.3s;
         }
         .sheet-overlay.active { opacity: 1; pointer-events: auto; }
         .bottom-sheet {
-            position: absolute; bottom: -100%; left: 0; right: 0; height: 85vh;
-            background: #FFFFFF; border-top-left-radius: 24px; border-top-right-radius: 24px;
-            padding: 20px; transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            display: flex; flex-direction: column;
+            position: absolute; bottom: -100%; left: 0; right: 0; height: 85dvh;
+            background: #F4F4F5; border-top-left-radius: 24px; border-top-right-radius: 24px;
+            padding: 20px 20px 140px 20px; /* Padding bawah besar agar tidak tertutup floating bar */
+            transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            display: flex; flex-direction: column; overflow-y: auto;
         }
         .sheet-overlay.active .bottom-sheet { bottom: 0; }
         
-        .sheet-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-        .sheet-title { font-size: 1rem; color: #71717A; font-weight: 500; }
-        .provider-select {
-            display: flex; align-items: center; gap: 6px; font-weight: 600; font-size: 1rem; color: #111;
-        }
+        .sheet-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
+        .sheet-title { font-size: 1.2rem; color: #111; font-weight: 600; }
+        .close-sheet-btn { font-size: 1.2rem; color: #111; }
+
+        /* SETTINGS CONTENT */
+        .setting-group { margin-bottom: 24px; }
+        .setting-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+        .setting-label { font-size: 0.95rem; color: #71717A; }
+        .provider-select { display: flex; align-items: center; gap: 6px; font-weight: 600; font-size: 1rem; color: #111; cursor: pointer; }
 
         /* MODEL CARDS */
-        .section-label { font-size: 0.9rem; color: #71717A; margin-bottom: 10px; margin-top: 20px; }
         .models-scroll { display: flex; gap: 12px; overflow-x: auto; padding-bottom: 10px; -webkit-overflow-scrolling: touch; }
         .models-scroll::-webkit-scrollbar { display: none; }
         .model-card {
-            min-width: 160px; border: 2px solid #F4F4F5; border-radius: 16px; padding: 16px;
-            background: #FAFAFA; position: relative; transition: 0.2s;
+            min-width: 160px; border: 2px solid transparent; border-radius: 16px; padding: 16px;
+            background: #FFF; position: relative; transition: 0.2s; cursor: pointer;
         }
-        .model-card.active { border-color: #111; background: #FFF; }
+        .model-card.active { border-color: #111; }
         .model-card-title { font-weight: 700; font-size: 1.05rem; margin-bottom: 6px; color: #111; }
         .model-card-desc { font-size: 0.8rem; color: #71717A; line-height: 1.4; margin-bottom: 12px; }
         .model-badge { display: inline-block; padding: 4px 10px; border-radius: 6px; border: 1px solid #E4E4E7; font-size: 0.75rem; font-weight: 600; color: #52525B; }
         .check-icon { position: absolute; top: 16px; right: 16px; background: #111; color: white; width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.6rem; opacity: 0; }
         .model-card.active .check-icon { opacity: 1; }
 
-        /* SEGMENTED CONTROLS (SPEED & PITCH) */
-        .control-row { display: flex; align-items: center; justify-content: space-between; margin-top: 20px; margin-bottom: 8px; }
-        .control-label { font-size: 0.9rem; color: #111; font-weight: 500; display: flex; align-items: center; gap: 6px; }
-        .control-label i { color: #A1A1AA; font-size: 0.8rem; }
-        .control-value { font-size: 0.9rem; color: #71717A; }
+        /* THICK SLIDERS (SONNA STYLE) */
+        .slider-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+        .slider-label { font-size: 0.9rem; color: #111; font-weight: 500; display: flex; align-items: center; gap: 6px; }
+        .slider-label i { color: #A1A1AA; font-size: 0.8rem; }
+        .slider-value { font-size: 0.9rem; color: #71717A; }
         
-        .segmented-control { display: flex; background: #F4F4F5; border-radius: 8px; overflow: hidden; height: 40px; }
-        .segment-btn { flex: 1; display: flex; align-items: center; justify-content: center; font-size: 0.9rem; font-weight: 600; color: #A1A1AA; transition: 0.2s; }
-        .segment-btn.active { background: #111; color: white; }
-
-        /* ========================================== */
-        /* PREMIUM MODAL                              */
-        /* ========================================== */
-        .premium-modal {
-            position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 200;
-            display: flex; align-items: center; justify-content: center; padding: 20px;
-            opacity: 0; pointer-events: none; transition: 0.3s;
+        .thick-slider {
+            -webkit-appearance: none; width: 100%; height: 40px; border-radius: 8px;
+            background: linear-gradient(to right, #111 50%, #E4E4E7 50%); outline: none;
         }
-        .premium-modal.active { opacity: 1; pointer-events: auto; }
-        .premium-box {
-            background: #FFF; border-radius: 24px; padding: 24px; width: 100%; max-width: 340px;
-            transform: scale(0.9); transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        .thick-slider::-webkit-slider-thumb {
+            -webkit-appearance: none; appearance: none; width: 28px; height: 28px; 
+            border-radius: 50%; background: #FFF; cursor: pointer; 
+            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
         }
-        .premium-modal.active .premium-box { transform: scale(1); }
-        .premium-title { font-size: 1.2rem; font-weight: 700; display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
-        .premium-desc { font-size: 0.9rem; color: #71717A; line-height: 1.5; margin-bottom: 24px; }
-        .btn-primary { background: #111; color: white; width: 100%; padding: 14px; border-radius: 99px; font-weight: 600; font-size: 1rem; margin-bottom: 10px; }
-        .btn-secondary { background: #F4F4F5; color: #111; width: 100%; padding: 14px; border-radius: 99px; font-weight: 600; font-size: 1rem; }
 
         /* PROVIDER DROPDOWN MENU */
         .provider-menu {
@@ -169,47 +131,39 @@
         .provider-menu.active { opacity: 1; pointer-events: auto; transform: translateY(0); }
         .provider-item {
             padding: 12px 16px; font-size: 1rem; font-weight: 500; color: #111; border-radius: 8px;
-            display: flex; justify-content: space-between; align-items: center; min-width: 150px;
+            display: flex; justify-content: space-between; align-items: center; min-width: 150px; cursor: pointer;
         }
         .provider-item.active { background: #F4F4F5; }
     </style>
 </head>
 <body>
 
-    <!-- HEADER PROJECT -->
+    <!-- HEADER -->
     <header class="header">
-        <div class="header-left">
-            <button class="back-btn" onclick="window.parent.closeTool()"><i class="fa-solid fa-xmark"></i></button>
-            <span>Untitled Project 1</span>
-        </div>
-        <div class="header-right">
-            <button><i class="fa-regular fa-trash-can"></i></button>
-            <button onclick="toggleProjectMenu()"><i class="fa-solid fa-ellipsis-vertical"></i></button>
-            
-            <!-- Dropdown Menu -->
-            <div class="project-dropdown" id="project-menu">
-                <div class="dropdown-item">Rename</div>
-                <div class="dropdown-item">Delete</div>
-            </div>
-        </div>
-    </header>
-
-    <div class="voice-selector-row">
         <div class="voice-selector" onclick="toggleSheet()">
             <div class="voice-icon"><i class="fa-solid fa-robot"></i></div>
             <span id="current-voice-name">Budi - Google</span>
         </div>
-    </div>
+    </header>
 
     <!-- MAIN EDITOR -->
     <main class="main-editor">
         <textarea class="text-input" id="main-textarea" placeholder="Start typing something..." maxlength="1000"></textarea>
-        <div class="char-counter" id="char-counter">0 / 1.000</div>
+        <div class="char-counter" id="char-counter" style="display: none;">0 / 1.000</div>
     </main>
 
-    <!-- BOTTOM BAR -->
-    <div class="bottom-bar">
-        <div class="cost-text">Costs 1 credits</div>
+    <!-- FLOATING BOTTOM BAR (SELALU DI ATAS) -->
+    <div class="floating-bottom-bar">
+        <div class="status-bar">
+            <!-- Status Kosong -->
+            <div class="status-empty" id="status-empty">
+                <div><i class="fa-solid fa-sparkles"></i> Remaining credits: 9.960</div>
+                <span class="badge-free">Free</span>
+            </div>
+            <!-- Status Mengetik -->
+            <div class="status-typing" id="status-typing">Costs 1 credits</div>
+        </div>
+        
         <div class="action-row">
             <button class="btn-settings-circle" onclick="toggleSheet()"><i class="fa-solid fa-sliders"></i></button>
             <button class="btn-generate" id="btn-generate">Generate</button>
@@ -220,9 +174,16 @@
     <div class="sheet-overlay" id="settings-sheet">
         <div class="bottom-sheet" onclick="event.stopPropagation()">
             <div class="sheet-header">
-                <div class="sheet-title">Provider</div>
-                <div class="provider-select" onclick="toggleProviderMenu()">
-                    <span id="current-provider">Google</span> <i class="fa-solid fa-chevron-down" style="font-size:0.8rem;"></i>
+                <div class="sheet-title">Settings</div>
+                <button class="close-sheet-btn" onclick="toggleSheet()"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+
+            <div class="setting-group">
+                <div class="setting-header">
+                    <div class="setting-label">Provider</div>
+                    <div class="provider-select" onclick="toggleProviderMenu()">
+                        <span id="current-provider">Google</span> <i class="fa-solid fa-chevron-down" style="font-size:0.8rem;"></i>
+                    </div>
                 </div>
             </div>
 
@@ -233,176 +194,171 @@
                 <div class="provider-item" onclick="selectProvider('Gemini')">Gemini</div>
             </div>
 
-            <div class="section-label">Model</div>
-            
-            <!-- MODELS: GOOGLE -->
-            <div class="models-scroll" id="models-google">
-                <div class="model-card" onclick="selectModel(this, 'Budi - Google')">
-                    <div class="check-icon"><i class="fa-solid fa-check"></i></div>
-                    <div class="model-card-title">Neural2</div>
-                    <div class="model-card-desc">Modern Google voices with natural prosody</div>
-                    <div class="model-badge">High Quality</div>
+            <div class="setting-group">
+                <div class="setting-label" style="margin-bottom: 12px;">Model</div>
+                
+                <!-- MODELS: GOOGLE -->
+                <div class="models-scroll" id="models-google">
+                    <div class="model-card" onclick="selectModel(this, 'Budi - Google')">
+                        <div class="check-icon"><i class="fa-solid fa-check"></i></div>
+                        <div class="model-card-title">Neural2</div>
+                        <div class="model-card-desc">Modern Google voices with natural prosody</div>
+                        <div class="model-badge">High Quality</div>
+                    </div>
+                    <div class="model-card active" onclick="selectModel(this, 'Budi - Google')">
+                        <div class="check-icon"><i class="fa-solid fa-check"></i></div>
+                        <div class="model-card-title">Wavenet</div>
+                        <div class="model-card-desc">Classic DeepMind voices with reliable clarity</div>
+                        <div class="model-badge">Standard</div>
+                    </div>
                 </div>
-                <div class="model-card active" onclick="selectModel(this, 'Budi - Google')">
-                    <div class="check-icon"><i class="fa-solid fa-check"></i></div>
-                    <div class="model-card-title">Wavenet</div>
-                    <div class="model-card-desc">Classic DeepMind voices with reliable clarity</div>
-                    <div class="model-badge">Standard</div>
+
+                <!-- MODELS: ELEVENLABS -->
+                <div class="models-scroll" id="models-elevenlabs" style="display:none;">
+                    <div class="model-card active" onclick="selectModel(this, 'Adam - ElevenLabs')">
+                        <div class="check-icon"><i class="fa-solid fa-check"></i></div>
+                        <div class="model-card-title">Eleven v3</div>
+                        <div class="model-card-desc">Most expressive voice tier with rich prosody</div>
+                        <div class="model-badge">High quality</div>
+                    </div>
+                    <div class="model-card" onclick="selectModel(this, 'Adam - ElevenLabs')">
+                        <div class="check-icon"><i class="fa-solid fa-check"></i></div>
+                        <div class="model-card-title">Multilingual v2</div>
+                        <div class="model-card-desc">Balanced quality across many languages</div>
+                        <div class="model-badge">High quality</div>
+                    </div>
+                </div>
+
+                <!-- MODELS: GEMINI -->
+                <div class="models-scroll" id="models-gemini" style="display:none;">
+                    <div class="model-card active" onclick="selectModel(this, 'Gemini Voice')">
+                        <div class="check-icon"><i class="fa-solid fa-check"></i></div>
+                        <div class="model-card-title">Gemini 2.5 Flash</div>
+                        <div class="model-card-desc">Fast native speech with expressive output</div>
+                        <div class="model-badge">Fast</div>
+                    </div>
+                    <div class="model-card">
+                        <div class="check-icon"><i class="fa-solid fa-check"></i></div>
+                        <div class="model-card-title">Gemini 2.5 Pro</div>
+                        <div class="model-card-desc">Higher fidelity native speech with finer control</div>
+                        <div class="model-badge">High Quality</div>
+                    </div>
                 </div>
             </div>
 
-            <!-- MODELS: ELEVENLABS -->
-            <div class="models-scroll" id="models-elevenlabs" style="display:none;">
-                <div class="model-card active" onclick="selectModel(this, 'Adam - ElevenLabs')">
-                    <div class="check-icon"><i class="fa-solid fa-check"></i></div>
-                    <div class="model-card-title">Eleven v3</div>
-                    <div class="model-card-desc">Most expressive voice tier with rich prosody</div>
-                    <div class="model-badge">High quality</div>
+            <!-- THICK SLIDERS -->
+            <div class="setting-group">
+                <div class="slider-header">
+                    <div class="slider-label">Speed <i class="fa-solid fa-circle-info"></i></div>
+                    <div class="slider-value" id="speed-val">1.0x</div>
                 </div>
-                <div class="model-card" onclick="selectModel(this, 'Adam - ElevenLabs')">
-                    <div class="check-icon"><i class="fa-solid fa-check"></i></div>
-                    <div class="model-card-title">Multilingual v2</div>
-                    <div class="model-card-desc">Balanced quality across many languages</div>
-                    <div class="model-badge">High quality</div>
-                </div>
+                <input type="range" class="thick-slider" id="speed-slider" min="0.5" max="2.0" step="0.1" value="1.0">
             </div>
 
-            <!-- MODELS: GEMINI -->
-            <div class="models-scroll" id="models-gemini" style="display:none;">
-                <div class="model-card active" onclick="selectModel(this, 'Gemini Voice')">
-                    <div class="check-icon"><i class="fa-solid fa-check"></i></div>
-                    <div class="model-card-title">Gemini 2.5 Flash</div>
-                    <div class="model-card-desc">Fast native speech with expressive output</div>
-                    <div class="model-badge">Fast</div>
+            <div class="setting-group">
+                <div class="slider-header">
+                    <div class="slider-label">Pitch <i class="fa-solid fa-circle-info"></i></div>
+                    <div class="slider-value" id="pitch-val">50%</div>
                 </div>
-                <div class="model-card" onclick="showPremiumModal()">
-                    <div class="check-icon"><i class="fa-solid fa-check"></i></div>
-                    <div class="model-card-title">Gemini 2.5 Pro</div>
-                    <div class="model-card-desc">Higher fidelity native speech with finer control</div>
-                    <div class="model-badge">High Quality</div>
-                </div>
+                <input type="range" class="thick-slider" id="pitch-slider" min="0" max="100" step="1" value="50">
             </div>
-
-            <!-- CONTROLS (SLIDERS) -->
-            <div class="control-row">
-                <div class="control-label">Speed <i class="fa-solid fa-circle-info"></i></div>
-                <div class="control-value" id="speed-val">1.0x</div>
-            </div>
-            <input type="range" class="custom-slider" id="speed-slider" min="0.5" max="2.0" step="0.1" value="1.0">
-
-            <div class="control-row">
-                <div class="control-label">Pitch <i class="fa-solid fa-circle-info"></i></div>
-                <div class="control-value" id="pitch-val">50%</div>
-            </div>
-            <input type="range" class="custom-slider" id="pitch-slider" min="0" max="100" step="1" value="50">
-        </div>
-    </div>
-
-    <!-- PREMIUM MODAL -->
-    <div class="premium-modal" id="premium-modal">
-        <div class="premium-box">
-            <div class="premium-title"><i class="fa-solid fa-sparkles"></i> Premium Provider</div>
-            <div class="premium-desc">ElevenLabs and Gemini features are exclusive to Flixa Pro and Max subscribers. Upgrade your plan to unlock these premium AI providers.</div>
-            <button class="btn-primary" onclick="window.parent.location.href='/harga/index.html'">View Plans</button>
-            <button class="btn-secondary" onclick="closePremiumModal()">Maybe Later</button>
         </div>
     </div>
 
     <script>
-        const sheet = document.getElementById('settings-sheet');
-        const providerMenu = document.getElementById('provider-menu');
-        const premiumModal = document.getElementById('premium-modal');
+        // LOGIKA TEXTAREA & BOTTOM BAR
+        const textInput = document.getElementById('main-textarea');
+        const btnGenerate = document.getElementById('btn-generate');
+        const charCounter = document.getElementById('char-counter');
+        const statusEmpty = document.getElementById('status-empty');
+        const statusTyping = document.getElementById('status-typing');
 
-        // Buka/Tutup Bottom Sheet
-        function toggleSheet() {
-            sheet.classList.toggle('active');
-        }
-        sheet.addEventListener('click', (e) => {
-            if(e.target === sheet) sheet.classList.remove('active');
-            providerMenu.classList.remove('active');
+        textInput.addEventListener('input', function() {
+            const currentLength = this.value.length;
+            
+            if(this.value.trim().length > 0) {
+                // Saat ada teks
+                btnGenerate.classList.add('ready');
+                statusEmpty.style.display = 'none';
+                statusTyping.style.display = 'block';
+                charCounter.style.display = 'block';
+                charCounter.innerText = `${currentLength} / 1.000`;
+            } else {
+                // Saat kosong
+                btnGenerate.classList.remove('ready');
+                statusEmpty.style.display = 'flex';
+                statusTyping.style.display = 'none';
+                charCounter.style.display = 'none';
+            }
         });
 
-        // Buka/Tutup Provider Menu
+        // LOGIKA BOTTOM SHEET & PROVIDER
+        const sheet = document.getElementById('settings-sheet');
+        const providerMenu = document.getElementById('provider-menu');
+
+        function toggleSheet() {
+            sheet.classList.toggle('active');
+            providerMenu.classList.remove('active');
+        }
+        
+        sheet.addEventListener('click', (e) => {
+            if(e.target === sheet) sheet.classList.remove('active');
+        });
+
         function toggleProviderMenu() {
             providerMenu.classList.toggle('active');
         }
 
-        // Ganti Provider
         function selectProvider(providerName) {
             document.getElementById('current-provider').innerText = providerName;
             
-            // Update Checkmark di Menu
             document.querySelectorAll('.provider-item').forEach(item => {
                 item.classList.remove('active');
                 if(item.innerText.includes(providerName)) {
                     item.classList.add('active');
                     item.innerHTML = `${providerName} <i class="fa-solid fa-check"></i>`;
                 } else {
-                    item.innerHTML = item.innerText.replace(' ', ''); // Hapus checkmark
+                    item.innerHTML = item.innerText.replace(' ', '');
                 }
             });
 
-            // Sembunyikan semua model, tampilkan yang dipilih
             document.getElementById('models-google').style.display = 'none';
             document.getElementById('models-elevenlabs').style.display = 'none';
             document.getElementById('models-gemini').style.display = 'none';
             
             document.getElementById(`models-${providerName.toLowerCase()}`).style.display = 'flex';
             providerMenu.classList.remove('active');
-
-            // Jika pilih ElevenLabs atau Gemini, munculkan Premium Modal (Simulasi)
-            if(providerName === 'ElevenLabs' || providerName === 'Gemini') {
-                setTimeout(showPremiumModal, 500);
-            }
         }
 
-        // Pilih Model Card
         function selectModel(element, voiceName) {
-            // Hapus active dari semua card di container yang sama
             const container = element.parentElement;
             container.querySelectorAll('.model-card').forEach(card => card.classList.remove('active'));
-            
-            // Tambah active ke card yang diklik
             element.classList.add('active');
-            
-            // Update nama voice di header
             document.getElementById('current-voice-name').innerText = voiceName;
         }
 
-        // Premium Modal
-        function showPremiumModal() { premiumModal.classList.add('active'); }
-        function closePremiumModal() { premiumModal.classList.remove('active'); }
+        // LOGIKA THICK SLIDER (WARNA FILL)
+        function updateSliderFill(slider) {
+            const percentage = ((slider.value - slider.min) / (slider.max - slider.min)) * 100;
+            slider.style.background = `linear-gradient(to right, #111 ${percentage}%, #E4E4E7 ${percentage}%)`;
+        }
 
-        // Slider Logic
-        document.getElementById('speed-slider').addEventListener('input', function() {
+        const speedSlider = document.getElementById('speed-slider');
+        const pitchSlider = document.getElementById('pitch-slider');
+
+        speedSlider.addEventListener('input', function() {
             document.getElementById('speed-val').innerText = parseFloat(this.value).toFixed(1) + 'x';
+            updateSliderFill(this);
         });
-        document.getElementById('pitch-slider').addEventListener('input', function() {
-            document.getElementById('pitch-val').innerText = this.value + '%';
-        });
-
-        // Project Menu Toggle
-        const projectMenu = document.getElementById('project-menu');
-        function toggleProjectMenu() { projectMenu.classList.toggle('active'); }
-        document.addEventListener('click', (e) => {
-            if(!e.target.closest('.header-right')) projectMenu.classList.remove('active');
-        });
-
-        // Generate Button & Char Counter Logic
-        const textInput = document.getElementById('main-textarea');
-        const btnGenerate = document.getElementById('btn-generate');
-        const charCounter = document.getElementById('char-counter');
         
-        textInput.addEventListener('input', function() {
-            const currentLength = this.value.length;
-            charCounter.innerText = `${currentLength} / 1.000`;
-            
-            if(this.value.trim().length > 0) {
-                btnGenerate.classList.add('ready');
-            } else {
-                btnGenerate.classList.remove('ready');
-            }
+        pitchSlider.addEventListener('input', function() {
+            document.getElementById('pitch-val').innerText = this.value + '%';
+            updateSliderFill(this);
         });
+
+        // Inisialisasi warna slider saat pertama kali dimuat
+        updateSliderFill(speedSlider);
+        updateSliderFill(pitchSlider);
     </script>
 </body>
 </html>
