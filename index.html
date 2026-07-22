@@ -364,6 +364,37 @@
         .modal-btn.whatsapp { background: #25D366; color: #FFF; }
         .hidden { display: none !important; }
         .hidden-menu { display: none !important; }
+
+        /* --- TAMBAHAN CSS MUSIC FEED & MINI PLAYER --- */
+        .music-section { margin-bottom: 24px; }
+        .music-header { display: flex; justify-content: space-between; align-items: center; padding: 0 20px 12px 20px; }
+        .music-title { font-size: 18px; font-weight: 700; color: #111; }
+        .music-more { font-size: 13px; color: #71717A; text-decoration: none; font-weight: 500; }
+        
+        .song-list { padding: 0 20px; display: flex; flex-direction: column; gap: 16px; }
+        .song-item { display: flex; align-items: center; gap: 12px; cursor: pointer; }
+        .song-cover { width: 56px; height: 56px; border-radius: 12px; background-size: cover; background-position: center; position: relative; flex-shrink: 0; }
+        .song-duration { position: absolute; bottom: 4px; left: 4px; background: rgba(0,0,0,0.6); color: white; font-size: 10px; padding: 2px 4px; border-radius: 4px; font-weight: 600; }
+        .song-info { flex: 1; overflow: hidden; }
+        .song-title-text { font-size: 15px; font-weight: 600; color: #111; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .song-artist-text { font-size: 13px; color: #71717A; display: flex; align-items: center; gap: 6px; }
+        .song-options { padding: 8px; color: #A1A1AA; font-size: 18px; cursor: pointer; }
+
+        .horizontal-scroll { display: flex; gap: 12px; padding: 0 20px; overflow-x: auto; scroll-snap-type: x mandatory; }
+        .horizontal-scroll::-webkit-scrollbar { display: none; }
+        .horizontal-scroll::after { content: ''; padding-right: 20px; }
+        .square-card { width: 140px; flex-shrink: 0; scroll-snap-align: start; text-decoration: none; }
+        .square-card-img { width: 140px; height: 140px; border-radius: 16px; background-size: cover; background-position: center; margin-bottom: 8px; }
+        .square-card-title { font-size: 14px; font-weight: 600; color: #111; }
+
+        /* MINI PLAYER */
+        .mini-player { position: fixed; bottom: 75px; left: 10px; right: 10px; background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border-radius: 16px; padding: 8px 12px; display: flex; align-items: center; gap: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); z-index: 90; transform: translateY(150%); transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        .mini-player.active { transform: translateY(0); }
+        .mp-cover { width: 40px; height: 40px; border-radius: 8px; background-size: cover; background-position: center; }
+        .mp-info { flex: 1; overflow: hidden; }
+        .mp-title { font-size: 14px; font-weight: 700; color: #111; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .mp-artist { font-size: 12px; color: #71717A; }
+        .mp-controls { display: flex; align-items: center; gap: 16px; color: #111; font-size: 20px; padding-right: 8px; }
     </style>
 </head>
 <body>
@@ -520,7 +551,7 @@
     </div>
 
     <!-- =================================================== -->
-    <!-- VIEW 3: LIBRARY                                     -->
+    <!-- VIEW 3: LIBRARY (MUSIC FEED)                        -->
     <!-- =================================================== -->
     <div id="view-library" class="app-view">
         <header class="native-header">
@@ -530,24 +561,54 @@
             </div>
         </header>
 
-        <div class="library-top-cards">
-            <a href="#" class="lib-card" style="background-image: url('https://images.unsplash.com/photo-1500462918059-b1a0cb512f1d?q=80&w=400&auto=format&fit=crop');">
-                <div class="lib-card-title">Liked</div>
-            </a>
-            <a href="#" class="lib-card" style="background-image: url('https://images.unsplash.com/photo-1571330735066-03aaa9429d89?q=80&w=400&auto=format&fit=crop');">
-                <div class="lib-card-title">Playlist</div>
-            </a>
+        <!-- Our Picks -->
+        <div class="music-section">
+            <div class="music-header">
+                <span class="music-title">Our Picks</span>
+                <a href="#" class="music-more">More <i class="fa-solid fa-chevron-right" style="font-size:10px;"></i></a>
+            </div>
+            <div class="song-list">
+                <div class="song-item" onclick="playDummySong('Saturday Lights', 'Mira Ardelia', 'https://images.unsplash.com/photo-1611162617474-5b21e879e113?q=80&w=100&auto=format&fit=crop')">
+                    <div class="song-cover" style="background-image: url('https://images.unsplash.com/photo-1611162617474-5b21e879e113?q=80&w=100&auto=format&fit=crop');">
+                        <span class="song-duration">2:10</span>
+                    </div>
+                    <div class="song-info">
+                        <div class="song-title-text">Saturday Lights</div>
+                        <div class="song-artist-text">Mira Ardelia</div>
+                        <div class="song-artist-text" style="font-size:11px; margin-top:2px;"><i class="fa-solid fa-play" style="font-size:8px;"></i> 5,2K</div>
+                    </div>
+                    <div class="song-options" onclick="event.stopPropagation(); document.getElementById('music-options-sheet').classList.add('active');"><i class="fa-solid fa-ellipsis-vertical"></i></div>
+                </div>
+                <div class="song-item" onclick="playDummySong('Coffee at Six', 'Reksa Maulana', 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?q=80&w=100&auto=format&fit=crop')">
+                    <div class="song-cover" style="background-image: url('https://images.unsplash.com/photo-1514525253161-7a46d19cd819?q=80&w=100&auto=format&fit=crop');">
+                        <span class="song-duration">2:40</span>
+                    </div>
+                    <div class="song-info">
+                        <div class="song-title-text">Coffee at Six</div>
+                        <div class="song-artist-text">Reksa Maulana</div>
+                        <div class="song-artist-text" style="font-size:11px; margin-top:2px;"><i class="fa-solid fa-play" style="font-size:8px;"></i> 1,4K</div>
+                    </div>
+                    <div class="song-options" onclick="event.stopPropagation(); document.getElementById('music-options-sheet').classList.add('active');"><i class="fa-solid fa-ellipsis-vertical"></i></div>
+                </div>
+            </div>
         </div>
 
-        <div class="section-title" style="margin-top: 10px; padding: 0 20px 15px 20px;">
-            <span style="font-size: 22px; font-weight: 700; color: #111;">My Tracks</span>
-            <a href="#" style="color: #111; font-size: 15px; font-weight: 600; text-decoration: none; display: flex; align-items: center; gap: 6px;"><i class="fa-solid fa-bars-staggered"></i> All</a>
-        </div>
-
-        <div class="empty-state-lib" style="margin-top: 40px;">
-            <i class="fa-solid fa-music empty-icon" style="font-size: 48px; color: #D4D4D8; margin-bottom: 20px;"></i>
-            <div class="empty-title" style="font-size: 16px; font-weight: 500; color: #71717A; margin-bottom: 8px;">No tracks yet.</div>
-            <div class="empty-desc" style="font-size: 15px; color: #A1A1AA;">Tap Create to generate your first track!</div>
+        <!-- For Every Mood -->
+        <div class="music-section">
+            <div class="music-header">
+                <span class="music-title">For Every Mood</span>
+                <a href="#" class="music-more">More <i class="fa-solid fa-chevron-right" style="font-size:10px;"></i></a>
+            </div>
+            <div class="horizontal-scroll">
+                <a href="#" class="square-card">
+                    <div class="square-card-img" style="background-image: url('https://images.unsplash.com/photo-1550745165-9bc0b252726f?q=80&w=200&auto=format&fit=crop');"></div>
+                    <div class="square-card-title">Morning Drive</div>
+                </a>
+                <a href="#" class="square-card">
+                    <div class="square-card-img" style="background-image: url('https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=200&auto=format&fit=crop');"></div>
+                    <div class="square-card-title">Road Trip</div>
+                </a>
+            </div>
         </div>
     </div>
 
@@ -608,6 +669,52 @@
             </div>
         </div>
         <iframe id="app-iframe" src="" style="flex: 1; width: 100%; border: none; background: #FFF;"></iframe>
+    </div>
+
+    <!-- =================================================== -->
+    <!-- MINI PLAYER (MUNCUL SAAT LAGU DIPUTAR)              -->
+    <!-- =================================================== -->
+    <div class="mini-player" id="global-mini-player">
+        <div class="mp-cover" id="mp-cover-img" style="background-image: url('');"></div>
+        <div class="mp-info">
+            <div class="mp-title" id="mp-title-text">Judul Lagu</div>
+            <div class="mp-artist" id="mp-artist-text">Nama Artis</div>
+        </div>
+        <div class="mp-controls">
+            <i class="fa-solid fa-backward-step" style="font-size: 16px;"></i>
+            <div class="mp-play-btn" id="mp-play-pause"><i class="fa-solid fa-pause"></i></div>
+            <i class="fa-solid fa-forward-step" style="font-size: 16px;"></i>
+        </div>
+    </div>
+
+    <!-- BOTTOM SHEET: MUSIC OPTIONS -->
+    <div class="bottom-sheet-overlay" id="music-options-sheet" onclick="this.classList.remove('active')">
+        <div class="bottom-sheet" onclick="event.stopPropagation()" style="height: auto; padding-bottom: 20px;">
+            <div class="sheet-drag-handle"></div>
+            
+            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 20px; padding: 0 10px;">
+                <div style="width: 48px; height: 48px; border-radius: 8px; background-image: url('https://images.unsplash.com/photo-1611162617474-5b21e879e113?q=80&w=100&auto=format&fit=crop'); background-size: cover;"></div>
+                <div>
+                    <div style="font-size: 16px; font-weight: 700; color: #111;">Saturday Lights</div>
+                    <div style="font-size: 13px; color: #71717A;">Mira Ardelia</div>
+                </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px;">
+                <div style="background: #F4F4F5; border-radius: 16px; padding: 16px; display: flex; flex-direction: column; align-items: center; gap: 8px; font-weight: 600; font-size: 14px;">
+                    <i class="fa-regular fa-heart" style="font-size: 24px;"></i> Like
+                </div>
+                <div style="background: #F4F4F5; border-radius: 16px; padding: 16px; display: flex; flex-direction: column; align-items: center; gap: 8px; font-weight: 600; font-size: 14px;">
+                    <i class="fa-solid fa-list-ul" style="font-size: 24px;"></i> Add to playlist
+                </div>
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 4px;">
+                <div style="display: flex; align-items: center; gap: 16px; padding: 16px; font-weight: 500; font-size: 16px;"><i class="fa-solid fa-rotate" style="width: 24px;"></i> Remix</div>
+                <div style="display: flex; align-items: center; gap: 16px; padding: 16px; font-weight: 500; font-size: 16px;"><i class="fa-solid fa-wand-magic-sparkles" style="width: 24px;"></i> Use song style</div>
+                <div style="display: flex; align-items: center; gap: 16px; padding: 16px; font-weight: 500; font-size: 16px;"><i class="fa-regular fa-thumbs-down" style="width: 24px;"></i> Dislike Song</div>
+            </div>
+        </div>
     </div>
 
     <!-- =================================================== -->
@@ -818,6 +925,19 @@
         function closeTool() {
             document.querySelector('.bottom-nav').style.display = 'flex';
             switchView('view-home', document.querySelectorAll('.nav-item')[0]);
+        }
+
+        // FUNGSI DUMMY UNTUK MEMUNCULKAN MINI PLAYER
+        function playDummySong(title, artist, coverUrl) {
+            document.getElementById('mp-title-text').innerText = title;
+            document.getElementById('mp-artist-text').innerText = artist;
+            document.getElementById('mp-cover-img').style.backgroundImage = `url('${coverUrl}')`;
+            
+            const miniPlayer = document.getElementById('global-mini-player');
+            miniPlayer.classList.add('active');
+            
+            // Ubah icon play jadi pause
+            document.getElementById('mp-play-pause').innerHTML = '<i class="fa-solid fa-pause"></i>';
         }
 
         function shareProfile() {
