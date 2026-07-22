@@ -168,11 +168,39 @@
         .nav-item span { font-size: 0.65rem; font-weight: 600; margin-top: 2px; }
         .nav-item.active { color: #111111; }
         .nav-item.active i { transform: scale(1.1); color: #111111; }
-        .nav-creator i { background: linear-gradient(135deg, #D95040, #F59E0B); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        
+        /* IKON AVATAR DI MENU BAWAH (DINAMIS) */
+        .nav-avatar {
+            width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            color: white; font-size: 0.8rem; font-weight: 700; overflow: hidden; border: 2px solid transparent; transition: 0.2s;
+        }
+        .nav-item.active .nav-avatar { border-color: #111; transform: scale(1.1); }
+        .nav-avatar img { width: 100%; height: 100%; object-fit: cover; }
 
         /* =================================================== */
-        /* 8. PROFILE VIEW                                     */
+        /* 8. PROFILE VIEW & EDIT PROFILE (SONNA STYLE)        */
         /* =================================================== */
+        .edit-profile-header { padding: 15px 20px; display: flex; align-items: center; }
+        .edit-profile-content { padding: 20px; display: flex; flex-direction: column; align-items: center; height: calc(100% - 60px); }
+        .edit-avatar-large {
+            width: 100px; height: 100px; border-radius: 50%; color: white; font-size: 3rem; font-weight: 700;
+            display: flex; align-items: center; justify-content: center; margin-top: 20px; overflow: hidden;
+        }
+        .edit-avatar-large img { width: 100%; height: 100%; object-fit: cover; }
+        .change-pic-text { color: #111; font-weight: 600; font-size: 0.9rem; margin-top: 16px; cursor: pointer; }
+        
+        .input-group { width: 100%; margin-top: 40px; }
+        .input-label { font-size: 0.85rem; color: #71717A; margin-bottom: 8px; display: block; text-align: center; }
+        .clean-input {
+            width: 100%; border: none; border-bottom: 2px solid #E4E4E7; padding: 10px 0;
+            font-size: 1.2rem; text-align: center; outline: none; font-weight: 600; color: #111; transition: 0.2s; background: transparent;
+        }
+        .clean-input:focus { border-bottom-color: #111; }
+        .btn-save-profile {
+            background: #111; color: white; width: 100%; padding: 16px; border-radius: 99px;
+            font-weight: 600; font-size: 1.05rem; margin-top: auto; margin-bottom: 20px; border: none; cursor: pointer;
+        }
+        .btn-save-profile:active { transform: scale(0.98); }
         .profile-header {
             background: linear-gradient(135deg, #1A1449 0%, #7B2956 50%, #D95040 100%);
             padding: 60px 20px 40px 20px; display: flex; flex-direction: column; align-items: center; color: white;
@@ -308,7 +336,8 @@
                 <div class="profile-menu-left"><i class="fa-solid fa-crown" style="color:#F59E0B;"></i> Current plan</div>
                 <div class="profile-menu-right">Upgrade <i class="fa-solid fa-chevron-right"></i></div>
             </div>
-            <div class="profile-menu-item" id="btn-trigger-profile">
+            <!-- Tombol ini sekarang membuka view-edit-profile -->
+            <div class="profile-menu-item" onclick="switchView('view-edit-profile', document.querySelectorAll('.nav-item')[4])">
                 <div class="profile-menu-left"><i class="fa-solid fa-user-pen"></i> Edit Profile</div>
                 <div class="profile-menu-right"><i class="fa-solid fa-chevron-right"></i></div>
             </div>
@@ -403,7 +432,8 @@
             <i class="fa-solid fa-layer-group"></i><span>Library</span>
         </a>
         <a href="#" class="nav-item" onclick="switchView('view-profile', this)">
-            <i class="fa-solid fa-circle nav-creator"></i><span>Creator</span>
+            <div class="nav-avatar" id="bottom-nav-avatar" style="background: #7B2956;">U</div>
+            <span>Creator</span>
         </a>
     </nav>
 
@@ -782,37 +812,114 @@
                 });
             }
 
+            // Array warna estetik untuk background avatar user
+            const avatarColors = ['#D95040', '#7B2956', '#1A1449', '#059669', '#0284C7', '#7C3AED', '#D97706', '#BE123C'];
+
             function drawUserProfileUI(name, username, photoBase64, tier) {
                 const displayName = name || 'User';
                 const displayHandle = username ? '@' + username : userEmail;
                 const initial = displayName.charAt(0).toUpperCase();
+                
+                // Pilih warna berdasarkan huruf pertama nama (agar konsisten per user)
+                const colorIndex = initial.charCodeAt(0) % avatarColors.length;
+                const userColor = avatarColors[colorIndex];
 
                 if(uiUsername) uiUsername.innerText = displayName;
                 if(uiPlan) uiPlan.innerText = displayHandle;
                 
-                if(uiAvatar) {
-                    if(photoBase64) uiAvatar.innerHTML = `<img src="${photoBase64}" alt="Avatar">`;
-                    else uiAvatar.innerHTML = initial;
-                }
+                // Update Input di Halaman Edit Profile Baru
+                const editNameInput = document.getElementById('edit-name-input');
+                if(editNameInput) editNameInput.value = displayName;
                 
-                if(topUserAvatar) {
-                    if(photoBase64) topUserAvatar.innerHTML = `<img src="${photoBase64}" alt="Avatar">`;
-                    else topUserAvatar.innerHTML = initial;
-                    topUserAvatar.classList.remove('hidden');
-                }
-                
-                const topUserAvatarNew = document.getElementById('top-user-avatar-new');
-                if(topUserAvatarNew) {
-                    if(photoBase64) topUserAvatarNew.innerHTML = `<img src="${photoBase64}" alt="Avatar">`;
-                    else topUserAvatarNew.innerHTML = initial;
-                    topUserAvatarNew.classList.remove('hidden');
-                }
+                // Fungsi helper untuk update avatar di semua tempat
+                const updateAvatarEl = (elId) => {
+                    const el = document.getElementById(elId);
+                    if(el) {
+                        if(photoBase64) {
+                            el.innerHTML = `<img src="${photoBase64}" alt="Avatar">`;
+                            el.style.background = 'transparent';
+                        } else {
+                            el.innerHTML = initial;
+                            el.style.background = userColor;
+                        }
+                        el.classList.remove('hidden');
+                    }
+                };
+
+                updateAvatarEl('ui-avatar');
+                updateAvatarEl('top-user-avatar');
+                updateAvatarEl('top-user-avatar-new');
+                updateAvatarEl('bottom-nav-avatar'); // Ikon Creator di menu bawah
+                updateAvatarEl('edit-ui-avatar');    // Avatar besar di halaman edit
 
                 const userTierBadge = document.getElementById('user-tier-badge');
                 if (userTierBadge) {
                     const textMap = { basic: 'Basic Plan', pro: 'Pro Plan', max_monthly: 'Max Plan', max_lifetime: 'Max Plan' };
                     userTierBadge.textContent = textMap[tier] || 'Basic Plan';
                 }
+            }
+
+            // LOGIKA SAVE PROFILE BARU (NATIVE STYLE)
+            let uploadedPhotoBase64 = "";
+            const hiddenPhotoInput = document.getElementById('hidden-profile-photo-input');
+            
+            if(hiddenPhotoInput) {
+                hiddenPhotoInput.addEventListener('change', function() {
+                    const file = this.files[0];
+                    if (file) {
+                        const reader = new FileReader();
+                        reader.onload = function(e) {
+                            const img = new Image();
+                            img.onload = function() {
+                                const canvas = document.createElement('canvas');
+                                canvas.width = 200; canvas.height = 200;
+                                const ctx = canvas.getContext('2d');
+                                ctx.drawImage(img, 0, 0, 200, 200);
+                                uploadedPhotoBase64 = canvas.toDataURL('image/jpeg', 0.8);
+                                
+                                // Langsung preview di halaman edit
+                                const editAvatar = document.getElementById('edit-ui-avatar');
+                                if(editAvatar) {
+                                    editAvatar.innerHTML = `<img src="${uploadedPhotoBase64}" alt="Avatar">`;
+                                    editAvatar.style.background = 'transparent';
+                                }
+                            };
+                            img.src = e.target.result;
+                        };
+                        reader.readAsDataURL(file);
+                    }
+                });
+            }
+
+            const btnSaveProfileNative = document.getElementById('btn-save-profile-native');
+            if(btnSaveProfileNative) {
+                btnSaveProfileNative.addEventListener('click', async () => {
+                    const nameVal = document.getElementById('edit-name-input').value.trim();
+                    if (!nameVal) return;
+
+                    btnSaveProfileNative.innerText = "Saving...";
+                    btnSaveProfileNative.disabled = true;
+
+                    const currentRealId = localStorage.getItem('kreaverse_user_id');
+                    if (currentRealId && db) {
+                        setDoc(doc(db, 'users', currentRealId), {
+                            nama: nameVal, name: nameVal, photo: uploadedPhotoBase64
+                        }, { merge: true }).then(() => {
+                            localStorage.setItem('kreaverse_user_name', nameVal);
+                            drawUserProfileUI(nameVal, '', uploadedPhotoBase64, localStorage.getItem('kreaverse_tier') || 'basic');
+                            
+                            // Kembali ke halaman profil
+                            switchView('view-profile', document.querySelectorAll('.nav-item')[4]);
+                            showIphoneNotif('Success', 'Profile updated successfully', 'fa-user-check');
+                        }).catch(err => {
+                            console.error(err);
+                            showIphoneNotif('Error', 'Failed to save profile', 'fa-triangle-exclamation');
+                        }).finally(() => {
+                            btnSaveProfileNative.innerText = "Save";
+                            btnSaveProfileNative.disabled = false;
+                        });
+                    }
+                });
             }
 
             function initUser() {
