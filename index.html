@@ -181,32 +181,63 @@
         .nav-avatar img { width: 100%; height: 100%; object-fit: cover; }
 
         /* =================================================== */
-        /* 8. PROFILE VIEW & EDIT PROFILE (SONNA STYLE)        */
+        /* 8. CREATOR VIEW (SONNA STYLE)                       */
         /* =================================================== */
-        .profile-header {
-            background: linear-gradient(135deg, #1A1449 0%, #7B2956 50%, #D95040 100%);
-            padding: 60px 20px 40px 20px; display: flex; flex-direction: column; align-items: center; color: white;
-            border-bottom-left-radius: 32px; border-bottom-right-radius: 32px;
+        .creator-view {
+            background: #FFFFFF;
+            background-image: radial-gradient(circle at 80% -10%, rgba(217, 80, 64, 0.3) 0%, transparent 40%), 
+                              radial-gradient(circle at 20% 10%, rgba(123, 41, 86, 0.15) 0%, transparent 40%);
+            height: 100%; padding: 20px; overflow-y: auto;
         }
-        .profile-avatar-big {
-            width: 90px; height: 90px; border-radius: 50%; background: #FFFFFF; color: #7B2956;
-            font-size: 2.5rem; font-weight: 800; display: flex; align-items: center; justify-content: center;
-            margin-bottom: 16px; border: 4px solid rgba(255,255,255,0.3); overflow: hidden;
+        .creator-top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px; margin-top: 10px; }
+        .creator-credits {
+            background: rgba(255,255,255,0.8); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+            padding: 10px 16px; border-radius: 99px; font-weight: 600; font-size: 0.95rem; color: #111;
+            display: flex; align-items: center; gap: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.05);
         }
-        .profile-avatar-big img { width: 100%; height: 100%; object-fit: cover; }
-        .profile-name { font-size: 1.4rem; font-weight: 700; margin-bottom: 4px; }
-        .profile-email { font-size: 0.9rem; opacity: 0.8; margin-bottom: 12px; }
-        .profile-credits { background: rgba(0,0,0,0.2); padding: 6px 16px; border-radius: 99px; font-size: 0.8rem; font-weight: 600; backdrop-filter: blur(5px); }
+        .creator-actions { display: flex; gap: 12px; }
+        .creator-icon-btn {
+            width: 42px; height: 42px; border-radius: 50%; background: rgba(255,255,255,0.8); backdrop-filter: blur(10px);
+            display: flex; align-items: center; justify-content: center; font-size: 1.1rem; color: #111;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05); cursor: pointer; transition: 0.2s;
+        }
+        .creator-icon-btn:active { transform: scale(0.95); }
 
-        .profile-menu-list { padding: 20px; }
+        .creator-profile-row { display: flex; align-items: center; margin-bottom: 40px; }
+        .creator-avatar {
+            width: 85px; height: 85px; border-radius: 50%; background: #2E7D32; color: white;
+            font-size: 2.5rem; font-weight: 500; display: flex; align-items: center; justify-content: center;
+            margin-right: 16px; overflow: hidden; flex-shrink: 0;
+        }
+        .creator-avatar img { width: 100%; height: 100%; object-fit: cover; }
+        .creator-info { flex: 1; }
+        .creator-name { font-size: 1.4rem; font-weight: 700; color: #111; margin-bottom: 2px; }
+        .creator-handle { font-size: 0.95rem; color: #71717A; }
+        .creator-edit-btn {
+            background: #F4F4F5; padding: 8px 16px; border-radius: 99px; font-size: 0.85rem; font-weight: 600;
+            display: flex; align-items: center; gap: 6px; color: #111; cursor: pointer;
+        }
+
+        .creator-section-title { font-size: 1.2rem; font-weight: 700; color: #111; margin-bottom: 20px; }
+        
+        .creator-empty { display: flex; flex-direction: column; align-items: center; justify-content: center; margin-top: 80px; }
+        .creator-empty h4 { font-size: 1.1rem; color: #71717A; margin-bottom: 6px; font-weight: 600; }
+        .creator-empty p { font-size: 0.9rem; color: #A1A1AA; margin-bottom: 24px; }
+        .btn-create-black {
+            background: #111; color: #FFF; padding: 14px 32px; border-radius: 99px;
+            font-weight: 600; font-size: 1.05rem; display: flex; align-items: center; gap: 10px; cursor: pointer;
+        }
+
+        /* MENU SETTINGS (BOTTOM SHEET) */
+        .profile-menu-list { padding: 0; }
         .profile-menu-item {
             display: flex; align-items: center; justify-content: space-between; padding: 18px 0;
-            border-bottom: 1px solid #F4F4F5; color: #111; font-weight: 600; font-size: 1rem; cursor: pointer;
+            border-bottom: 1px solid #E4E4E7; color: #111; font-weight: 600; font-size: 1rem; cursor: pointer;
         }
         .profile-menu-item:last-child { border-bottom: none; }
         .profile-menu-left { display: flex; align-items: center; gap: 14px; }
-        .profile-menu-left i { width: 24px; text-align: center; color: #8E8E93; font-size: 1.2rem; }
-        .profile-menu-right { color: #C7C7CC; font-size: 1rem; display: flex; align-items: center; gap: 8px; }
+        .profile-menu-left i { width: 24px; text-align: center; color: #71717A; font-size: 1.2rem; }
+        .profile-menu-right { color: #A1A1AA; font-size: 1rem; display: flex; align-items: center; gap: 8px; }
 
         /* HALAMAN EDIT PROFILE */
         .edit-profile-header { padding: 15px 20px; display: flex; align-items: center; }
@@ -308,62 +339,81 @@
     </div>
 
     <!-- =================================================== -->
-    <!-- VIEW 2: PROFILE & SETTINGS                          -->
+    <!-- VIEW 2: CREATOR VIEW (SONNA STYLE)                  -->
     <!-- =================================================== -->
-    <div id="view-profile" class="app-view">
-        <div class="profile-header">
-            <div class="profile-avatar-big" id="ui-avatar">P</div>
-            <div class="profile-name" id="ui-username">Pengguna</div>
-            <div class="profile-email" id="ui-plan">Belum Masuk</div>
-            <div class="profile-credits" id="user-tier-badge">Basic Plan</div>
+    <div id="view-profile" class="app-view creator-view">
+        
+        <!-- TOP BAR -->
+        <div class="creator-top-bar">
+            <div class="creator-credits">
+                <i class="fa-solid fa-sparkles"></i> <span id="creator-credits-text">9.960</span>
+            </div>
+            <div class="creator-actions">
+                <div class="creator-icon-btn"><i class="fa-solid fa-arrow-up-from-bracket"></i></div>
+                <div class="creator-icon-btn" id="inbox-link"><i class="fa-regular fa-bell"></i></div>
+                <div class="creator-icon-btn" onclick="document.getElementById('main-settings-sheet').classList.add('active')">
+                    <i class="fa-solid fa-bars-staggered"></i>
+                </div>
+            </div>
         </div>
 
-        <div class="profile-menu-list">
-            <a href="/berkas/" class="profile-menu-item" style="text-decoration:none;">
-                <div class="profile-menu-left"><i class="fa-solid fa-folder-open"></i> Berkas Saya</div>
-                <div class="profile-menu-right"><i class="fa-solid fa-chevron-right"></i></div>
-            </a>
-            <a href="/inbox/" class="profile-menu-item auth-required" id="inbox-link" style="text-decoration:none;">
-                <div class="profile-menu-left"><i class="fa-solid fa-bell"></i> Inbox Pengumuman</div>
-                <div class="profile-menu-right">
-                    <span id="notif-badge" class="hidden" style="background:#FF3B30; color:white; font-size:0.7rem; padding:2px 6px; border-radius:10px; margin-right:5px;">0</span>
-                    <i class="fa-solid fa-chevron-right"></i>
-                </div>
-            </a>
+        <!-- PROFILE INFO -->
+        <div class="creator-profile-row">
+            <div class="creator-avatar" id="creator-ui-avatar">P</div>
+            <div class="creator-info">
+                <div class="creator-name" id="creator-ui-name">Pengguna</div>
+                <div class="creator-handle" id="creator-ui-handle">@pengguna</div>
+            </div>
+            <div class="creator-edit-btn" onclick="switchView('view-edit-profile', document.querySelectorAll('.nav-item')[4])">
+                <i class="fa-solid fa-pen"></i> Edit
+            </div>
+        </div>
 
-            <!-- TOMBOL INSTALL PWA (NATIVE STYLE) -->
-            <div class="profile-menu-item" id="install-pwa-btn" onclick="installPWA()">
-                <div class="profile-menu-left"><i class="fa-solid fa-download" style="color:#34C759;"></i> Install Aplikasi</div>
-                <div class="profile-menu-right"><i class="fa-solid fa-chevron-right"></i></div>
-            </div>
+        <!-- GENERATIONS SECTION -->
+        <div class="creator-section-title">Generations</div>
+        
+        <div class="creator-empty">
+            <h4>Nothing created yet</h4>
+            <p>Start creating your first idea now</p>
+            <button class="btn-create-black" onclick="document.getElementById('create-sheet').classList.add('active')">
+                <i class="fa-solid fa-plus"></i> Create
+            </button>
+        </div>
+    </div>
+
+    <!-- BOTTOM SHEET: MAIN SETTINGS (MENU LAMA DIPINDAH KESINI) -->
+    <div class="bottom-sheet-overlay" id="main-settings-sheet" onclick="this.classList.remove('active')">
+        <div class="bottom-sheet" onclick="event.stopPropagation()" style="height: auto; max-height: 85dvh; overflow-y: auto;">
+            <div class="sheet-drag-handle"></div>
+            <div class="sheet-title" style="margin-bottom: 20px;">Settings</div>
             
-            <div class="profile-menu-item" id="btn-trigger-vip">
-                <div class="profile-menu-left"><i class="fa-solid fa-crown" style="color:#F59E0B;"></i> Current plan</div>
-                <div class="profile-menu-right">Upgrade <i class="fa-solid fa-chevron-right"></i></div>
-            </div>
-            
-            <!-- TOMBOL EDIT PROFILE (MEMBUKA VIEW BARU) -->
-            <div class="profile-menu-item" onclick="switchView('view-edit-profile', document.querySelectorAll('.nav-item')[4])">
-                <div class="profile-menu-left"><i class="fa-solid fa-user-pen"></i> Edit Profile</div>
-                <div class="profile-menu-right"><i class="fa-solid fa-chevron-right"></i></div>
-            </div>
-            
-            <div class="profile-menu-item" id="btn-trigger-help">
-                <div class="profile-menu-left"><i class="fa-solid fa-circle-question"></i> FAQ & Help</div>
-                <div class="profile-menu-right"><i class="fa-solid fa-chevron-right"></i></div>
-            </div>
-            <div class="profile-menu-item" id="btn-trigger-feedback">
-                <div class="profile-menu-left"><i class="fa-solid fa-comment-dots"></i> Send Feedback</div>
-                <div class="profile-menu-right"><i class="fa-solid fa-chevron-right"></i></div>
-            </div>
-            
-            <div style="height: 20px;"></div>
-            
-            <div class="profile-menu-item btn-masuk-notif" id="auth-action-btn">
-                <div class="profile-menu-left"><i class="fa-solid fa-arrow-right-to-bracket"></i> Log In</div>
-            </div>
-            <div class="profile-menu-item hidden-menu" id="logout-action-btn" style="color: #FF3B30;">
-                <div class="profile-menu-left"><i class="fa-solid fa-power-off" style="color: #FF3B30;"></i> Log Out</div>
+            <div class="profile-menu-list">
+                <a href="/berkas/" class="profile-menu-item" style="text-decoration:none;">
+                    <div class="profile-menu-left"><i class="fa-solid fa-folder-open"></i> Berkas Saya</div>
+                    <div class="profile-menu-right"><i class="fa-solid fa-chevron-right"></i></div>
+                </a>
+                <div class="profile-menu-item" id="install-pwa-btn" onclick="installPWA()">
+                    <div class="profile-menu-left"><i class="fa-solid fa-download" style="color:#34C759;"></i> Install Aplikasi</div>
+                    <div class="profile-menu-right"><i class="fa-solid fa-chevron-right"></i></div>
+                </div>
+                <div class="profile-menu-item" id="btn-trigger-vip">
+                    <div class="profile-menu-left"><i class="fa-solid fa-crown" style="color:#F59E0B;"></i> Current plan</div>
+                    <div class="profile-menu-right">Upgrade <i class="fa-solid fa-chevron-right"></i></div>
+                </div>
+                <div class="profile-menu-item" id="btn-trigger-help">
+                    <div class="profile-menu-left"><i class="fa-solid fa-circle-question"></i> FAQ & Help</div>
+                    <div class="profile-menu-right"><i class="fa-solid fa-chevron-right"></i></div>
+                </div>
+                <div class="profile-menu-item" id="btn-trigger-feedback">
+                    <div class="profile-menu-left"><i class="fa-solid fa-comment-dots"></i> Send Feedback</div>
+                    <div class="profile-menu-right"><i class="fa-solid fa-chevron-right"></i></div>
+                </div>
+                <div class="profile-menu-item btn-masuk-notif" id="auth-action-btn">
+                    <div class="profile-menu-left"><i class="fa-solid fa-arrow-right-to-bracket"></i> Log In</div>
+                </div>
+                <div class="profile-menu-item hidden-menu" id="logout-action-btn" style="color: #FF3B30;">
+                    <div class="profile-menu-left"><i class="fa-solid fa-power-off" style="color: #FF3B30;"></i> Log Out</div>
+                </div>
             </div>
         </div>
     </div>
@@ -807,21 +857,22 @@
 
             function drawUserProfileUI(name, username, photoBase64, tier) {
                 const displayName = name || 'User';
-                const displayHandle = username ? '@' + username : userEmail;
+                // Jika username kosong, pakai nama depan saja untuk handle
+                const displayHandle = username ? '@' + username : '@' + displayName.split(' ')[0].toLowerCase();
                 const initial = displayName.charAt(0).toUpperCase();
                 
-                // Pilih warna berdasarkan huruf pertama nama (agar konsisten per user)
                 const colorIndex = initial.charCodeAt(0) % avatarColors.length;
                 const userColor = avatarColors[colorIndex];
 
-                if(uiUsername) uiUsername.innerText = displayName;
-                if(uiPlan) uiPlan.innerText = displayHandle;
+                // Update Teks di Creator View Baru
+                const creatorName = document.getElementById('creator-ui-name');
+                const creatorHandle = document.getElementById('creator-ui-handle');
+                if(creatorName) creatorName.innerText = displayName;
+                if(creatorHandle) creatorHandle.innerText = displayHandle;
                 
-                // Update Input di Halaman Edit Profile Baru
                 const editNameInput = document.getElementById('edit-name-input');
                 if(editNameInput) editNameInput.value = displayName;
                 
-                // Fungsi helper untuk update avatar di semua tempat
                 const updateAvatarEl = (elId) => {
                     const el = document.getElementById(elId);
                     if(el) {
@@ -836,17 +887,11 @@
                     }
                 };
 
-                updateAvatarEl('ui-avatar');
+                updateAvatarEl('creator-ui-avatar'); // Avatar di Creator View
                 updateAvatarEl('top-user-avatar');
                 updateAvatarEl('top-user-avatar-new');
-                updateAvatarEl('bottom-nav-avatar'); // Ikon Creator di menu bawah
-                updateAvatarEl('edit-ui-avatar');    // Avatar besar di halaman edit
-
-                const userTierBadge = document.getElementById('user-tier-badge');
-                if (userTierBadge) {
-                    const textMap = { basic: 'Basic Plan', pro: 'Pro Plan', max_monthly: 'Max Plan', max_lifetime: 'Max Plan' };
-                    userTierBadge.textContent = textMap[tier] || 'Basic Plan';
-                }
+                updateAvatarEl('bottom-nav-avatar'); 
+                updateAvatarEl('edit-ui-avatar');    
             }
 
             // LOGIKA SAVE PROFILE BARU (NATIVE STYLE)
