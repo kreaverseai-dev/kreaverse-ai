@@ -42,10 +42,11 @@
         .text-input::placeholder { color: #A1A1AA; }
 
         /* ========================================== */
-        /* BOTTOM BAR (CREDITS)                       */
+        /* BOTTOM BAR (CREDITS & GENERATE BTN)        */
         /* ========================================== */
         .bottom-bar {
-            padding: 15px 20px; display: flex; justify-content: space-between; align-items: center;
+            padding: 15px 20px 25px 20px; display: flex; flex-direction: column; gap: 12px;
+            background: #FFF; border-top: 1px solid #F4F4F5;
         }
         .credits-pill {
             background: #111; color: white; padding: 10px 16px; border-radius: 99px;
@@ -53,6 +54,33 @@
         }
         .credits-pill i { color: #A1A1AA; }
         .badge-free { font-weight: 700; }
+        
+        .action-row { display: flex; gap: 12px; align-items: center; }
+        .btn-settings-circle {
+            width: 50px; height: 50px; border-radius: 50%; background: #F4F4F5;
+            display: flex; align-items: center; justify-content: center; font-size: 1.2rem; color: #111; flex-shrink: 0; transition: 0.2s;
+        }
+        .btn-settings-circle:active { transform: scale(0.95); background: #E4E4E7; }
+        .btn-generate {
+            flex: 1; height: 50px; border-radius: 99px; background: #F4F4F5; color: #A1A1AA;
+            font-weight: 700; font-size: 1.05rem; display: flex; align-items: center; justify-content: center; gap: 8px;
+            transition: 0.2s; pointer-events: none;
+        }
+        .btn-generate.ready { background: #111; color: #FFF; pointer-events: auto; }
+        .btn-generate.ready:active { transform: scale(0.98); }
+
+        /* ========================================== */
+        /* SLIDER RANGE (SPEED & PITCH)               */
+        /* ========================================== */
+        .custom-slider {
+            -webkit-appearance: none; width: 100%; height: 6px; background: #E4E4E7; 
+            border-radius: 5px; outline: none; margin-top: 10px; margin-bottom: 15px;
+        }
+        .custom-slider::-webkit-slider-thumb {
+            -webkit-appearance: none; appearance: none; width: 22px; height: 22px; 
+            border-radius: 50%; background: #111; cursor: pointer; 
+            border: 3px solid #FFF; box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+        }
 
         /* ========================================== */
         /* BOTTOM SHEET (SETTINGS)                    */
@@ -159,6 +187,10 @@
             </div>
             <span class="badge-free">Free</span>
         </div>
+        <div class="action-row">
+            <button class="btn-settings-circle" onclick="toggleSheet()"><i class="fa-solid fa-sliders"></i></button>
+            <button class="btn-generate" id="btn-generate"><i class="fa-solid fa-wand-magic-sparkles"></i> Generate</button>
+        </div>
     </div>
 
     <!-- BOTTOM SHEET (SETTINGS) -->
@@ -228,24 +260,18 @@
                 </div>
             </div>
 
-            <!-- CONTROLS -->
+            <!-- CONTROLS (SLIDERS) -->
             <div class="control-row">
                 <div class="control-label">Speed <i class="fa-solid fa-circle-info"></i></div>
-                <div class="control-value">1.0x</div>
+                <div class="control-value" id="speed-val">1.0x</div>
             </div>
-            <div class="segmented-control">
-                <div class="segment-btn active">0.5x</div>
-                <div class="segment-btn">2.0x</div>
-            </div>
+            <input type="range" class="custom-slider" id="speed-slider" min="0.5" max="2.0" step="0.1" value="1.0">
 
             <div class="control-row">
                 <div class="control-label">Pitch <i class="fa-solid fa-circle-info"></i></div>
-                <div class="control-value">50%</div>
+                <div class="control-value" id="pitch-val">50%</div>
             </div>
-            <div class="segmented-control">
-                <div class="segment-btn active">Low</div>
-                <div class="segment-btn">High</div>
-            </div>
+            <input type="range" class="custom-slider" id="pitch-slider" min="0" max="100" step="1" value="50">
         </div>
     </div>
 
@@ -323,6 +349,25 @@
         // Premium Modal
         function showPremiumModal() { premiumModal.classList.add('active'); }
         function closePremiumModal() { premiumModal.classList.remove('active'); }
+
+        // Slider Logic
+        document.getElementById('speed-slider').addEventListener('input', function() {
+            document.getElementById('speed-val').innerText = parseFloat(this.value).toFixed(1) + 'x';
+        });
+        document.getElementById('pitch-slider').addEventListener('input', function() {
+            document.getElementById('pitch-val').innerText = this.value + '%';
+        });
+
+        // Generate Button Logic (Aktif jika ada teks)
+        const textInput = document.querySelector('.text-input');
+        const btnGenerate = document.getElementById('btn-generate');
+        textInput.addEventListener('input', function() {
+            if(this.value.trim().length > 0) {
+                btnGenerate.classList.add('ready');
+            } else {
+                btnGenerate.classList.remove('ready');
+            }
+        });
     </script>
 </body>
 </html>
