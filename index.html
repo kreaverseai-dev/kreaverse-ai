@@ -404,31 +404,71 @@
         </div>
 
         <div class="chips-container">
-            <a href="#" onclick="openTool('/chat/index.html', 0, 'Text To Speech')" class="chip-item"><i class="fa-solid fa-bars-staggered"></i> Text To Speech</a>
+            <a href="#" onclick="openTool('/chat/index.html', 0, 'Text To Speech')" class="chip-item">
+                <!-- Ikon Custom SVG T & Gelombang Suara -->
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M2 6h8v2H7v10H5V8H2V6z"/>
+                    <rect x="12" y="8" width="2" height="8" rx="1"/>
+                    <rect x="16" y="5" width="2" height="14" rx="1"/>
+                    <rect x="20" y="10" width="2" height="4" rx="1"/>
+                </svg>
+                Text To Speech
+            </a>
             <a href="#" onclick="openTool('/media-ai/index.html', 0, 'Image Studio')" class="chip-item"><i class="fa-regular fa-image"></i> Image</a>
-            <a href="#" onclick="openTool('/lyricshot/index.html', 0, 'Video Generator')" class="chip-item"><i class="fa-solid fa-video"></i> Video</a>
+            <a href="#" onclick="openTool('/lyricshot/index.html', 0, 'Video Generator')" class="chip-item"><i class="fa-solid fa-clapperboard"></i> Video</a>
             <a href="#" onclick="openTool('/habirmx/index.html', 0, 'Music AI')" class="chip-item"><i class="fa-solid fa-music"></i> Music</a>
         </div>
 
         <div class="promo-carousel" id="main-promo-carousel">
-            <a href="#" onclick="openTool('/chat/index.html', 0, 'Text To Speech')" class="promo-card">
+            <!-- Slide 1: Web App -->
+            <a href="#" onclick="openTool('/media-ai/index.html', 0, 'Flixa Web App')" class="promo-card">
                 <div class="promo-card-content">
-                    <div class="promo-card-title">Hyper-Realistic Voice AI</div>
-                    <div class="promo-card-desc">Turn any script into emotional, studio-grade speech with lifelike voices...</div>
+                    <div class="promo-card-title">Flixa Web App</div>
+                    <div class="promo-card-desc">flixa.app is now available! Access your creative studio on you...</div>
                 </div>
-                <div class="promo-card-image" style="background-image: url('https://images.unsplash.com/photo-1620641788421-7a1c342ea42e?q=80&w=400&auto=format&fit=crop');"></div>
+                <div class="promo-card-image" style="background-image: url('https://images.unsplash.com/photo-1517336714731-489689fd1ca8?q=80&w=400&auto=format&fit=crop');"></div>
             </a>
-            <a href="#" onclick="openTool('/habirmx/index.html', 0, 'Music AI')" class="promo-card">
+            <!-- Slide 2: Go Pro -->
+            <a href="#" onclick="openTool('/chat/index.html', 0, 'Go Pro or Max')" class="promo-card">
+                <div class="promo-card-content">
+                    <div class="promo-card-title">Go Pro or Max</div>
+                    <div class="promo-card-desc">Unlock more monthly credits, every premium voice and model, and f...</div>
+                </div>
+                <div class="promo-card-image" style="background: linear-gradient(135deg, #DCE3DF 0%, #E59068 50%, #D95040 100%); color: white; font-size: 45px;">
+                    <i class="fa-solid fa-bolt"></i>
+                </div>
+            </a>
+            <!-- Slide 3: Visual AI -->
+            <a href="#" onclick="openTool('/media-ai/index.html', 0, 'Next-Gen Visual AI')" class="promo-card">
+                <div class="promo-card-content">
+                    <div class="promo-card-title">Next-Gen Visual AI</div>
+                    <div class="promo-card-desc">Turn a single idea into stunning high-resolution images and cinematic ...</div>
+                </div>
+                <div class="promo-card-image" style="background-image: url('https://images.unsplash.com/photo-1550745165-9bc0b252726f?q=80&w=400&auto=format&fit=crop');"></div>
+            </a>
+            <!-- Slide 4: Music -->
+            <a href="#" onclick="openTool('/habirmx/index.html', 0, 'Epic Music & Sound')" class="promo-card">
                 <div class="promo-card-content">
                     <div class="promo-card-title">Epic Music & Sound</div>
-                    <div class="promo-card-desc">Compose breathtaking, crystal-clear tracks from a short prompt or...</div>
+                    <div class="promo-card-desc">Compose breathtaking, crystal-clear tracks from a short prompt o...</div>
                 </div>
                 <div class="promo-card-image" style="background-image: url('https://images.unsplash.com/photo-1611162617474-5b21e879e113?q=80&w=400&auto=format&fit=crop');"></div>
+            </a>
+            <!-- Slide 5: Voice AI -->
+            <a href="#" onclick="openTool('/chat/index.html', 0, 'Hyper-Realistic Voice AI')" class="promo-card">
+                <div class="promo-card-content">
+                    <div class="promo-card-title">Hyper-Realistic Voice AI</div>
+                    <div class="promo-card-desc">Turn any script into emotional, studio-grade speech with lifelike voi...</div>
+                </div>
+                <div class="promo-card-image" style="background-image: url('https://images.unsplash.com/photo-1544502062-f82887f03d1c?q=80&w=400&auto=format&fit=crop');"></div>
             </a>
         </div>
         
         <div class="pagination-dots" id="promo-dots">
             <span class="dot active"></span>
+            <span class="dot"></span>
+            <span class="dot"></span>
+            <span class="dot"></span>
             <span class="dot"></span>
         </div>
 
