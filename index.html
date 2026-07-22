@@ -108,10 +108,10 @@
             overflow-x: auto; scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch;
             box-sizing: border-box; width: 100%; scroll-behavior: smooth; scroll-padding-left: 20px;
         }
-        .promo-carousel::after { content: ''; padding-right: 20px; }
+        .promo-carousel::after { content: ''; padding-right: 10px; }
         .promo-carousel::-webkit-scrollbar { display: none; }
         .promo-card {
-            min-width: 100%; flex-shrink: 0; margin: 0;
+            width: calc(100vw - 40px); flex: 0 0 calc(100vw - 40px); margin: 0;
             background: #F4F4F5; border-radius: 20px; display: flex; overflow: hidden;
             text-decoration: none; color: #111; height: 110px; scroll-snap-align: start;
         }
