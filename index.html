@@ -239,17 +239,15 @@
         .profile-menu-left i { width: 24px; text-align: center; color: #71717A; font-size: 1.2rem; }
         .profile-menu-right { color: #A1A1AA; font-size: 1rem; display: flex; align-items: center; gap: 8px; }
 
-        /* HALAMAN EDIT PROFILE */
-        .edit-profile-header { padding: 15px 20px; display: flex; align-items: center; }
-        .edit-profile-content { padding: 20px; display: flex; flex-direction: column; align-items: center; height: calc(100% - 60px); }
+        /* HALAMAN EDIT PROFILE & PLAN TOGGLE */
+        .edit-profile-content { padding: 0; display: flex; flex-direction: column; align-items: center; width: 100%; }
         .edit-avatar-large {
-            width: 100px; height: 100px; border-radius: 50%; color: white; font-size: 3rem; font-weight: 700;
-            display: flex; align-items: center; justify-content: center; margin-top: 20px; overflow: hidden;
+            width: 90px; height: 90px; border-radius: 50%; color: white; font-size: 2.5rem; font-weight: 700;
+            display: flex; align-items: center; justify-content: center; overflow: hidden;
         }
         .edit-avatar-large img { width: 100%; height: 100%; object-fit: cover; }
-        .change-pic-text { color: #111; font-weight: 600; font-size: 0.9rem; margin-top: 16px; cursor: pointer; }
         
-        .input-group { width: 100%; margin-top: 40px; }
+        .input-group { width: 100%; margin-top: 30px; }
         .input-label { font-size: 0.85rem; color: #71717A; margin-bottom: 8px; display: block; text-align: center; }
         .clean-input {
             width: 100%; border: none; border-bottom: 2px solid #E4E4E7; padding: 10px 0;
@@ -258,9 +256,25 @@
         .clean-input:focus { border-bottom-color: #111; }
         .btn-save-profile {
             background: #111; color: white; width: 100%; padding: 16px; border-radius: 99px;
-            font-weight: 600; font-size: 1.05rem; margin-top: auto; margin-bottom: 20px; border: none; cursor: pointer;
+            font-weight: 600; font-size: 1.05rem; margin-top: 30px; border: none; cursor: pointer;
         }
         .btn-save-profile:active { transform: scale(0.98); }
+
+        /* PLAN TOGGLE SLIDER */
+        .plan-toggle-container {
+            background: #F4F4F5; border-radius: 99px; display: flex; position: relative;
+            width: 220px; margin: 0 auto 24px auto; padding: 4px;
+        }
+        .plan-toggle-btn {
+            flex: 1; text-align: center; padding: 10px 0; font-weight: 600; font-size: 0.95rem;
+            color: #71717A; z-index: 2; cursor: pointer; transition: 0.3s;
+        }
+        .plan-toggle-btn.active { color: #FFF; }
+        .plan-toggle-slider {
+            position: absolute; top: 4px; bottom: 4px; left: 4px; width: calc(50% - 4px);
+            background: #111; border-radius: 99px; transition: 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); z-index: 1;
+        }
+        .plan-toggle-container.max-active .plan-toggle-slider { transform: translateX(100%); }
     </style>
 </head>
 <body>
@@ -346,10 +360,10 @@
         <!-- TOP BAR -->
         <div class="creator-top-bar">
             <div class="creator-credits">
-                <i class="fa-solid fa-sparkles"></i> <span id="creator-credits-text">9.960</span>
+                <span style="font-size: 1.1rem; line-height: 1;">✦</span> <span id="creator-credits-text">9.960</span>
             </div>
             <div class="creator-actions">
-                <div class="creator-icon-btn"><i class="fa-solid fa-arrow-up-from-bracket"></i></div>
+                <div class="creator-icon-btn" onclick="shareProfile()"><i class="fa-solid fa-arrow-up-from-bracket"></i></div>
                 <div class="creator-icon-btn" id="inbox-link"><i class="fa-regular fa-bell"></i></div>
                 <div class="creator-icon-btn" onclick="document.getElementById('main-settings-sheet').classList.add('active')">
                     <i class="fa-solid fa-bars-staggered"></i>
@@ -364,7 +378,7 @@
                 <div class="creator-name" id="creator-ui-name">Pengguna</div>
                 <div class="creator-handle" id="creator-ui-handle">@pengguna</div>
             </div>
-            <div class="creator-edit-btn" onclick="switchView('view-edit-profile', document.querySelectorAll('.nav-item')[4])">
+            <div class="creator-edit-btn" onclick="document.getElementById('edit-profile-sheet').classList.add('active')">
                 <i class="fa-solid fa-pen"></i> Edit
             </div>
         </div>
@@ -456,24 +470,29 @@
         </div>
     </div>
 
-    <!-- =================================================== -->
-    <!-- VIEW 5: EDIT PROFILE (SONNA STYLE)                  -->
-    <!-- =================================================== -->
-    <div id="view-edit-profile" class="app-view" style="background: #FAFAFA; z-index: 25;">
-        <div class="edit-profile-header">
-            <button class="back-btn" onclick="switchView('view-profile', document.querySelectorAll('.nav-item')[4])" style="font-size: 1.3rem; color: #111; border: none; background: none;"><i class="fa-solid fa-chevron-left"></i></button>
-        </div>
-        <div class="edit-profile-content">
-            <div class="edit-avatar-large" id="edit-ui-avatar" style="background: #7B2956;">P</div>
-            <div class="change-pic-text" onclick="document.getElementById('hidden-profile-photo-input').click()">Change Profile Picture</div>
-            <input type="file" id="hidden-profile-photo-input" accept="image/*" style="display:none;">
-            
-            <div class="input-group">
-                <label class="input-label">Your Name</label>
-                <input type="text" id="edit-name-input" class="clean-input" placeholder="Enter your name">
+    <!-- BOTTOM SHEET: EDIT PROFILE -->
+    <div class="bottom-sheet-overlay" id="edit-profile-sheet" onclick="this.classList.remove('active')">
+        <div class="bottom-sheet" onclick="event.stopPropagation()" style="height: auto; padding-bottom: 20px;">
+            <div class="sheet-drag-handle"></div>
+            <div class="edit-profile-content">
+                <div class="edit-avatar-large" id="edit-ui-avatar" style="background: #7B2956; margin: 0 auto;">P</div>
+                
+                <div style="margin-top: 24px; width: 100%;">
+                    <div style="font-size: 0.85rem; color: #71717A; margin-bottom: 8px; text-align: center;">Change Profile Picture</div>
+                    <div class="profile-menu-item" onclick="document.getElementById('hidden-profile-photo-input').click()" style="padding: 12px 0; border-bottom: none; justify-content: center; gap: 10px;">
+                        <i class="fa-regular fa-image" style="font-size: 1.2rem; color: #111;"></i>
+                        <span style="font-weight: 600; color: #111;">Choose from Gallery</span>
+                    </div>
+                    <input type="file" id="hidden-profile-photo-input" accept="image/*" style="display:none;">
+                </div>
+                
+                <div class="input-group">
+                    <label class="input-label">Your Name</label>
+                    <input type="text" id="edit-name-input" class="clean-input" placeholder="Enter your name">
+                </div>
+                
+                <button class="btn-save-profile" id="btn-save-profile-native">Save</button>
             </div>
-            
-            <button class="btn-save-profile" id="btn-save-profile-native">Save</button>
         </div>
     </div>
 
@@ -572,52 +591,30 @@
     <!-- =================================================== -->
     <!-- MODAL VIP, FEEDBACK, HELP, LOGOUT (TETAP ADA)       -->
     <!-- =================================================== -->
-    <div class="modal-overlay" id="vip-status-modal">
-        <div class="modal-box spec-modal" style="max-width:400px; border-radius: 24px; padding: 30px 24px;">
-            <h3 style="margin-bottom:20px; font-size: 1.3rem; color: #111; display: flex; align-items: center; justify-content: center; gap: 8px;">
-                <i class="fa-solid fa-id-card" style="color: #111;"></i> Kartu Keanggotaan
-            </h3>
-            <div class="vip-card-premium">
-                <div class="vip-card-header">
-                    <span class="vip-card-title">Flixa AI</span>
-                    <span id="vip-plan-badge" class="vip-card-badge">PRO</span>
-                </div>
-                <div class="vip-card-body">
-                    <div class="vip-data-row">
-                        <span class="vip-data-label">Nama Pengguna</span>
-                        <span id="vip-name-text" class="vip-data-value">Memuat...</span>
-                    </div>
-                    <div class="vip-data-row">
-                        <span class="vip-data-label">Masa Aktif</span>
-                        <span id="vip-expiry-text" class="vip-data-value">Tidak Ada Batas</span>
-                    </div>
-                    <div class="vip-data-row" style="border-bottom: none; padding-bottom: 0;">
-                        <span class="vip-data-label">Saldo Kredit</span>
-                        <span id="vip-quota-text" class="vip-data-value" style="color: #34C759;">Unlimited</span>
-                    </div>
-                </div>
+    <!-- BOTTOM SHEET: CHOOSE PLAN (SONNA STYLE) -->
+    <div class="bottom-sheet-overlay" id="vip-status-modal" onclick="this.classList.remove('active')">
+        <div class="bottom-sheet" onclick="event.stopPropagation()" style="height: auto; padding-bottom: 20px;">
+            <div class="sheet-drag-handle"></div>
+            <h3 style="text-align: center; font-size: 1.3rem; color: #111; margin-bottom: 8px;">Choose your plan</h3>
+            <p style="text-align: center; font-size: 0.9rem; color: #71717A; margin-bottom: 24px;">The best tools for your creative work</p>
+            
+            <div class="plan-toggle-container" id="plan-toggle">
+                <div class="plan-toggle-slider"></div>
+                <div class="plan-toggle-btn active" id="btn-plan-pro" onclick="switchPlan('pro')">Pro</div>
+                <div class="plan-toggle-btn" id="btn-plan-max" onclick="switchPlan('max')">Max</div>
             </div>
-            <div style="text-align:left; margin-bottom:24px;">
-                <label style="font-size:0.85rem; font-weight:600; color:#666; display:block; margin-bottom:10px;">Pilih Tindakan</label>
-                <div style="position:relative;">
-                    <div class="modal-input" id="vip-action-trigger" style="display:flex; justify-content:space-between; align-items:center; cursor:pointer; margin-bottom:0; background:#FFF; padding: 14px 16px; border: 1px solid #EAEAEA; border-radius: 12px;">
-                        <span id="vip-action-label" style="font-size:0.95rem; font-weight:500; color:#666;">-- Pilih Tindakan --</span>
-                        <i class="fa-solid fa-chevron-down" style="font-size:0.8rem; color:#666;"></i>
-                    </div>
-                    <div id="vip-action-dropdown" class="hidden" style="position:absolute; top:calc(100% + 5px); left:0; right:0; background:#FFF; border:1px solid #EAEAEA; border-radius:12px; box-shadow:0 8px 24px rgba(0,0,0,0.1); z-index:100; overflow:hidden;">
-                        <div class="vip-dropdown-option" data-value="perpanjang" style="padding:14px 16px; font-size:0.95rem; cursor:pointer; font-weight:500; color:#111; border-bottom: 1px solid #F0F0F0;">Perpanjang Paket</div>
-                        <div class="vip-dropdown-option" data-value="upgrade" style="padding:14px 16px; font-size:0.95rem; cursor:pointer; font-weight:500; color:#111;">Upgrade Paket</div>
-                    </div>
-                </div>
+            
+            <div style="display: flex; flex-direction: column; gap: 14px; margin-bottom: 30px; padding: 0 10px;">
+                <div style="display: flex; align-items: center; gap: 12px; font-size: 0.95rem; color: #111; font-weight: 500;"><i class="fa-solid fa-check" style="color: #111;"></i> <span id="plan-credits-text">102.000 monthly credits</span></div>
+                <div style="display: flex; align-items: center; gap: 12px; font-size: 0.95rem; color: #111; font-weight: 500;"><i class="fa-solid fa-check" style="color: #111;"></i> Commercial use</div>
+                <div style="display: flex; align-items: center; gap: 12px; font-size: 0.95rem; color: #111; font-weight: 500;"><i class="fa-solid fa-check" style="color: #111;"></i> Text to Speech</div>
+                <div style="display: flex; align-items: center; gap: 12px; font-size: 0.95rem; color: #111; font-weight: 500;"><i class="fa-solid fa-check" style="color: #111;"></i> Image Generation</div>
+                <div style="display: flex; align-items: center; gap: 12px; font-size: 0.95rem; color: #111; font-weight: 500;"><i class="fa-solid fa-check" style="color: #111;"></i> Music Generation</div>
             </div>
-            <div style="display:flex; flex-direction:column; gap:12px;">
-                <button id="btn-vip-whatsapp" disabled style="width: 100%; padding: 14px; border-radius: 24px; font-weight: 600; font-size: 0.95rem; border: none; background: #7A7A7A; color: #FFF; cursor: not-allowed; display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.2s;">
-                    <i class="fa-brands fa-whatsapp"></i> Hubungi Admin
-                </button>
-                <button id="btn-close-vip-modal" style="width: 100%; padding: 14px; border-radius: 24px; font-weight: 600; font-size: 0.95rem; border: none; background: #F4F4F4; color: #666; cursor: pointer; transition: 0.2s;">
-                    Tutup
-                </button>
-            </div>
+            
+            <button id="btn-vip-whatsapp" style="width: 100%; padding: 16px; border-radius: 99px; font-weight: 600; font-size: 1.05rem; border: none; background: #111; color: #FFF; cursor: pointer; transition: 0.2s;">
+                Upgrade to Pro
+            </button>
         </div>
     </div>
 
