@@ -568,24 +568,25 @@
                 <a href="#" class="music-more">More <i class="fa-solid fa-chevron-right" style="font-size:10px;"></i></a>
             </div>
             <div class="song-list">
-                <div class="song-item" onclick="playDummySong('Saturday Lights', 'Mira Ardelia', 'https://images.unsplash.com/photo-1611162617474-5b21e879e113?q=80&w=100&auto=format&fit=crop', '2:10')">
+                <!-- CONTOH CARA ISI LAGU: playSong('Judul Lagu', 'ID_YOUTUBE', 'Link_Foto') -->
+                <div class="song-item" onclick="playSong('Saturday Lights', 'jfKfPfyJRdk', 'https://images.unsplash.com/photo-1611162617474-5b21e879e113?q=80&w=100&auto=format&fit=crop')">
                     <div class="song-cover" style="background-image: url('https://images.unsplash.com/photo-1611162617474-5b21e879e113?q=80&w=100&auto=format&fit=crop');">
-                        <span class="song-duration">2:10</span>
+                        <span class="song-duration"><i class="fa-brands fa-youtube"></i></span>
                     </div>
                     <div class="song-info">
                         <div class="song-title-text">Saturday Lights</div>
-                        <div class="song-artist-text">Mira Ardelia</div>
+                        <div class="song-artist-text">Flixa AI</div>
                         <div class="song-artist-text" style="font-size:11px; margin-top:2px;"><i class="fa-solid fa-play" style="font-size:8px;"></i> 5,2K</div>
                     </div>
                     <div class="song-options" onclick="event.stopPropagation(); document.getElementById('music-options-sheet').classList.add('active');"><i class="fa-solid fa-ellipsis-vertical"></i></div>
                 </div>
-                <div class="song-item" onclick="playDummySong('Coffee at Six', 'Reksa Maulana', 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?q=80&w=100&auto=format&fit=crop', '2:40')">
+                <div class="song-item" onclick="playSong('Coffee at Six', '5qap5aO4i9A', 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?q=80&w=100&auto=format&fit=crop')">
                     <div class="song-cover" style="background-image: url('https://images.unsplash.com/photo-1514525253161-7a46d19cd819?q=80&w=100&auto=format&fit=crop');">
-                        <span class="song-duration">2:40</span>
+                        <span class="song-duration"><i class="fa-brands fa-youtube"></i></span>
                     </div>
                     <div class="song-info">
                         <div class="song-title-text">Coffee at Six</div>
-                        <div class="song-artist-text">Reksa Maulana</div>
+                        <div class="song-artist-text">Flixa AI</div>
                         <div class="song-artist-text" style="font-size:11px; margin-top:2px;"><i class="fa-solid fa-play" style="font-size:8px;"></i> 1,4K</div>
                     </div>
                     <div class="song-options" onclick="event.stopPropagation(); document.getElementById('music-options-sheet').classList.add('active');"><i class="fa-solid fa-ellipsis-vertical"></i></div>
@@ -724,7 +725,7 @@
         </div>
         <div class="mp-controls">
             <i class="fa-solid fa-backward-step" style="font-size: 16px;"></i>
-            <div class="mp-play-btn" id="mp-play-pause"><i class="fa-solid fa-pause"></i></div>
+            <div class="mp-play-btn" id="mp-play-pause" onclick="togglePlayPause()"><i class="fa-solid fa-pause"></i></div>
             <i class="fa-solid fa-forward-step" style="font-size: 16px;"></i>
         </div>
     </div>
@@ -961,41 +962,94 @@
             switchView('view-home', document.querySelectorAll('.nav-item')[0]);
         }
 
-        // FUNGSI ANIMASI MINI PLAYER (SLIDER & WAKTU)
-        let dummyInterval;
-        function playDummySong(title, artist, coverUrl, durationStr) {
+        // ===================================================
+        // SISTEM PEMUTAR MUSIK YOUTUBE ASLI
+        // ===================================================
+        let ytPlayer;
+        let isPlayerReady = false;
+        let progressInterval;
+
+        // Fungsi bawaan YouTube API (Otomatis dipanggil saat API siap)
+        function onYouTubeIframeAPIReady() {
+            ytPlayer = new YT.Player('yt-hidden-player', {
+                height: '0',
+                width: '0',
+                videoId: '',
+                playerVars: { 'autoplay': 1, 'controls': 0, 'playsinline': 1 },
+                events: {
+                    'onReady': () => { isPlayerReady = true; },
+                    'onStateChange': onPlayerStateChange
+                }
+            });
+        }
+
+        // Mengatur tombol Play/Pause berdasarkan status YouTube
+        function onPlayerStateChange(event) {
+            const playPauseBtn = document.getElementById('mp-play-pause');
+            if (event.data == YT.PlayerState.PLAYING) {
+                playPauseBtn.innerHTML = '<i class="fa-solid fa-pause"></i>';
+                startProgressBar();
+            } else if (event.data == YT.PlayerState.PAUSED || event.data == YT.PlayerState.ENDED) {
+                playPauseBtn.innerHTML = '<i class="fa-solid fa-play"></i>';
+                clearInterval(progressInterval);
+            }
+        }
+
+        // Fungsi untuk memutar lagu (Dipanggil saat lagu diklik)
+        function playSong(title, videoId, coverUrl) {
             document.getElementById('mp-title-text').innerText = title;
             document.getElementById('mp-cover-img').style.backgroundImage = `url('${coverUrl}')`;
             
+            // Nama penyanyi otomatis jadi Flixa AI
+            document.getElementById('mp-artist-text').innerHTML = `Flixa AI <span id="mp-time-text" style="font-size: 10px; font-weight: 600; color: #111;">Memuat...</span>`;
+            
             const miniPlayer = document.getElementById('global-mini-player');
             miniPlayer.classList.add('active');
-            document.getElementById('mp-play-pause').innerHTML = '<i class="fa-solid fa-pause"></i>';
 
-            // Reset Slider
-            clearInterval(dummyInterval);
-            let progress = 0;
+            if (isPlayerReady) {
+                ytPlayer.loadVideoById(videoId);
+                ytPlayer.playVideo();
+            } else {
+                alert("Sistem pemutar sedang memuat, tunggu beberapa detik lalu klik lagi.");
+            }
+        }
+
+        // Fungsi untuk tombol Play/Pause di Mini Player
+        function togglePlayPause() {
+            if (!isPlayerReady) return;
+            if (ytPlayer.getPlayerState() == YT.PlayerState.PLAYING) {
+                ytPlayer.pauseVideo();
+            } else {
+                ytPlayer.playVideo();
+            }
+        }
+
+        // Format detik ke menit:detik
+        function formatTime(seconds) {
+            if (!seconds) return "0:00";
+            const m = Math.floor(seconds / 60);
+            const s = Math.floor(seconds % 60);
+            return `${m}:${s < 10 ? '0'+s : s}`;
+        }
+
+        // Animasi Slider & Waktu Asli dari YouTube
+        function startProgressBar() {
+            clearInterval(progressInterval);
             const fill = document.getElementById('mp-progress-fill');
+            const timeText = document.getElementById('mp-time-text');
             
-            // Konversi durasi (misal "2:10") ke detik
-            const parts = durationStr.split(':');
-            const totalSeconds = parseInt(parts[0]) * 60 + parseInt(parts[1]);
-            let currentSeconds = 0;
-
-            // Tampilkan waktu di sebelah nama artis
-            document.getElementById('mp-artist-text').innerHTML = `${artist} <span id="mp-time-text" style="font-size: 10px; font-weight: 600; color: #111;">0:00 / ${durationStr}</span>`;
-
-            // Jalankan animasi slider setiap detik
-            dummyInterval = setInterval(() => {
-                currentSeconds++;
-                progress = (currentSeconds / totalSeconds) * 100;
-                fill.style.width = `${progress}%`;
-                
-                let m = Math.floor(currentSeconds / 60);
-                let s = currentSeconds % 60;
-                document.getElementById('mp-time-text').innerText = `${m}:${s < 10 ? '0'+s : s} / ${durationStr}`;
-
-                if(progress >= 100) clearInterval(dummyInterval);
-            }, 1000);
+            progressInterval = setInterval(() => {
+                if (isPlayerReady && ytPlayer.getPlayerState() == YT.PlayerState.PLAYING) {
+                    const current = ytPlayer.getCurrentTime();
+                    const total = ytPlayer.getDuration();
+                    
+                    if (total > 0) {
+                        const progress = (current / total) * 100;
+                        fill.style.width = `${progress}%`;
+                        timeText.innerText = `${formatTime(current)} / ${formatTime(total)}`;
+                    }
+                }
+            }, 500);
         }
 
         function shareProfile() {
