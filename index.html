@@ -87,7 +87,7 @@
         /* 4. HORIZONTAL CHIPS (ANTI NABRAK LAYAR)             */
         /* =================================================== */
         .chips-container {
-            display: flex; gap: 10px; padding: 5px 20px 25px 20px !important; margin: 0;
+            display: flex; gap: 10px; padding: 5px 20px 15px 20px !important; margin: 0;
             overflow-x: auto; -webkit-overflow-scrolling: touch; scroll-snap-type: x mandatory;
             box-sizing: border-box; width: 100%; scroll-padding-left: 20px;
         }
@@ -124,7 +124,7 @@
         .promo-card-desc { font-size: 12px; color: #71717A; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
         .promo-card-image { width: 110px; background-size: cover; background-position: center; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
         
-        .pagination-dots { display: flex; justify-content: center; gap: 6px; margin-bottom: 35px; }
+        .pagination-dots { display: flex; justify-content: center; gap: 6px; margin-bottom: 15px; }
         .dot { width: 6px; height: 6px; border-radius: 50%; background: #D4D4D8; transition: 0.3s; }
         .dot.active { background: #111111; width: 16px; border-radius: 99px; }
 
@@ -440,39 +440,8 @@
         </div>
 
         <!-- Grid Recent Projects -->
-        <div class="projects-grid">
-            <a href="#" class="project-card" style="background-color: #9E9399;">
-                <i class="fa-solid fa-bars-staggered project-icon"></i>
-                <i class="fa-solid fa-ellipsis-vertical project-more"></i>
-                <div class="project-card-content">
-                    <div class="project-time">2m ago</div>
-                    <div class="project-name">Good morning, everyone. Thank y...</div>
-                </div>
-            </a>
-            <a href="#" class="project-card" style="background-image: url('https://images.unsplash.com/photo-1564890369478-c89ca6d9cde9?q=80&w=400&auto=format&fit=crop');">
-                <i class="fa-regular fa-image project-icon"></i>
-                <i class="fa-solid fa-ellipsis-vertical project-more"></i>
-                <div class="project-card-content">
-                    <div class="project-time">34m ago</div>
-                    <div class="project-name">Ultra-realistic premium matcha b...</div>
-                </div>
-            </a>
-            <a href="#" class="project-card" style="background-image: url('https://images.unsplash.com/photo-1550745165-9bc0b252726f?q=80&w=400&auto=format&fit=crop');">
-                <i class="fa-solid fa-music project-icon"></i>
-                <i class="fa-solid fa-ellipsis-vertical project-more"></i>
-                <div class="project-card-content">
-                    <div class="project-time">8h ago</div>
-                    <div class="project-name">Midnight Circuit</div>
-                </div>
-            </a>
-            <a href="#" class="project-card" style="background-image: url('https://images.unsplash.com/photo-1470071131384-001b85755b36?q=80&w=400&auto=format&fit=crop');">
-                <i class="fa-solid fa-video project-icon"></i>
-                <i class="fa-solid fa-ellipsis-vertical project-more"></i>
-                <div class="project-card-content">
-                    <div class="project-time">9h ago</div>
-                    <div class="project-name">Aerial drone shot at sunrise over a rugg...</div>
-                </div>
-            </a>
+        <div class="empty-state" style="margin-top: 60px;">
+            No projects yet. Start creating!
         </div>
     </div>
 
