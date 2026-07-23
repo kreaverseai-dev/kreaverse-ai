@@ -565,8 +565,8 @@
         <div class="music-section">
             <div class="music-header">
                 <span class="music-title">Our Picks</span>
-                <!-- Tombol Admin (Hanya Anda yang tahu fungsinya) -->
-                <a href="#" class="music-more" onclick="document.getElementById('admin-song-modal').classList.add('active')"><i class="fa-solid fa-plus-circle"></i> Tambah Lagu</a>
+                <!-- Tombol Admin (Disembunyikan secara default) -->
+                <a href="#" class="music-more hidden" id="admin-add-song-btn" onclick="document.getElementById('admin-song-modal').classList.add('active')"><i class="fa-solid fa-plus-circle"></i> Tambah Lagu</a>
             </div>
             <!-- Wadah Kosong untuk Database Firebase -->
             <div class="song-list" id="dynamic-song-list">
@@ -1411,6 +1411,13 @@
                                 localStorage.setItem('kreaverse_tier', tierVal);
 
                                 drawUserProfileUI(nameVal, userVal, photoVal, tierVal);
+                                
+                                // --- CEK ADMIN UNTUK TOMBOL TAMBAH LAGU ---
+                                const adminEmails = ['kreaverse.ai@gmail.com', 'flixa.ai.official@gmail.com'];
+                                if (adminEmails.includes(userEmail)) {
+                                    const adminBtn = document.getElementById('admin-add-song-btn');
+                                    if(adminBtn) adminBtn.classList.remove('hidden');
+                                }
                                 
                                 listenToNotifications(realDocId);
                                 listenToRealtimeBroadcasts(realDocId);
