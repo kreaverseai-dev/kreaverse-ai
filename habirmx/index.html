@@ -1531,9 +1531,9 @@
                 <button class="suno-pill-btn" id="btnTabPersona" onclick="switchVoiceTab('persona')" style="background: #ffffff; border: 1px solid #e5e7eb; color: #374151; padding: 8px 16px; border-radius: 99px; font-weight: 700; font-size: 0.85rem; cursor: pointer; font-family: inherit;">Ekstrak Persona</button>
             </div>
             <div id="tabContentVoice">
-                <div class="input-group" style="margin-bottom: 12px;"><label style="display:none;">Nama Karakter</label><input type="text" id="voiceNameInput" placeholder="Contoh: My Studio Voice" style="width: 100%; background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 12px; padding: 14px 16px; font-size: 0.95rem; font-weight: 600; color: #111827;"></div>
-                <div class="input-group" style="margin-bottom: 12px;"><label style="display:none;">Gaya Vokal</label><input type="text" id="voiceStyleInput" placeholder="Contoh: Pop, Female Vocal" style="width: 100%; background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 12px; padding: 14px 16px; font-size: 0.95rem; font-weight: 600; color: #111827;"></div>
-                <div class="input-group" style="margin-bottom: 12px;"><label style="display:none;">Deskripsi</label><input type="text" id="voiceDescInput" placeholder="Warna suara (opsional)" style="width: 100%; background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 12px; padding: 14px 16px; font-size: 0.95rem; font-weight: 600; color: #111827;"></div>
+                <div class="input-group" style="margin-bottom: 12px;"><label style="display:none;">Nama Karakter</label><input type="text" id="voiceNameInput" placeholder="Contoh: My Studio Voice" style="width: 100%; background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 12px; padding: 14px 16px; font-size: 0.95rem; font-weight: 600; color: #111827; outline:none;"></div>
+                <div class="input-group" style="margin-bottom: 12px;"><label style="display:none;">Gaya Vokal</label><input type="text" id="voiceStyleInput" placeholder="Contoh: Pop, Female Vocal" style="width: 100%; background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 12px; padding: 14px 16px; font-size: 0.95rem; font-weight: 600; color: #111827; outline:none;"></div>
+                <div class="input-group" style="margin-bottom: 12px;"><label style="display:none;">Deskripsi</label><input type="text" id="voiceDescInput" placeholder="Warna suara (opsional)" style="width: 100%; background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 12px; padding: 14px 16px; font-size: 0.95rem; font-weight: 600; color: #111827; outline:none;"></div>
                 <div class="input-group" style="margin-top:15px; background: #f9fafb; padding:15px; border-radius:12px; border:1px solid #e5e7eb;">
                     <label style="font-size: 0.85rem; font-weight: 800; color: #111827; margin-bottom: 10px; display: block;">1. Audio Sumber *</label>
                     <div style="display: flex; gap: 10px;"><button type="button" class="suno-chip" onclick="document.getElementById('voiceSourceInput').click()" style="background: #ffffff; border: 1px solid #e5e7eb; color: #374151; padding: 8px 14px; border-radius: 12px; font-size: 0.8rem; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;"><i class="fa-solid fa-upload"></i> Pilih File</button><input type="file" id="voiceSourceInput" accept="audio/*" class="hidden" onchange="document.getElementById('voiceSourceLabel').innerText = this.files[0] ? this.files[0].name : 'Belum dipilih';"></div>
@@ -1555,11 +1555,11 @@
             </div>
             
             <div id="tabContentPersona" class="hidden">
-                <div class="input-group" style="margin-bottom: 12px;"><label style="display:none;">Nama Persona</label><input type="text" id="personaNameInput" placeholder="Nama Persona" style="width: 100%; background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 12px; padding: 14px 16px; font-size: 0.95rem; font-weight: 600; color: #111827;"></div>
-                <div class="input-group" style="margin-bottom: 12px;"><label style="display:none;">Task ID Lagu</label><input type="text" id="personaTaskIdInput" placeholder="Task ID Lagu" style="width: 100%; background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 12px; padding: 14px 16px; font-size: 0.95rem; font-weight: 600; color: #111827;"></div>
-                <div class="input-group" style="margin-bottom: 12px;"><label style="display:none;">Audio ID Lagu</label><input type="text" id="personaAudioIdInput" placeholder="Audio ID Lagu" style="width: 100%; background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 12px; padding: 14px 16px; font-size: 0.95rem; font-weight: 600; color: #111827;"></div>
-                <div style="display:flex; gap:10px; margin-bottom: 12px;"><div class="input-group" style="flex:1;"><label style="display:none;">Mulai (Detik)</label><input type="number" id="personaStartInput" placeholder="Mulai (Detik)" style="width: 100%; background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 12px; padding: 14px 16px; font-size: 0.95rem; font-weight: 600; color: #111827;"></div><div class="input-group" style="flex:1;"><label style="display:none;">Akhir (Detik)</label><input type="number" id="personaEndInput" placeholder="Akhir (Detik)" style="width: 100%; background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 12px; padding: 14px 16px; font-size: 0.95rem; font-weight: 600; color: #111827;"></div></div>
-                <div class="input-group"><label style="display:none;">Deskripsi</label><input type="text" id="personaDescInput" placeholder="Deskripsi" style="width: 100%; background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 12px; padding: 14px 16px; font-size: 0.95rem; font-weight: 600; color: #111827;"></div>
+                <div class="input-group" style="margin-bottom: 12px;"><label style="display:none;">Nama Persona</label><input type="text" id="personaNameInput" placeholder="Nama Persona" style="width: 100%; background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 12px; padding: 14px 16px; font-size: 0.95rem; font-weight: 600; color: #111827; outline:none;"></div>
+                <div class="input-group" style="margin-bottom: 12px;"><label style="display:none;">Task ID Lagu</label><input type="text" id="personaTaskIdInput" placeholder="Task ID Lagu" style="width: 100%; background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 12px; padding: 14px 16px; font-size: 0.95rem; font-weight: 600; color: #111827; outline:none;"></div>
+                <div class="input-group" style="margin-bottom: 12px;"><label style="display:none;">Audio ID Lagu</label><input type="text" id="personaAudioIdInput" placeholder="Audio ID Lagu" style="width: 100%; background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 12px; padding: 14px 16px; font-size: 0.95rem; font-weight: 600; color: #111827; outline:none;"></div>
+                <div style="display:flex; gap:10px; margin-bottom: 12px;"><div class="input-group" style="flex:1;"><label style="display:none;">Mulai (Detik)</label><input type="number" id="personaStartInput" placeholder="Mulai (Detik)" style="width: 100%; background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 12px; padding: 14px 16px; font-size: 0.95rem; font-weight: 600; color: #111827; outline:none;"></div><div class="input-group" style="flex:1;"><label style="display:none;">Akhir (Detik)</label><input type="number" id="personaEndInput" placeholder="Akhir (Detik)" style="width: 100%; background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 12px; padding: 14px 16px; font-size: 0.95rem; font-weight: 600; color: #111827; outline:none;"></div></div>
+                <div class="input-group"><label style="display:none;">Deskripsi</label><input type="text" id="personaDescInput" placeholder="Deskripsi" style="width: 100%; background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 12px; padding: 14px 16px; font-size: 0.95rem; font-weight: 600; color: #111827; outline:none;"></div>
                 <button type="button" id="btnSubmitPersona" class="suno-chip" style="width:100%; justify-content:center; background:#111827; color:#fff; padding:14px; margin-top:10px; font-size:0.9rem; border-radius: 12px; font-weight: 700; cursor: pointer; border: none;" onclick="submitPersonaExtraction()">Ekstrak Persona</button>
             </div>
         </div>
@@ -1585,7 +1585,7 @@
 
             <div id="voiceRecorderBox" class="hidden suno-card" style="background: #ffffff; border: 1px solid #e5e7eb; border-radius: 20px; padding: 20px; margin-bottom: 16px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);">
                 <div style="display: flex; justify-content: space-between; font-weight: 800; margin-bottom:15px;"><span style="color:#111827;"><i class="fa-solid fa-microphone"></i> Studio Rekaman</span><span id="recordingTime" style="color:#ef4444;">00:00</span></div>
-                <div class="custom-select-container" style="margin-bottom: 15px;"><div class="custom-select-trigger" onclick="window.toggleCustomSelect('voiceGenderDropdown')" style="border: 1px solid #e5e7eb; background: #f9fafb; border-radius: 12px; padding: 12px 16px; display: flex; justify-content: space-between; cursor: pointer; font-weight: 600; color: #111827;"><span id="voiceGenderSelectedLabel">Pilih Efek</span><i class="fa-solid fa-chevron-down"></i></div><div class="custom-select-options hidden" id="voiceGenderDropdown" style="border: 1px solid #e5e7eb; background: #f9fafb; border-radius: 12px;"><div class="custom-select-option selected" onclick="window.selectVoiceGenderOption('default', 'Studio Effect')">Studio Effect</div><div class="custom-select-option" onclick="window.selectVoiceGenderOption('raw', 'Suara Asli')">Suara Asli</div></div></div><input type="hidden" id="voiceGenderFilter" value="default">
+                <div class="custom-select-container" style="margin-bottom: 15px; position: relative;"><div class="custom-select-trigger" onclick="window.toggleCustomSelect('voiceGenderDropdown')" style="border: 1px solid #e5e7eb; background: #f9fafb; border-radius: 12px; padding: 12px 16px; display: flex; justify-content: space-between; cursor: pointer; font-weight: 600; color: #111827;"><span id="voiceGenderSelectedLabel">Pilih Efek</span><i class="fa-solid fa-chevron-down"></i></div><div class="custom-select-options hidden" id="voiceGenderDropdown" style="position: absolute; top: 100%; left: 0; width: 100%; z-index: 10; border: 1px solid #e5e7eb; background: #f9fafb; border-radius: 12px; margin-top: 4px;"><div class="custom-select-option selected" onclick="window.selectVoiceGenderOption('default', 'Studio Effect')" style="padding: 10px 16px; cursor: pointer;">Studio Effect</div><div class="custom-select-option" onclick="window.selectVoiceGenderOption('raw', 'Suara Asli')" style="padding: 10px 16px; cursor: pointer;">Suara Asli</div></div></div><input type="hidden" id="voiceGenderFilter" value="default">
                 <div style="display:flex; gap:10px;"><button id="btnStartRecord" onclick="window.startRecording()" class="suno-chip" style="background:#ef4444; color:#fff; border:none; flex:1; display: flex; justify-content:center; align-items: center; padding:12px; border-radius: 12px; font-weight: 700; cursor: pointer;">Rekam</button><button id="btnStopRecord" onclick="window.stopRecording()" disabled class="suno-chip" style="background: #ffffff; border: 1px solid #e5e7eb; color: #374151; flex:1; display: flex; justify-content:center; align-items: center; padding:12px; border-radius: 12px; font-weight: 700; cursor: pointer;">Hentikan</button></div>
                 <div id="recordedAudioContainer" class="hidden" style="margin-top: 15px; background:#f9fafb; padding:15px; border-radius:12px; border:1px solid #e5e7eb;"><audio id="recordedAudioPlayer" class="hidden"></audio><div class="custom-player light-theme" id="cp-recorded" style="display:flex; align-items:center; gap:10px;"><button class="play-btn suno-chip" onclick="toggleCustomPlay('recordedAudioPlayer', 'cp-recorded')" style="padding: 10px; border-radius:50%; background:#111827; color:#fff; border: none; display: flex; align-items: center; justify-content: center; cursor: pointer;"><i class="fa-solid fa-play"></i></button><span class="current-time" style="font-size:0.75rem; font-weight:600;">0:00</span><div class="progress-container" onclick="seekCustomAudio(event, 'recordedAudioPlayer')" style="flex:1; height:6px; background:#e5e7eb; border-radius:6px; position:relative; cursor: pointer;"><div class="progress-bar-fill" style="height:100%; width:0; background:#111827; position:absolute; border-radius:6px; pointer-events: none;"></div></div></div><div style="display:flex; gap:10px; margin-top:15px;"><button onclick="window.useRecordedAudio()" class="suno-chip" style="flex:1; display: flex; justify-content:center; align-items: center; background:#111827; color:#fff; border: none; padding: 10px; border-radius: 12px; font-weight: 700; cursor: pointer;">Gunakan</button><button onclick="window.openDownloadModal()" class="suno-chip" style="flex:1; display: flex; justify-content:center; align-items: center; background: #ffffff; border: 1px solid #e5e7eb; color: #374151; padding: 10px; border-radius: 12px; font-weight: 700; cursor: pointer;">Unduh</button></div></div>
             </div>
@@ -1667,7 +1667,7 @@
         </div>
 
         <!-- 4. STYLE OF MUSIC (Fokus Utama ala Suno) -->
-        <div class="suno-card" style="background: #ffffff; border: 1px solid #e5e7eb; border-radius: 20px; padding: 20px; margin-bottom: 16px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);">
+        <div class="suno-card input-group" style="background: #ffffff; border: 1px solid #e5e7eb; border-radius: 20px; padding: 20px; margin-bottom: 16px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);">
             <div class="suno-card-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
                 <div class="suno-card-title" style="font-weight: 800; font-size: 0.95rem; color: #111827; display: flex; align-items: center; gap: 8px;"><i class="fa-solid fa-guitar" style="color:#9ca3af;"></i> Song Description</div>
                 <button type="button" class="suno-chip" onclick="triggerMagicWand('style')" style="background: #111827; color: #ffffff; border: none; padding: 6px 12px; border-radius: 99px; font-weight: 700; font-size: 0.75rem; display: flex; align-items: center; gap: 6px; cursor: pointer;"><i class="fa-solid fa-wand-magic-sparkles"></i> AI</button>
@@ -1676,14 +1676,24 @@
             
             <div style="display:flex; justify-content:space-between; align-items:center; margin-top:15px; border-top:1px dashed #e5e7eb; padding-top:15px;">
                 <div style="display:flex; gap:10px; flex-wrap:wrap;">
-                    <div class="suno-chip" style="background: #ffffff; border: 1px solid #e5e7eb; color: #374151; padding: 6px 12px; border-radius: 99px; font-weight: 700; font-size: 0.8rem; display: flex; align-items: center; gap: 6px; cursor: pointer; transition: 0.2s;" onclick="document.getElementById('customModeToggle').click(); window.toggleCustomFields(); this.style.background = this.style.background === 'rgb(17, 24, 39)' ? '#ffffff' : '#111827'; this.style.color = this.style.color === 'rgb(255, 255, 255)' ? '#374151' : '#ffffff';">
-                        <i class="fa-solid fa-microphone-lines"></i> + Lyrics
-                        <input type="checkbox" id="customModeToggle" class="hidden" checked>
+                    
+                    <!-- DIBUNGKUS DALAM DIV TERSEMBUNYI AGAR JS switchMode() TIDAK ERROR -->
+                    <div class="toggle-container" style="border:none; padding:0; background:transparent; margin:0; box-shadow:none;">
+                        <div class="suno-chip" style="background: #ffffff; border: 1px solid #e5e7eb; color: #374151; padding: 6px 12px; border-radius: 99px; font-weight: 700; font-size: 0.8rem; display: flex; align-items: center; gap: 6px; cursor: pointer; transition: 0.2s;" onclick="document.getElementById('customModeToggle').click(); window.toggleCustomFields(); this.style.background = this.style.background === 'rgb(17, 24, 39)' ? '#ffffff' : '#111827'; this.style.color = this.style.color === 'rgb(255, 255, 255)' ? '#374151' : '#ffffff';">
+                            <i class="fa-solid fa-microphone-lines"></i> + Lyrics
+                            <input type="checkbox" id="customModeToggle" class="hidden" checked>
+                        </div>
                     </div>
-                    <div class="suno-chip" style="background: #ffffff; border: 1px solid #e5e7eb; color: #374151; padding: 6px 12px; border-radius: 99px; font-weight: 700; font-size: 0.8rem; display: flex; align-items: center; gap: 6px; cursor: pointer; transition: 0.2s;" onclick="document.getElementById('instrumentalToggle').click(); this.style.background = this.style.background === 'rgb(17, 24, 39)' ? '#ffffff' : '#111827'; this.style.color = this.style.color === 'rgb(255, 255, 255)' ? '#374151' : '#ffffff';">
-                        <i class="fa-solid fa-record-vinyl"></i> Instrumental
-                        <input type="checkbox" id="instrumentalToggle" class="hidden">
+                    <span class="hidden"></span> <!-- DUMMY HELPER UNTUK JS -->
+
+                    <div class="toggle-container" style="border:none; padding:0; background:transparent; margin:0; box-shadow:none;">
+                        <div class="suno-chip" style="background: #ffffff; border: 1px solid #e5e7eb; color: #374151; padding: 6px 12px; border-radius: 99px; font-weight: 700; font-size: 0.8rem; display: flex; align-items: center; gap: 6px; cursor: pointer; transition: 0.2s;" onclick="document.getElementById('instrumentalToggle').click(); this.style.background = this.style.background === 'rgb(17, 24, 39)' ? '#ffffff' : '#111827'; this.style.color = this.style.color === 'rgb(255, 255, 255)' ? '#374151' : '#ffffff';">
+                            <i class="fa-solid fa-record-vinyl"></i> Instrumental
+                            <input type="checkbox" id="instrumentalToggle" class="hidden">
+                        </div>
                     </div>
+                    <span class="hidden"></span> <!-- DUMMY HELPER UNTUK JS -->
+
                 </div>
                 <span class="char-counter" id="styleCounter" style="font-size: 0.7rem; color: #9ca3af; font-weight: 600;">0/1000</span>
             </div>
@@ -1698,7 +1708,7 @@
         </div>
 
         <!-- 5. LYRICS BOX -->
-        <div class="suno-card" id="lyricsFieldWrapper" style="background: #ffffff; border: 1px solid #e5e7eb; border-radius: 20px; padding: 20px; margin-bottom: 16px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);">
+        <div class="suno-card input-group" id="lyricsFieldWrapper" style="background: #ffffff; border: 1px solid #e5e7eb; border-radius: 20px; padding: 20px; margin-bottom: 16px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);">
             <div class="suno-card-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
                 <div class="suno-card-title" style="font-weight: 800; font-size: 0.95rem; color: #111827; display: flex; align-items: center; gap: 8px;"><i class="fa-solid fa-align-left" style="color:#9ca3af;"></i> Custom Lyrics</div>
                 <div style="display:flex; gap:6px;">
@@ -1722,11 +1732,11 @@
 
         <!-- 6. MORE OPTIONS (ACCORDION) -->
         <div class="suno-accordion" style="background: #ffffff; border: 1px solid #e5e7eb; border-radius: 16px; overflow: hidden; margin-bottom: 16px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);">
-            <div class="suno-acc-header" onclick="document.getElementById('sunoAdvancedBody').classList.toggle('show')" style="padding: 16px; font-weight: 800; font-size: 0.9rem; color: #111827; display: flex; justify-content: space-between; align-items: center; cursor: pointer; background: #f9fafb;">
+            <div class="suno-acc-header" onclick="window.toggleAccordion('sunoAdvancedBody')" style="padding: 16px; font-weight: 800; font-size: 0.9rem; color: #111827; display: flex; justify-content: space-between; align-items: center; cursor: pointer; background: #f9fafb;">
                 <span>More Options</span>
-                <i class="fa-solid fa-chevron-down"></i>
+                <i class="fa-solid fa-chevron-down" style="transition: transform 0.3s;"></i>
             </div>
-            <div id="sunoAdvancedBody" class="suno-acc-body" style="padding: 16px; border-top: 1px solid #e5e7eb; display: none; background: #ffffff;">
+            <div id="sunoAdvancedBody" class="hidden" style="padding: 16px; border-top: 1px solid #e5e7eb; background: #ffffff;">
                 
                 <div class="input-group" id="titleFieldWrapper" style="margin-bottom: 12px !important;">
                     <label style="display: block !important; font-size: 0.75rem !important; color: #6b7280 !important; font-weight: 700 !important; margin-bottom: 6px !important; text-transform: none !important;">Song Title (Optional)</label>
@@ -1739,17 +1749,17 @@
                     <div id="engineSettingsBody" style="display: flex !important; flex-direction: column; gap: 12px; padding: 0 !important; margin: 0 !important; border: none !important;">
                         <div class="input-group" style="margin-bottom: 0 !important;">
                             <label style="display: block !important; font-size: 0.75rem !important; color: #6b7280 !important; font-weight: 700 !important; margin-bottom: 6px !important; text-transform: none !important;">ALL MODELS</label>
-                            <div class="custom-select-container">
+                            
+                            <div class="custom-select-container" style="position: relative;">
                                 <div class="custom-select-trigger" onclick="window.toggleCustomSelect('modelDropdown')" style="border: 1px solid #e5e7eb !important; background: #f9fafb !important; border-radius: 12px !important; box-shadow: none !important; font-weight: 600 !important; color: #111827 !important; padding: 14px 16px; display: flex; justify-content: space-between; cursor: pointer;">
                                     <span id="modelSelectedLabel">Memuat Model...</span>
                                     <i class="fa-solid fa-chevron-down" id="modelChevron"></i>
                                 </div>
-                                <div class="custom-select-options hidden" id="modelDropdown" style="border: 1px solid #e5e7eb !important; background: #f9fafb !important; border-radius: 12px !important; box-shadow: none !important; font-weight: 600 !important; color: #111827 !important; margin-top: 4px;"></div>
+                                <div class="custom-select-options hidden" id="modelDropdown" style="position: absolute; top: calc(100% + 6px); left: 0; right: 0; z-index: 1000; border: 1px solid #e5e7eb !important; background: #ffffff !important; border-radius: 12px !important; box-shadow: 0 10px 25px rgba(0,0,0,0.1) !important; font-weight: 600 !important; color: #111827 !important; max-height: 200px; overflow-y: auto;"></div>
                             </div>
                             <input type="hidden" id="modelSelect" value="">
                         </div>
                         
-                        <!-- Provider disembunyikan tapi fungsional agar sistem "Auto Pool" V5.5 Anda tetap jalan -->
                         <div class="input-group hidden" style="margin-bottom: 0 !important;">
                             <div class="custom-select-container">
                                 <div class="custom-select-trigger" onclick="window.toggleCustomSelect('providerDropdown')"><span id="providerSelectedLabel">Memuat provider...</span></div>
@@ -1760,7 +1770,7 @@
                     </div>
                 </div>
 
-                <!-- Optional Parameters (Gender, Weirdness, etc) -->
+                <!-- Optional Parameters -->
                 <div id="optionalParametersWrapper" style="border: none !important; box-shadow: none !important; padding: 0 !important; margin: 0 !important; background: transparent !important; margin-top: 12px !important;">
                     <div id="optionalParamsBody" style="display: flex !important; flex-direction: column; gap: 12px; padding: 0 !important; margin: 0 !important; border: none !important;">
                         <div class="input-group" style="margin-bottom: 0 !important;">
@@ -1779,15 +1789,15 @@
                         </div>
 
                         <div class="slider-wrapper" style="border: 1px solid #e5e7eb !important; background: #f9fafb !important; border-radius: 12px !important; padding: 12px 16px !important; margin-bottom: 0 !important;">
-                            <div style="display:flex; justify-content:space-between; margin-bottom:10px;"><span class="slider-title" style="font-weight: 700 !important; font-size: 0.85rem !important; color: #111827 !important; text-transform: none !important;">Style Influence</span><span class="slider-val-box" id="styleWeightVal" style="font-size:0.75rem; padding:2px 8px; border:none; font-weight:800; border: 1px solid #e5e7eb !important; background: #f9fafb !important; color: #111827 !important; border-radius: 8px !important;">0.5</span></div>
+                            <div style="display:flex; justify-content:space-between; margin-bottom:10px;"><span class="slider-title" style="font-weight: 700 !important; font-size: 0.85rem !important; color: #111827 !important; text-transform: none !important;">Style Influence</span><span class="slider-val-box" id="styleWeightVal" style="font-size:0.75rem; padding:2px 8px; border:none; font-weight:800; border: 1px solid #e5e7eb !important; background: #ffffff !important; color: #111827 !important; border-radius: 8px !important;">0.5</span></div>
                             <input type="range" id="styleWeightSlider" class="slider-range" style="width:100%; -webkit-appearance: none; height: 6px; border-radius: 99px; background: #e2e8f0; outline: none;" min="0" max="1" step="0.1" value="0.5" oninput="syncSliderVal('styleWeightSlider', 'styleWeightVal')">
                         </div>
                         <div class="slider-wrapper" style="border: 1px solid #e5e7eb !important; background: #f9fafb !important; border-radius: 12px !important; padding: 12px 16px !important; margin-bottom: 0 !important;">
-                            <div style="display:flex; justify-content:space-between; margin-bottom:10px;"><span class="slider-title" style="font-weight: 700 !important; font-size: 0.85rem !important; color: #111827 !important; text-transform: none !important;">Weirdness</span><span class="slider-val-box" id="weirdnessVal" style="font-size:0.75rem; padding:2px 8px; border:none; font-weight:800; border: 1px solid #e5e7eb !important; background: #f9fafb !important; color: #111827 !important; border-radius: 8px !important;">0.5</span></div>
+                            <div style="display:flex; justify-content:space-between; margin-bottom:10px;"><span class="slider-title" style="font-weight: 700 !important; font-size: 0.85rem !important; color: #111827 !important; text-transform: none !important;">Weirdness</span><span class="slider-val-box" id="weirdnessVal" style="font-size:0.75rem; padding:2px 8px; border:none; font-weight:800; border: 1px solid #e5e7eb !important; background: #ffffff !important; color: #111827 !important; border-radius: 8px !important;">0.5</span></div>
                             <input type="range" id="weirdnessSlider" class="slider-range" style="width:100%; -webkit-appearance: none; height: 6px; border-radius: 99px; background: #e2e8f0; outline: none;" min="0" max="1" step="0.1" value="0.5" oninput="syncSliderVal('weirdnessSlider', 'weirdnessVal')">
                         </div>
                         <div class="slider-wrapper" style="border: 1px solid #e5e7eb !important; background: #f9fafb !important; border-radius: 12px !important; padding: 12px 16px !important; margin-bottom: 0 !important;">
-                            <div style="display:flex; justify-content:space-between; margin-bottom:10px;"><span class="slider-title" style="font-weight: 700 !important; font-size: 0.85rem !important; color: #111827 !important; text-transform: none !important;">Audio Weight (Khusus Cover)</span><span class="slider-val-box" id="audioWeightVal" style="font-size:0.75rem; padding:2px 8px; border:none; font-weight:800; border: 1px solid #e5e7eb !important; background: #f9fafb !important; color: #111827 !important; border-radius: 8px !important;">0.5</span></div>
+                            <div style="display:flex; justify-content:space-between; margin-bottom:10px;"><span class="slider-title" style="font-weight: 700 !important; font-size: 0.85rem !important; color: #111827 !important; text-transform: none !important;">Audio Weight (Khusus Cover)</span><span class="slider-val-box" id="audioWeightVal" style="font-size:0.75rem; padding:2px 8px; border:none; font-weight:800; border: 1px solid #e5e7eb !important; background: #ffffff !important; color: #111827 !important; border-radius: 8px !important;">0.5</span></div>
                             <input type="range" id="audioWeightSlider" class="slider-range" style="width:100%; -webkit-appearance: none; height: 6px; border-radius: 99px; background: #e2e8f0; outline: none;" min="0" max="1" step="0.1" value="0.5" oninput="syncSliderVal('audioWeightSlider', 'audioWeightVal')">
                         </div>
 
@@ -1844,8 +1854,7 @@
         <!-- Sembunyikan elemen lama -->
         <section class="faq-section hidden"></section>
         <footer class="footer hidden"><div id="live-clock-footer"></div></footer>
-    </div>
-            <div id="savePresetModalOverlay" class="krea-modal-overlay" style="z-index: 9999999;">
+    </div> class="krea-modal-overlay" style="z-index: 9999999;">
                 <div class="krea-modal-box" style="max-width: 350px; padding: 24px; text-align: left; border-radius: 24px; background: #1e293b; border: 1px solid #334155; color: #fff;">
                     <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
                         <div style="width: 40px; height: 40px; background: rgba(56, 189, 248, 0.15); color: #38bdf8; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem;"><i class="fa-solid fa-floppy-disk"></i></div>
