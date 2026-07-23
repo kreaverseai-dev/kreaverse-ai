@@ -1252,8 +1252,8 @@
                 document.getElementById('admin-song-audio').value = '';
                 alert("Lagu berhasil ditambahkan ke Database!");
             } catch(e) {
-                console.error(e);
-                alert("Gagal menyimpan lagu.");
+                console.error("Error Firebase:", e);
+                alert("Gagal menyimpan ke Firebase: " + e.message);
             }
             btn.innerText = "Simpan Lagu";
         };
