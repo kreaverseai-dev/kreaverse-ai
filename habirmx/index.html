@@ -1351,6 +1351,173 @@
                 margin-right: 0; 
             }
         }
+
+        /* =================================================== */
+        /* TEMA SUNO AI (UI OVERRIDES)                         */
+        /* =================================================== */
+        body {
+            background: linear-gradient(135deg, #f3e7e9 0%, #e3eeff 100%) !important;
+            background-attachment: fixed !important;
+            font-family: 'Plus Jakarta Sans', sans-serif !important;
+        }
+        body::before { display: none !important; } /* Hapus background lama */
+
+        /* Sembunyikan elemen lama yang tidak sesuai tema Suno */
+        .navbar, header, .hero-title, .subtitle, #engineSettingsWrapper, 
+        .toggle-container:not(#instrumentalToggle-container), 
+        #optionalParametersWrapper, .char-counter, 
+        #lyricsHelperText, .helper-text, .input-group > label {
+            display: none !important;
+        }
+
+        /* Topbar Suno */
+        .suno-topbar {
+            position: fixed; top: 0; left: 0; right: 0; height: 70px;
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 0 20px; z-index: 1000;
+        }
+        .suno-back-btn {
+            width: 40px; height: 40px; border-radius: 50%; background: rgba(0,0,0,0.05);
+            border: none; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; color: #111; cursor: pointer;
+        }
+        .suno-center-title {
+            text-align: center; display: flex; flex-direction: column; align-items: center;
+        }
+        .suno-center-title .title { font-weight: 600; font-size: 1.1rem; display: flex; align-items: center; gap: 6px; color: #111; }
+        .suno-center-title .credits { font-size: 0.75rem; color: rgba(0,0,0,0.5); font-weight: 600; }
+        
+        .suno-model-selector {
+            background: rgba(0,0,0,0.05); padding: 8px 16px; border-radius: 99px;
+            font-size: 0.85rem; font-weight: 600; display: flex; align-items: center; gap: 8px; cursor: pointer; color: #111; position: relative;
+        }
+
+        /* Main Container */
+        .container { margin-top: 70px !important; padding-bottom: 100px !important; max-width: 600px !important; }
+        .input-section { background: transparent !important; padding: 0 !important; box-shadow: none !important; border: none !important; }
+
+        /* + Audio Button */
+        .suno-audio-btn {
+            width: 100%; background: rgba(255,255,255,0.4); border: 1px solid rgba(255,255,255,0.6);
+            padding: 16px; border-radius: 24px; font-size: 1rem; font-weight: 600; color: #111;
+            display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 16px;
+            backdrop-filter: blur(10px); cursor: pointer; transition: 0.2s;
+        }
+        .suno-audio-btn:active { transform: scale(0.98); }
+
+        /* Cards (Lirik & Gaya) */
+        #lyricsFieldWrapper, #styleInput-wrapper {
+            background: rgba(255,255,255,0.4) !important;
+            backdrop-filter: blur(10px) !important;
+            border-radius: 24px !important;
+            padding: 16px !important;
+            border: 1px solid rgba(255,255,255,0.6) !important;
+            margin-bottom: 16px !important;
+            display: block !important; 
+        }
+        
+        /* Card Headers */
+        .suno-card-header {
+            display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;
+        }
+        .suno-card-title { font-weight: 600; font-size: 0.95rem; display: flex; align-items: center; gap: 8px; color: #111; }
+        
+        /* Textareas */
+        #lyricsInput, #styleInput {
+            background: transparent !important; border: none !important; box-shadow: none !important;
+            padding: 0 !important; font-size: 1rem !important; color: rgba(0,0,0,0.6) !important;
+            min-height: 80px !important; width: 100% !important; resize: none !important;
+        }
+        #lyricsInput::placeholder, #styleInput::placeholder { color: rgba(0,0,0,0.3) !important; font-weight: 500; }
+
+        /* Magic Wand Button */
+        .suno-magic-btn {
+            background: #111 !important; color: #fff !important; border-radius: 50% !important;
+            width: 32px !important; height: 32px !important; padding: 0 !important;
+            display: flex !important; align-items: center !important; justify-content: center !important;
+            border: none !important; cursor: pointer;
+        }
+        
+        /* Card Footers */
+        .suno-card-footer {
+            display: flex; justify-content: space-between; align-items: center; margin-top: 12px;
+        }
+        .suno-pill {
+            background: rgba(255,255,255,0.6); border: 1px solid rgba(0,0,0,0.05); border-radius: 99px;
+            padding: 8px 16px; font-size: 0.85rem; font-weight: 600; display: flex; align-items: center; gap: 8px; color: #111; cursor: pointer;
+        }
+        .suno-circle-btn {
+            width: 32px; height: 32px; border-radius: 50%; background: rgba(255,255,255,0.6);
+            border: none; display: flex; align-items: center; justify-content: center; color: #111; cursor: pointer;
+        }
+        .suno-chips { display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; }
+        .suno-chips::-webkit-scrollbar { display: none; }
+        .suno-chip { background: rgba(255,255,255,0.4); padding: 6px 12px; border-radius: 99px; font-size: 0.8rem; font-weight: 600; color: rgba(0,0,0,0.6); white-space: nowrap; }
+
+        /* Title Input */
+        #titleFieldWrapper {
+            background: rgba(255,255,255,0.4) !important; backdrop-filter: blur(10px) !important;
+            border-radius: 99px !important; padding: 4px 16px !important; border: 1px solid rgba(255,255,255,0.6) !important;
+            display: flex !important; flex-direction: row !important; align-items: center !important; gap: 12px !important;
+            margin-bottom: 24px !important;
+        }
+        #titleFieldWrapper::before {
+            content: '\f001'; font-family: 'Font Awesome 6 Free'; font-weight: 900; color: #111;
+        }
+        #titleInput {
+            background: transparent !important; border: none !important; box-shadow: none !important;
+            padding: 12px 0 !important; font-size: 0.95rem !important; flex: 1 !important; color: #111 !important; font-weight: 600 !important;
+        }
+        #titleInput::placeholder { color: rgba(0,0,0,0.3) !important; }
+
+        /* Create Button */
+        #generateBtn {
+            position: fixed !important; bottom: 20px !important; left: 20px !important; right: 20px !important;
+            width: calc(100% - 40px) !important; max-width: 560px !important; margin: 0 auto !important;
+            background: #444 !important; color: #fff !important; border-radius: 99px !important;
+            padding: 18px !important; font-size: 1.1rem !important; font-weight: 600 !important;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2) !important; z-index: 1000 !important;
+            display: flex !important; justify-content: center !important; align-items: center !important; gap: 8px !important;
+        }
+        #generateBtn svg { display: none !important; } 
+        #generateCostBadge { display: none !important; } 
+
+        /* Bottom Sheet Styling (Upload Options) */
+        .suno-bottom-sheet-overlay {
+            background: rgba(0,0,0,0.4) !important; backdrop-filter: blur(5px) !important;
+        }
+        .suno-bottom-sheet {
+            background: #f3e7e9 !important; 
+            border-radius: 24px 24px 0 0 !important;
+            position: absolute !important; bottom: 0 !important; left: 0 !important; right: 0 !important; width: 100% !important; max-width: 100% !important;
+            transform: translateY(100%) !important; transition: transform 0.3s ease !important;
+            padding: 24px 20px 40px 20px !important; margin: 0 !important;
+        }
+        .suno-bottom-sheet-overlay.show .suno-bottom-sheet { transform: translateY(0) !important; }
+        .suno-bs-handle { width: 40px; height: 4px; background: rgba(0,0,0,0.2); border-radius: 4px; margin: 0 auto 20px; }
+        .suno-bs-item {
+            display: flex; align-items: center; gap: 16px; padding: 16px 0; border-bottom: 1px solid rgba(0,0,0,0.05);
+            font-size: 1.1rem; font-weight: 500; color: #111; text-decoration: none; cursor: pointer;
+        }
+        .suno-bs-item i { width: 24px; text-align: center; }
+
+        /* Model Dropdown Styling */
+        .suno-model-dropdown {
+            position: absolute; top: 50px; right: 20px; width: 280px;
+            background: #e8eaf2; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            padding: 8px; z-index: 1001; display: none; flex-direction: column; gap: 4px;
+        }
+        .suno-model-dropdown.show { display: flex; }
+        .suno-model-item {
+            padding: 12px; border-radius: 12px; cursor: pointer; transition: 0.2s;
+            display: flex; flex-direction: column; gap: 4px; text-align: left;
+        }
+        .suno-model-item:hover { background: rgba(255,255,255,0.5); }
+        .suno-model-item.selected { background: rgba(0,0,0,0.05); }
+        .suno-model-name { font-weight: 600; font-size: 0.95rem; color: #111; display: flex; align-items: center; gap: 8px; }
+        .suno-model-badge { background: #fff; border: 1px solid rgba(0,0,0,0.1); padding: 2px 6px; border-radius: 6px; font-size: 0.7rem; font-weight: 700; }
+        .suno-model-desc { font-size: 0.8rem; color: rgba(0,0,0,0.6); }
+        
+        #modelDropdown { display: none !important; }
     </style>
 </head>
 <body>
@@ -1371,27 +1538,71 @@
         </div>
     </div>
 
-    <!-- NAVBAR PREMIUM -->
-    <nav class="navbar">
-        <button onclick="window.openSidebar()" class="back-btn" title="Menu" style="font-size: 1rem;"><i class="fa-solid fa-bars"></i></button>
-        <a href="/" class="logo-container" title="Kembali ke Beranda" style="text-decoration: none; pointer-events: auto;">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 60" class="krea-logo-svg">
-                <defs>
-                    <linearGradient id="kreaGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                        <stop offset="0%" stop-color="#D97757" />
-                        <stop offset="50%" stop-color="#AF52DE" />
-                        <stop offset="100%" stop-color="#007AFF" />
-                    </linearGradient>
-                </defs>
-                <g>
-                    <path d="M 30,10 Q 30,30 50,30 Q 30,30 30,50 Q 30,30 10,30 Q 30,30 30,10 Z" fill="url(#kreaGrad)" />
-                    <path d="M 30,17 Q 30,30 43,30 Q 30,30 30,43 Q 30,30 17,30 Q 30,30 30,17 Z" fill="url(#kreaGrad)" transform="rotate(45, 30, 30)" opacity="0.85" />
-                </g>
-                <text x="65" y="38" font-family="'Plus Jakarta Sans', sans-serif" font-weight="800" font-size="21" fill="currentColor" letter-spacing="-0.5px">Kreaverse<tspan font-weight="500" fill="#D97757"> AI</tspan></text>
-            </svg>
-        </a>
-        <div class="nav-right" style="width: 32px;"></div>
+    <!-- SUNO TOPBAR -->
+    <nav class="suno-topbar">
+        <button class="suno-back-btn" onclick="window.openSidebar()"><i class="fa-solid fa-chevron-down"></i></button>
+        <div class="suno-center-title">
+            <div class="title">Advanced <i class="fa-solid fa-chevron-down" style="font-size:0.7rem; margin-left:4px;"></i></div>
+            <div class="credits" id="suno-credits-display">50 credits left</div>
+        </div>
+        <div class="suno-model-selector" onclick="document.getElementById('sunoModelDropdown').classList.toggle('show')">
+            <span id="sunoModelSelectedLabel">v4.5-all</span> <i class="fa-solid fa-chevron-up"></i>
+        </div>
     </nav>
+    
+    <!-- SUNO MODEL DROPDOWN -->
+    <div class="suno-model-dropdown" id="sunoModelDropdown">
+        <div class="suno-model-item" onclick="selectSunoModel('v5.5', 'v5.5 Pro')">
+            <div class="suno-model-name"><span style="color:#ff4d85">v5.5</span> <span class="suno-model-badge">Pro</span></div>
+            <div class="suno-model-desc">Powers Voices, Custom Models and My Taste</div>
+        </div>
+        <div class="suno-model-item" onclick="selectSunoModel('v5', 'v5 Pro')">
+            <div class="suno-model-name">v5 <span class="suno-model-badge">Pro</span></div>
+            <div class="suno-model-desc">Vokal autentik, kualitas audio superior, dan kontrol yang optimal.</div>
+        </div>
+        <div class="suno-model-item" onclick="selectSunoModel('v4.5+', 'v4.5+ Pro')">
+            <div class="suno-model-name">v4.5+ <span class="suno-model-badge">Pro</span></div>
+            <div class="suno-model-desc">Metode pembuatan tingkat lanjut</div>
+        </div>
+        <div class="suno-model-item" onclick="selectSunoModel('v4.5', 'v4.5 Pro')">
+            <div class="suno-model-name">v4.5 <span class="suno-model-badge">Pro</span></div>
+            <div class="suno-model-desc">Perintah cerdas</div>
+        </div>
+        <div class="suno-model-item selected" onclick="selectSunoModel('v4.5-all', 'v4.5-all')">
+            <div class="suno-model-name">v4.5-all <i class="fa-solid fa-check" style="margin-left:auto;"></i></div>
+            <div class="suno-model-desc">Model gratis terbaik</div>
+        </div>
+        <div class="suno-model-item" onclick="selectSunoModel('v4', 'v4 Pro')">
+            <div class="suno-model-name">v4 <span class="suno-model-badge">Pro</span></div>
+            <div class="suno-model-desc">Kualitas suara yang lebih baik</div>
+        </div>
+        <div style="padding: 8px 12px; font-size: 0.8rem; color: rgba(0,0,0,0.5); border-bottom: 1px solid rgba(0,0,0,0.05);">Lyrics Model</div>
+        <div class="suno-model-item" onclick="selectSunoModel('classic', 'Classic')">
+            <div class="suno-model-name">Classic</div>
+            <div class="suno-model-desc">Follows prompts closely and takes fewer risks.</div>
+        </div>
+        <div class="suno-model-item" onclick="selectSunoModel('remi', 'Remi')">
+            <div class="suno-model-name">Remi</div>
+            <div class="suno-model-desc">Our newest, most creative model.</div>
+        </div>
+    </div>
+    
+    <script>
+        function selectSunoModel(val, label) {
+            document.getElementById('sunoModelSelectedLabel').innerText = label;
+            document.getElementById('sunoModelDropdown').classList.remove('show');
+            const oldSelect = document.getElementById('modelSelect');
+            if(oldSelect) oldSelect.value = val;
+            document.querySelectorAll('.suno-model-item').forEach(item => {
+                item.classList.remove('selected');
+                const check = item.querySelector('.fa-check');
+                if(check) check.remove();
+            });
+            const clickedItem = event.currentTarget;
+            clickedItem.classList.add('selected');
+            clickedItem.querySelector('.suno-model-name').innerHTML += ' <i class="fa-solid fa-check" style="margin-left:auto;"></i>';
+        }
+    </script>
 
     <!-- SIDEBAR MENU (APIFRAME STYLE) -->
     <div id="sidebarOverlay" class="sidebar-overlay" onclick="window.closeSidebar()"></div>
@@ -2326,179 +2537,74 @@
                 </div>
             </div>
 
-            <!-- FIELD: TITLE -->
-            <div class="input-group" id="titleFieldWrapper">
-                <label for="titleInput">
-                    <span>Title *</span>
-                    <div style="display: flex; gap: 6px;">
-                        <button type="button" class="magic-wand-btn" style="padding: 4px 8px; font-size: 0.7rem; font-weight: 800;" onclick="let el=document.getElementById('titleInput'); el.value = (el.value === el.value.toUpperCase()) ? el.value.toLowerCase() : el.value.toUpperCase();" title="Ubah Kapital / Huruf Kecil">
-                            Kapital
-                        </button>
-                    </div>
-                </label>
-                <input type="text" id="titleInput" placeholder="Masukkan judul lagu..." maxlength="100" oninput="updateCounter('titleInput', 'titleCounter', 100)">
-                <span class="char-counter" id="titleCounter">0/100</span>
+            <!-- TOMBOL + AUDIO (SUNO STYLE) -->
+            <div class="suno-audio-btn" onclick="document.getElementById('uploadOptionsModal').classList.add('show')">
+                <i class="fa-solid fa-plus"></i> Audio
             </div>
 
-            <!-- FIELD: STYLE OF MUSIC -->
-            <div class="input-group">
-                <label for="styleInput">
-                    <span style="line-height: 1.2;">Style of<br>Music *</span>
-                    <div style="display: flex; gap: 6px;">
-                        <button type="button" class="magic-wand-btn" style="background: rgba(245, 158, 11, 0.1); color: #f59e0b; border-color: rgba(245, 158, 11, 0.2); padding: 4px 8px; font-size: 0.7rem;" onclick="window.openPromptModal()" title="Lihat Daftar Inspirasi Prompt">
-                            <i class="fa-solid fa-lightbulb"></i> Inspirasi
-                        </button>
-                        <button type="button" class="magic-wand-btn" style="padding: 4px 8px; font-size: 0.7rem;" onclick="triggerMagicWand('style')" title="Auto-Generate Style via AI">
-                            <i class="fa-solid fa-wand-magic-sparkles"></i> AI
-                        </button>
-                        <button type="button" class="action-icon-btn" style="padding: 4px 8px; font-size: 0.7rem;" onclick="clearInput('styleInput', 'styleCounter', 1000)" title="Hapus Teks">
-                            <i class="fa-solid fa-trash-can"></i>
-                        </button>
-                    </div>
-                </label>
-                <textarea id="styleInput" placeholder="Contoh: jazz, classical, electronic, upbeat pop..." maxlength="1000" oninput="updateCounter('styleInput', 'styleCounter', 1000)"></textarea>
-                <span class="char-counter" id="styleCounter">0/1000</span>
-            </div>
-
-            <!-- INSTRUMENTAL TOGGLE -->
-            <div class="toggle-container">
-                <span class="toggle-label">Instrumental</span>
-                <label class="switch">
-                    <input type="checkbox" id="instrumentalToggle">
-                    <span class="slider-toggle"></span>
-                </label>
-            </div>
-            <span class="helper-text">Aktifkan untuk menghasilkan musik tanpa suara vokal (hanya instrumen). Jika dimatikan, lagu akan memiliki vokal.</span>
-
-            <!-- FIELD: LYRICS OF MUSIC -->
-            <div class="input-group" id="lyricsFieldWrapper">
-                <label for="lyricsInput">
-                    <span style="line-height: 1.2;">Lyrics of<br>music *</span>
-                    <div style="display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end;">
-                        <button type="button" id="btnSyncDetect" class="magic-wand-btn" style="background: rgba(139, 92, 246, 0.1); color: #8b5cf6; border-color: rgba(139, 92, 246, 0.2); padding: 4px 8px; font-size: 0.7rem; white-space: nowrap; transition: all 0.3s ease;" onclick="handleSyncDetectClick()" title="Deteksi Lirik dari Audio">
-                            <i class="fa-solid fa-ear-listen" id="iconSyncDetect"></i> <span id="textSyncDetect">Deteksi</span>
-                        </button>
-                        <button type="button" class="magic-wand-btn" style="padding: 4px 8px; font-size: 0.7rem; white-space: nowrap;" onclick="triggerMagicWand('lyrics')" title="Rapikan Struktur Lagu via AI">
-                            <i class="fa-solid fa-wand-magic-sparkles"></i> AI
-                        </button>
-                        <button type="button" class="magic-wand-btn" style="background: rgba(16, 185, 129, 0.1); color: #10B981; border-color: rgba(16, 185, 129, 0.2); padding: 4px 8px; font-size: 0.7rem; white-space: nowrap;" onclick="encryptLyrics()" title="Bypass Filter NLP">
-                            <i class="fa-solid fa-user-secret"></i> Encrypt
-                        </button>
-                        <button type="button" class="action-icon-btn" style="padding: 4px 8px; font-size: 0.7rem; white-space: nowrap;" onclick="clearInput('lyricsInput', 'lyricsCounter', 5000); window.checkLyricsState();" title="Hapus Teks">
-                            <i class="fa-solid fa-trash-can"></i>
-                        </button>
-                    </div>
-                </label>
-                <div id="lyricsHelperText" style="font-size: 0.7rem; color: var(--accent-color); margin-bottom: 6px; font-weight: 600; background: rgba(0, 122, 255, 0.05); padding: 8px 12px; border-radius: 8px; border: 1px solid rgba(0, 122, 255, 0.1); line-height: 1.5; transition: all 0.3s ease;">
-                    <i class="fa-solid fa-circle-info"></i> <b>Panduan:</b> Biarkan kotak ini kosong lalu klik <b>Deteksi</b> untuk menebak lirik dari audio. <br><br><b>ATAU</b> paste lirik asli dari Google ke kotak ini, lalu klik <b>Sync Lirik</b> untuk menyinkronkan waktu lirik dengan lagu (Karaoke).
+            <!-- SUNO CARD: LIRIK -->
+            <div class="suno-card" id="lyricsFieldWrapper">
+                <div class="suno-card-header">
+                    <div class="suno-card-title"><i class="fa-solid fa-chevron-down"></i> Lirik</div>
+                    <button type="button" class="suno-magic-btn" onclick="triggerMagicWand('lyrics')"><i class="fa-solid fa-wand-magic-sparkles"></i></button>
                 </div>
-                <div id="detectLyricsProgress" class="hidden" style="font-size: 0.75rem; color: #8b5cf6; margin-bottom: 6px; font-weight: 600; background: rgba(139, 92, 246, 0.05); padding: 8px 12px; border-radius: 8px; border: 1px solid rgba(139, 92, 246, 0.2); display: flex; align-items: center; gap: 8px;">
-                    <i class="fa-solid fa-circle-notch fa-spin"></i> <span id="detectLyricsStatus">Mendengarkan audio...</span>
-                </div>
-                <textarea id="lyricsInput" placeholder="Tuliskan lirik lagu Anda sendiri di sini..." style="height: 140px;" maxlength="5000" oninput="updateCounter('lyricsInput', 'lyricsCounter', 5000); window.checkLyricsState();"></textarea>
-                <span class="char-counter" id="lyricsCounter">0/5000</span>
-            </div>
-
-            <!-- ACCORDION: OPTIONAL PARAMETERS -->
-            <div id="optionalParametersWrapper" style="background: #ffffff; border: 1px solid var(--border-color); border-radius: 20px; padding: 20px; margin-bottom: 24px; box-shadow: 0 4px 12px rgba(0,0,0,0.03); text-align: left;">
-                <div class="custom-dropdown-trigger" style="background: #f8fafc !important; cursor: pointer; user-select: none; border-radius: 12px; border: 1px solid var(--border-color); padding: 14px 16px;" onclick="toggleAccordion('optionalParamsBody')">
-                    <span style="font-weight: 700; font-size: 0.92rem; display: flex; align-items: center; gap: 8px;">
-                        <i class="fa-solid fa-sliders" style="color: var(--accent-color);"></i> Optional Parameters
-                    </span>
-                </div>
+                <textarea id="lyricsInput" class="suno-textarea" placeholder="Masukkan lirikmu sendiri atau buat deskripsi lagu..." maxlength="5000" oninput="updateCounter('lyricsInput', 'lyricsCounter', 5000); window.checkLyricsState();"></textarea>
+                <span class="char-counter" id="lyricsCounter" style="display:none;">0/5000</span>
                 
-                <div id="optionalParamsBody" class="hidden" style="padding-top: 18px; display: flex; flex-direction: column; gap: 14px;">
-                    <!-- NEGATIVE TAGS -->
-                    <div class="input-group">
-                        <label for="negativeTagsInput">Negative Tags</label>
-                        <input type="text" id="negativeTagsInput" placeholder="Gaya musik yang dihindari (contoh: metal, heavy drums)">
-                    </div>
-
-                    <!-- VOCAL GENDER SELECT -->
-                    <div class="option-group" style="margin-bottom: 15px;">
-                        <label>Vocal Gender</label>
-                        <div class="custom-select-container">
-                            <div class="custom-select-trigger" onclick="window.toggleCustomSelect('vocalGenderDropdown')">
-                                <span id="vocalGenderSelectedLabel">Not specified</span>
-                                <i class="fa-solid fa-chevron-down"></i>
-                            </div>
-                            <div class="custom-select-options hidden" id="vocalGenderDropdown">
-                                <div class="custom-select-option selected" onclick="window.selectGenderOption('not_specified', 'Not specified')">Not specified</div>
-                                <div class="custom-select-option" onclick="window.selectGenderOption('male', 'Male')">Male</div>
-                                <div class="custom-select-option" onclick="window.selectGenderOption('female', 'Female')">Female</div>
-                            </div>
-                        </div>
-                        <input type="hidden" id="vocalGenderSelect" value="not_specified">
-                    </div>
-
-                    <!-- SLIDER: STYLE WEIGHT -->
-                    <div class="slider-wrapper">
-                        <div class="slider-info">
-                            <span class="slider-title">Style Weight</span>
-                        </div>
-                        <div class="slider-control-row">
-                            <input type="range" id="styleWeightSlider" class="slider-range" min="0" max="1" step="0.1" value="0.5" oninput="syncSliderVal('styleWeightSlider', 'styleWeightVal')">
-                            <span class="slider-val-box" id="styleWeightVal">0.5</span>
-                            <button type="button" class="btn-reset-slider" onclick="resetSlider('styleWeightSlider', 'styleWeightVal', 0.5)">×</button>
-                        </div>
-                        <span class="helper-text" style="margin:0;">Seberapa kuat AI mengikuti gaya musik yang diminta.</span>
-                    </div>
-
-                    <!-- SLIDER: WEIRDNESS CONSTRAINT -->
-                    <div class="slider-wrapper">
-                        <div class="slider-info">
-                            <span class="slider-title">Weirdness Constraint</span>
-                        </div>
-                        <div class="slider-control-row">
-                            <input type="range" id="weirdnessSlider" class="slider-range" min="0" max="1" step="0.1" value="0.5" oninput="syncSliderVal('weirdnessSlider', 'weirdnessVal')">
-                            <span class="slider-val-box" id="weirdnessVal">0.5</span>
-                            <button type="button" class="btn-reset-slider" onclick="resetSlider('weirdnessSlider', 'weirdnessVal', 0.5)">×</button>
-                        </div>
-                        <span class="helper-text" style="margin:0;">Tingkat keunikan atau eksperimen nada pada lagu.</span>
-                    </div>
-
-                    <!-- SLIDER: AUDIO WEIGHT -->
-                    <div class="slider-wrapper">
-                        <div class="slider-info">
-                            <span class="slider-title">Audio Weight</span>
-                        </div>
-                        <div class="slider-control-row">
-                            <input type="range" id="audioWeightSlider" class="slider-range" min="0" max="1" step="0.1" value="0.5" oninput="syncSliderVal('audioWeightSlider', 'audioWeightVal')">
-                            <span class="slider-val-box" id="audioWeightVal">0.5</span>
-                            <button type="button" class="btn-reset-slider" onclick="resetSlider('audioWeightSlider', 'audioWeightVal', 0.5)">×</button>
-                        </div>
-                        <span class="helper-text" style="margin:0;">Seberapa mirip hasil akhir dengan audio referensi (khusus mode Cover).</span>
-                    </div>
-
-                    <!-- PERSONA ID -->
-                    <div class="input-group">
-                        <label for="personaIdInput">Persona ID</label>
-                        <input type="text" id="personaIdInput" placeholder="contoh: persona_123">
+                <div class="suno-card-footer">
+                    <label class="suno-pill" style="cursor:pointer;">
+                        <input type="checkbox" id="instrumentalToggle" style="display:none;" onchange="document.getElementById('instCheckIcon').style.color = this.checked ? '#111' : 'rgba(0,0,0,0.2)'">
+                        <i class="fa-solid fa-check-circle" id="instCheckIcon" style="color:rgba(0,0,0,0.2);"></i> Instrumental
+                    </label>
+                    <div style="display:flex; gap:8px;">
+                        <button type="button" class="suno-circle-btn"><i class="fa-solid fa-dice"></i></button>
+                        <button type="button" class="suno-circle-btn"><i class="fa-solid fa-expand"></i></button>
                     </div>
                 </div>
+            </div>
+
+            <!-- SUNO CARD: GAYA -->
+            <div class="suno-card" id="styleInput-wrapper">
+                <div class="suno-card-header">
+                    <div class="suno-card-title"><i class="fa-solid fa-chevron-down"></i> Gaya</div>
+                    <button type="button" class="suno-magic-btn" onclick="triggerMagicWand('style')"><i class="fa-solid fa-wand-magic-sparkles"></i></button>
+                </div>
+                <textarea id="styleInput" class="suno-textarea" placeholder="Describe what you want your song to sound like" maxlength="1000" oninput="updateCounter('styleInput', 'styleCounter', 1000)"></textarea>
+                <span class="char-counter" id="styleCounter" style="display:none;">0/1000</span>
+                
+                <div class="suno-card-footer">
+                    <button type="button" class="suno-circle-btn"><i class="fa-solid fa-rotate"></i></button>
+                    <div class="suno-chips">
+                        <span class="suno-chip">dubstep</span>
+                        <span class="suno-chip">uplifting</span>
+                        <span class="suno-chip">r&b</span>
+                    </div>
+                    <button type="button" class="suno-circle-btn"><i class="fa-solid fa-expand"></i></button>
+                </div>
+            </div>
+
+            <!-- SUNO TITLE INPUT -->
+            <div id="titleFieldWrapper">
+                <input type="text" id="titleInput" placeholder="Tambahkan Judul Lagu" maxlength="100" oninput="updateCounter('titleInput', 'titleCounter', 100)">
+                <span id="titleCounter" style="display:none;">0/100</span>
+            </div>
+
+            <!-- HIDDEN OPTIONAL PARAMS (Agar JS tidak error) -->
+            <div style="display:none;">
+                <input type="text" id="negativeTagsInput" value="">
+                <input type="hidden" id="vocalGenderSelect" value="not_specified">
+                <input type="range" id="styleWeightSlider" value="0.5">
+                <input type="range" id="weirdnessSlider" value="0.5">
+                <input type="range" id="audioWeightSlider" value="0.5">
+                <input type="text" id="personaIdInput" value="">
             </div>
 
             <!-- SUBMIT ACTION -->
-            <button id="generateBtn" class="action-btn" style="margin-top: 14px; padding: 16px 24px; border-radius: 16px; display: flex; justify-content: center; align-items: center; gap: 10px; background: linear-gradient(135deg, #007AFF, #0056b3); color: #ffffff; box-shadow: 0 8px 20px rgba(0, 122, 255, 0.3); border: none; font-family: 'Plus Jakarta Sans', sans-serif; transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);" onclick="generateAudioSong()">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
-                    <path d="M12 0L14.59 9.41L24 12L14.59 14.59L12 24L9.41 14.59L0 12L9.41 9.41L12 0Z" />
-                </svg>
-                <span style="font-weight: 800; font-size: 1.05rem; letter-spacing: 0.5px;">Buat Lagu</span> 
-                <span style="opacity: 0.6; margin: 0 2px; font-size: 1.2rem;">•</span> 
-                <span id="generateCostBadge" style="font-weight: 700; font-size: 0.85rem; background: rgba(255,255,255,0.2); padding: 4px 10px; border-radius: 8px;"></span>
+            <button id="generateBtn" class="action-btn" onclick="generateAudioSong()">
+                <i class="fa-solid fa-music"></i> Buat
+                <span id="generateCostBadge" style="display:none;"></span>
             </button>
-            
-            <!-- BENEFIT DESCRIPTIONS -->
-            <div style="display: flex; justify-content: center; align-items: center; gap: 14px; flex-wrap: wrap; margin-top: 18px; font-size: 0.75rem; font-weight: 700; color: var(--text-secondary);">
-                <span style="display: flex; align-items: center; gap: 6px;"><i class="fa-solid fa-headphones" style="color: #10b981;"></i> Audio HD Studio</span>
-                <span style="color: #cbd5e1;">|</span>
-                <span style="display: flex; align-items: center; gap: 6px;"><i class="fa-solid fa-briefcase" style="color: #f59e0b;"></i> Commercial Use</span>
-                <span style="color: #cbd5e1;">|</span>
-                <span style="display: flex; align-items: center; gap: 6px;"><i class="fa-solid fa-bolt" style="color: #38bdf8;"></i> Render Cepat</span>
-            </div>
         </div>
-
-        <!-- MINI LIBRARY & PERSISTENT PROGRESS -->
         <div id="miniLibraryContainer" style="display: none; background: #ffffff; border: 1px solid var(--border-color); border-radius: 24px; padding: 24px; margin-bottom: 30px; box-shadow: var(--shadow-md);">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; border-bottom: 2px solid #f1f5f9; padding-bottom: 12px; flex-wrap: wrap; gap: 10px;">
                 <div style="display: flex; align-items: center; gap: 12px;">
@@ -2700,32 +2806,23 @@
                 </div>
             </div>
 
-            <!-- MODAL PILIHAN UPLOAD -->
-            <div id="uploadOptionsModal" class="krea-modal-overlay">
-                <div class="krea-modal-box" style="max-width: 340px; padding: 24px;">
-            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px;">
-                <div style="text-align: left;">
-                    <h3 style="font-size: 1.1rem; font-weight: 900; color: var(--text-primary); margin: 0 0 6px 0;">Pilih Metode Upload</h3>
-                    <p style="font-size: 0.75rem; color: var(--text-secondary); margin: 0; line-height: 1.4;">Pilih cara termudah untuk menambahkan audio referensi Anda. Anda bisa mengunggah file, merekam langsung, atau menempelkan link.</p>
+            <!-- MODAL PILIHAN UPLOAD (SUNO BOTTOM SHEET) -->
+            <div id="uploadOptionsModal" class="krea-modal-overlay suno-bottom-sheet-overlay" onclick="window.closeUploadOptionsModal()">
+                <div class="krea-modal-box suno-bottom-sheet" onclick="event.stopPropagation()">
+                    <div class="suno-bs-handle"></div>
+                    <div style="display: flex; flex-direction: column;">
+                        <div class="suno-bs-item" onclick="window.closeUploadOptionsModal(); window.toggleUrlInput()">
+                            <i class="fa-regular fa-compass"></i> Browse
+                        </div>
+                        <div class="suno-bs-item" onclick="window.closeUploadOptionsModal(); document.getElementById('audioReferenceInput').click()">
+                            <i class="fa-solid fa-arrow-up-from-bracket"></i> Upload
+                        </div>
+                        <div class="suno-bs-item" style="border-bottom: none;" onclick="window.closeUploadOptionsModal(); window.toggleVoiceRecorder()">
+                            <i class="fa-solid fa-microphone"></i> Record
+                        </div>
+                    </div>
                 </div>
-                <button onclick="window.closeUploadOptionsModal()" style="background: none; border: none; font-size: 1.5rem; color: var(--text-secondary); cursor: pointer; line-height: 1; padding-left: 10px;">&times;</button>
             </div>
-            <div style="display: flex; flex-direction: column; gap: 12px;">
-                <button type="button" class="btn-custom-upload-compact" style="width: 100%; justify-content: center; padding: 14px !important; font-size: 0.9rem !important; border-radius: 12px !important;" onclick="window.closeUploadOptionsModal(); document.getElementById('audioReferenceInput').click()">
-                    <i class="fa-solid fa-file-arrow-up"></i> Upload File Baru
-                </button>
-                <button type="button" class="btn-custom-upload-compact" style="width: 100%; justify-content: center; padding: 14px !important; font-size: 0.9rem !important; border-radius: 12px !important; background: #FFF !important; border: 1.5px solid #cbd5e1 !important; color: var(--text-secondary) !important;" onclick="window.closeUploadOptionsModal(); window.toggleUploadHistoryPopup()">
-                    <i class="fa-solid fa-clock-rotate-left"></i> Pilih dari Histori
-                </button>
-                <button type="button" class="btn-custom-upload-compact" style="width: 100%; justify-content: center; padding: 14px !important; font-size: 0.9rem !important; border-radius: 12px !important; background: #FFF !important; border: 1.5px solid #10b981 !important; color: #10b981 !important;" onclick="window.closeUploadOptionsModal(); window.toggleVoiceRecorder()">
-                    <i class="fa-solid fa-microphone"></i> Rekam Suara Langsung
-                </button>
-                <button type="button" class="btn-custom-upload-compact" style="width: 100%; justify-content: center; padding: 14px !important; font-size: 0.9rem !important; border-radius: 12px !important; background: #FFF !important; border: 1.5px solid #0ea5e9 !important; color: #0ea5e9 !important;" onclick="window.closeUploadOptionsModal(); window.toggleUrlInput()">
-                    <i class="fa-solid fa-link"></i> Gunakan URL Audio
-                </button>
-            </div>
-        </div>
-    </div>
 
     <!-- MODAL INSPIRASI PROMPT KREAVERSE AI (UTAMA) -->
     <div id="promptModalOverlay" class="krea-modal-overlay">
