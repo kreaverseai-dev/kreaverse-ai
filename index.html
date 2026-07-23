@@ -565,34 +565,36 @@
         <div class="music-section">
             <div class="music-header">
                 <span class="music-title">Our Picks</span>
-                <a href="#" class="music-more">More <i class="fa-solid fa-chevron-right" style="font-size:10px;"></i></a>
+                <!-- Tombol Admin (Hanya Anda yang tahu fungsinya) -->
+                <a href="#" class="music-more" onclick="document.getElementById('admin-song-modal').classList.add('active')"><i class="fa-solid fa-plus-circle"></i> Tambah Lagu</a>
             </div>
-            <div class="song-list">
-                <!-- CONTOH CARA ISI LAGU: playSong('Judul Lagu', 'ID_YOUTUBE', 'Link_Foto') -->
-                <div class="song-item" onclick="playSong('Saturday Lights', 'jfKfPfyJRdk', 'https://images.unsplash.com/photo-1611162617474-5b21e879e113?q=80&w=100&auto=format&fit=crop')">
-                    <div class="song-cover" style="background-image: url('https://images.unsplash.com/photo-1611162617474-5b21e879e113?q=80&w=100&auto=format&fit=crop');">
-                        <span class="song-duration"><i class="fa-brands fa-youtube"></i></span>
-                    </div>
-                    <div class="song-info">
-                        <div class="song-title-text">Saturday Lights</div>
-                        <div class="song-artist-text">Flixa AI</div>
-                        <div class="song-artist-text" style="font-size:11px; margin-top:2px;"><i class="fa-solid fa-play" style="font-size:8px;"></i> 5,2K</div>
-                    </div>
-                    <div class="song-options" onclick="event.stopPropagation(); document.getElementById('music-options-sheet').classList.add('active');"><i class="fa-solid fa-ellipsis-vertical"></i></div>
-                </div>
-                <div class="song-item" onclick="playSong('Coffee at Six', '5qap5aO4i9A', 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?q=80&w=100&auto=format&fit=crop')">
-                    <div class="song-cover" style="background-image: url('https://images.unsplash.com/photo-1514525253161-7a46d19cd819?q=80&w=100&auto=format&fit=crop');">
-                        <span class="song-duration"><i class="fa-brands fa-youtube"></i></span>
-                    </div>
-                    <div class="song-info">
-                        <div class="song-title-text">Coffee at Six</div>
-                        <div class="song-artist-text">Flixa AI</div>
-                        <div class="song-artist-text" style="font-size:11px; margin-top:2px;"><i class="fa-solid fa-play" style="font-size:8px;"></i> 1,4K</div>
-                    </div>
-                    <div class="song-options" onclick="event.stopPropagation(); document.getElementById('music-options-sheet').classList.add('active');"><i class="fa-solid fa-ellipsis-vertical"></i></div>
-                </div>
+            <!-- Wadah Kosong untuk Database Firebase -->
+            <div class="song-list" id="dynamic-song-list">
+                <div style="text-align:center; color:#A1A1AA; font-size:13px; padding:20px;">Memuat lagu...</div>
             </div>
         </div>
+
+    <!-- MODAL ADMIN TAMBAH LAGU (Letakkan di mana saja, tidak akan terlihat sampai diklik) -->
+    <div class="modal-overlay" id="admin-song-modal">
+        <div class="modal-box" style="text-align: left;">
+            <h3 style="margin-bottom:8px; font-size: 20px; color: #111;">Admin: Tambah Lagu</h3>
+            <p style="font-size:13px; color: #666; margin-bottom:20px;">Masukkan link MP3 dari Cloudinary.</p>
+            
+            <label style="font-size:13px; font-weight:600; color:#444; display:block; margin-bottom:6px;">Judul Lagu</label>
+            <input type="text" id="admin-song-title" style="width: 100%; padding: 12px; border: 1px solid #EAEAEA; border-radius: 12px; margin-bottom: 16px; outline: none;" placeholder="Contoh: Epic Cinematic">
+            
+            <label style="font-size:13px; font-weight:600; color:#444; display:block; margin-bottom:6px;">Link Foto Cover (Cloudinary/Unsplash)</label>
+            <input type="text" id="admin-song-cover" style="width: 100%; padding: 12px; border: 1px solid #EAEAEA; border-radius: 12px; margin-bottom: 16px; outline: none;" placeholder="https://...">
+            
+            <label style="font-size:13px; font-weight:600; color:#444; display:block; margin-bottom:6px;">Link Audio MP3 (Cloudinary)</label>
+            <input type="text" id="admin-song-audio" style="width: 100%; padding: 12px; border: 1px solid #EAEAEA; border-radius: 12px; margin-bottom: 24px; outline: none;" placeholder="https://res.cloudinary.com/.../audio.mp3">
+            
+            <div style="display: flex; gap: 12px;">
+                <button class="modal-btn cancel" onclick="document.getElementById('admin-song-modal').classList.remove('active')">Batal</button>
+                <button id="btn-save-song" onclick="saveAdminSong()" style="flex: 1; padding: 12px; border-radius: 99px; font-weight: 600; font-size: 14px; border: none; background: #111; color: #FFF; cursor: pointer;">Simpan Lagu</button>
+            </div>
+        </div>
+    </div>
 
         <!-- Image Gallery (Pinterest Style) -->
         <div class="music-section" style="margin-top: 10px;">
@@ -963,94 +965,55 @@
         }
 
         // ===================================================
-        // SISTEM PEMUTAR MUSIK YOUTUBE ASLI
+        // SISTEM PEMUTAR MUSIK NATIVE (CLOUDINARY / MP3)
         // ===================================================
-        let ytPlayer;
-        let isPlayerReady = false;
-        let progressInterval;
-
-        // Fungsi bawaan YouTube API (Otomatis dipanggil saat API siap)
-        function onYouTubeIframeAPIReady() {
-            ytPlayer = new YT.Player('yt-hidden-player', {
-                height: '0',
-                width: '0',
-                videoId: '',
-                playerVars: { 'autoplay': 1, 'controls': 0, 'playsinline': 1 },
-                events: {
-                    'onReady': () => { isPlayerReady = true; },
-                    'onStateChange': onPlayerStateChange
-                }
-            });
-        }
-
-        // Mengatur tombol Play/Pause berdasarkan status YouTube
-        function onPlayerStateChange(event) {
-            const playPauseBtn = document.getElementById('mp-play-pause');
-            if (event.data == YT.PlayerState.PLAYING) {
-                playPauseBtn.innerHTML = '<i class="fa-solid fa-pause"></i>';
-                startProgressBar();
-            } else if (event.data == YT.PlayerState.PAUSED || event.data == YT.PlayerState.ENDED) {
-                playPauseBtn.innerHTML = '<i class="fa-solid fa-play"></i>';
-                clearInterval(progressInterval);
+        window.currentAudio = new Audio();
+        
+        window.currentAudio.addEventListener('timeupdate', () => {
+            const fill = document.getElementById('mp-progress-fill');
+            const timeText = document.getElementById('mp-time-text');
+            const current = window.currentAudio.currentTime;
+            const total = window.currentAudio.duration;
+            
+            if (total > 0) {
+                const progress = (current / total) * 100;
+                fill.style.width = `${progress}%`;
+                
+                const mC = Math.floor(current / 60);
+                const sC = Math.floor(current % 60);
+                const mT = Math.floor(total / 60);
+                const sT = Math.floor(total % 60);
+                timeText.innerText = `${mC}:${sC < 10 ? '0'+sC : sC} / ${mT}:${sT < 10 ? '0'+sT : sT}`;
             }
-        }
+        });
 
-        // Fungsi untuk memutar lagu (Dipanggil saat lagu diklik)
-        function playSong(title, videoId, coverUrl) {
+        window.currentAudio.addEventListener('ended', () => {
+            document.getElementById('mp-play-pause').innerHTML = '<i class="fa-solid fa-play"></i>';
+        });
+
+        window.playSong = function(title, audioUrl, coverUrl) {
             document.getElementById('mp-title-text').innerText = title;
             document.getElementById('mp-cover-img').style.backgroundImage = `url('${coverUrl}')`;
-            
-            // Nama penyanyi otomatis jadi Flixa AI
             document.getElementById('mp-artist-text').innerHTML = `Flixa AI <span id="mp-time-text" style="font-size: 10px; font-weight: 600; color: #111;">Memuat...</span>`;
             
             const miniPlayer = document.getElementById('global-mini-player');
             miniPlayer.classList.add('active');
 
-            if (isPlayerReady) {
-                ytPlayer.loadVideoById(videoId);
-                ytPlayer.playVideo();
+            window.currentAudio.src = audioUrl;
+            window.currentAudio.play().then(() => {
+                document.getElementById('mp-play-pause').innerHTML = '<i class="fa-solid fa-pause"></i>';
+            }).catch(e => console.log("Autoplay diblokir browser", e));
+        };
+
+        window.togglePlayPause = function() {
+            if (window.currentAudio.paused) {
+                window.currentAudio.play();
+                document.getElementById('mp-play-pause').innerHTML = '<i class="fa-solid fa-pause"></i>';
             } else {
-                alert("Sistem pemutar sedang memuat, tunggu beberapa detik lalu klik lagi.");
+                window.currentAudio.pause();
+                document.getElementById('mp-play-pause').innerHTML = '<i class="fa-solid fa-play"></i>';
             }
-        }
-
-        // Fungsi untuk tombol Play/Pause di Mini Player
-        function togglePlayPause() {
-            if (!isPlayerReady) return;
-            if (ytPlayer.getPlayerState() == YT.PlayerState.PLAYING) {
-                ytPlayer.pauseVideo();
-            } else {
-                ytPlayer.playVideo();
-            }
-        }
-
-        // Format detik ke menit:detik
-        function formatTime(seconds) {
-            if (!seconds) return "0:00";
-            const m = Math.floor(seconds / 60);
-            const s = Math.floor(seconds % 60);
-            return `${m}:${s < 10 ? '0'+s : s}`;
-        }
-
-        // Animasi Slider & Waktu Asli dari YouTube
-        function startProgressBar() {
-            clearInterval(progressInterval);
-            const fill = document.getElementById('mp-progress-fill');
-            const timeText = document.getElementById('mp-time-text');
-            
-            progressInterval = setInterval(() => {
-                if (isPlayerReady && ytPlayer.getPlayerState() == YT.PlayerState.PLAYING) {
-                    const current = ytPlayer.getCurrentTime();
-                    const total = ytPlayer.getDuration();
-                    
-                    if (total > 0) {
-                        const progress = (current / total) * 100;
-                        fill.style.width = `${progress}%`;
-                        timeText.innerText = `${formatTime(current)} / ${formatTime(total)}`;
-                    }
-                }
-            }, 500);
-        }
+        };
 
         function shareProfile() {
             if (navigator.share) {
@@ -1144,6 +1107,63 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
         const rtdb = getDatabase(app);
+
+        // --- SISTEM DATABASE LAGU (FIREBASE) ---
+        const songListContainer = document.getElementById('dynamic-song-list');
+        if(songListContainer) {
+            const qSongs = query(collection(db, 'songs'), orderBy('timestamp', 'desc'));
+            onSnapshot(qSongs, (snapshot) => {
+                songListContainer.innerHTML = '';
+                if(snapshot.empty) {
+                    songListContainer.innerHTML = '<div style="text-align:center; color:#A1A1AA; font-size:13px; padding:20px;">Belum ada lagu. Klik "Tambah Lagu" untuk memulai.</div>';
+                    return;
+                }
+                snapshot.forEach((docSnap) => {
+                    const data = docSnap.data();
+                    songListContainer.innerHTML += `
+                        <div class="song-item" onclick="playSong('${data.title}', '${data.audioUrl}', '${data.coverUrl}')">
+                            <div class="song-cover" style="background-image: url('${data.coverUrl}');">
+                                <span class="song-duration"><i class="fa-solid fa-music"></i></span>
+                            </div>
+                            <div class="song-info">
+                                <div class="song-title-text">${data.title}</div>
+                                <div class="song-artist-text">Flixa AI</div>
+                            </div>
+                            <div class="song-options" onclick="event.stopPropagation(); document.getElementById('music-options-sheet').classList.add('active');"><i class="fa-solid fa-ellipsis-vertical"></i></div>
+                        </div>
+                    `;
+                });
+            });
+        }
+
+        // Fungsi Simpan Lagu dari Modal Admin
+        window.saveAdminSong = async function() {
+            const title = document.getElementById('admin-song-title').value;
+            const coverUrl = document.getElementById('admin-song-cover').value;
+            const audioUrl = document.getElementById('admin-song-audio').value;
+            const btn = document.getElementById('btn-save-song');
+
+            if(!title || !audioUrl) { alert("Judul dan Link Audio wajib diisi!"); return; }
+
+            btn.innerText = "Menyimpan...";
+            try {
+                await addDoc(collection(db, 'songs'), {
+                    title: title,
+                    coverUrl: coverUrl || 'https://images.unsplash.com/photo-1611162617474-5b21e879e113?q=80&w=100&auto=format&fit=crop',
+                    audioUrl: audioUrl,
+                    timestamp: Date.now()
+                });
+                document.getElementById('admin-song-modal').classList.remove('active');
+                document.getElementById('admin-song-title').value = '';
+                document.getElementById('admin-song-cover').value = '';
+                document.getElementById('admin-song-audio').value = '';
+                alert("Lagu berhasil ditambahkan ke Database!");
+            } catch(e) {
+                console.error(e);
+                alert("Gagal menyimpan lagu.");
+            }
+            btn.innerText = "Simpan Lagu";
+        };
 
         let deferredPrompt;
         window.addEventListener('beforeinstallprompt', (e) => {
