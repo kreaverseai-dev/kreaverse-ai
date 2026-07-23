@@ -574,20 +574,36 @@
             </div>
         </div>
 
-    <!-- MODAL ADMIN TAMBAH LAGU (Letakkan di mana saja, tidak akan terlihat sampai diklik) -->
+    <!-- MODAL ADMIN TAMBAH LAGU -->
     <div class="modal-overlay" id="admin-song-modal">
         <div class="modal-box" style="text-align: left;">
             <h3 style="margin-bottom:8px; font-size: 20px; color: #111;">Admin: Tambah Lagu</h3>
-            <p style="font-size:13px; color: #666; margin-bottom:20px;">Masukkan link MP3 dari Cloudinary.</p>
+            <p style="font-size:13px; color: #666; margin-bottom:20px;">Masukkan link atau upload langsung ke Cloudinary.</p>
             
             <label style="font-size:13px; font-weight:600; color:#444; display:block; margin-bottom:6px;">Judul Lagu</label>
             <input type="text" id="admin-song-title" style="width: 100%; padding: 12px; border: 1px solid #EAEAEA; border-radius: 12px; margin-bottom: 16px; outline: none;" placeholder="Contoh: Epic Cinematic">
             
-            <label style="font-size:13px; font-weight:600; color:#444; display:block; margin-bottom:6px;">Link Foto Cover (Cloudinary/Unsplash)</label>
-            <input type="text" id="admin-song-cover" style="width: 100%; padding: 12px; border: 1px solid #EAEAEA; border-radius: 12px; margin-bottom: 16px; outline: none;" placeholder="https://...">
+            <!-- INPUT COVER DENGAN TOMBOL UPLOAD -->
+            <label style="font-size:13px; font-weight:600; color:#444; display:block; margin-bottom:6px;">Foto Cover (Link / Upload)</label>
+            <div style="display: flex; gap: 8px; margin-bottom: 4px;">
+                <input type="text" id="admin-song-cover" style="flex: 1; padding: 12px; border: 1px solid #EAEAEA; border-radius: 12px; outline: none;" placeholder="https://...">
+                <label for="upload-cover-file" style="background: #F4F4F5; border: 1px solid #EAEAEA; padding: 0 16px; border-radius: 12px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: #111; transition: 0.2s;">
+                    <i class="fa-solid fa-upload"></i>
+                </label>
+                <input type="file" id="upload-cover-file" accept="image/*" style="display: none;">
+            </div>
+            <div id="cover-upload-status" style="font-size: 11px; color: #D95040; margin-bottom: 16px; display: none; font-weight: 500;">Mengunggah...</div>
             
-            <label style="font-size:13px; font-weight:600; color:#444; display:block; margin-bottom:6px;">Link Audio MP3 (Cloudinary)</label>
-            <input type="text" id="admin-song-audio" style="width: 100%; padding: 12px; border: 1px solid #EAEAEA; border-radius: 12px; margin-bottom: 24px; outline: none;" placeholder="https://res.cloudinary.com/.../audio.mp3">
+            <!-- INPUT AUDIO DENGAN TOMBOL UPLOAD -->
+            <label style="font-size:13px; font-weight:600; color:#444; display:block; margin-bottom:6px;">Audio MP3 (Link / Upload)</label>
+            <div style="display: flex; gap: 8px; margin-bottom: 4px;">
+                <input type="text" id="admin-song-audio" style="flex: 1; padding: 12px; border: 1px solid #EAEAEA; border-radius: 12px; outline: none;" placeholder="https://res.cloudinary.com/.../audio.mp3">
+                <label for="upload-audio-file" style="background: #F4F4F5; border: 1px solid #EAEAEA; padding: 0 16px; border-radius: 12px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: #111; transition: 0.2s;">
+                    <i class="fa-solid fa-upload"></i>
+                </label>
+                <input type="file" id="upload-audio-file" accept="audio/*" style="display: none;">
+            </div>
+            <div id="audio-upload-status" style="font-size: 11px; color: #D95040; margin-bottom: 24px; display: none; font-weight: 500;">Mengunggah...</div>
             
             <div style="display: flex; gap: 12px;">
                 <button class="modal-btn cancel" onclick="document.getElementById('admin-song-modal').classList.remove('active')">Batal</button>
@@ -1082,6 +1098,83 @@
                     shineLayer.classList.add('shine-anim-' + randomAnim);
                 }
             }, 30000);
+        });
+    </script>
+
+    <script>
+        // ===================================================
+        // SISTEM UPLOAD CLOUDINARY (AUTO-SWITCH ANTI LIMIT)
+        // ===================================================
+        let cloudinaryAccounts = [
+            { cloudName: "gkilt74f", uploadPreset: "kreaverse_preset" }
+        ];
+
+        async function uploadToCloudinary(file, inputId, statusId) {
+            const statusEl = document.getElementById(statusId);
+            const inputEl = document.getElementById(inputId);
+            
+            if (!file) return;
+
+            statusEl.style.display = 'block';
+            statusEl.innerText = 'Mengunggah... Mohon tunggu.';
+            statusEl.style.color = '#D95040';
+            inputEl.value = 'Uploading...';
+
+            let uploadSuccess = false;
+
+            for (let i = 0; i < cloudinaryAccounts.length; i++) {
+                let account = cloudinaryAccounts[i];
+                statusEl.innerText = `Mengunggah... (Mencoba Akun ${i + 1})`;
+                
+                const formData = new FormData();
+                formData.append('file', file);
+                formData.append('upload_preset', account.uploadPreset);
+
+                try {
+                    const response = await fetch(`https://api.cloudinary.com/v1_1/${account.cloudName}/auto/upload`, {
+                        method: 'POST',
+                        body: formData
+                    });
+
+                    const data = await response.json();
+
+                    if (response.ok && data.secure_url) {
+                        inputEl.value = data.secure_url;
+                        statusEl.innerText = `Upload berhasil! ✓`;
+                        statusEl.style.color = '#2E7D32';
+                        
+                        setTimeout(() => { statusEl.style.display = 'none'; }, 3000);
+                        uploadSuccess = true;
+                        break; 
+                    } else {
+                        console.warn(`Akun ${account.cloudName} limit/error:`, data.error?.message);
+                    }
+                } catch (error) {
+                    console.warn(`Koneksi gagal di akun ${account.cloudName}:`, error);
+                }
+            }
+
+            if (!uploadSuccess) {
+                inputEl.value = '';
+                statusEl.innerText = 'Gagal: Semua akun Cloudinary limit/bermasalah.';
+                statusEl.style.color = '#FF3B30';
+            }
+        }
+
+        document.addEventListener("DOMContentLoaded", () => {
+            const coverInput = document.getElementById('upload-cover-file');
+            if(coverInput) {
+                coverInput.addEventListener('change', (e) => {
+                    uploadToCloudinary(e.target.files[0], 'admin-song-cover', 'cover-upload-status');
+                });
+            }
+
+            const audioInput = document.getElementById('upload-audio-file');
+            if(audioInput) {
+                audioInput.addEventListener('change', (e) => {
+                    uploadToCloudinary(e.target.files[0], 'admin-song-audio', 'audio-upload-status');
+                });
+            }
         });
     </script>
 
