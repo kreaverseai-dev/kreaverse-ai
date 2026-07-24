@@ -1,54 +1,86 @@
-// File: api/chat.js
-
 export default async function handler(req, res) {
-    // 1. Setup CORS agar bisa diakses dari frontend tanpa diblokir browser
-    res.setHeader('Access-Control-Allow-Credentials', true);
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'OPTIONS, POST');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-
-    // 2. Handle Preflight Request (Wajib untuk Vercel/Browser agar tidak error CORS)
-    if (req.method === 'OPTIONS') {
-        res.status(200).end();
-        return;
-    }
-
-    // Hanya izinkan metode POST
+    // Hanya menerima metode POST
     if (req.method !== 'POST') {
-        return res.status(405).json({ error: 'Method Not Allowed. Gunakan POST.' });
+        return res.status(405).json({ error: 'Method not allowed' });
     }
 
     try {
-        // 3. Tangkap data yang dikirim dari HTML Kreaverse (index.html)
-        const { targetUrl, apiKey, headerName = 'Authorization', payload } = req.body;
-
-        if (!targetUrl || !apiKey || !payload) {
-            return res.status(400).json({ error: 'Parameter tidak lengkap dari frontend.' });
+        const { message, file, model } = req.body;
+        
+        // Mengambil API Key dari Vercel Environment Variables
+        const apiKey = process.env.KIE_API_KEY; 
+        
+        if (!apiKey) {
+            return res.status(500).json({ error: 'API Key belum dipasang di Vercel.' });
         }
 
-        // 4. Teruskan request ke Server AI (NaraRouter, Groq, Tencent, dll)
-        const response = await fetch(targetUrl, {
+        // Menyusun isi pesan (Teks + Gambar jika ada)
+        let contentArray = [];
+
+        // Jika ada file gambar, masukkan ke format Claude Vision
+        if (file && file.type.startsWith('image/')) {
+            contentArray.push({
+                type: "image",
+                source: {
+                    type: "base64",
+                    media_type: file.type,
+                    data: file.data // Data base64 murni
+                }
+            });
+        } else if (file) {
+            // Jika file bukan gambar (misal MP3/ZIP), kita beri tahu AI nama filenya saja
+            // Karena API chat standar biasanya hanya menerima gambar.
+            contentArray.push({
+                type: "text",
+                text: `[Sistem: Pengguna melampirkan file bernama ${file.name} dengan tipe ${file.type}.]`
+            });
+        }
+
+        // Masukkan teks pesan dari user
+        if (message) {
+            contentArray.push({
+                type: "text",
+                text: message
+            });
+        }
+
+        // Menyusun Payload sesuai dokumentasi Kie.ai
+        const payload = {
+            model: model || "claude-opus-4-8",
+            messages: [
+                {
+                    role: "user",
+                    content: contentArray
+                }
+            ],
+            max_tokens: 4096,
+            stream: false // Kita matikan stream dulu agar lebih stabil
+        };
+
+        // Menembak API Kie.ai
+        const response = await fetch('https://api.kie.ai/claude/v1/messages', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                [headerName]: `Bearer ${apiKey}`
+                'Authorization': `Bearer ${apiKey}`
             },
             body: JSON.stringify(payload)
         });
 
-        // 5. Ambil balasan dari Server AI
         const data = await response.json();
 
-        // 6. Jika server AI error (misal token habis / server down), kembalikan error aslinya
         if (!response.ok) {
-            return res.status(response.status).json(data);
+            throw new Error(data.error?.message || 'Terjadi kesalahan dari Kie.ai');
         }
 
-        // 7. Jika sukses, kirimkan hasil chat ke Kreaverse
-        return res.status(200).json(data);
+        // Mengambil teks balasan dari Claude
+        const aiReply = data.content[0].text;
+
+        // Mengirim balasan kembali ke Frontend
+        return res.status(200).json({ reply: aiReply });
 
     } catch (error) {
-        console.error('Vercel API Error:', error);
-        return res.status(500).json({ error: 'Internal Server Error', details: error.message });
+        console.error('Error:', error);
+        return res.status(500).json({ error: error.message || 'Terjadi kesalahan pada server.' });
     }
 }
