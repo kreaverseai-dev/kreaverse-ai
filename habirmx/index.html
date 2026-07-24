@@ -1423,1266 +1423,434 @@
     </aside>
 
     <div class="container">
-        <header>
-            <h1 class="hero-title" style="font-family: 'Plus Jakarta Sans', sans-serif; font-size: 2.40rem; font-weight: 900; letter-spacing: -1.2px; text-transform: uppercase;">HABI RMX × Kreaverse AI</h1>
-            <p class="subtitle">Ubah deskripsi musik, lirik, atau referensi audio Anda menjadi aransemen lagu utuh berkualitas premium secara dinamis.</p>
-        </header>
+    <style>
+        /* TEMA SUNO NATIVE APP - LIGHT MODE */
+        body { background-color: #f9fafb !important; color: #111827 !important; padding-bottom: 120px !important; font-family: 'Plus Jakarta Sans', sans-serif; }
+        body::before, header, .navbar, .footer, .faq-section { display: none !important; }
+        .container { max-width: 650px !important; margin: 20px auto 0 auto !important; padding: 0 15px !important; }
+        
+        .suno-nav-top { display: flex; gap: 8px; margin-bottom: 20px; overflow-x: auto; scrollbar-width: none; padding-bottom: 5px; }
+        .suno-nav-top::-webkit-scrollbar { display: none; }
+        .suno-pill-btn { background: #ffffff; border: 1px solid #e5e7eb; color: #111827; padding: 8px 20px; border-radius: 99px; font-weight: 800; font-size: 0.9rem; display: flex; align-items: center; gap: 8px; cursor: pointer; transition: 0.2s; white-space: nowrap; box-shadow: 0 2px 5px rgba(0,0,0,0.02); font-family: inherit;}
+        .suno-pill-btn.active { background: #111827; color: #ffffff; border-color: #111827; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        .suno-badge-new { background: #ef4444; color: #fff; font-size: 0.6rem; padding: 2px 6px; border-radius: 6px; font-weight: 900; margin-left: 4px; }
+        
+        .suno-card { background: #ffffff; border: 1px solid #e5e7eb; border-radius: 20px; padding: 20px; margin-bottom: 16px; box-shadow: 0 2px 10px rgba(0,0,0,0.02); }
+        .suno-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+        .suno-card-title { font-weight: 800; font-size: 1rem; color: #111827; display: flex; align-items: center; gap: 10px; }
+        
+        .suno-chip { background: #ffffff; border: 1px solid #e5e7eb; color: #111827; padding: 8px 16px; border-radius: 99px; font-weight: 700; font-size: 0.85rem; display: inline-flex; align-items: center; justify-content: center; gap: 6px; cursor: pointer; transition: 0.2s; font-family: inherit;}
+        .suno-chip:hover { background: #f3f4f6; }
+        .suno-chip.active { background: #111827 !important; color: #ffffff !important; border-color: #111827 !important; }
+        
+        .suno-textarea { width: 100%; background: transparent; border: none; outline: none; font-family: inherit; font-size: 1.05rem; color: #111827; resize: none; font-weight: 500; line-height: 1.6; }
+        .suno-textarea::placeholder { color: #9ca3af; font-weight: 500; }
+        .suno-input-text { width: 100%; background: #ffffff; border: 1px solid #e5e7eb; border-radius: 12px; padding: 14px 16px; font-size: 0.95rem; font-weight: 500; color: #111827; outline: none; font-family: inherit; transition: 0.2s; box-shadow: inset 0 2px 4px rgba(0,0,0,0.01);}
+        .suno-input-text:focus { border-color: #111827; }
+        
+        /* OVERRIDE INPUT GROUP LAMA AGAR RAPI DI DALAM MORE OPTIONS */
+        .input-group { margin-bottom: 16px !important; }
+        .input-group > label { display: block !important; font-size: 0.8rem !important; color: #6b7280 !important; font-weight: 700 !important; margin-bottom: 8px !important; text-transform: none !important;}
+        
+        /* DROPDOWN MENU */
+        .custom-select-trigger { border: 1px solid #e5e7eb !important; background: #ffffff !important; border-radius: 12px !important; padding: 14px 16px !important; font-weight: 600 !important; color: #111827 !important; display: flex; justify-content: space-between; align-items: center; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.01) !important;}
+        .custom-select-options { border: 1px solid #e5e7eb !important; background: #ffffff !important; border-radius: 12px !important; box-shadow: 0 10px 25px rgba(0,0,0,0.1) !important; color: #111827 !important; overflow-y: auto; max-height: 250px; z-index: 1000; margin-top: 5px;}
+        .custom-select-option { font-weight: 500 !important; border-radius: 8px !important; margin: 2px !important;}
+        .custom-select-option:hover { background: #f3f4f6 !important; }
+        .custom-select-option.selected { background: #111827 !important; color: #ffffff !important; }
+        
+        /* SLIDERS */
+        .slider-wrapper { border: none !important; background: transparent !important; border-radius: 0 !important; padding: 0 !important; margin-bottom: 16px !important; box-shadow: none !important; }
+        .slider-title { font-weight: 700 !important; font-size: 0.85rem !important; color: #111827 !important; text-transform: none !important;}
+        .slider-val-box { font-size:0.75rem; padding:4px 10px; border: 1px solid #e5e7eb !important; background: #f9fafb !important; color: #111827 !important; border-radius: 8px !important; font-weight:700; }
+        .slider-range { width:100%; -webkit-appearance: none; height: 6px; border-radius: 99px; background: #e5e7eb; outline: none; margin-top: 8px;}
+        .slider-range::-webkit-slider-thumb { -webkit-appearance: none; width: 18px; height: 18px; border-radius: 50%; background: #111827; cursor: pointer; border: 2px solid #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+        
+        /* STICKY BOTTOM BAR (CREATE BUTTON) */
+        .suno-bottom-bar { position: fixed; bottom: 0; left: 0; width: 100%; background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); border-top: 1px solid #e5e7eb; padding: 16px 20px 25px 20px; z-index: 1000; display: flex; justify-content: center; }
+        #generateBtn { width: 100%; max-width: 600px; background: #111827 !important; color: #ffffff !important; border: none !important; border-radius: 99px !important; padding: 18px !important; font-size: 1.15rem !important; font-weight: 800 !important; display: flex !important; justify-content: center !important; align-items: center !important; gap: 10px !important; box-shadow: 0 10px 25px rgba(17, 24, 39, 0.2) !important; transition: 0.2s !important; margin: 0 !important; font-family: inherit;}
+        #generateBtn:active { transform: scale(0.96) !important; }
+        #generateCostBadge { background: rgba(255,255,255,0.2) !important; color: #fff !important; padding: 4px 12px !important; border-radius: 8px !important; font-size: 0.85rem !important; font-weight: 700 !important;}
+        
+        /* Modals & Popups */
+        .krea-modal-overlay { z-index: 100000 !important; background: rgba(17, 24, 39, 0.7) !important; backdrop-filter: blur(5px); }
+        .krea-modal-box { background: #ffffff !important; border: none !important; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25) !important; color: #111827 !important; border-radius: 24px !important; }
+        .krea-modal-title, .krea-modal-desc { color: #111827 !important; }
+        .krea-modal-btn-confirm { background: #111827 !important; color: #fff !important; border-radius: 12px !important; }
+        .krea-modal-input { background: #f9fafb !important; border: 1px solid #e5e7eb !important; color: #111827 !important; border-radius: 12px !important;}
+        
+        /* Library Result */
+        .suno-lib-item, .storyboard-card { background: #ffffff !important; border: 1px solid #e5e7eb !important; border-radius: 16px !important; box-shadow: 0 2px 8px rgba(0,0,0,0.02) !important;}
+        .suno-title { color: #111827 !important; font-weight: 800 !important; }
 
-        <div class="input-section">
-            <!-- PROFILE & CREDIT BADGE (MINI WALLET) -->
-            <style>
-                @keyframes shimmerGold {
-                    0% { background-position: 200% 0; }
-                    100% { background-position: -200% 0; }
-                }
-            </style>
-            <!-- Wallet Container sudah dipindahkan ke Sidebar Menu (Apiframe Style) -->
+        /* Helpers */
+        .hidden { display: none !important; }
+        .char-counter { font-size: 0.75rem; color: #9ca3af; font-weight: 600; }
+    </style>
 
-            <!-- ENGINE SETTINGS ACCORDION -->
-            <div id="engineSettingsWrapper" style="background: #ffffff; border: 1px solid var(--border-color); border-radius: 20px; padding: 20px; margin-bottom: 24px; box-shadow: 0 8px 24px rgba(0,0,0,0.04); text-align: left;">
-                <div class="custom-dropdown-trigger" style="cursor: pointer; user-select: none; border-radius: 16px; transition: 0.2s;" onclick="toggleAccordion('engineSettingsBody')">
-                    <div style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
-                        <div style="display: flex; align-items: center; gap: 14px;">
-                            <div style="width: 42px; height: 42px; background: rgba(0, 122, 255, 0.1); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: var(--accent-color); font-size: 1.2rem; flex-shrink: 0;">
-                                <i class="fa-solid fa-server"></i>
-                            </div>
-                            <div style="display: flex; flex-direction: column; gap: 2px;">
-                                <span style="font-weight: 900; font-size: 0.95rem; color: var(--text-primary); letter-spacing: -0.2px;">
-                                    Pengaturan Engine AI
-                                </span>
-                                <span style="font-size: 0.7rem; color: var(--text-light); line-height: 1.3; font-weight: 600;">
-                                    Pilih server & model AI secara manual.
-                                </span>
-                            </div>
+    <!-- 1. TOP NAV (Pill Buttons) -->
+    <div class="suno-nav-top">
+        <button id="modeGenerateBtn" class="suno-pill-btn active" onclick="switchMode('generate')"><i class="fa-solid fa-music"></i> Audio</button>
+        <button id="modeVoiceBtn" class="suno-pill-btn" onclick="switchMode('voice')"><i class="fa-solid fa-microphone"></i> Voice <span class="suno-badge-new">New</span></button>
+        <button id="modeCoverBtn" class="suno-pill-btn" onclick="switchMode('cover')"><i class="fa-solid fa-compact-disc"></i> Cover</button>
+        <span id="modeDescription" class="hidden"></span>
+    </div>
+
+    <!-- 2. MODE VOICE (Bawaan Kreaverse, Desain Suno) -->
+    <div id="voiceModeWrapper" class="hidden suno-card">
+        <div class="suno-nav-top" style="margin-bottom: 20px;">
+            <button class="suno-pill-btn active" id="btnTabVoice" onclick="switchVoiceTab('voice')" style="background: #111827; color: #fff;">Kloning Voice</button>
+            <button class="suno-pill-btn" id="btnTabPersona" onclick="switchVoiceTab('persona')">Ekstrak Persona</button>
+        </div>
+        
+        <!-- Voice Kloning -->
+        <div id="tabContentVoice">
+            <div class="input-group"><input type="text" id="voiceNameInput" class="suno-input-text" placeholder="Nama Karakter (Contoh: My Voice)"></div>
+            <div class="input-group"><input type="text" id="voiceStyleInput" class="suno-input-text" placeholder="Gaya Vokal (Contoh: Pop)"></div>
+            <div class="input-group"><input type="text" id="voiceDescInput" class="suno-input-text" placeholder="Deskripsi Suara"></div>
+            
+            <div style="background: #f9fafb; padding:16px; border-radius:16px; border:1px solid #e5e7eb; margin-bottom: 16px;">
+                <label style="font-size: 0.85rem; font-weight: 800; color: #111827; margin-bottom: 12px; display: block;">1. Audio Sumber *</label>
+                <div style="display: flex; gap: 10px;"><button type="button" class="suno-chip" onclick="document.getElementById('voiceSourceInput').click()"><i class="fa-solid fa-upload"></i> Pilih File</button><input type="file" id="voiceSourceInput" accept="audio/*" class="hidden" onchange="document.getElementById('voiceSourceLabel').innerText = this.files[0] ? this.files[0].name : 'Belum dipilih';"></div>
+                <span id="voiceSourceLabel" style="font-size:0.75rem; color:#6b7280; margin-top:8px; display:block; font-weight: 500;">Belum dipilih</span>
+            </div>
+            
+            <button type="button" id="btnGetPhrase" class="suno-chip" style="background:#111827; color:#fff; width:100%; padding:14px; margin-bottom: 16px;" onclick="getValidationPhrase()"><i class="fa-solid fa-comment-dots"></i> Dapatkan Teks Verifikasi</button>
+            
+            <div id="phraseContainer" class="hidden" style="margin-bottom:16px; border:1px solid #e5e7eb; padding:16px; border-radius:16px;">
+                <div id="validationPhraseText" style="font-weight:700; color:#111827; background:#f3f4f6; padding:12px; border-radius:12px; margin-bottom:15px; font-size:0.9rem;">-</div>
+                <label style="font-size:0.8rem; font-weight:800; color:#111827; margin-bottom:10px; display:block;">Audio Verifikasi *</label>
+                <div style="display:flex; gap:8px; margin-bottom:12px;">
+                    <button type="button" id="btnCloneRecordMode" class="suno-chip" style="background:#111827; color:#fff;" onclick="toggleCloneRecorder(true)"><i class="fa-solid fa-microphone"></i> Rekam</button>
+                    <button type="button" id="btnCloneUploadMode" class="suno-chip" onclick="toggleCloneRecorder(false)"><i class="fa-solid fa-upload"></i> Upload</button>
+                </div>
+                <div id="cloneRecordArea" style="text-align:center; background:#f9fafb; padding:16px; border-radius:12px;"><div id="cloneRecordTime" style="font-weight:900; font-size:1.5rem; color:#ef4444; margin-bottom:10px;">00:00</div><div style="display:flex; gap:10px; justify-content:center;"><button type="button" id="btnStartCloneRecord" class="suno-chip" style="background:#ef4444; color:#fff; border:none;" onclick="startCloneRecording()">Mulai</button><button type="button" id="btnStopCloneRecord" class="suno-chip" onclick="stopCloneRecording()">Stop</button></div><div id="cloneRecordStatus" class="hidden" style="color:#10B981; font-weight:700; font-size:0.8rem; margin-top:10px;">Tersimpan!</div></div>
+                <div id="cloneUploadArea" class="hidden" style="background:#f9fafb; padding:16px; border-radius:12px;"><button type="button" class="suno-chip" onclick="document.getElementById('voiceValidationInput').click()">Pilih File</button><input type="file" id="voiceValidationInput" class="hidden"><div id="voiceValidationLabel" style="font-size:0.75rem; color:#6b7280; margin-top:8px;">Belum dipilih</div></div>
+            </div>
+            
+            <button type="button" id="btnSubmitVoice" class="suno-chip" style="width:100%; background:#111827; color:#fff; padding:14px; font-size:0.9rem;" onclick="submitVoiceCloning()"><i class="fa-solid fa-wand-magic-sparkles"></i> Generate Voice</button>
+        </div>
+        
+        <!-- Ekstrak Persona -->
+        <div id="tabContentPersona" class="hidden">
+            <div class="input-group"><input type="text" id="personaNameInput" class="suno-input-text" placeholder="Nama Persona"></div>
+            <div class="input-group"><input type="text" id="personaTaskIdInput" class="suno-input-text" placeholder="Task ID Lagu"></div>
+            <div class="input-group"><input type="text" id="personaAudioIdInput" class="suno-input-text" placeholder="Audio ID Lagu"></div>
+            <div style="display:flex; gap:10px; margin-bottom: 16px;"><div class="input-group" style="flex:1; margin:0 !important;"><input type="number" id="personaStartInput" class="suno-input-text" placeholder="Mulai (Detik)"></div><div class="input-group" style="flex:1; margin:0 !important;"><input type="number" id="personaEndInput" class="suno-input-text" placeholder="Akhir (Detik)"></div></div>
+            <div class="input-group"><input type="text" id="personaDescInput" class="suno-input-text" placeholder="Deskripsi (Opsional)"></div>
+            <button type="button" id="btnSubmitPersona" class="suno-chip" style="width:100%; background:#111827; color:#fff; padding:14px; font-size:0.9rem;" onclick="submitPersonaExtraction()">Ekstrak Persona</button>
+        </div>
+    </div>
+
+    <!-- 3. UPLOAD AREA (Mode Cover - Bawaan Kreaverse, Desain Suno) -->
+    <div id="uploadSectionWrapper" class="hidden">
+        <div class="suno-card" style="border: 2px dashed #e5e7eb; text-align: center; cursor: pointer; background: #f9fafb;" id="uploadTriggerBox" onclick="window.openUploadOptionsModal()">
+            <i class="fa-solid fa-cloud-arrow-up" style="font-size: 2.5rem; color: #111827; margin-bottom: 12px;"></i>
+            <div style="font-weight: 800; font-size: 1.05rem; color: #111827;">Unggah Audio Referensi</div>
+            <div style="font-size: 0.8rem; color: #9ca3af; font-weight: 500; margin-top: 6px;">MP3, WAV, M4A (Maks 8 Menit)</div>
+        </div>
+        
+        <div id="uploadedStateBox" class="hidden suno-card" style="display: flex; align-items: center; gap: 15px;">
+            <button id="uploadedMiniPlayBtn" onclick="window.toggleCustomPlay('originalAudioPlayer', 'uploadedStateBox')" class="suno-chip" style="border-radius: 50%; width: 45px; height: 45px; padding: 0; background: #111827; color: #fff; border: none;"><i class="fa-solid fa-play" style="margin-left:3px;"></i></button>
+            <div style="flex: 1; min-width: 0;">
+                <div id="uploadedMiniFileName" style="font-weight: 800; font-size: 0.95rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: #111827;">-</div>
+                <div class="progress-container" onclick="window.seekCustomAudio(event, 'originalAudioPlayer')" style="height: 6px; background: #e5e7eb; border-radius: 6px; margin: 8px 0; cursor: pointer; position:relative;"><div class="progress-bar-fill" style="position:absolute; top:0; left:0; height: 100%; width: 0%; background: #111827; border-radius: 6px; pointer-events: none;"></div></div>
+                <div style="display: flex; justify-content: space-between; font-size: 0.75rem; font-weight: 600; color: #6b7280;"><span class="current-time">0:00</span><span id="uploadedMiniBadge">Ready</span></div>
+            </div>
+            <button onclick="window.removeUploadedAudio()" class="suno-chip" style="background: transparent; color: #ef4444; border:none; padding:8px;"><i class="fa-solid fa-xmark" style="font-size:1.2rem;"></i></button>
+        </div>
+        <input type="file" id="audioReferenceInput" accept="audio/*" class="hidden">
+
+        <!-- Upload Tools Lanjutan -->
+        <div id="voiceRecorderBox" class="hidden suno-card">
+            <div style="display: flex; justify-content: space-between; align-items: center; font-weight: 800; margin-bottom:15px;"><span style="color:#111827;"><i class="fa-solid fa-microphone"></i> Studio Rekaman</span><span id="recordingTime" style="color:#ef4444; font-size: 1.1rem;">00:00</span></div>
+            <div class="input-group" style="position: relative;">
+                <label>Pilih Efek Vokal</label>
+                <div class="custom-select-container"><div class="custom-select-trigger" onclick="window.toggleCustomSelect('voiceGenderDropdown')"><span id="voiceGenderSelectedLabel">Studio Effect</span><i class="fa-solid fa-chevron-down"></i></div><div class="custom-select-options hidden" id="voiceGenderDropdown" style="position: absolute; top: 100%; left: 0; width: 100%; z-index: 10;"><div class="custom-select-option selected" onclick="window.selectVoiceGenderOption('default', 'Studio Effect')">Studio Effect</div><div class="custom-select-option" onclick="window.selectVoiceGenderOption('raw', 'Suara Asli')">Suara Asli</div></div></div><input type="hidden" id="voiceGenderFilter" value="default">
+            </div>
+            <div style="display:flex; gap:10px;"><button id="btnStartRecord" onclick="window.startRecording()" class="suno-chip" style="background:#ef4444; color:#fff; border:none; flex:1; padding:14px;">Rekam</button><button id="btnStopRecord" onclick="window.stopRecording()" disabled class="suno-chip" style="flex:1; padding:14px;">Hentikan</button></div>
+            
+            <div id="recordedAudioContainer" class="hidden" style="margin-top: 15px; background:#f9fafb; padding:15px; border-radius:16px; border:1px solid #e5e7eb;"><audio id="recordedAudioPlayer" class="hidden"></audio><div class="custom-player light-theme" id="cp-recorded" style="display:flex; align-items:center; gap:10px;"><button class="play-btn suno-chip" onclick="toggleCustomPlay('recordedAudioPlayer', 'cp-recorded')" style="padding: 10px; border-radius:50%; background:#111827; color:#fff; border: none;"><i class="fa-solid fa-play"></i></button><span class="current-time" style="font-size:0.8rem; font-weight:600;">0:00</span><div class="progress-container" onclick="seekCustomAudio(event, 'recordedAudioPlayer')" style="flex:1; height:6px; background:#e5e7eb; border-radius:6px; position:relative; cursor: pointer;"><div class="progress-bar-fill" style="height:100%; width:0; background:#111827; position:absolute; border-radius:6px; pointer-events: none;"></div></div></div><div style="display:flex; gap:10px; margin-top:15px;"><button onclick="window.useRecordedAudio()" class="suno-chip" style="flex:1; background:#111827; color:#fff; border: none; padding: 12px;">Gunakan</button><button onclick="window.openDownloadModal()" class="suno-chip" style="flex:1; padding: 12px;">Unduh</button></div></div>
+        </div>
+
+        <div id="urlInputBox" class="hidden suno-card">
+            <div style="font-weight:800; color:#111827; margin-bottom:10px;"><i class="fa-solid fa-link"></i> URL Audio</div>
+            <input type="text" id="audioUrlInput" class="suno-input-text" placeholder="https://..." style="margin-bottom: 12px;">
+            <button onclick="window.applyAudioUrl()" class="suno-chip" style="width:100%; background:#111827; color:#fff; padding:14px;">Terapkan URL</button>
+            <div id="urlSuccessMsg" class="hidden" style="color:#10B981; font-size:0.8rem; font-weight:700; margin-top:10px; text-align:center;">Sukses diterapkan</div>
+        </div>
+
+        <div id="uploadHistoryPopup" class="hidden suno-card">
+            <div style="display:flex; justify-content:space-between; align-items: center; font-weight:800; margin-bottom:15px; color: #111827;"><span>Histori Upload</span><span onclick="window.toggleUploadHistoryPopup()" style="cursor:pointer; color:#9ca3af; font-size: 1.2rem;"><i class="fa-solid fa-xmark"></i></span></div>
+            <div style="display:flex; gap:8px; margin-bottom: 15px;"><button id="tabHistOriginal" onclick="window.switchHistoryTab('original')" class="suno-chip active" style="background: #111827; color: #fff; border: none;">Original</button><button id="tabHistDsp" onclick="window.switchHistoryTab('dsp')" class="suno-chip">DSP</button><button onclick="window.deleteAllUploadHistory()" class="suno-chip" style="color:#ef4444; margin-left:auto; border:none; background:transparent;"><i class="fa-solid fa-trash"></i></button></div>
+            <div id="uploadHistoryList" style="max-height:250px; overflow-y:auto; display:flex; flex-direction:column; gap:10px;"></div>
+        </div>
+
+        <!-- DSP Studio Kreaverse Asli -->
+        <div id="dspStudioWrapper" class="hidden">
+            <div style="display:flex; justify-content:space-between; align-items:center; font-weight:800; font-size:0.95rem; padding:16px 20px;">
+                <span style="color:#ef4444;"><i class="fa-solid fa-shield-virus"></i> DSP STUDIO</span>
+                <button onclick="document.getElementById('dspStudioWrapper').classList.add('hidden')" style="background:#f3f4f6; border:none; width:30px; height:30px; border-radius:50%; font-size:1rem; cursor:pointer; color:#374151; display: flex; align-items: center; justify-content: center;">&times;</button>
+            </div>
+            <div id="dspStudioBody" style="padding: 20px;">
+                <canvas id="audioVisualizer" style="width: 100%; height: 60px; background: #ffffff; border: 1px solid #e5e7eb; border-radius: 12px; margin-bottom: 20px; box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);"></canvas>
+                <audio id="originalAudioPlayer" class="hidden"></audio><div id="cp-original" class="hidden"></div>
+                <audio id="bypassedAudioPlayer" class="hidden"></audio><div id="cp-bypassed" class="hidden"></div>
+                
+                <div style="font-weight:800; font-size:0.85rem; margin-bottom:10px; color:#111827;">Audio Trimmer</div>
+                <div style="display:flex; gap:10px; margin-bottom:15px;"><input type="text" id="trimStartInput" placeholder="00:00" class="suno-input-text" style="text-align:center;" onchange="window.validateTrimInputs()"><input type="text" id="trimEndInput" placeholder="00:00" class="suno-input-text" style="text-align:center;" onchange="window.validateTrimInputs()"></div>
+                <div id="trimPlayerUI" class="hidden" style="display:flex; align-items:center; gap:10px; background:#fff; padding:12px; border-radius:12px; border:1px solid #e5e7eb; margin-bottom:20px;">
+                    <button id="trimPlayBtnCore" onclick="window.toggleTrimPlayback()" class="suno-chip" style="background:#111827; color:#fff; padding:8px; border-radius:50%; border: none; width: 34px; height: 34px;"><i class="fa-solid fa-play"></i></button>
+                    <span id="trimCurrentTime" style="font-size:0.75rem; font-weight:600;">0:00</span>
+                    <input type="range" id="trimSeekSlider" style="flex:1; accent-color: #111827;">
+                    <span id="trimTotalTime" style="font-size:0.75rem; font-weight:600; color:#6b7280;">0:00</span>
+                </div>
+
+                <!-- Input Tersembunyi untuk JS DSP V1 & V2 -->
+                <div style="display:none;">
+                    <button id="btnTabV1"></button><button id="btnTabV2"></button><input type="checkbox" id="globalMasterToggle">
+                    <div id="dspTabsContentContainer">
+                        <div id="dspTabV1">
+                            <input type="range" id="sliderTempoV1"><span id="valTempoV1"></span>
+                            <input type="range" id="sliderPitchV1"><span id="valPitchV1"></span>
+                            <input type="range" id="sliderTimbreV1"><span id="valTimbreV1"></span>
+                            <input type="range" id="sliderStegoV1"><span id="valStegoV1"></span>
+                            <input type="range" id="sliderVoidV1"><span id="valVoidV1"></span>
+                            <input type="range" id="sliderReverbV1"><span id="valReverbV1"></span>
+                            <input type="checkbox" id="tgTemporalV1" class="dsp-chk-v1"><input type="checkbox" id="tgMirageV1" class="dsp-chk-v1"><input type="checkbox" id="tgAntiMonoV1" class="dsp-chk-v1"><input type="checkbox" id="tgSpectralV1" class="dsp-chk-v1"><input type="checkbox" id="tgQuantumV1" class="dsp-chk-v1"><input type="checkbox" id="tgPhoneticV1" class="dsp-chk-v1">
+                            <div id="customPresetsListContainer"></div>
                         </div>
-                        <!-- Panah dihapus agar lebih bersih -->
+                        <div id="dspTabV2">
+                            <input type="range" id="pitchSlider"><input type="text" id="valKreaversePitch">
+                            <input type="range" id="kreaverseSpeed"><input type="text" id="valKreaverseSpeed"><span id="kreaverseEstimatedDuration"></span>
+                            <input type="range" id="sliderReverbV2"><span id="valReverbV2"></span>
+                            <input type="checkbox" id="chkPhase" class="dsp-chk"><input type="checkbox" id="chkWarp" class="dsp-chk"><input type="checkbox" id="chkFormant" class="dsp-chk"><input type="checkbox" id="chkHarmonics" class="dsp-chk"><input type="checkbox" id="chkSpatial" class="dsp-chk"><input type="checkbox" id="chkMasking" class="dsp-chk"><input type="checkbox" id="chkObfuscator" class="dsp-chk"><input type="checkbox" id="chkFlux" class="dsp-chk"><input type="checkbox" id="chkMirage" class="dsp-chk"><input type="checkbox" id="chkNullifier" class="dsp-chk"><input type="checkbox" id="chkLayering" class="dsp-chk"><input type="checkbox" id="chkTransient" class="dsp-chk"><input type="checkbox" id="chkChroma" class="dsp-chk"><input type="checkbox" id="chkMicroReverse" class="dsp-chk"><input type="checkbox" id="chkRingMod" class="dsp-chk"><input type="checkbox" id="chkNuke" class="dsp-chk">
+                        </div>
                     </div>
                 </div>
-                
-                <div id="engineSettingsBody" class="hidden" style="padding-top: 20px; margin-top: 16px; border-top: 1px dashed var(--border-color); display: flex; flex-direction: column; gap: 18px;">
-                    <!-- PROVIDER SELECT -->
-                    <div class="input-group" style="margin-bottom: 0;">
-                        <label>Pilih Provider AI:</label>
-                        <div class="custom-select-container">
-                            <div class="custom-select-trigger" onclick="window.toggleCustomSelect('providerDropdown')">
-                                <span id="providerSelectedLabel">Memuat provider...</span>
-                                <i class="fa-solid fa-chevron-down" id="providerChevron"></i>
-                            </div>
-                            <div class="custom-select-options hidden" id="providerDropdown"></div>
-                        </div>
-                        <input type="hidden" id="providerSelect" value="">
-                    </div>
 
-                    <!-- MODEL SELECT -->
-                    <div class="input-group" style="margin-bottom: 0;">
-                        <label>Pilih Model AI:</label>
-                        <div class="custom-select-container">
+                <div class="input-group" style="margin-bottom: 16px;">
+                    <label>Format File Enkripsi</label>
+                    <div class="custom-select-container" style="position: relative;">
+                        <div class="custom-select-trigger" onclick="window.toggleCustomSelect('uploadFormatDropdown')">
+                            <span id="uploadFormatSelectedLabel">MP3 (Rekomendasi)</span><i class="fa-solid fa-chevron-down"></i>
+                        </div>
+                        <div class="custom-select-options hidden" id="uploadFormatDropdown" style="position: absolute; top: 100%; left: 0; width: 100%; z-index: 10;">
+                            <div class="custom-select-option selected" onclick="window.selectUploadFormat('mp3', 'MP3 (Rekomendasi)')">MP3 (Rekomendasi)</div>
+                            <div class="custom-select-option" onclick="window.selectUploadFormat('ogg', 'OGG')">OGG</div>
+                            <div class="custom-select-option" onclick="window.selectUploadFormat('m4a', 'M4A')">M4A</div>
+                            <div class="custom-select-option" onclick="window.selectUploadFormat('wav', 'WAV')">WAV</div>
+                        </div>
+                    </div>
+                    <input type="hidden" id="uploadFormatSelect" value="mp3">
+                </div>
+                
+                <div style="display:flex; flex-direction:column; gap:10px;">
+                    <button id="btnPlayTrim" class="suno-chip" style="padding: 14px; justify-content:center;" onclick="window.playTrimPreview()"><i class="fa-solid fa-scissors"></i> Cek Potongan Audio</button>
+                    <div style="display:flex; gap:10px;">
+                        <button id="btnPreviewDsp" type="button" class="suno-chip" style="flex: 1; padding: 14px; justify-content:center;" onclick="generateDspPreview()"><i class="fa-solid fa-headphones"></i> Preview DSP</button>
+                        <button id="btnStartDsp" type="button" class="suno-chip" style="background: #111827; color: #ffffff; border: none; flex: 1; padding: 14px; justify-content:center;" onclick="startDspBypassAndUpload()"><i class="fa-solid fa-upload"></i> Upload DSP</button>
+                    </div>
+                    <button id="btnUploadOriginal" type="button" class="suno-chip" style="background: transparent; width: 100%; padding: 14px; justify-content:center;" onclick="uploadOriginalAudio()"><i class="fa-solid fa-cloud-arrow-up"></i> Upload Tanpa Edit (Original)</button>
+                </div>
+                <div id="dspProgressBox" class="hidden" style="margin-top:15px; text-align:center; font-size:0.8rem; font-weight:700;"><span id="dspStatusText"></span> <span id="dspPercentText"></span><div id="dspProgressBar"></div></div>
+            </div>
+        </div>
+        
+        <div id="audioProgressBox" class="hidden" style="margin-bottom:20px; text-align:center; font-size:0.8rem; font-weight:700;">
+            <span id="audioFileName"></span><span id="audioSpeed"></span><div id="audioProgressFill"></div><span id="audioStatus"></span>
+        </div>
+    </div>
+
+    <!-- 4. STYLE OF MUSIC (Suno Design) -->
+    <div class="suno-card">
+        <div class="suno-card-header">
+            <div class="suno-card-title"><i class="fa-solid fa-guitar" style="color:#9ca3af;"></i> Song Description</div>
+            <button type="button" class="suno-chip" onclick="triggerMagicWand('style')" style="background: #111827; color: #ffffff; border: none;"><i class="fa-solid fa-wand-magic-sparkles"></i> AI</button>
+        </div>
+        <textarea id="styleInput" class="suno-textarea" placeholder="Bass-heavy trance song about the hunger for something more..." maxlength="1000" oninput="updateCounter('styleInput', 'styleCounter', 1000)"></textarea>
+        
+        <!-- Toggle Custom Lyrics & Instrumental dipindah ke dalam kotak Description persis video -->
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-top:15px; border-top:1px dashed #e5e7eb; padding-top:15px;">
+            <div style="display:flex; gap:10px; flex-wrap:wrap;">
+                
+                <div class="suno-chip active" style="background: #111827; color: #fff; border:none;" onclick="document.getElementById('customModeToggle').click(); window.toggleCustomFields(); this.classList.toggle('active'); this.style.background = this.classList.contains('active') ? '#111827' : '#ffffff'; this.style.color = this.classList.contains('active') ? '#ffffff' : '#374151';">
+                    <i class="fa-solid fa-microphone-lines"></i> + Lyrics
+                </div>
+                <!-- Sembunyikan toggle JS asli, biar dikontrol tombol di atas -->
+                <input type="checkbox" id="customModeToggle" class="hidden" checked onchange="window.toggleCustomFields()">
+
+                <div class="suno-chip" style="background: #ffffff;" onclick="document.getElementById('instrumentalToggle').click(); this.classList.toggle('active'); this.style.background = this.classList.contains('active') ? '#111827' : '#ffffff'; this.style.color = this.classList.contains('active') ? '#ffffff' : '#374151';">
+                    <i class="fa-solid fa-record-vinyl"></i> Instrumental
+                </div>
+                <!-- Sembunyikan toggle JS asli -->
+                <input type="checkbox" id="instrumentalToggle" class="hidden">
+
+            </div>
+            <span class="char-counter" id="styleCounter">0/1000</span>
+        </div>
+
+        <div style="font-size:0.75rem; font-weight:800; margin-top:20px; color:#6b7280; text-transform:uppercase;">Suggestions</div>
+        <div class="suno-nav-top" style="margin-top: 10px; margin-bottom: 0;">
+            <button type="button" class="suno-chip" onclick="window.openPromptModal()"><i class="fa-solid fa-plus"></i> Inspo</button>
+            <button type="button" class="suno-chip" onclick="document.getElementById('styleInput').value='electric guitar riff';">electric guitar riff</button>
+            <button type="button" class="suno-chip" onclick="document.getElementById('styleInput').value='german schlager';">german schlager</button>
+            <button type="button" class="suno-chip" onclick="document.getElementById('styleInput').value='sidechain compression';">sidechain compression</button>
+        </div>
+    </div>
+
+    <!-- 5. LYRICS BOX -->
+    <div class="suno-card" id="lyricsFieldWrapper">
+        <div class="suno-card-header">
+            <div class="suno-card-title"><i class="fa-solid fa-align-left" style="color:#9ca3af;"></i> Custom Lyrics</div>
+            <div style="display:flex; gap:6px;">
+                <button type="button" class="suno-chip" onclick="encryptLyrics()" title="Bypass AI Sensor"><i class="fa-solid fa-user-secret"></i></button>
+                <button type="button" class="suno-chip" onclick="clearInput('lyricsInput', 'lyricsCounter', 5000); window.checkLyricsState();" title="Hapus" style="color: #ef4444;"><i class="fa-solid fa-trash-can"></i></button>
+            </div>
+        </div>
+        
+        <div id="detectLyricsProgress" class="hidden" style="font-size:0.8rem; font-weight:700; color:#111827; background:#f3f4f6; padding:10px 15px; border-radius:12px; margin-bottom:15px; display:flex; align-items:center; gap:8px;"><i class="fa-solid fa-spinner fa-spin"></i> <span id="detectLyricsStatus">Mendengarkan...</span></div>
+        
+        <textarea id="lyricsInput" class="suno-textarea" placeholder="Start writing lyrics..." maxlength="5000" oninput="updateCounter('lyricsInput', 'lyricsCounter', 5000); window.checkLyricsState();"></textarea>
+        
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-top:15px; border-top: 1px dashed #e5e7eb; padding-top: 15px;">
+            <div style="display:flex; gap:8px;">
+                <button type="button" id="btnSyncDetect" class="suno-chip" style="background: #111827; border: none; color: #ffffff;" onclick="handleSyncDetectClick()"><i class="fa-solid fa-ear-listen" id="iconSyncDetect"></i> <span id="textSyncDetect">Deteksi</span></button>
+                <button type="button" class="suno-chip" onclick="triggerMagicWand('lyrics')"><i class="fa-solid fa-wand-magic-sparkles"></i> AI Write</button>
+            </div>
+            <span class="char-counter" id="lyricsCounter">0/5000</span>
+        </div>
+    </div>
+
+    <!-- 6. MORE OPTIONS (ACCORDION BERISI PENGATURAN AI) -->
+    <div class="suno-accordion">
+        <div class="suno-acc-header" onclick="document.getElementById('sunoAdvancedBody').classList.toggle('hidden')">
+            <span>More Options</span>
+            <i class="fa-solid fa-chevron-down"></i>
+        </div>
+        <div id="sunoAdvancedBody" class="hidden suno-acc-body">
+            
+            <div class="input-group">
+                <label>Song Title (Optional)</label>
+                <input type="text" id="titleInput" class="suno-input-text" placeholder="Judul lagu..." maxlength="100" oninput="updateCounter('titleInput', 'titleCounter', 100)">
+                <span class="char-counter hidden" id="titleCounter">0/100</span>
+            </div>
+
+            <!-- Provider AI & Models -->
+            <div id="engineSettingsWrapper">
+                <div id="engineSettingsBody">
+                    <div class="input-group">
+                        <label>ALL MODELS</label>
+                        <div class="custom-select-container" style="position: relative;">
                             <div class="custom-select-trigger" onclick="window.toggleCustomSelect('modelDropdown')">
-                                <span id="modelSelectedLabel">Pilih Provider Terlebih Dahulu...</span>
+                                <span id="modelSelectedLabel">Memuat Model...</span>
                                 <i class="fa-solid fa-chevron-down" id="modelChevron"></i>
                             </div>
-                            <div class="custom-select-options hidden" id="modelDropdown"></div>
+                            <!-- Dropdown Model ada di sini -->
+                            <div class="custom-select-options hidden" id="modelDropdown" style="position: absolute; top: calc(100% + 6px); left: 0; right: 0; z-index: 1000;"></div>
                         </div>
                         <input type="hidden" id="modelSelect" value="">
                     </div>
-
-                    <!-- LLM CHAT AI SELECTOR DIHAPUS (OTOMATIS DARI BACKEND) -->
-                </div>
-            </div>
-
-            <!-- MODE SELECTOR -->
-            <div class="input-group" style="margin-bottom: 24px;">
-                <label>Mode Pembuatan Lagu:</label>
-                <div style="display: flex; gap: 10px; background: #f8fafc; padding: 6px; border-radius: 16px; border: 1px solid var(--border-color); flex-wrap: wrap;">
-                    <button type="button" id="modeGenerateBtn" class="mode-btn active" onclick="switchMode('generate')">Bikin Lagu Sendiri</button>
-                    <button type="button" id="modeCoverBtn" class="mode-btn" onclick="switchMode('cover')">Cover Lagu</button>
-                    <button type="button" id="modeVoiceBtn" class="mode-btn" onclick="switchMode('voice')">Pakai SuaraMu</button>
-                </div>
-                <span id="modeDescription" class="helper-text">Buat lagu baru dari awal menggunakan lirik dan gaya musik Anda sendiri.</span>
-            </div>
-
-            <!-- CONTAINER PAKAI SUARAMU -->
-            <div id="voiceModeWrapper" class="hidden" style="background: #ffffff; border: 1px solid var(--border-color); border-radius: 20px; padding: 20px; margin-bottom: 24px; box-shadow: 0 8px 24px rgba(0,0,0,0.04); text-align: left;">
-                
-                <!-- TABS VOICE & PERSONA -->
-                <div class="tab-menu-row" style="margin-bottom: 20px;">
-                    <button class="tab-btn active" id="btnTabVoice" onclick="switchVoiceTab('voice')"><i class="fa-solid fa-microphone-lines"></i> Kloning Voice</button>
-                    <button class="tab-btn" id="btnTabPersona" onclick="switchVoiceTab('persona')"><i class="fa-solid fa-user-astronaut"></i> Ekstrak Persona</button>
-                </div>
-
-                <!-- TAB CONTENT: KLONING VOICE -->
-                <div id="tabContentVoice">
-                    <div style="font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 16px; line-height: 1.5; background: #f8fafc; padding: 12px; border-radius: 12px; border: 1px dashed var(--border-color);">
-                        <i class="fa-solid fa-circle-info" style="color: var(--accent-color);"></i> <b>Voice Generation:</b> Siapkan audio sumber (vokal jernih) dan audio validasi untuk menciptakan model suara AI yang presisi.
-                    </div>
-
-                    <div class="input-group">
-                        <label>Nama Karakter Suara (Voice Name) *</label>
-                        <input type="text" id="voiceNameInput" placeholder="Contoh: My Studio Voice">
-                    </div>
-
-                    <div class="input-group">
-                        <label>Gaya Vokal (Style)</label>
-                        <input type="text" id="voiceStyleInput" placeholder="Contoh: Pop, Female Vocal, Soft">
-                    </div>
-
-                    <div class="input-group">
-                        <label>Deskripsi Karakteristik</label>
-                        <textarea id="voiceDescInput" placeholder="Deskripsikan warna suara ini (opsional)..." style="height: 60px;"></textarea>
-                    </div>
-
-                    <!-- UPLOAD SOURCE AUDIO -->
-                    <div class="input-group">
-                        <label>1. Audio Sumber (Source Audio) *</label>
-                        <span class="helper-text" style="margin-bottom: 8px;">Unggah sampel vokal acapella yang jernih untuk hasil kloning terbaik.</span>
-                        <div style="display: flex; gap: 10px; align-items: center;">
-                            <button type="button" class="btn-custom-upload-compact" onclick="document.getElementById('voiceSourceInput').click()" style="flex: 1; justify-content: center; padding: 12px !important; border-radius: 12px !important;">
-                                <i class="fa-solid fa-file-audio"></i> Pilih File Audio
-                            </button>
-                            <input type="file" id="voiceSourceInput" accept="audio/*" style="display: none;" onchange="document.getElementById('voiceSourceLabel').innerText = this.files[0] ? this.files[0].name : 'Belum ada file dipilih';">
-                        </div>
-                        <span id="voiceSourceLabel" style="font-size: 0.7rem; color: var(--text-light); margin-top: 6px; font-weight: 600;">Belum ada file dipilih</span>
-                    </div>
-
-                    <!-- GET PHRASE BUTTON -->
-                    <button type="button" id="btnGetPhrase" class="action-btn" style="background: #10b981; padding: 12px; border-radius: 12px; font-size: 0.85rem; margin-bottom: 16px; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);" onclick="getValidationPhrase()">
-                        <i class="fa-solid fa-comment-dots"></i> 2. Dapatkan Teks Verifikasi
-                    </button>
-
-                    <!-- VALIDATION PHRASE DISPLAY -->
-                    <div id="phraseContainer" class="hidden" style="margin-bottom: 16px; background: #ffffff; border: 1px solid var(--border-color); border-radius: 16px; padding: 16px; box-shadow: var(--shadow-sm);">
-                        <label style="font-size: 0.8rem; color: var(--text-secondary); font-weight: 800; text-transform: uppercase; margin-bottom: 6px; display: block;">Teks Verifikasi (Validation Phrase):</label>
-                        <span class="helper-text" style="margin-bottom: 8px;">Bacalah teks di bawah ini dengan jelas untuk memverifikasi kepemilikan suara.</span>
-                        
-                        <div id="validationPhraseText" style="background: #fffbeb; border-left: 4px solid #f59e0b; padding: 14px 16px; border-radius: 0 12px 12px 0; font-size: 0.95rem; color: #92400e; font-weight: 800; line-height: 1.5; margin-bottom: 16px; word-break: break-word;">
-                            -
-                        </div>
-
-                        <!-- UPLOAD / RECORD VALIDATION AUDIO -->
-                        <label style="font-size: 0.8rem; color: var(--text-secondary); font-weight: 800; text-transform: uppercase; margin-bottom: 8px; display: block;">3. Audio Verifikasi *</label>
-                        
-                        <div style="display: flex; gap: 10px; margin-bottom: 12px;">
-                            <button type="button" id="btnCloneRecordMode" class="btn-custom-upload-compact" onclick="toggleCloneRecorder(true)" style="flex: 1; justify-content: center; padding: 10px !important; border-radius: 10px !important; background: #ef4444 !important; color: #fff !important; border: none !important; box-shadow: 0 4px 10px rgba(239,68,68,0.3) !important;">
-                                <i class="fa-solid fa-microphone"></i> Rekam Langsung
-                            </button>
-                            <button type="button" id="btnCloneUploadMode" class="btn-custom-upload-compact" onclick="toggleCloneRecorder(false)" style="flex: 1; justify-content: center; padding: 10px !important; border-radius: 10px !important; background: #fff !important; border-color: #cbd5e1 !important; color: var(--text-secondary) !important;">
-                                <i class="fa-solid fa-upload"></i> Upload File
-                            </button>
-                        </div>
-
-                        <!-- Area Rekam Langsung -->
-                        <div id="cloneRecordArea" style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 14px; text-align: center;">
-                            <div style="font-size: 1.2rem; font-family: monospace; font-weight: 900; color: #ef4444; margin-bottom: 10px;" id="cloneRecordTime">00:00</div>
-                            <div style="display: flex; gap: 10px; justify-content: center;">
-                                <button type="button" id="btnStartCloneRecord" onclick="startCloneRecording()" style="background: #ef4444; color: #fff; border: none; padding: 8px 16px; border-radius: 8px; font-weight: 800; font-size: 0.8rem; cursor: pointer; transition: 0.2s;"><i class="fa-solid fa-circle"></i> Mulai Rekam</button>
-                                <button type="button" id="btnStopCloneRecord" onclick="stopCloneRecording()" disabled style="background: #cbd5e1; color: #fff; border: none; padding: 8px 16px; border-radius: 8px; font-weight: 800; font-size: 0.8rem; cursor: not-allowed; transition: 0.2s;"><i class="fa-solid fa-square"></i> Berhenti</button>
-                            </div>
-                            <div id="cloneRecordStatus" style="font-size: 0.7rem; color: #10b981; font-weight: 700; margin-top: 10px; display: none;"><i class="fa-solid fa-check-circle"></i> Rekaman berhasil disimpan!</div>
-                        </div>
-
-                        <!-- Area Upload File -->
-                        <div id="cloneUploadArea" class="hidden" style="background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 12px; padding: 14px; text-align: center;">
-                            <button type="button" class="btn-custom-upload-compact" onclick="document.getElementById('voiceValidationInput').click()" style="justify-content: center; padding: 10px 20px !important; border-radius: 8px !important;">
-                                <i class="fa-solid fa-folder-open"></i> Pilih File Audio
-                            </button>
-                            <input type="file" id="voiceValidationInput" accept="audio/*" style="display: none;" onchange="document.getElementById('voiceValidationLabel').innerText = this.files[0] ? this.files[0].name : 'Belum ada file dipilih';">
-                            <div id="voiceValidationLabel" style="font-size: 0.7rem; color: var(--text-light); margin-top: 8px; font-weight: 600;">Belum ada file dipilih</div>
-                        </div>
-                    </div>
-
-                    <button type="button" id="btnSubmitVoice" class="action-btn" style="width: 100%; margin-top: 10px; background: linear-gradient(135deg, #007AFF, #0056b3);" onclick="submitVoiceCloning()">
-                        <i class="fa-solid fa-wand-magic-sparkles"></i> Generate Voice
-                    </button>
-                </div>
-
-                <!-- TAB CONTENT: EKSTRAK PERSONA -->
-                <div id="tabContentPersona" class="hidden">
-                    <div style="font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 16px; line-height: 1.5; background: #f8fafc; padding: 12px; border-radius: 12px; border: 1px dashed var(--border-color);">
-                        <i class="fa-solid fa-circle-info" style="color: var(--accent-color);"></i> <b>Ekstrak Persona:</b> Ambil karakter vokal dari lagu AI yang sudah pernah Anda buat sebelumnya. Masukkan Task ID dan Audio ID dari lagu tersebut.
-                    </div>
-
-                    <div class="input-group">
-                        <label>Nama Persona *</label>
-                        <input type="text" id="personaNameInput" placeholder="Contoh: Vokal Cowok Rock">
-                    </div>
-
-                    <div class="input-group">
-                        <label>Task ID Lagu *</label>
-                        <input type="text" id="personaTaskIdInput" placeholder="Masukkan Task ID lagu sumber..." style="font-family: monospace;">
-                    </div>
-
-                    <div class="input-group">
-                        <label>Audio ID Lagu *</label>
-                        <input type="text" id="personaAudioIdInput" placeholder="Masukkan Audio ID lagu sumber..." style="font-family: monospace;">
-                    </div>
-
-                    <div style="display: flex; gap: 12px; margin-bottom: 18px;">
-                        <div class="input-group" style="flex: 1; margin-bottom: 0;">
-                            <label>Detik Mulai (Vocal Start) *</label>
-                            <input type="number" id="personaStartInput" placeholder="0" min="0">
-                        </div>
-                        <div class="input-group" style="flex: 1; margin-bottom: 0;">
-                            <label>Detik Akhir (Vocal End) *</label>
-                            <input type="number" id="personaEndInput" placeholder="20" min="1">
-                        </div>
-                    </div>
-
-                    <div class="input-group">
-                        <label>Deskripsi (Opsional)</label>
-                        <textarea id="personaDescInput" placeholder="Deskripsi karakter persona..." style="height: 60px;"></textarea>
-                    </div>
-
-                    <button type="button" id="btnSubmitPersona" class="action-btn" style="width: 100%; margin-top: 10px;" onclick="submitPersonaExtraction()">
-                        <i class="fa-solid fa-user-astronaut"></i> Ekstrak Persona
-                    </button>
-                </div>
-
-            </div>
-
-            <!-- CUSTOM MODE SWITCH -->
-            <div class="toggle-container">
-                <span class="toggle-label">Custom Mode</span>
-                <label class="switch">
-                    <input type="checkbox" id="customModeToggle" checked onchange="window.toggleCustomFields()">
-                    <span class="slider-toggle"></span>
-                </label>
-            </div>
-            <span class="helper-text">Aktifkan untuk menulis lirik sendiri. Jika dimatikan, AI akan membuatkan lirik otomatis berdasarkan gaya musik.</span>
-
-            <!-- UPLOAD REFERENCE AUDIO FILE -->
-            <div id="uploadSectionWrapper" class="hidden">
-                <div class="upload-section">
-                    <div style="display: flex; flex-direction: column; align-items: center; gap: 8px;">
-                        <!-- UPLOAD TRIGGER BOX -->
-                        <div id="uploadTriggerBox" onclick="window.openUploadOptionsModal()" style="display: flex; align-items: center; justify-content: space-between; gap: 14px; cursor: pointer; padding: 16px; width: 100%; border-radius: 16px; transition: 0.2s; background: linear-gradient(145deg, #ffffff, #f8fafc); border: 1.5px dashed #cbd5e1; box-shadow: 0 4px 10px rgba(0,0,0,0.02);">
-                            <div style="width: 48px; height: 48px; background: rgba(0, 122, 255, 0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
-                                <i class="fa-solid fa-cloud-arrow-up" style="font-size: 1.4rem; color: var(--accent-color);"></i>
-                            </div>
-                            <div style="text-align: left; flex: 1;">
-                                <div style="font-size: 0.9rem; font-weight: 800; color: var(--text-primary); margin-bottom: 2px;">Unggah Audio Referensi</div>
-                                <div style="font-size: 0.7rem; color: var(--text-light); font-weight: 600;">MP3, WAV, M4A (Max 8 Menit)</div>
-                            </div>
-                            <i class="fa-solid fa-chevron-right" style="color: #94a3b8; font-size: 0.9rem;"></i>
-                        </div>
-
-                        <!-- UPLOADED STATE MINI PLAYER (KIE STYLE) -->
-                        <div id="uploadedStateBox" class="hidden" style="display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 14px; width: 100%; border-radius: 16px; background: #f8fafc; border: 1.5px solid var(--accent-color); box-shadow: 0 4px 12px rgba(0, 122, 255, 0.1);">
-                            <!-- Play Icon Presisi (padding-left: 2px) -->
-                            <button id="uploadedMiniPlayBtn" onclick="window.toggleCustomPlay('originalAudioPlayer', 'uploadedStateBox')" style="width: 36px; height: 36px; border-radius: 50%; background: var(--accent-color); color: #fff; border: none; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; box-shadow: 0 2px 6px rgba(0,122,255,0.3); transition: 0.2s; padding-left: 2px;">
-                                <i class="fa-solid fa-play"></i>
-                            </button>
-                            <div style="flex: 1; min-width: 0; text-align: left;">
-                                <div id="uploadedMiniFileName" style="font-size: 0.8rem; font-weight: 800; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 6px;">-</div>
-                                
-                                <!-- SLIDER BISA DIGESER -->
-                                <div class="progress-container" onclick="window.seekCustomAudio(event, 'originalAudioPlayer')" style="height: 6px; background: #cbd5e1; border-radius: 6px; margin-bottom: 6px; cursor: pointer; position: relative;">
-                                    <div class="progress-bar-fill" style="height: 100%; width: 0%; background: var(--accent-color); border-radius: 6px; pointer-events: none; transition: width 0.1s linear;"></div>
-                                </div>
-
-                                <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px;">
-                                    <div style="display: flex; gap: 4px;">
-                                        <span class="current-time" style="font-size: 0.65rem; font-family: monospace; color: var(--text-secondary); font-weight: 700;">0:00</span>
-                                        <span style="font-size: 0.65rem; color: var(--text-light);">/</span>
-                                        <span class="duration-time" style="font-size: 0.65rem; font-family: monospace; color: var(--text-secondary); font-weight: 700;">0:00</span>
-                                    </div>
-                                    <span id="uploadedMiniBadge" style="font-size: 0.6rem; font-weight: 800; background: #e2e8f0; color: #475569; padding: 2px 6px; border-radius: 4px;">Menunggu Upload</span>
-                                </div>
-                            </div>
-                            <button onclick="window.removeUploadedAudio()" style="background: none; border: none; color: var(--danger-color); font-size: 1.2rem; cursor: pointer; padding: 4px; display: flex; align-items: center; justify-content: center; transition: 0.2s;" title="Hapus Audio">
-                                <i class="fa-solid fa-xmark"></i>
-                            </button>
-                        </div>
-                        <input type="file" id="audioReferenceInput" accept="audio/*" style="display: none;">
-
-                        <!-- VOICE RECORDER BOX -->
-                        <div id="voiceRecorderBox" class="hidden" style="margin-top: 15px; width: 100%; display: flex; flex-direction: column; gap: 12px; background: #ffffff; padding: 16px; border-radius: 16px; border: 1px solid var(--border-color); box-shadow: var(--shadow-sm); text-align: left;">
-                            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #f1f5f9; padding-bottom: 8px;">
-                                <span style="font-size: 0.85rem; font-weight: 800; color: var(--text-primary); display: flex; align-items: center; gap: 6px;"><i class="fa-solid fa-microphone-lines" style="color: var(--accent-color);"></i> Kreaverse AI Studio</span>
-                                <span id="recordingTime" style="font-size: 0.8rem; font-weight: 800; color: #ef4444; font-family: monospace; background: #fee2e2; padding: 2px 8px; border-radius: 6px;">00:00</span>
-                            </div>
-                            
-                            <div style="font-size: 0.75rem; color: var(--text-secondary); line-height: 1.5; background: #f8fafc; padding: 10px 12px; border-radius: 8px; border: 1px dashed #cbd5e1;">
-                                <i class="fa-solid fa-circle-info" style="color: var(--accent-color);"></i> Gunakan fitur ini jika lagu original. Suara Anda akan otomatis diberikan efek studio jernih tanpa perlu diedit lagi (Eksklusif di Kreaverse AI Studio).
-                            </div>
-                            
-                            <div class="option-group" style="margin-top: 4px;">
-                                <label style="font-size: 0.75rem; font-weight: 700; color: var(--text-secondary); text-transform: none; letter-spacing: normal;">Pilih Karakter Vokal:</label>
-                                <div class="custom-select-container">
-                                    <div class="custom-select-trigger" onclick="window.toggleCustomSelect('voiceGenderDropdown')" style="min-height: 42px; padding: 10px 14px; background: #f8fafc;">
-                                        <span id="voiceGenderSelectedLabel" style="font-weight: 800;"><i class="fa-solid fa-wand-magic-sparkles"></i> 1. Kreaverse AI Studio Effect</span>
-                                        <i class="fa-solid fa-chevron-down"></i>
-                                    </div>
-                                    <div class="custom-select-options hidden" id="voiceGenderDropdown">
-                                        <div class="custom-select-option selected" onclick="window.selectVoiceGenderOption('default', '<i class=\'fa-solid fa-wand-magic-sparkles\'></i> 1. Kreaverse AI Studio Effect')"><i class="fa-solid fa-wand-magic-sparkles"></i> 1. Kreaverse AI Studio Effect</div>
-                                        <div class="custom-select-option" onclick="window.selectVoiceGenderOption('raw', '2. Suara Asli (Tanpa Efek)')">2. Suara Asli (Tanpa Efek)</div>
-                                        <div class="custom-select-option" onclick="window.selectVoiceGenderOption('male', '3. Suara Pria (Studio)')">3. Suara Pria (Studio)</div>
-                                        <div class="custom-select-option" onclick="window.selectVoiceGenderOption('female', '4. Suara Wanita (Studio)')">4. Suara Wanita (Studio)</div>
-                                    </div>
-                                </div>
-                                <input type="hidden" id="voiceGenderFilter" value="default">
-                            </div>
-
-                            <div class="dsp-action-row" style="margin-top: 4px;">
-                                <button type="button" id="btnStartRecord" onclick="window.startRecording()" style="flex: 1; background: #ef4444; color: #fff; border: none; padding: 12px; border-radius: 10px; font-weight: 800; font-size: 0.8rem; cursor: pointer; transition: 0.2s; display: flex; align-items: center; justify-content: center; gap: 6px; box-shadow: 0 4px 10px rgba(239,68,68,0.3);"><i class="fa-solid fa-circle"></i> Mulai Rekam</button>
-                                <button type="button" id="btnStopRecord" onclick="window.stopRecording()" disabled style="flex: 1; background: #cbd5e1; color: #fff; border: none; padding: 12px; border-radius: 10px; font-weight: 800; font-size: 0.8rem; cursor: not-allowed; transition: 0.2s; display: flex; align-items: center; justify-content: center; gap: 6px;"><i class="fa-solid fa-square"></i> Hentikan</button>
-                            </div>
-                            
-                            <div id="recordedAudioContainer" class="hidden" style="margin-top: 8px; background: #f8fafc; padding: 12px; border-radius: 12px; border: 1px solid #e2e8f0;">
-                                <span style="font-size: 0.75rem; font-weight: 800; color: var(--accent-color); margin-bottom: 8px; display: block;"><i class="fa-solid fa-wand-magic-sparkles"></i> Hasil Rekaman (Studio Effect Applied):</span>
-                                <audio id="recordedAudioPlayer" class="hidden"></audio>
-                                <div class="custom-player light-theme" id="cp-recorded">
-                                    <button class="play-btn" onclick="toggleCustomPlay('recordedAudioPlayer', 'cp-recorded')"><i class="fa-solid fa-play"></i></button>
-                                    <span class="time-display current-time">0:00</span>
-                                    <div class="progress-container" onclick="seekCustomAudio(event, 'recordedAudioPlayer')"><div class="progress-bar-fill"></div></div>
-                                    <span class="time-display duration-time">0:00</span>
-                                </div>
-                                <div class="dsp-action-row" style="margin-top: 12px;">
-                                    <button type="button" onclick="window.useRecordedAudio()" style="flex: 1; background: var(--accent-color); color: #fff; border: none; padding: 12px; border-radius: 10px; font-weight: 800; font-size: 0.85rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; box-shadow: 0 4px 10px rgba(0,122,255,0.2);"><i class="fa-solid fa-check-double"></i> Gunakan</button>
-                                    <button type="button" onclick="window.openDownloadModal()" style="flex: 1; background: #10b981; color: #fff; border: none; padding: 12px; border-radius: 10px; font-weight: 800; font-size: 0.85rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; box-shadow: 0 4px 10px rgba(16,185,129,0.2);"><i class="fa-solid fa-cloud-arrow-down"></i> Unduh</button>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- MODAL DOWNLOAD KREAVERSE AI -->
-                        <div id="downloadModalOverlay" class="krea-modal-overlay">
-                            <div class="krea-modal-box">
-                                <div class="krea-modal-icon"><i class="fa-solid fa-music"></i></div>
-                                <h3 class="krea-modal-title">Simpan Audio Kreaverse AI</h3>
-                                <p class="krea-modal-desc">Beri nama mahakarya audio Anda. Sistem Kreaverse AI akan merender dan mengunduhnya dalam format MP3 kualitas studio.</p>
-                                <input type="text" id="downloadTitleInput" class="krea-modal-input" placeholder="Contoh: Vokal Cover Sholawat" autocomplete="off">
-                                <div class="krea-modal-actions">
-                                    <button type="button" class="krea-modal-btn krea-modal-btn-cancel" onclick="window.closeDownloadModal()">Batal</button>
-                                    <button type="button" class="krea-modal-btn krea-modal-btn-confirm" onclick="window.confirmDownloadRecord()">Unduh Sekarang</button>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- URL INPUT BOX -->
-                        <div id="urlInputBox" class="hidden" style="margin-top: 15px; width: 100%; background: #ffffff; padding: 18px; border-radius: 16px; border: 1px solid var(--border-color); box-shadow: var(--shadow-sm); text-align: left;">
-                            <div style="font-weight: 800; font-size: 0.85rem; color: var(--text-primary); margin-bottom: 6px; display: flex; align-items: center; gap: 6px;">
-                                <i class="fa-solid fa-link" style="color: #0ea5e9;"></i> Gunakan URL Audio
-                            </div>
-                            <div style="font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 12px; line-height: 1.4;">
-                                Tempelkan link audio langsung (MP3/WAV) dari penyimpanan cloud atau server eksternal Anda.
-                            </div>
-                            <div style="display: flex; flex-direction: column; gap: 10px;">
-                                <input type="text" id="audioUrlInput" placeholder="https://contoh.com/audio.mp3" style="width: 100%; padding: 12px 14px; border-radius: 10px; border: 1.5px solid #e2e8f0; font-size: 0.85rem; outline: none; transition: 0.2s; font-family: monospace;">
-                                <button type="button" onclick="window.applyAudioUrl()" style="background: #0ea5e9; color: #fff; border: none; padding: 12px 14px; border-radius: 10px; font-weight: 800; font-size: 0.85rem; cursor: pointer; width: 100%; transition: 0.2s; box-shadow: 0 4px 10px rgba(14, 165, 233, 0.2);">
-                                    <i class="fa-solid fa-cloud-arrow-down"></i> Terapkan URL
-                                </button>
-                            </div>
-                        </div>
-                        <div id="urlSuccessMsg" class="hidden" style="margin-top: 10px; font-size: 0.75rem; color: #10b981; font-weight: 700;"><i class="fa-solid fa-circle-check"></i> URL Audio berhasil diterapkan! Siap generate.</div>
-                    </div>
-
-                    <!-- POPUP HISTORI UPLOAD AUDIO -->
-                    <div id="uploadHistoryPopup" class="hidden" style="background: #ffffff; border: 1px solid var(--border-color); border-radius: 16px; padding: 18px; margin-top: 15px; box-shadow: var(--shadow-md); text-align: left;">
-                        <div style="font-weight: 800; font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 10px; text-transform: uppercase; display: flex; justify-content: space-between; align-items: center;">
-                            <div style="display: flex; align-items: center; gap: 8px;">
-                                <span>Histori Unggahan Audio</span>
-                                <span style="background: rgba(0,122,255,0.1); color: var(--accent-color); padding: 2px 6px; border-radius: 4px; font-size: 0.65rem; font-weight: 800;">Maks 20</span>
-                            </div>
-                            <span style="color: var(--text-light); cursor: pointer; font-size: 1.2rem;" onclick="window.toggleUploadHistoryPopup()">&times;</span>
-                        </div>
-                        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 12px; border-bottom: 2px solid #f1f5f9; padding-bottom: 8px;">
-                            <div style="display: flex; flex-wrap: wrap; gap: 8px;">
-                                <button id="tabHistOriginal" onclick="window.switchHistoryTab('original')" style="background: var(--accent-color); border: none; font-size: 0.75rem; font-weight: 800; color: #fff; cursor: pointer; padding: 6px 12px; border-radius: 8px; transition: 0.2s;">Original</button>
-                                <button id="tabHistDsp" onclick="window.switchHistoryTab('dsp')" style="background: transparent; border: none; font-size: 0.75rem; font-weight: 800; color: var(--text-secondary); cursor: pointer; padding: 6px 12px; border-radius: 8px; transition: 0.2s;">DSP Kreaverse AI</button>
-                            </div>
-                            <button onclick="window.deleteAllUploadHistory()" style="background: rgba(239,68,68,0.1); color: #ef4444; border: none; padding: 4px 8px; border-radius: 6px; font-size: 0.7rem; font-weight: 700; cursor: pointer; white-space: nowrap;"><i class="fa-solid fa-trash-can"></i> Hapus Semua</button>
-                        </div>
-                        <div id="uploadHistoryList" style="display: flex; flex-direction: column; gap: 8px; max-height: 250px; overflow-y: auto; padding-right: 4px;">
-                            <span style="font-size: 0.8rem; color: var(--text-light);">Belum ada histori pengunggahan berkas...</span>
-                        </div>
-                    </div>
-
-                    <!-- SUNO AUDIO STEALTH STUDIO (FULLSCREEN POP-UP FIXED) -->
-                    <div id="dspStudioWrapper" class="hidden" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #0f172a; z-index: 9999999; overflow-y: auto; padding: 0; color: #fff; text-align: left;">
-                        
-                        <!-- Sticky Header -->
-                        <div style="position: sticky; top: 0; background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(10px); padding: 16px 20px; border-bottom: 1px solid rgba(255,255,255,0.08); display: flex; justify-content: space-between; align-items: center; z-index: 100; box-shadow: 0 4px 20px rgba(0,0,0,0.3);">
-                            <div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px;">
-                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 450 80" width="130" height="auto">
-                                    <text x="0" y="55%" font-family="'Arial Black', Impact, sans-serif" font-size="65" font-weight="900" fill="#ffffff" dominant-baseline="middle" letter-spacing="3">KREAVERSE</text>
-                                </svg>
-                                <span style="font-size: 0.65rem; color: #ef4444; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; display: flex; align-items: center; gap: 5px;"><i class="fa-solid fa-triangle-exclamation" style="color: #eab308; font-size: 0.75rem;"></i> AI SENSOR DETECTED</span>
-                            </div>
-                            <button onclick="document.getElementById('dspStudioWrapper').classList.add('hidden')" style="background: rgba(255,255,255,0.1); border: none; color: #fff; width: 34px; height: 34px; border-radius: 50%; font-size: 1.1rem; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.2s;"><i class="fa-solid fa-xmark"></i></button>
-                        </div>
-
-                        <!-- Konten DSP (Padding bawah dibesarkan agar tidak ketutup) -->
-                        <div id="dspStudioBody" style="padding: 20px; max-width: 800px; margin: 0 auto; padding-bottom: 150px;">
-                            <!-- NEW INFO BOX -->
-                            <div style="background: linear-gradient(145deg, rgba(239, 68, 68, 0.1), rgba(0,0,0,0.2)); border: 1px solid rgba(239, 68, 68, 0.3); padding: 16px; border-radius: 16px; margin-bottom: 20px; text-align: left;">
-                                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
-                                    <i class="fa-solid fa-shield-virus" style="color: #ef4444; font-size: 1.2rem;"></i>
-                                    <strong style="color: #f8fafc; font-size: 0.9rem; letter-spacing: 0.5px;">SISTEM ANTI-COPYRIGHT</strong>
-                                </div>
-                                <div style="font-size: 0.78rem; color: #cbd5e1; line-height: 1.6;">
-                                    Jangan biarkan bot AI membatasi kreativitas Anda! Kreaverse AI menggunakan <b>9 Lapis Algoritma DSP</b> untuk mengacak <i>Digital Fingerprint</i> dan <i>Spectrogram</i> file MP3 Anda. Bot AI akan menjadi buta dan melihat file ini sebagai lagu baru, namun telinga manusia tetap mendengar kualitas aslinya dengan jernih!<br><br>
-                                    <div style="background: rgba(56, 189, 248, 0.1); border-left: 3px solid #38bdf8; padding: 8px 12px; border-radius: 0 8px 8px 0; color: #e0f2fe;">
-                                        <i class="fa-solid fa-lightbulb" style="color: #38bdf8;"></i> <b>TIPS PRO:</b> Gunakan lagu hasil <i>Cover</i> (vokal orang lain) untuk tingkat keberhasilan <b>90%</b>. Jika memaksakan menggunakan <i>Official Audio</i> artis asli, tingkat keberhasilan sekitar <b>75%</b>.
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="visualizer-box" style="border-color: rgba(239, 68, 68, 0.2);">
-                                <span class="vis-badge" style="background: rgba(239, 68, 68, 0.2); color: #ef4444;">Kreaverse AI Oscilloscope</span>
-                                <canvas id="audioVisualizer"></canvas>
-                            </div>
-
-                            <!-- AUDIO PLAYERS -->
-                            <div style="background: rgba(0,0,0,0.2); border-radius: 16px; padding: 16px; margin-bottom: 20px; border: 1px solid rgba(255,255,255,0.05);">
-                                <div style="margin-bottom: 16px;">
-                                    <span style="font-size: 0.75rem; color: #94a3b8; font-weight: 700; margin-bottom: 8px; display: block;"><i class="fa-solid fa-music"></i> Audio Asli (Terdeteksi Copyright)</span>
-                                    <audio id="originalAudioPlayer" class="hidden"></audio>
-                                    <div class="modern-player-box" id="cp-original">
-                                        <div class="modern-player-top">
-                                            <button class="trim-play-btn" style="background:#38bdf8; color:#0f172a;" onclick="toggleCustomPlay('originalAudioPlayer', 'cp-original')"><i class="fa-solid fa-play"></i></button>
-                                            <div class="modern-player-time"><span class="current-time">0:00</span> / <span class="duration-time">0:00</span></div>
-                                        </div>
-                                        <input type="range" class="audio-seek-slider" value="0" min="0" max="100" step="0.1">
-                                    </div>
-                                </div>
-                                <div>
-                                    <span style="font-size: 0.75rem; color: #ef4444; font-weight: 700; margin-bottom: 8px; display: block;"><i class="fa-solid fa-face-disguise"></i> Hasil Kreaverse AI (Aman dari Bot AI)</span>
-                                    <audio id="bypassedAudioPlayer" class="hidden"></audio>
-                                    <div class="modern-player-box" id="cp-bypassed" style="border-color: rgba(239, 68, 68, 0.2); background: rgba(239, 68, 68, 0.05);">
-                                        <div class="modern-player-top">
-                                            <button class="trim-play-btn" onclick="toggleCustomPlay('bypassedAudioPlayer', 'cp-bypassed')"><i class="fa-solid fa-play"></i></button>
-                                            <div class="modern-player-time" style="color:#fca5a5;"><span class="current-time">0:00</span> / <span class="duration-time">0:00</span></div>
-                                        </div>
-                                        <input type="range" class="audio-seek-slider red-thumb" style="accent-color:#ef4444;" value="0" min="0" max="100" step="0.1">
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- PANGKAS AUDIO (TRIMMER) - GLOBAL -->
-                            <div style="margin-bottom: 20px;">
-                                <span style="font-size: 0.85rem; font-weight: 800; color: #e2e8f0; display: block; margin-bottom: 10px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 5px;">⚡ Audio Adjustments & Trimmer</span>
-                                <div class="dsp-control-box" style="border-color: rgba(239, 68, 68, 0.3); background: rgba(239, 68, 68, 0.05);">
-                                    <div class="dsp-row-flex">
-                                        <span class="dsp-control-title" style="color: #fca5a5;"><i class="fa-solid fa-scissors"></i> Pangkas Audio (Akurat)</span>
-                                        <button type="button" id="btnPlayTrim" onclick="window.playTrimPreview()" style="background: #ef4444; color: #fff; border: none; padding: 6px 12px; border-radius: 8px; font-size: 0.75rem; font-weight: 800; cursor: pointer; display: flex; align-items: center; gap: 6px; box-shadow: 0 4px 10px rgba(239, 68, 68, 0.3); transition: 0.2s;">
-                                            <i class="fa-solid fa-play" id="iconPlayTrim"></i> Cek Potongan
-                                        </button>
-                                    </div>
-                                    
-                                    <!-- DRAGGABLE PLAYER UNTUK HASIL POTONGAN -->
-                                    <div id="trimPlayerUI" class="hidden modern-player-box" style="border-color: rgba(239, 68, 68, 0.3); background: rgba(0,0,0,0.5);">
-                                        <div class="modern-player-top">
-                                            <button class="trim-play-btn" id="trimPlayBtnCore" onclick="window.toggleTrimPlayback()"><i class="fa-solid fa-play"></i></button>
-                                            <div class="modern-player-time" style="color:#fca5a5;"><span id="trimCurrentTime">0:00</span> / <span id="trimTotalTime">0:00</span></div>
-                                        </div>
-                                        <input type="range" id="trimSeekSlider" class="audio-seek-slider red-thumb" style="accent-color:#ef4444;" value="0" min="0" max="100" step="0.1" oninput="window.handleTrimSeekInput()" onchange="window.handleTrimSeekChange()">
-                                    </div>
-
-                                    <div class="trim-inputs-wrapper">
-                                        <div class="trim-col">
-                                            <span class="trim-label">Mulai</span>
-                                            <input type="text" id="trimStartInput" class="trim-input-time" placeholder="00:00" value="00:00" onchange="window.validateTrimInputs()">
-                                        </div>
-                                        <span class="trim-divider"><i class="fa-solid fa-arrow-right-long"></i></span>
-                                        <div class="trim-col">
-                                            <span class="trim-label">Selesai</span>
-                                            <input type="text" id="trimEndInput" class="trim-input-time" placeholder="00:00" value="00:00" onchange="window.validateTrimInputs()">
-                                        </div>
-                                    </div>
-                                    <div style="font-size: 0.65rem; color: #fca5a5; text-align: center; line-height: 1.4;">Format: <b style="color:#fff;">MM:SS</b>. Biarkan 00:00 jika tidak ingin dipotong.</div>
-                                </div>
-                            </div>
-
-                            <!-- TAB MENU DSP & GLOBAL MASTER TOGGLE -->
-                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px; flex-wrap: wrap; gap: 10px;">
-                                <div style="display: flex; gap: 8px; background: rgba(0,0,0,0.3); padding: 4px; border-radius: 12px; position: relative;">
-                                    <button id="btnTabV1" onclick="window.switchDspTab('v1')" style="background: rgba(56, 189, 248, 0.2); color: #38bdf8; padding: 8px 14px; border-radius: 8px; font-size: 0.8rem; font-weight: 800; border: none; cursor: pointer; transition: 0.3s; z-index: 1;">Kreaverse v1 beta</button>
-                                    <button id="btnTabV2" onclick="window.switchDspTab('v2')" style="background: transparent; color: #94a3b8; padding: 8px 14px; border-radius: 8px; font-size: 0.8rem; font-weight: 800; border: none; cursor: pointer; transition: 0.3s; z-index: 1;">Kreaverse v2 stabil</button>
-                                </div>
-                                
-                                <div style="display: flex; align-items: center; gap: 12px;">
-                                    <!-- GLOBAL MASTER TOGGLE -->
-                                    <div style="display: flex; align-items: center; gap: 8px; background: rgba(239, 68, 68, 0.15); padding: 6px 12px; border-radius: 99px; border: 1px solid rgba(239, 68, 68, 0.3);">
-                                        <span style="font-size: 0.7rem; font-weight: 900; color: #ef4444;" id="globalToggleLabel">DSP OFF</span>
-                                        <label class="switch" style="transform: scale(0.85); transform-origin: right; margin: 0;">
-                                            <input type="checkbox" id="globalMasterToggle" onchange="window.toggleGlobalMasterDSP(event)">
-                                            <span class="slider-toggle" style="background-color: #475569;"></span>
-                                        </label>
-                                    </div>
-                                    <button onclick="window.toggleDspTabsContent()" id="btnToggleDspTabs" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #e2e8f0; width: 32px; height: 32px; border-radius: 8px; font-size: 0.9rem; cursor: pointer; transition: 0.2s; display: flex; align-items: center; justify-content: center;">
-                                        <i class="fa-solid fa-chevron-down" id="iconToggleDspTabs" style="transition: transform 0.3s;"></i>
-                                    </button>
-                                </div>
-                            </div>
-
-                            <!-- KONTEN TABS (DEFAULT TERTUTUP) -->
-                            <div id="dspTabsContentContainer" class="hidden">
-                                
-                                <!-- TAB CONTENT V1 BETA -->
-                                <div id="dspTabV1">
-                                    <div style="margin-bottom: 20px;">
-                                        <div class="dsp-row-flex" style="margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
-                                            <span style="font-size: 0.85rem; font-weight: 800; color: #e2e8f0; display: flex; align-items: center; gap: 8px;">
-                                                ⚙️ Pengaturan Engine (v1 Beta)
-                                                <button type="button" id="v1MasterLockBtn" onclick="window.toggleV1MasterLock()" style="background: none; border: none; color: #ef4444; cursor: pointer; font-size: 0.95rem; padding: 2px 6px; display: inline-flex; align-items: center;" title="Buka Kunci Panel">
-                                                    <i class="fa-solid fa-lock"></i>
-                                                </button>
-                                            </span>
-                                            
-                                            <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap; flex: 1; justify-content: flex-end;">
-                                                <!-- CUSTOM DROPDOWN PRESET -->
-                                                <div class="custom-select-container" style="width: 220px; z-index: 10110;">
-                                                    <div class="custom-select-trigger" onclick="window.toggleCustomSelect('presetDropdownV1')" style="background: rgba(255,255,255,0.05); color: #ffffff; border: 1px solid rgba(255,255,255,0.12); border-radius: 10px; padding: 10px 14px; font-size: 0.75rem; min-height: auto; font-weight: 700; transition: 0.2s;">
-                                                        <span id="presetSelectedLabelV1" style="color: #ffffff;">🔥 Preset: Bypass Copy Lyrics</span>
-                                                        <i class="fa-solid fa-chevron-down" style="color: #ffffff;"></i>
-                                                    </div>
-                                                    <div class="custom-select-options hidden" id="presetDropdownV1" style="background: #1e293b; border: 1px solid #334155; top: calc(100% + 4px); max-height: 250px; overflow-y: auto; padding: 6px; border-radius: 12px; z-index: 10111;">
-                                                        <div style="font-size: 0.65rem; color: #e2e8f0; font-weight: 800; text-transform: uppercase; padding: 4px 10px; margin-bottom: 4px; letter-spacing: 0.5px; opacity: 0.8;">Sistem Preset</div>
-                                                        <div class="custom-select-option" style="color: #ffffff !important; font-weight: 700;" onclick="window.selectPresetOption('manual', 'Manual Setup')">Manual Setup</div>
-                                                        <div class="custom-select-option selected" style="color: #ffffff !important; font-weight: 700;" onclick="window.selectPresetOption('bypass_lyrics', '🔥 Preset: Bypass Copy Lyrics')">🔥 Preset: Bypass Copy Lyrics</div>
-                                                        <div class="custom-select-option" style="color: #ffffff !important; font-weight: 700;" onclick="window.selectPresetOption('preset1', '⚡ Preset: Safe Bypass')">⚡ Preset: Safe Bypass</div>
-                                                        
-                                                        <div style="height: 1px; background: rgba(255,255,255,0.08); margin: 6px 0;"></div>
-                                                        <div style="font-size: 0.65rem; color: #38bdf8; font-weight: 800; text-transform: uppercase; padding: 4px 10px; margin-bottom: 4px; letter-spacing: 0.5px;">Preset Saya</div>
-                                                        <div id="customPresetsListContainer" style="color: #ffffff !important;"></div>
-                                                    </div>
-                                                </div>
-                                                
-                                                <!-- TOMBOL SIMPAN PRESET -->
-                                                <button type="button" onclick="window.openSavePresetModal()" style="background: rgba(56, 189, 248, 0.15); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.3); padding: 8px 12px; border-radius: 10px; font-size: 0.72rem; font-weight: 800; cursor: pointer; display: flex; align-items: center; gap: 6px; height: 36px; transition: 0.2s;" onmouseover="this.style.background='rgba(56, 189, 248, 0.25)'" onmouseout="this.style.background='rgba(56, 189, 248, 0.15)'">
-                                                    <i class="fa-solid fa-floppy-disk"></i> Simpan
-                                                </button>
-                                            </div>
-                                        </div>
-                                        
-                                        <div class="dsp-grid" style="display: flex; flex-direction: column; gap: 16px;">
-                                            <div class="dsp-control-box" style="background: rgba(0,0,0,0.25); border: 1px solid rgba(255,255,255,0.08); padding: 16px; border-radius: 16px;">
-                                                <!-- Tempo -->
-                                                <div class="dsp-row-flex" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                                                    <span class="dsp-control-title" style="font-size: 0.8rem; font-weight: 800; color: #e2e8f0; display: flex; align-items: center; gap: 8px;">
-                                                        Kecepatan (Tempo)
-                                                        <button type="button" onclick="window.toggleSliderLock('sliderTempoV1', this)" class="slider-lock-btn" style="background: none; border: none; color: #ef4444; cursor: pointer; font-size: 0.8rem; padding: 2px 4px; display: inline-flex; align-items: center;" title="Buka Kunci">
-                                                            <i class="fa-solid fa-lock"></i>
-                                                        </button>
-                                                    </span>
-                                                    <span id="valTempoV1" style="color: #38bdf8; font-weight: 800; font-size: 0.8rem;">1.00x</span>
-                                                </div>
-                                                <input type="range" id="sliderTempoV1" class="dsp-slider" style="width: 100%; accent-color: #38bdf8; height: 4px; border-radius: 10px; outline: none; -webkit-appearance: none; background: rgba(255,255,255,0.1);" min="0.5" max="1.5" step="0.01" value="1.0" oninput="document.getElementById('valTempoV1').innerText = parseFloat(this.value).toFixed(2) + 'x'" disabled>
-                                                
-                                                <div style="height: 1px; background: rgba(255,255,255,0.05); margin: 16px 0;"></div>
-                                                
-                                                <!-- Pitch -->
-                                                <div class="dsp-row-flex" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                                                    <span class="dsp-control-title" style="font-size: 0.8rem; font-weight: 800; color: #e2e8f0; display: flex; align-items: center; gap: 8px;">
-                                                        Pitch Shift (Cents)
-                                                        <button type="button" onclick="window.toggleSliderLock('sliderPitchV1', this)" class="slider-lock-btn" style="background: none; border: none; color: #ef4444; cursor: pointer; font-size: 0.8rem; padding: 2px 4px; display: inline-flex; align-items: center;" title="Buka Kunci">
-                                                            <i class="fa-solid fa-lock"></i>
-                                                        </button>
-                                                    </span>
-                                                    <span id="valPitchV1" style="color: #38bdf8; font-weight: 800; font-size: 0.8rem;">0</span>
-                                                </div>
-                                                <input type="range" id="sliderPitchV1" class="dsp-slider" style="width: 100%; accent-color: #38bdf8; height: 4px; border-radius: 10px; outline: none; -webkit-appearance: none; background: rgba(255,255,255,0.1);" min="-1200" max="1200" step="100" value="0" oninput="document.getElementById('valPitchV1').innerText = this.value" disabled>
-
-                                                <div style="height: 1px; background: rgba(255,255,255,0.05); margin: 16px 0;"></div>
-                                                
-                                                <!-- Timbre -->
-                                                <div class="dsp-row-flex" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                                                    <span class="dsp-control-title" style="font-size: 0.8rem; font-weight: 800; color: #e2e8f0; display: flex; align-items: center; gap: 8px;">
-                                                        Timbre Density Enhancer
-                                                        <button type="button" onclick="window.toggleSliderLock('sliderTimbreV1', this)" class="slider-lock-btn" style="background: none; border: none; color: #ef4444; cursor: pointer; font-size: 0.8rem; padding: 2px 4px; display: inline-flex; align-items: center;" title="Buka Kunci">
-                                                            <i class="fa-solid fa-lock"></i>
-                                                        </button>
-                                                    </span>
-                                                    <span id="valTimbreV1" style="color: #38bdf8; font-weight: 800; font-size: 0.8rem;">0%</span>
-                                                </div>
-                                                <input type="range" id="sliderTimbreV1" class="dsp-slider" style="width: 100%; accent-color: #38bdf8; height: 4px; border-radius: 10px; outline: none; -webkit-appearance: none; background: rgba(255,255,255,0.1);" min="0" max="100" step="1" value="0" oninput="document.getElementById('valTimbreV1').innerText = this.value + '%'" disabled>
-
-                                                <div style="height: 1px; background: rgba(255,255,255,0.05); margin: 16px 0;"></div>
-                                                
-                                                <!-- Stego -->
-                                                <div class="dsp-row-flex" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                                                    <span class="dsp-control-title" style="font-size: 0.8rem; font-weight: 800; color: #e2e8f0; display: flex; align-items: center; gap: 8px;">
-                                                        Steganographic Audio Layer
-                                                        <button type="button" onclick="window.toggleSliderLock('sliderStegoV1', this)" class="slider-lock-btn" style="background: none; border: none; color: #ef4444; cursor: pointer; font-size: 0.8rem; padding: 2px 4px; display: inline-flex; align-items: center;" title="Buka Kunci">
-                                                            <i class="fa-solid fa-lock"></i>
-                                                        </button>
-                                                    </span>
-                                                    <span id="valStegoV1" style="color: #38bdf8; font-weight: 800; font-size: 0.8rem;">0%</span>
-                                                </div>
-                                                <input type="range" id="sliderStegoV1" class="dsp-slider" style="width: 100%; accent-color: #38bdf8; height: 4px; border-radius: 10px; outline: none; -webkit-appearance: none; background: rgba(255,255,255,0.1);" min="0" max="100" step="1" value="0" oninput="document.getElementById('valStegoV1').innerText = this.value + '%'" disabled>
-
-                                                <div style="height: 1px; background: rgba(255,255,255,0.05); margin: 16px 0;"></div>
-                                                
-                                                <!-- Void -->
-                                                <div class="dsp-row-flex" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                                                    <span class="dsp-control-title" style="font-size: 0.8rem; font-weight: 800; color: #e2e8f0; display: flex; align-items: center; gap: 8px;">
-                                                        Dimensional Void Reflector
-                                                        <button type="button" onclick="window.toggleSliderLock('sliderVoidV1', this)" class="slider-lock-btn" style="background: none; border: none; color: #ef4444; cursor: pointer; font-size: 0.8rem; padding: 2px 4px; display: inline-flex; align-items: center;" title="Buka Kunci">
-                                                            <i class="fa-solid fa-lock"></i>
-                                                        </button>
-                                                    </span>
-                                                    <span id="valVoidV1" style="color: #38bdf8; font-weight: 800; font-size: 0.8rem;">0%</span>
-                                                </div>
-                                                <input type="range" id="sliderVoidV1" class="dsp-slider" style="width: 100%; accent-color: #38bdf8; height: 4px; border-radius: 10px; outline: none; -webkit-appearance: none; background: rgba(255,255,255,0.1);" min="0" max="100" step="1" value="0" oninput="document.getElementById('valVoidV1').innerText = this.value + '%'" disabled>
-                                                
-                                                <div style="height: 1px; background: rgba(255,255,255,0.05); margin: 16px 0;"></div>
-                                                
-                                                <!-- REVERB (NEW) -->
-                                                <div class="dsp-row-flex" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                                                    <span class="dsp-control-title" style="font-size: 0.8rem; font-weight: 800; color: #e2e8f0; display: flex; align-items: center; gap: 8px;">
-                                                        Studio Reverb (Vokal & Musik)
-                                                        <button type="button" onclick="window.toggleSliderLock('sliderReverbV1', this)" class="slider-lock-btn" style="background: none; border: none; color: #ef4444; cursor: pointer; font-size: 0.8rem; padding: 2px 4px; display: inline-flex; align-items: center;" title="Buka Kunci">
-                                                            <i class="fa-solid fa-lock"></i>
-                                                        </button>
-                                                    </span>
-                                                    <span id="valReverbV1" style="color: #38bdf8; font-weight: 800; font-size: 0.8rem;">0%</span>
-                                                </div>
-                                                <input type="range" id="sliderReverbV1" class="dsp-slider" style="width: 100%; accent-color: #38bdf8; height: 4px; border-radius: 10px; outline: none; -webkit-appearance: none; background: rgba(255,255,255,0.1);" min="0" max="100" step="1" value="0" oninput="document.getElementById('valReverbV1').innerText = this.value + '%'" disabled>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div style="margin-bottom: 20px;">
-                                        <span style="font-size: 0.85rem; font-weight: 800; color: #e2e8f0; display: block; margin-bottom: 10px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 5px;">🔥 Advanced Algorithms (v1 Beta)</span>
-                                        
-                                        <div class="dsp-control-box" style="display: flex; flex-direction: column; gap: 16px; background: rgba(0,0,0,0.25); border: 1px solid rgba(255,255,255,0.08); padding: 16px; border-radius: 16px;">
-                                            <div style="display: flex; justify-content: space-between; align-items: center;">
-                                                <div>
-                                                    <div style="font-size: 0.75rem; font-weight: 800; color: #e2e8f0;">1. Temporal Flux Engine</div>
-                                                    <div style="font-size: 0.65rem; color: #94a3b8;">Menarik dan mengulur sumbu waktu secara asimetris.</div>
-                                                </div>
-                                                <label class="switch" style="transform: scale(0.8); margin: 0;"><input type="checkbox" id="tgTemporalV1" class="dsp-chk-v1"><span class="slider-toggle"></span></label>
-                                            </div>
-                                            <div style="height: 1px; background: rgba(255,255,255,0.05);"></div>
-
-                                            <div style="display: flex; justify-content: space-between; align-items: center;">
-                                                <div>
-                                                    <div style="font-size: 0.75rem; font-weight: 800; color: #e2e8f0;">2. Waveform Mirage Protocol</div>
-                                                    <div style="font-size: 0.65rem; color: #94a3b8;">Membiaskan struktur fisik gelombang.</div>
-                                                </div>
-                                                <label class="switch" style="transform: scale(0.8); margin: 0;"><input type="checkbox" id="tgMirageV1" class="dsp-chk-v1"><span class="slider-toggle"></span></label>
-                                            </div>
-                                            <div style="height: 1px; background: rgba(255,255,255,0.05);"></div>
-
-                                            <div style="display: flex; justify-content: space-between; align-items: center;">
-                                                <div>
-                                                    <div style="font-size: 0.75rem; font-weight: 800; color: #e2e8f0;">3. Binaural Nullifier (Anti-Mono AI)</div>
-                                                    <div style="font-size: 0.65rem; color: #94a3b8;">Memanipulasi fase asimetris.</div>
-                                                </div>
-                                                <label class="switch" style="transform: scale(0.8); margin: 0;"><input type="checkbox" id="tgAntiMonoV1" class="dsp-chk-v1"><span class="slider-toggle"></span></label>
-                                            </div>
-                                            <div style="height: 1px; background: rgba(255,255,255,0.05);"></div>
-
-                                            <div style="display: flex; justify-content: space-between; align-items: center;">
-                                                <div>
-                                                    <div style="font-size: 0.75rem; font-weight: 800; color: #e2e8f0;">4. Spectral Peak Eraser</div>
-                                                    <div style="font-size: 0.65rem; color: #94a3b8;">Menyapu dan menghapus titik koordinat energi tertinggi.</div>
-                                                </div>
-                                                <label class="switch" style="transform: scale(0.8); margin: 0;"><input type="checkbox" id="tgSpectralV1" class="dsp-chk-v1"><span class="slider-toggle"></span></label>
-                                            </div>
-                                            <div style="height: 1px; background: rgba(255,255,255,0.05);"></div>
-
-                                            <div style="display: flex; justify-content: space-between; align-items: center;">
-                                                <div>
-                                                    <div style="font-size: 0.75rem; font-weight: 800; color: #e2e8f0;">5. Quantum Pitch Drift</div>
-                                                    <div style="font-size: 0.65rem; color: #94a3b8;">Menyuntikkan ketidakstabilan frekuensi mikro.</div>
-                                                </div>
-                                                <label class="switch" style="transform: scale(0.8); margin: 0;"><input type="checkbox" id="tgQuantumV1" class="dsp-chk-v1"><span class="slider-toggle"></span></label>
-                                            </div>
-                                            <div style="height: 1px; background: rgba(255,255,255,0.05);"></div>
-
-                                            <div style="display: flex; justify-content: space-between; align-items: center;">
-                                                <div>
-                                                    <div style="font-size: 0.75rem; font-weight: 800; color: #38bdf8;">6. Phonetic Decoupler (Vocal Formant)</div>
-                                                    <div style="font-size: 0.65rem; color: #bae6fd;">Distorsi struktur formant akustik.</div>
-                                                </div>
-                                                <label class="switch" style="transform: scale(0.8); margin: 0;"><input type="checkbox" id="tgPhoneticV1" class="dsp-chk-v1"><span class="slider-toggle"></span></label>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div> <!-- END OF dspTabV1 -->
-
-                                <!-- TAB CONTENT V2 STABIL -->
-                                <div id="dspTabV2" class="hidden">
-                                    <div class="dsp-grid">
-                                        <!-- PITCH & TEMPO -->
-                                        <div class="dsp-control-box">
-                                            <!-- PITCH -->
-                                            <div class="dsp-row-flex">
-                                                <span class="dsp-control-title"><i class="fa-solid fa-music"></i> Pitch (Nada Dasar)</span>
-                                                <div class="stepper-container">
-                                                    <button type="button" class="stepper-btn" onclick="window.adjustStepper('pitchSlider', -1)">-</button>
-                                                    <input type="text" id="valKreaversePitch" class="stepper-val" value="+0.0" readonly>
-                                                    <button type="button" class="stepper-btn" onclick="window.adjustStepper('pitchSlider', 1)">+</button>
-                                                </div>
-                                            </div>
-                                            <input type="range" id="pitchSlider" class="dsp-slider" min="-12" max="12" step="1" value="0" oninput="window.updateKreaverseVal()">
-                                            <div style="font-size: 0.65rem; color: #38bdf8; margin-top: 4px;">*Biarkan 0. Algoritma 20-Layer di bawah yang akan mengecoh AI.</div>
-                                            
-                                            <div style="height: 1px; background: rgba(255,255,255,0.05); margin: 16px 0;"></div>
-
-                                            <!-- TEMPO -->
-                                            <div class="dsp-row-flex">
-                                                <span class="dsp-control-title"><i class="fa-solid fa-gauge-high"></i> Tempo (Speed)</span>
-                                                <div class="stepper-container">
-                                                    <button type="button" class="stepper-btn" onclick="window.adjustStepper('kreaverseSpeed', -0.01)">-</button>
-                                                    <input type="text" id="valKreaverseSpeed" class="stepper-val" value="100%" readonly>
-                                                    <button type="button" class="stepper-btn" onclick="window.adjustStepper('kreaverseSpeed', 0.01)">+</button>
-                                                </div>
-                                            </div>
-                                            <input type="range" id="kreaverseSpeed" class="dsp-slider" min="0.5" max="1.5" step="0.01" value="1.0" oninput="window.updateKreaverseVal()">
-                                            <div id="kreaverseEstimatedDuration" style="font-size: 0.65rem; color: #94a3b8; margin-top: 8px; font-weight: 600; text-align: right;">Estimasi Durasi: 0:00</div>
-                                            
-                                            <div style="height: 1px; background: rgba(255,255,255,0.05); margin: 16px 0;"></div>
-                                            
-                                            <!-- REVERB (NEW) -->
-                                            <div class="dsp-row-flex" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                                                <span class="dsp-control-title" style="font-size: 0.8rem; font-weight: 800; color: #e2e8f0;">Studio Reverb (Vokal & Musik)</span>
-                                                <span id="valReverbV2" style="color: #38bdf8; font-weight: 800; font-size: 0.8rem;">0%</span>
-                                            </div>
-                                            <input type="range" id="sliderReverbV2" class="dsp-slider" style="width: 100%; accent-color: #38bdf8; height: 4px; border-radius: 10px; outline: none; -webkit-appearance: none; background: rgba(255,255,255,0.1);" min="0" max="100" step="1" value="0" oninput="document.getElementById('valReverbV2').innerText = this.value + '%'">
-                                        </div>
-                                    </div>
-
-                                    <!-- ADVANCED ALGORITHMS TOGGLES -->
-                                    <div style="margin-bottom: 24px;">
-                                        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 12px; margin-bottom: 12px; flex-wrap: wrap; gap: 12px;">
-                                            <div style="display: flex; align-items: center; gap: 10px; cursor: pointer; flex: 1; min-width: 200px;" onclick="toggleAccordion('advAlgoBody')">
-                                                <span style="font-size: 0.85rem; font-weight: 800; color: #e2e8f0;">🔥 20-Layer Ultimate Bypass DSP</span>
-                                                <i class="fa-solid fa-chevron-down" style="color: #94a3b8; transition: 0.3s;"></i>
-                                            </div>
-                                        </div>
-                                        
-                                        <div id="advAlgoBody" class="hidden" style="display: flex; flex-direction: column; gap: 12px;">
-                                            
-                                            <!-- 20-LAYER ENGINE STATUS DASHBOARD -->
-                                            <div id="dspStatusDashboard" style="background: linear-gradient(145deg, rgba(100, 116, 139, 0.1), rgba(0,0,0,0.2)); border: 1px solid rgba(100, 116, 139, 0.2); padding: 14px; border-radius: 12px; text-align: left; transition: all 0.3s ease;">
-                                                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
-                                                    <div id="dspStatusDot" style="width: 8px; height: 8px; background: #64748b; border-radius: 50%; transition: all 0.3s ease;"></div>
-                                                    <div id="dspStatusText" style="font-size: 0.85rem; font-weight: 800; color: #64748b; letter-spacing: 0.5px; transition: all 0.3s ease;">ENGINE STATUS: OFFLINE</div>
-                                                </div>
-                                                <div style="font-size: 0.75rem; color: #cbd5e1; line-height: 1.6;">
-                                                    Saat tombol <b>ON SEMUA</b> diaktifkan, algoritma di bawah berjalan serentak untuk menghancurkan sidik jari audio:
-                                                    <div style="margin-top: 10px; display: flex; flex-direction: column; gap: 10px;">
-                                                        <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; text-transform: none; font-size: 0.75rem; color: #cbd5e1; font-weight: 600;">
-                                                            <input type="checkbox" class="dsp-chk" id="chkPhase" onchange="window.updateDSPStatusVisual()" style="width: 16px; height: 16px; accent-color: var(--accent-color);">
-                                                            <span><b>Phase Scrambler:</b> Mengacak fase frekuensi vokal asli</span>
-                                                        </label>
-                                                        <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; text-transform: none; font-size: 0.75rem; color: #cbd5e1; font-weight: 600;">
-                                                            <input type="checkbox" class="dsp-chk" id="chkWarp" onchange="window.updateDSPStatusVisual()" style="width: 16px; height: 16px; accent-color: var(--accent-color);">
-                                                            <span><b>Micro-Time Jitter:</b> Mengacak timeline melodi (Anti-FFT Match)</span>
-                                                        </label>
-                                                        <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; text-transform: none; font-size: 0.75rem; color: #cbd5e1; font-weight: 600;">
-                                                            <input type="checkbox" class="dsp-chk" id="chkFormant" onchange="window.updateDSPStatusVisual()" style="width: 16px; height: 16px; accent-color: var(--accent-color);">
-                                                            <span><b>Spectrogram Formant Shifter:</b> Menggeser pola resonansi vokal asli</span>
-                                                        </label>
-                                                        <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; text-transform: none; font-size: 0.75rem; color: #cbd5e1; font-weight: 600;">
-                                                            <input type="checkbox" class="dsp-chk" id="chkHarmonics" onchange="window.updateDSPStatusVisual()" style="width: 16px; height: 16px; accent-color: var(--accent-color);">
-                                                            <span><b>Harmonics Distortion:</b> Kompresi saturasi lembut (Anti-Fingerprint)</span>
-                                                        </label>
-                                                        <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; text-transform: none; font-size: 0.75rem; color: #cbd5e1; font-weight: 600;">
-                                                            <input type="checkbox" class="dsp-chk" id="chkSpatial" onchange="window.updateDSPStatusVisual()" style="width: 16px; height: 16px; accent-color: var(--accent-color);">
-                                                            <span><b>Spatial 3D Cross-Feed:</b> Pelebaran spasial asimetris</span>
-                                                        </label>
-                                                        <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; text-transform: none; font-size: 0.75rem; color: #cbd5e1; font-weight: 600;">
-                                                            <input type="checkbox" class="dsp-chk" id="chkMasking" onchange="window.updateDSPStatusVisual()" style="width: 16px; height: 16px; accent-color: var(--accent-color);">
-                                                            <span><b>Spectrogram Valley Masking:</b> Menyisipkan desis masking dinamis</span>
-                                                        </label>
-                                                        <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; text-transform: none; font-size: 0.75rem; color: #fca5a5; font-weight: 800;">
-                                                            <input type="checkbox" class="dsp-chk" id="chkObfuscator" onchange="window.updateDSPStatusVisual()" style="width: 16px; height: 16px; accent-color: #ef4444;">
-                                                            <span><b>[UPGRADED] ASR Cognitive Jammer:</b> Menghancurkan deteksi lirik vokal</span>
-                                                        </label>
-                                                        <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; text-transform: none; font-size: 0.75rem; color: #fca5a5; font-weight: 800;">
-                                                            <input type="checkbox" class="dsp-chk" id="chkFlux" onchange="window.updateDSPStatusVisual()" style="width: 16px; height: 16px; accent-color: #ef4444;">
-                                                            <span><b>[UPGRADED] Temporal Flux Engine:</b> Menarik & mengulur sumbu waktu agresif</span>
-                                                        </label>
-                                                        <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; text-transform: none; font-size: 0.75rem; color: #fca5a5; font-weight: 800;">
-                                                            <input type="checkbox" class="dsp-chk" id="chkMirage" onchange="window.updateDSPStatusVisual()" style="width: 16px; height: 16px; accent-color: #ef4444;">
-                                                            <span><b>[UPGRADED] Waveform Mirage Protocol:</b> Membiaskan struktur gelombang</span>
-                                                        </label>
-                                                        <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; text-transform: none; font-size: 0.75rem; color: #cbd5e1; font-weight: 600;">
-                                                            <input type="checkbox" class="dsp-chk" id="chkNullifier" onchange="window.updateDSPStatusVisual()" style="width: 16px; height: 16px; accent-color: var(--accent-color);">
-                                                            <span><b>Binaural Nullifier:</b> Memanipulasi fase asimetris (Anti-Mono AI)</span>
-                                                        </label>
-                                                        <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; text-transform: none; font-size: 0.75rem; color: #cbd5e1; font-weight: 600;">
-                                                            <input type="checkbox" class="dsp-chk" id="chkLayering" onchange="window.updateDSPStatusVisual()" style="width: 16px; height: 16px; accent-color: var(--accent-color);">
-                                                            <span><b>Layering & Reflektor:</b> Steganographic Audio Layer & Dimensional Void Reflector</span>
-                                                        </label>
-                                                        <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; text-transform: none; font-size: 0.75rem; color: #fca5a5; font-weight: 800;">
-                                                            <input type="checkbox" class="dsp-chk" id="chkTransient" onchange="window.updateDSPStatusVisual()" style="width: 16px; height: 16px; accent-color: #ef4444;">
-                                                            <span><b>[NEW] Transient Smudge:</b> Merusak keselarasan Intro & Durasi Absolut</span>
-                                                        </label>
-                                                        <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; text-transform: none; font-size: 0.75rem; color: #fca5a5; font-weight: 800;">
-                                                            <input type="checkbox" class="dsp-chk" id="chkChroma" onchange="window.updateDSPStatusVisual()" style="width: 16px; height: 16px; accent-color: #ef4444;">
-                                                            <span><b>[NEW] Deep Chroma Scrambler:</b> Membodohi sistem pencocokan Melodi AI</span>
-                                                        </label>
-                                                        <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; text-transform: none; font-size: 0.75rem; color: #fca5a5; font-weight: 800;">
-                                                            <input type="checkbox" class="dsp-chk" id="chkMicroReverse" onchange="window.updateDSPStatusVisual()" style="width: 16px; height: 16px; accent-color: #ef4444;">
-                                                            <span><b>[EXTREME] Waveform DNA Scrambler:</b> Membalikkan mikrosekon audio</span>
-                                                        </label>
-                                                        <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; text-transform: none; font-size: 0.75rem; color: #fca5a5; font-weight: 800;">
-                                                            <input type="checkbox" class="dsp-chk" id="chkRingMod" onchange="window.updateDSPStatusVisual()" style="width: 16px; height: 16px; accent-color: #ef4444;">
-                                                            <span><b>[EXTREME] Spectral Sideband:</b> Menggeser seluruh puncak frekuensi</span>
-                                                        </label>
-                                                        <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; text-transform: none; font-size: 0.75rem; color: #991b1b; font-weight: 900; background: #fecaca; padding: 4px 8px; border-radius: 6px;">
-                                                            <input type="checkbox" class="dsp-chk" id="chkNuke" onchange="window.updateDSPStatusVisual()" style="width: 16px; height: 16px; accent-color: #991b1b;">
-                                                            <span><b>[GOD MODE] Constellation Nuke:</b> Tembakkan Puncak Audio Palsu ke AI!</span>
-                                                        </label>
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                            <!-- Lyric Phonetic Encryptor -->
-                                            <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(56, 189, 248, 0.1); padding: 12px 14px; border-radius: 12px; border: 1px solid rgba(56, 189, 248, 0.3); margin-top: 4px;">
-                                                <div style="padding-right: 10px;">
-                                                    <div style="font-size: 0.8rem; font-weight: 800; color: #38bdf8;"><i class="fa-solid fa-user-secret"></i> Lyric Phonetic Encryptor</div>
-                                                    <div style="font-size: 0.65rem; color: #bae6fd; margin-top: 4px; line-height: 1.4;">Mengelabui sensor teks AI dengan menyisipkan karakter tak kasat mata pada lirik.</div>
-                                                </div>
-                                                <button type="button" onclick="document.getElementById('lyricsInput').scrollIntoView({behavior: 'smooth'});" style="flex-shrink: 0; background: #38bdf8; color: #0f172a; border: none; padding: 8px 12px; border-radius: 8px; font-size: 0.75rem; font-weight: 800; cursor: pointer; box-shadow: 0 4px 10px rgba(56, 189, 248, 0.3); transition: 0.2s;">Ke Lirik</button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div> <!-- END OF dspTabV2 -->
-                            </div> <!-- END OF dspTabsContentContainer -->
-
-                            <!-- CHOOSE FORMAT FOR UPLOAD (NEW) -->
-                            <div style="margin-bottom: 20px; background: rgba(255,255,255,0.03); border: 1px dashed rgba(255,255,255,0.1); padding: 14px; border-radius: 16px;">
-                                <span style="font-size: 0.8rem; font-weight: 800; color: #cbd5e1; display: block; margin-bottom: 8px;"><i class="fa-solid fa-file-audio" style="color: #38bdf8;"></i> Pilih Format Enkripsi</span>
-                                <div class="custom-select-container" style="width: 100%;">
-                                    <div class="custom-select-trigger" onclick="window.toggleCustomSelect('uploadFormatDropdown')" style="background: rgba(0,0,0,0.3); color: #e2e8f0; border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; padding: 10px 14px; font-size: 0.75rem; min-height: auto; font-weight: 700; transition: 0.2s; display: flex; justify-content: space-between; align-items: center;">
-                                        <span id="uploadFormatSelectedLabel">⚡ Format: .MP3 (Rekomendasi - Paling Kecil)</span>
-                                        <i class="fa-solid fa-chevron-down"></i>
-                                    </div>
-                                    <div class="custom-select-options hidden" id="uploadFormatDropdown" style="background: #1e293b; border: 1px solid #334155; top: calc(100% + 4px); border-radius: 10px; z-index: 10120;">
-                                        <div class="custom-select-option selected" onclick="window.selectUploadFormat('mp3', '⚡ Format: .MP3 (Rekomendasi - Paling Kecil)')">⚡ Format: .MP3 (Rekomendasi - Paling Kecil)</div>
-                                        <div class="custom-select-option" onclick="window.selectUploadFormat('ogg', '🍃 Format: .OGG (Sangat Kecil & Ringan)')">🍃 Format: .OGG (Sangat Kecil & Ringan)</div>
-                                        <div class="custom-select-option" onclick="window.selectUploadFormat('m4a', '🎵 Format: .M4A (Kualitas Tinggi & Hemat)')">🎵 Format: .M4A (Kualitas Tinggi & Hemat)</div>
-                                        <div class="custom-select-option" onclick="window.selectUploadFormat('wav', '🔊 Format: .WAV (Asli - Ukuran Besar)')">🔊 Format: .WAV (Asli - Ukuran Besar)</div>
-                                    </div>
-                                </div>
-                                <input type="hidden" id="uploadFormatSelect" value="mp3">
-                            </div>
-
-                            <!-- ESTIMATED FILE INFO BOX (NEW) -->
-                            <div id="dspFileInfoBox" style="margin-bottom: 20px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); padding: 16px; border-radius: 16px; font-size: 0.75rem; line-height: 1.6; color: #cbd5e1;">
-                                <span style="font-size: 0.8rem; font-weight: 800; color: #38bdf8; display: block; margin-bottom: 8px;"><i class="fa-solid fa-chart-simple"></i> Estimasi Spesifikasi File</span>
-                                <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 6px; margin-bottom: 6px;">
-                                    <span>Durasi Sebelum Diedit:</span>
-                                    <span id="infoDurOriginal" style="font-weight: 700; color: #fff;">00:00</span>
-                                </div>
-                                <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 6px; margin-bottom: 6px;">
-                                    <span>Durasi Setelah Diedit (DSP):</span>
-                                    <span id="infoDurProcessed" style="font-weight: 700; color: #38bdf8;">00:00</span>
-                                </div>
-                                <div style="display: flex; justify-content: space-between;">
-                                    <span>Estimasi Ukuran File:</span>
-                                    <span id="infoFileSize" style="font-weight: 700; color: #ef4444;">0.00 MB</span>
-                                </div>
-                            </div>
-
-                            <!-- ACTION BUTTONS -->
-                            <div style="display: flex; flex-direction: column; gap: 10px;">
-                                <div class="dsp-action-row">
-                                    <button id="btnPreviewDsp" type="button" class="dsp-action-btn" style="flex: 1; background: rgba(255,255,255,0.1); color: #fff; border: 1px solid rgba(255,255,255,0.2); padding: 10px 14px; border-radius: 12px; font-weight: 700; font-size: 0.8rem; cursor: pointer;" onclick="generateDspPreview()">
-                                        <i class="fa-solid fa-headphones"></i> Preview Kreaverse AI
-                                    </button>
-                                    <button id="btnStartDsp" type="button" class="dsp-action-btn" style="flex: 1; background: linear-gradient(135deg, #ef4444, #b91c1c); color: #fff; border: none; padding: 10px 14px; border-radius: 12px; font-weight: 800; font-size: 0.8rem; cursor: pointer; box-shadow: 0 4px 15px rgba(239,68,68,0.4);" onclick="startDspBypassAndUpload()">
-                                        <i class="fa-solid fa-upload"></i> Upload Audio Kreaverse AI
-                                    </button>
-                                </div>
-                                <div style="font-size: 0.7rem; color: #94a3b8; line-height: 1.4; text-align: center; margin-bottom: 4px;">
-                                    <i class="fa-solid fa-circle-info" style="color: #ef4444;"></i> Gunakan tombol merah di atas jika lagu Anda mengandung Hak Cipta (Akan diproses oleh fitur DSP Kreaverse AI).
-                                </div>
-                                
-                                <button id="btnUploadOriginal" type="button" class="dsp-action-btn" style="width: 100%; background: #334155; color: #f8fafc; border: 1px solid #475569; padding: 10px 14px; border-radius: 12px; font-weight: 700; font-size: 0.8rem; cursor: pointer;" onclick="uploadOriginalAudio()">
-                                    <i class="fa-solid fa-cloud-arrow-up"></i> Upload Original by server Kreaverse AI
-                                </button>
-                                <div style="font-size: 0.7rem; color: #94a3b8; line-height: 1.4; text-align: center;">
-                                    <i class="fa-solid fa-circle-info" style="color: #38bdf8;"></i> Gunakan tombol abu-abu ini jika lagu Anda adalah karya sendiri / bebas Hak Cipta (Upload langsung tanpa manipulasi DSP).
-                                </div>
-                            </div>
-                            
-                            <div id="dspProgressBox" class="hidden" style="margin-top: 20px; background: rgba(0,0,0,0.3); padding: 12px; border-radius: 12px;">
-                                <div style="display: flex; justify-content: space-between; font-size: 0.8rem; margin-bottom: 8px; font-weight: 600;">
-                                    <span id="dspStatusText" style="color: #e2e8f0;">Menerapkan Algoritma Kreaverse AI...</span>
-                                    <span id="dspPercentText" style="color: #ef4444;">0%</span>
-                                </div>
-                                <div style="width: 100%; height: 8px; background: #334155; border-radius: 10px; overflow: hidden;">
-                                    <div id="dspProgressBar" style="width: 0%; height: 100%; background: linear-gradient(90deg, #ef4444, #f87171); transition: width 0.1s linear; box-shadow: 0 0 10px rgba(239,68,68,0.5);"></div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="upload-progress-container hidden" id="audioProgressBox">
-                        <div class="upload-progress-info">
-                            <span class="file-name" id="audioFileName">-</span>
-                            <span class="file-speed" id="audioSpeed">0 KB/s</span>
-                        </div>
-                        <div class="progress-bar">
-                            <div class="progress-fill" id="audioProgressFill"></div>
-                        </div>
-                        <div class="upload-progress-status" id="audioStatus">Menunggu...</div>
+                    
+                    <div class="input-group hidden">
+                        <div class="custom-select-container"><div class="custom-select-trigger" onclick="window.toggleCustomSelect('providerDropdown')"><span id="providerSelectedLabel">Memuat provider...</span></div><div class="custom-select-options hidden" id="providerDropdown"></div></div>
+                        <input type="hidden" id="providerSelect" value="">
                     </div>
                 </div>
             </div>
 
-            <!-- FIELD: TITLE -->
-            <div class="input-group" id="titleFieldWrapper">
-                <label for="titleInput">
-                    <span>Title *</span>
-                    <div style="display: flex; gap: 6px;">
-                        <button type="button" class="magic-wand-btn" style="padding: 4px 8px; font-size: 0.7rem; font-weight: 800;" onclick="let el=document.getElementById('titleInput'); el.value = (el.value === el.value.toUpperCase()) ? el.value.toLowerCase() : el.value.toUpperCase();" title="Ubah Kapital / Huruf Kecil">
-                            Kapital
-                        </button>
-                    </div>
-                </label>
-                <input type="text" id="titleInput" placeholder="Masukkan judul lagu..." maxlength="100" oninput="updateCounter('titleInput', 'titleCounter', 100)">
-                <span class="char-counter" id="titleCounter">0/100</span>
-            </div>
-
-            <!-- FIELD: STYLE OF MUSIC -->
-            <div class="input-group">
-                <label for="styleInput">
-                    <span style="line-height: 1.2;">Style of<br>Music *</span>
-                    <div style="display: flex; gap: 6px;">
-                        <button type="button" class="magic-wand-btn" style="background: rgba(245, 158, 11, 0.1); color: #f59e0b; border-color: rgba(245, 158, 11, 0.2); padding: 4px 8px; font-size: 0.7rem;" onclick="window.openPromptModal()" title="Lihat Daftar Inspirasi Prompt">
-                            <i class="fa-solid fa-lightbulb"></i> Inspirasi
-                        </button>
-                        <button type="button" class="magic-wand-btn" style="padding: 4px 8px; font-size: 0.7rem;" onclick="triggerMagicWand('style')" title="Auto-Generate Style via AI">
-                            <i class="fa-solid fa-wand-magic-sparkles"></i> AI
-                        </button>
-                        <button type="button" class="action-icon-btn" style="padding: 4px 8px; font-size: 0.7rem;" onclick="clearInput('styleInput', 'styleCounter', 1000)" title="Hapus Teks">
-                            <i class="fa-solid fa-trash-can"></i>
-                        </button>
-                    </div>
-                </label>
-                <textarea id="styleInput" placeholder="Contoh: jazz, classical, electronic, upbeat pop..." maxlength="1000" oninput="updateCounter('styleInput', 'styleCounter', 1000)"></textarea>
-                <span class="char-counter" id="styleCounter">0/1000</span>
-            </div>
-
-            <!-- INSTRUMENTAL TOGGLE -->
-            <div class="toggle-container">
-                <span class="toggle-label">Instrumental</span>
-                <label class="switch">
-                    <input type="checkbox" id="instrumentalToggle">
-                    <span class="slider-toggle"></span>
-                </label>
-            </div>
-            <span class="helper-text">Aktifkan untuk menghasilkan musik tanpa suara vokal (hanya instrumen). Jika dimatikan, lagu akan memiliki vokal.</span>
-
-            <!-- FIELD: LYRICS OF MUSIC -->
-            <div class="input-group" id="lyricsFieldWrapper">
-                <label for="lyricsInput">
-                    <span style="line-height: 1.2;">Lyrics of<br>music *</span>
-                    <div style="display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end;">
-                        <button type="button" id="btnSyncDetect" class="magic-wand-btn" style="background: rgba(139, 92, 246, 0.1); color: #8b5cf6; border-color: rgba(139, 92, 246, 0.2); padding: 4px 8px; font-size: 0.7rem; white-space: nowrap; transition: all 0.3s ease;" onclick="handleSyncDetectClick()" title="Deteksi Lirik dari Audio">
-                            <i class="fa-solid fa-ear-listen" id="iconSyncDetect"></i> <span id="textSyncDetect">Deteksi</span>
-                        </button>
-                        <button type="button" class="magic-wand-btn" style="padding: 4px 8px; font-size: 0.7rem; white-space: nowrap;" onclick="triggerMagicWand('lyrics')" title="Rapikan Struktur Lagu via AI">
-                            <i class="fa-solid fa-wand-magic-sparkles"></i> AI
-                        </button>
-                        <button type="button" class="magic-wand-btn" style="background: rgba(16, 185, 129, 0.1); color: #10B981; border-color: rgba(16, 185, 129, 0.2); padding: 4px 8px; font-size: 0.7rem; white-space: nowrap;" onclick="encryptLyrics()" title="Bypass Filter NLP">
-                            <i class="fa-solid fa-user-secret"></i> Encrypt
-                        </button>
-                        <button type="button" class="action-icon-btn" style="padding: 4px 8px; font-size: 0.7rem; white-space: nowrap;" onclick="clearInput('lyricsInput', 'lyricsCounter', 5000); window.checkLyricsState();" title="Hapus Teks">
-                            <i class="fa-solid fa-trash-can"></i>
-                        </button>
-                    </div>
-                </label>
-                <div id="lyricsHelperText" style="font-size: 0.7rem; color: var(--accent-color); margin-bottom: 6px; font-weight: 600; background: rgba(0, 122, 255, 0.05); padding: 8px 12px; border-radius: 8px; border: 1px solid rgba(0, 122, 255, 0.1); line-height: 1.5; transition: all 0.3s ease;">
-                    <i class="fa-solid fa-circle-info"></i> <b>Panduan:</b> Biarkan kotak ini kosong lalu klik <b>Deteksi</b> untuk menebak lirik dari audio. <br><br><b>ATAU</b> paste lirik asli dari Google ke kotak ini, lalu klik <b>Sync Lirik</b> untuk menyinkronkan waktu lirik dengan lagu (Karaoke).
-                </div>
-                <div id="detectLyricsProgress" class="hidden" style="font-size: 0.75rem; color: #8b5cf6; margin-bottom: 6px; font-weight: 600; background: rgba(139, 92, 246, 0.05); padding: 8px 12px; border-radius: 8px; border: 1px solid rgba(139, 92, 246, 0.2); display: flex; align-items: center; gap: 8px;">
-                    <i class="fa-solid fa-circle-notch fa-spin"></i> <span id="detectLyricsStatus">Mendengarkan audio...</span>
-                </div>
-                <textarea id="lyricsInput" placeholder="Tuliskan lirik lagu Anda sendiri di sini..." style="height: 140px;" maxlength="5000" oninput="updateCounter('lyricsInput', 'lyricsCounter', 5000); window.checkLyricsState();"></textarea>
-                <span class="char-counter" id="lyricsCounter">0/5000</span>
-            </div>
-
-            <!-- ACCORDION: OPTIONAL PARAMETERS -->
-            <div id="optionalParametersWrapper" style="background: #ffffff; border: 1px solid var(--border-color); border-radius: 20px; padding: 20px; margin-bottom: 24px; box-shadow: 0 4px 12px rgba(0,0,0,0.03); text-align: left;">
-                <div class="custom-dropdown-trigger" style="background: #f8fafc !important; cursor: pointer; user-select: none; border-radius: 12px; border: 1px solid var(--border-color); padding: 14px 16px;" onclick="toggleAccordion('optionalParamsBody')">
-                    <span style="font-weight: 700; font-size: 0.92rem; display: flex; align-items: center; gap: 8px;">
-                        <i class="fa-solid fa-sliders" style="color: var(--accent-color);"></i> Optional Parameters
-                    </span>
-                </div>
-                
-                <div id="optionalParamsBody" class="hidden" style="padding-top: 18px; display: flex; flex-direction: column; gap: 14px;">
-                    <!-- NEGATIVE TAGS -->
+            <!-- Optional Parameters -->
+            <div id="optionalParametersWrapper">
+                <div id="optionalParamsBody">
                     <div class="input-group">
-                        <label for="negativeTagsInput">Negative Tags</label>
-                        <input type="text" id="negativeTagsInput" placeholder="Gaya musik yang dihindari (contoh: metal, heavy drums)">
-                    </div>
-
-                    <!-- VOCAL GENDER SELECT -->
-                    <div class="option-group" style="margin-bottom: 15px;">
                         <label>Vocal Gender</label>
-                        <div class="custom-select-container">
-                            <div class="custom-select-trigger" onclick="window.toggleCustomSelect('vocalGenderDropdown')">
-                                <span id="vocalGenderSelectedLabel">Not specified</span>
-                                <i class="fa-solid fa-chevron-down"></i>
-                            </div>
-                            <div class="custom-select-options hidden" id="vocalGenderDropdown">
-                                <div class="custom-select-option selected" onclick="window.selectGenderOption('not_specified', 'Not specified')">Not specified</div>
-                                <div class="custom-select-option" onclick="window.selectGenderOption('male', 'Male')">Male</div>
-                                <div class="custom-select-option" onclick="window.selectGenderOption('female', 'Female')">Female</div>
-                            </div>
+                        <div style="display:flex; gap:10px; background:#f9fafb; border:1px solid #e5e7eb; border-radius:12px; padding:6px;">
+                            <div class="suno-chip active" style="flex:1; justify-content:center; background: #111827; color: #ffffff; border:none;" onclick="window.selectGenderOption('not_specified', 'Not specified'); this.parentElement.querySelectorAll('.suno-chip').forEach(c=>{c.style.background='transparent'; c.style.color='#374151';}); this.style.background='#111827'; this.style.color='#ffffff';">Any</div>
+                            <div class="suno-chip" style="flex:1; justify-content:center; background:transparent; border:none; color: #374151;" onclick="window.selectGenderOption('male', 'Male'); this.parentElement.querySelectorAll('.suno-chip').forEach(c=>{c.style.background='transparent'; c.style.color='#374151';}); this.style.background='#111827'; this.style.color='#ffffff';">Male</div>
+                            <div class="suno-chip" style="flex:1; justify-content:center; background:transparent; border:none; color: #374151;" onclick="window.selectGenderOption('female', 'Female'); this.parentElement.querySelectorAll('.suno-chip').forEach(c=>{c.style.background='transparent'; c.style.color='#374151';}); this.style.background='#111827'; this.style.color='#ffffff';">Female</div>
                         </div>
-                        <input type="hidden" id="vocalGenderSelect" value="not_specified">
+                        <div class="hidden"><span id="vocalGenderSelectedLabel">Not specified</span><div id="vocalGenderDropdown"></div><input type="hidden" id="vocalGenderSelect" value="not_specified"></div>
                     </div>
 
-                    <!-- SLIDER: STYLE WEIGHT -->
-                    <div class="slider-wrapper">
-                        <div class="slider-info">
-                            <span class="slider-title">Style Weight</span>
-                        </div>
-                        <div class="slider-control-row">
-                            <input type="range" id="styleWeightSlider" class="slider-range" min="0" max="1" step="0.1" value="0.5" oninput="syncSliderVal('styleWeightSlider', 'styleWeightVal')">
-                            <span class="slider-val-box" id="styleWeightVal">0.5</span>
-                            <button type="button" class="btn-reset-slider" onclick="resetSlider('styleWeightSlider', 'styleWeightVal', 0.5)">×</button>
-                        </div>
-                        <span class="helper-text" style="margin:0;">Seberapa kuat AI mengikuti gaya musik yang diminta.</span>
-                    </div>
-
-                    <!-- SLIDER: WEIRDNESS CONSTRAINT -->
-                    <div class="slider-wrapper">
-                        <div class="slider-info">
-                            <span class="slider-title">Weirdness Constraint</span>
-                        </div>
-                        <div class="slider-control-row">
-                            <input type="range" id="weirdnessSlider" class="slider-range" min="0" max="1" step="0.1" value="0.5" oninput="syncSliderVal('weirdnessSlider', 'weirdnessVal')">
-                            <span class="slider-val-box" id="weirdnessVal">0.5</span>
-                            <button type="button" class="btn-reset-slider" onclick="resetSlider('weirdnessSlider', 'weirdnessVal', 0.5)">×</button>
-                        </div>
-                        <span class="helper-text" style="margin:0;">Tingkat keunikan atau eksperimen nada pada lagu.</span>
-                    </div>
-
-                    <!-- SLIDER: AUDIO WEIGHT -->
-                    <div class="slider-wrapper">
-                        <div class="slider-info">
-                            <span class="slider-title">Audio Weight</span>
-                        </div>
-                        <div class="slider-control-row">
-                            <input type="range" id="audioWeightSlider" class="slider-range" min="0" max="1" step="0.1" value="0.5" oninput="syncSliderVal('audioWeightSlider', 'audioWeightVal')">
-                            <span class="slider-val-box" id="audioWeightVal">0.5</span>
-                            <button type="button" class="btn-reset-slider" onclick="resetSlider('audioWeightSlider', 'audioWeightVal', 0.5)">×</button>
-                        </div>
-                        <span class="helper-text" style="margin:0;">Seberapa mirip hasil akhir dengan audio referensi (khusus mode Cover).</span>
-                    </div>
-
-                    <!-- PERSONA ID -->
                     <div class="input-group">
-                        <label for="personaIdInput">Persona ID</label>
-                        <input type="text" id="personaIdInput" placeholder="contoh: persona_123">
+                        <label>Negative Tags</label>
+                        <input type="text" id="negativeTagsInput" class="suno-input-text" placeholder="Contoh: heavy drums, screaming">
                     </div>
-                </div>
-            </div>
 
-            <!-- SUBMIT ACTION -->
-            <button id="generateBtn" class="action-btn" style="margin-top: 14px; padding: 16px 24px; border-radius: 16px; display: flex; justify-content: center; align-items: center; gap: 10px; background: linear-gradient(135deg, #007AFF, #0056b3); color: #ffffff; box-shadow: 0 8px 20px rgba(0, 122, 255, 0.3); border: none; font-family: 'Plus Jakarta Sans', sans-serif; transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);" onclick="generateAudioSong()">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
-                    <path d="M12 0L14.59 9.41L24 12L14.59 14.59L12 24L9.41 14.59L0 12L9.41 9.41L12 0Z" />
-                </svg>
-                <span style="font-weight: 800; font-size: 1.05rem; letter-spacing: 0.5px;">Buat Lagu</span> 
-                <span style="opacity: 0.6; margin: 0 2px; font-size: 1.2rem;">•</span> 
-                <span id="generateCostBadge" style="font-weight: 700; font-size: 0.85rem; background: rgba(255,255,255,0.2); padding: 4px 10px; border-radius: 8px;"></span>
-            </button>
-            
-            <!-- BENEFIT DESCRIPTIONS -->
-            <div style="display: flex; justify-content: center; align-items: center; gap: 14px; flex-wrap: wrap; margin-top: 18px; font-size: 0.75rem; font-weight: 700; color: var(--text-secondary);">
-                <span style="display: flex; align-items: center; gap: 6px;"><i class="fa-solid fa-headphones" style="color: #10b981;"></i> Audio HD Studio</span>
-                <span style="color: #cbd5e1;">|</span>
-                <span style="display: flex; align-items: center; gap: 6px;"><i class="fa-solid fa-briefcase" style="color: #f59e0b;"></i> Commercial Use</span>
-                <span style="color: #cbd5e1;">|</span>
-                <span style="display: flex; align-items: center; gap: 6px;"><i class="fa-solid fa-bolt" style="color: #38bdf8;"></i> Render Cepat</span>
+                    <div class="slider-wrapper">
+                        <div style="display:flex; justify-content:space-between; margin-bottom:10px;"><span class="slider-title">Style Influence</span><span class="slider-val-box" id="styleWeightVal">0.5</span></div>
+                        <input type="range" id="styleWeightSlider" class="slider-range" min="0" max="1" step="0.1" value="0.5" oninput="syncSliderVal('styleWeightSlider', 'styleWeightVal')">
+                    </div>
+                    <div class="slider-wrapper">
+                        <div style="display:flex; justify-content:space-between; margin-bottom:10px;"><span class="slider-title">Weirdness</span><span class="slider-val-box" id="weirdnessVal">0.5</span></div>
+                        <input type="range" id="weirdnessSlider" class="slider-range" min="0" max="1" step="0.1" value="0.5" oninput="syncSliderVal('weirdnessSlider', 'weirdnessVal')">
+                    </div>
+                    <div class="slider-wrapper">
+                        <div style="display:flex; justify-content:space-between; margin-bottom:10px;"><span class="slider-title">Audio Weight (Khusus Cover)</span><span class="slider-val-box" id="audioWeightVal">0.5</span></div>
+                        <input type="range" id="audioWeightSlider" class="slider-range" min="0" max="1" step="0.1" value="0.5" oninput="syncSliderVal('audioWeightSlider', 'audioWeightVal')">
+                    </div>
+
+                    <div class="input-group">
+                        <label>Persona ID</label>
+                        <input type="text" id="personaIdInput" class="suno-input-text" placeholder="contoh: persona_123">
+                    </div>
+                    
+                    <div class="hidden"><select id="llmSelect"></select><select id="llmModelSelect"></select><span id="llmSelectedLabel"></span><div id="llmDropdown"></div></div>
+                </div>
             </div>
         </div>
 
-        <!-- MINI LIBRARY & PERSISTENT PROGRESS -->
-        <div id="miniLibraryContainer" style="display: none; background: #ffffff; border: 1px solid var(--border-color); border-radius: 24px; padding: 24px; margin-bottom: 30px; box-shadow: var(--shadow-md);">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; border-bottom: 2px solid #f1f5f9; padding-bottom: 12px; flex-wrap: wrap; gap: 10px;">
+        <!-- 7. MINI LIBRARY -->
+        <div id="miniLibraryContainer" class="hidden suno-card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; border-bottom: 1px dashed #e5e7eb; padding-bottom: 12px; flex-wrap: wrap; gap: 10px;">
                 <div style="display: flex; align-items: center; gap: 12px;">
-                    <h2 style="font-size: 1.2rem; font-weight: 900; color: var(--text-primary); margin: 0;"><i class="fa-solid fa-book-open" style="color: var(--accent-color);"></i> Library</h2>
-                    <div style="display: flex; gap: 6px; background: #f1f5f9; padding: 4px; border-radius: 8px;">
-                        <button id="tabLibBerhasil" onclick="window.switchLibraryTab('berhasil')" style="background: #fff; border: 1px solid rgba(0,0,0,0.05); padding: 4px 10px; border-radius: 6px; font-size: 0.75rem; font-weight: 800; color: var(--accent-color); cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.02); transition: 0.2s;">Berhasil</button>
-                        <button id="tabLibGagal" onclick="window.switchLibraryTab('gagal')" style="background: transparent; border: 1px solid transparent; padding: 4px 10px; border-radius: 6px; font-size: 0.75rem; font-weight: 700; color: var(--text-secondary); cursor: pointer; transition: 0.2s;">Gagal</button>
+                    <h2 style="font-size: 1.1rem; font-weight: 900; color: #111827; margin: 0;"><i class="fa-solid fa-book-open"></i> Library</h2>
+                    <div style="display: flex; gap: 6px; background: #f9fafb; padding: 4px; border-radius: 12px; border: 1px solid #e5e7eb;">
+                        <button id="tabLibBerhasil" onclick="window.switchLibraryTab('berhasil')" class="suno-chip active" style="background: #111827; color: #fff; border: none; padding: 6px 14px; margin: 0;">Berhasil</button>
+                        <button id="tabLibGagal" onclick="window.switchLibraryTab('gagal')" class="suno-chip" style="background: transparent; color: #374151; border: none; padding: 6px 14px; margin: 0;">Gagal</button>
                     </div>
                 </div>
-                <!-- Tombol Normal -->
                 <div style="display: flex; gap: 8px;" id="libNormalActions">
-                    <button onclick="window.toggleSelectionMode(true)" style="font-size: 0.75rem; font-weight: 800; color: #ef4444; background: rgba(239,68,68,0.1); padding: 6px 12px; border-radius: 8px; border: none; cursor: pointer; transition: 0.2s;"><i class="fa-solid fa-list-check"></i> Pilih Item</button>
-                    <a href="/berkas/" style="font-size: 0.75rem; font-weight: 800; color: var(--accent-color); text-decoration: none; background: rgba(0,122,255,0.1); padding: 6px 12px; border-radius: 8px; transition: 0.2s;">Berkas <i class="fa-solid fa-arrow-right"></i></a>
+                    <button onclick="window.toggleSelectionMode(true)" class="suno-chip" style="background: #fee2e2; color: #ef4444; border: none; padding: 8px 14px;"><i class="fa-solid fa-list-check"></i> Pilih</button>
                 </div>
-                <!-- Menu Seleksi (Hidden by default) -->
-                <div style="display: none; gap: 8px; align-items: center; background: #fff1f2; padding: 6px 12px; border-radius: 12px; border: 1px solid #fecaca;" id="libSelectionActions">
-                    <label style="display:flex; align-items:center; gap:6px; font-size:0.75rem; font-weight:800; color:#991b1b; cursor:pointer; margin:0;">
-                        <input type="checkbox" id="selectAllCheckbox" onchange="window.toggleSelectAll(this.checked)" style="accent-color:#ef4444; width:16px; height:16px;"> Semua
-                    </label>
-                    <div style="width:1px; height:14px; background:#fca5a5; margin:0 4px;"></div>
-                    <button onclick="window.deleteSelectedItems()" id="btnDeleteSelected" style="font-size: 0.75rem; font-weight: 800; color: #fff; background: #ef4444; padding: 6px 12px; border-radius: 8px; border: none; cursor: pointer; transition: 0.2s;" disabled>Hapus (0)</button>
-                    <button onclick="window.toggleSelectionMode(false)" style="font-size: 0.75rem; font-weight: 800; color: var(--text-secondary); background: #ffffff; padding: 6px 12px; border-radius: 8px; border: 1px solid rgba(0,0,0,0.05); cursor: pointer; transition: 0.2s; box-shadow: 0 2px 4px rgba(0,0,0,0.02);">Batal</button>
+                <div style="display: none; gap: 8px; align-items: center; background: #fee2e2; padding: 8px 12px; border-radius: 12px; border: 1px solid #fecaca;" id="libSelectionActions">
+                    <label style="display:flex; align-items:center; gap:6px; font-size:0.85rem; font-weight:800; color:#ef4444; cursor:pointer; margin:0;"><input type="checkbox" id="selectAllCheckbox" onchange="window.toggleSelectAll(this.checked)" style="accent-color: #ef4444; width: 16px; height: 16px;"> Semua</label>
+                    <button onclick="window.deleteSelectedItems()" id="btnDeleteSelected" class="suno-chip" style="background: #ef4444; color: #fff; border: none; padding: 6px 12px;" disabled>Hapus (0)</button>
+                    <button onclick="window.toggleSelectionMode(false)" class="suno-chip" style="background: #ffffff; color: #374151; border: 1px solid #e5e7eb; padding: 6px 12px;">Batal</button>
                 </div>
             </div>
             <div id="activeProgressGrid" style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 15px;"></div>
             <div id="miniLibraryGrid" style="display: flex; flex-direction: column; gap: 12px;"></div>
         </div>
 
-        <!-- LOADER SCREEN -->
-        <div id="loading" class="hidden">
-            <div class="cinematic-loader-card">
-                <div class="loader-icon-wrap">
-                    <i class="fa-solid fa-music fa-spin-pulse"></i>
-                </div>
-                <h3 class="cinematic-loader-title">Kreaverse AI</h3>
-                <div class="cinematic-progress-bar">
-                    <div class="cinematic-progress-fill" id="generator-progress-fill"></div>
-                </div>
-                <div style="display: flex; justify-content: space-between; width: 100%; align-items: center; margin-top: 2px;">
-                    <p class="cinematic-loader-status" id="generator-loader-status" style="margin: 0; text-align: left; flex: 1;">Mempersiapkan komposisi aransemen...</p>
-                    <div id="generator-timer-box" style="font-size: 0.75rem; font-weight: 700; color: var(--accent-color); background: rgba(0, 122, 255, 0.1); padding: 4px 8px; border-radius: 6px; white-space: nowrap;">
-                        <i class="fa-regular fa-clock"></i> <span id="generator-time-elapsed">00:00</span> <span id="generator-time-est" style="color: var(--text-light); font-size: 0.65rem; margin-left: 4px;">(~3 Menit)</span>
-                    </div>
-                </div>
+        <!-- 8. LOADERS & RESULTS -->
+        <div id="loading" class="hidden" style="margin-bottom:40px;">
+            <div class="suno-card" style="text-align:center; max-width:400px; margin:0 auto; padding:30px;">
+                <i class="fa-solid fa-compact-disc fa-spin" style="font-size:2.5rem; color:#111827; margin-bottom:15px;"></i>
+                <h3 style="font-weight:900; font-size:1.1rem; color:#111827; margin-bottom:10px;">Generating...</h3>
+                <div style="height:6px; background:#e5e7eb; border-radius:6px; overflow:hidden;"><div id="generator-progress-fill" style="height:100%; width:0%; background:#111827;"></div></div>
+                <p id="generator-loader-status" style="font-size:0.8rem; color:#6b7280; margin-top:12px; font-weight:600;">Menyiapkan...</p>
+                <div id="generator-timer-box" class="hidden"><span id="generator-time-elapsed"></span><span id="generator-time-est"></span></div>
             </div>
         </div>
 
-        <!-- OUTPUT BLOCK -->
-        <div id="resultContainer" class="hidden">
-            <h2>Output</h2>
-            <div class="tab-menu-row">
-                <button class="tab-btn active" id="btnTabPreview" onclick="switchOutputTab('preview')">Preview</button>
-                <button class="tab-btn" id="btnTabJson" onclick="switchOutputTab('json')">JSON</button>
-            </div>
-
-            <!-- Tab Content: Preview -->
-            <div id="tabContentPreview">
-                <div id="storyboardGrid"></div>
-            </div>
-
-            <!-- Tab Content: JSON -->
-            <div id="tabContentJson" class="hidden" style="position: relative;">
-                <button onclick="navigator.clipboard.writeText(document.getElementById('jsonOutputArea').innerText); window.showIphoneToast('Tersalin', 'JSON berhasil disalin!', 'fa-copy');" style="position: absolute; top: 10px; right: 10px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: #38bdf8; padding: 6px 12px; border-radius: 8px; font-size: 0.75rem; font-weight: bold; cursor: pointer; transition: 0.2s;"><i class="fa-solid fa-copy"></i> Copy JSON</button>
-                <pre id="jsonOutputArea" style="background: #0f172a; color: #38bdf8; padding: 20px; padding-top: 45px; border-radius: 16px; overflow-x: auto; font-family: monospace; font-size: 0.85rem; text-align: left; max-height: 400px;"></pre>
-            </div>
+        <div id="resultContainer" class="hidden" style="margin-bottom:40px;">
+            <div style="display:none;"><button id="btnTabPreview"></button><button id="btnTabJson"></button><div id="tabContentJson"></div><pre id="jsonOutputArea"></pre></div>
+            <div id="tabContentPreview"><div id="storyboardGrid"></div></div>
         </div>
 
-        <!-- FAQ SECTION -->
-        <section class="faq-section">
-            <h2 class="faq-title" style="text-transform: uppercase; letter-spacing: 0.5px;">TANYA JAWAB - HABI RMX</h2>
-            <div class="faq-container">
-                
-                <div class="faq-card">
-                    <div class="faq-trigger" onclick="toggleFaq(this)">
-                        <span>1. Apa saja fitur unggulan di dalam website ini?</span>
-                        <i class="fa-solid fa-chevron-down"></i>
-                    </div>
-                    <div class="faq-content">
-                        <div class="faq-inner-text">
-                            Platform kami dirancang sebagai ekosistem produksi musik cerdas. Fitur utama meliputi: <b>Bikin Lagu Sendiri</b> (merubah teks lirik menjadi lagu utuh), <b>Cover Lagu</b> (merombak aransemen dari audio referensi), <b>Studio Rekaman Vokal</b> (merekam suara dengan penjernih otomatis), <b>DSP Bypass Studio</b> (algoritma canggih untuk memanipulasi sidik jari audio), serta <b>Magic Wand AI</b> yang ditenagai model Grok untuk merapikan lirik dan menciptakan ide genre musik secara instan.
-                        </div>
-                    </div>
-                </div>
-
-                <div class="faq-card">
-                    <div class="faq-trigger" onclick="toggleFaq(this)">
-                        <span>2. Bagaimana panduan umum cara menggunakan aplikasi ini?</span>
-                        <i class="fa-solid fa-chevron-down"></i>
-                    </div>
-                    <div class="faq-content">
-                        <div class="faq-inner-text">
-                            Secara garis besar, alur penggunaannya sangat sederhana: Pertama, pastikan Anda telah memilih <b>Provider & Model AI</b> di bagian atas. Kedua, pilih mode yang diinginkan (Bikin Lagu Sendiri atau Cover Lagu). Ketiga, isi instruksi genre pada kotak <b>Style of Music</b> dan masukkan teks pada kotak <b>Lyrics</b>. Terakhir, tekan tombol biru <b>"Buat Lagu"</b> di bagian bawah. Server VPS kami akan memproses data Anda dalam hitungan menit dan menampilkannya di bagian Library.
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="faq-card">
-                    <div class="faq-trigger" onclick="toggleFaq(this)">
-                        <span>3. Bagaimana cara memproduksi lagu baru (Bikin Lagu Sendiri)?</span>
-                        <i class="fa-solid fa-chevron-down"></i>
-                    </div>
-                    <div class="faq-content">
-                        <div class="faq-inner-text">
-                            Pastikan Anda mengaktifkan tombol <b>"Bikin Lagu Sendiri"</b>. Nyalakan <b>Custom Mode</b> jika Anda ingin menyanyikan lirik karya Anda sendiri. Ketikkan lirik tersebut ke dalam kotak <i>Lyrics</i> (gunakan fitur <i>Magic Wand AI</i> untuk membantu menstrukturkan bait dan reff). Setelah itu, tentukan genre musik yang spesifik di kotak <i>Style of Music</i> (contoh: "Pop akustik santai dengan gitar"). Atur jenis suara vokal (Pria/Wanita), lalu klik <b>Buat Lagu</b>.
-                        </div>
-                    </div>
-                </div>
-
-                <div class="faq-card">
-                    <div class="faq-trigger" onclick="toggleFaq(this)">
-                        <span>4. Bagaimana cara membuat Cover Lagu dari audio yang sudah ada?</span>
-                        <i class="fa-solid fa-chevron-down"></i>
-                    </div>
-                    <div class="faq-content">
-                        <div class="faq-inner-text">
-                            Pilih mode <b>"Cover Lagu"</b>. Area unggah audio akan muncul. Anda bisa mengunggah file MP3/WAV (maks. 8 menit) atau menggunakan fitur Rekam Suara Langsung. Setelah audio berhasil dimuat, ketikkan genre baru yang Anda inginkan di kotak <i>Style of Music</i> (misal: merubah lagu Pop menjadi Dangdut Koplo). Sistem AI akan menganalisis melodi dasar dari audio Anda dan merender ulang aransemen instrumennya sesuai dengan genre baru yang Anda minta.
-                        </div>
-                    </div>
-                </div>
-
-                <div class="faq-card">
-                    <div class="faq-trigger" onclick="toggleFaq(this)">
-                        <span>5. Bagaimana jika proses Cover Lagu gagal? (Solusi DSP Bypass)</span>
-                        <i class="fa-solid fa-chevron-down"></i>
-                    </div>
-                    <div class="faq-content">
-                        <div class="faq-inner-text">
-                            Jika proses Cover Lagu Anda gagal (error), kemungkinan besar bot AI mendeteksi adanya Hak Cipta (Copyright) pada audio referensi Anda. <b>Solusinya:</b> Setelah mengunggah audio, buka menu <b>"SUNO Audio Kreaverse AI (DSP Studio)"</b> yang muncul di layar. Aktifkan fitur <i>9-Layer Advanced Algorithms</i>, lalu klik tombol merah <b>"Upload Audio Kreaverse AI"</b>. Fitur ini akan mengacak sidik jari digital (Acoustic Fingerprint) lagu Anda sehingga terlihat seperti lagu baru di mata mesin bot AI, namun kualitas suaranya tetap terjaga jernih di telinga manusia.
-                        </div>
-                    </div>
-                </div>
-
-            </div>
-        </section>
-
-        <!-- FOOTER -->
-        <footer class="footer">
-            <div class="footer-logo">
-                <a href="/" style="display: block; width: 100%; height: 100%; text-decoration: none;" title="Kembali ke Beranda">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 60" style="width: 100%; height: 100%;">
-                        <defs>
-                            <linearGradient id="kreaGradFooterPage" x1="0%" y1="0%" x2="100%" y2="100%">
-                                <stop offset="0%" stop-color="#D97757" />
-                                <stop offset="50%" stop-color="#AF52DE" />
-                                <stop offset="100%" stop-color="#007AFF" />
-                            </linearGradient>
-                            <linearGradient id="shimmerGlowFooter" x1="-100%" y1="0%" x2="0%" y2="0%">
-                                <stop offset="0%" stop-color="rgba(255,255,255,0)" />
-                                <stop offset="45%" stop-color="rgba(255,255,255,0)" />
-                                <stop offset="50%" stop-color="rgba(255,255,255,0.9)" />
-                                <stop offset="55%" stop-color="rgba(255,255,255,0)" />
-                                <stop offset="100%" stop-color="rgba(255,255,255,0)" />
-                                <animate attributeName="x1" values="-100%; 200%" dur="10s" repeatCount="indefinite" />
-                                <animate attributeName="x2" values="0%; 300%" dur="10s" repeatCount="indefinite" />
-                            </linearGradient>
-                        </defs>
-                        <g>
-                            <g class="star-glow">
-                                <path d="M 30,10 Q 30,30 50,30 Q 30,30 30,50 Q 30,30 10,30 Q 30,30 30,10 Z" fill="url(#kreaGradFooterPage)" />
-                                <path d="M 30,17 Q 30,30 43,30 Q 30,30 30,43 Q 30,30 17,30 Q 30,30 30,17 Z" fill="url(#kreaGradFooterPage)" transform="rotate(45, 30, 30)" opacity="0.85" />
-                            </g>
-                            <text x="65" y="38" font-family="'Plus Jakarta Sans', sans-serif" font-weight="800" font-size="21" fill="url(#kreaGradFooterPage)" letter-spacing="-0.5px">Kreaverse<tspan font-weight="500" fill="#D97757"> AI</tspan></text>
-                        </g>
-                    </svg>
-                </a>
-            </div>
-            <div class="footer-links">
-                <div class="footer-links-row">
-                    <a href="/">Beranda</a>
-                    <a href="/media-ai/">Studio Media</a>
-                </div>
-                <div class="footer-links-row">
-                    <a href="/ketentuan">Syarat & Ketentuan</a>
-                    <a href="/privasi">Kebijakan Privasi</a>
-                </div>
-            </div>
-            <div class="footer-bottom">
-                <p>&copy; 2026 Kreaverse AI. All rights reserved.</p>
-                <div id="live-clock-footer" style="font-family: inherit; color: var(--text-secondary); font-weight:700; margin-top:4px;">Memuat Waktu...</div>
-            </div>
-        </footer>
+        <!-- Sembunyikan elemen lama -->
+        <section class="faq-section hidden"></section>
+        <footer class="footer hidden"><div id="live-clock-footer"></div></footer>
     </div>
 
-    <!-- MODAL SIMPAN PRESET KUSTOM (NEW) -->
+    <!-- 9. STICKY BOTTOM BAR -->
+    <div class="suno-bottom-bar">
+        <button id="generateBtn" onclick="generateAudioSong()">
+            <i class="fa-solid fa-music"></i> Create <span id="generateCostBadge"></span>
+        </button>
+        <span style="display: none;">Dummy</span>
+    </div>
             <div id="savePresetModalOverlay" class="krea-modal-overlay" style="z-index: 9999999;">
                 <div class="krea-modal-box" style="max-width: 350px; padding: 24px; text-align: left; border-radius: 24px; background: #1e293b; border: 1px solid #334155; color: #fff;">
                     <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
@@ -9586,97 +8754,6 @@ window.startDspBypassAndUpload = async function() {
     .krea-banner-img { max-width: 100%; max-height: 80vh; object-fit: contain; border-radius: 20px; cursor: pointer; }
     .krea-banner-close { position: absolute; top: -15px; right: -15px; width: 35px; height: 35px; background: #FF3B30; color: white; border: 2px solid #FFF; border-radius: 50%; font-weight: bold; font-family: sans-serif; cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 10px rgba(0,0,0,0.3); transition: 0.2s; }
     .krea-banner-close:hover { transform: scale(1.1); background: #D32F2F; }
-
-    /* ========================================================= */
-    /* 🌟 KREAVERSE MAGIC INJECTION: SUNO LIGHT MODE 🌟 */
-    /* ========================================================= */
-    
-    /* 1. Reset Global (Bersih & Elegan) */
-    body { background: #f9fafb !important; color: #111827 !important; padding-bottom: 40px !important; font-family: 'Plus Jakarta Sans', sans-serif !important; }
-    body::before, header, .navbar, .footer, .faq-section { display: none !important; }
-    .container { max-width: 650px !important; margin: 20px auto 0 auto !important; padding: 0 15px !important; }
-    
-    /* 2. REORDER: Susun Ulang Elemen Tanpa Merusak HTML */
-    .input-section { display: flex !important; flex-direction: column !important; background: transparent !important; border: none !important; padding: 0 !important; box-shadow: none !important; }
-    
-    /* Pindahkan Mode ke Atas, Pindahkan Engine/Model AI ke Bawah */
-    .input-group:has(.mode-btn) { order: -2 !important; margin-bottom: 20px !important; background: transparent !important; border: none !important; box-shadow: none !important; padding: 0 !important;}
-    #engineSettingsWrapper { order: 98 !important; margin-bottom: 16px !important; }
-    #optionalParametersWrapper { order: 99 !important; margin-bottom: 20px !important; }
-    #generateBtn { order: 100 !important; }
-    
-    /* 3. Desain Mode Pills (Audio, Voice, Cover) */
-    .input-group:has(.mode-btn) > label { display: none !important; }
-    .input-group:has(.mode-btn) > div { background: transparent !important; border: none !important; padding: 0 !important; display: flex !important; gap: 8px !important; overflow-x: auto !important; scrollbar-width: none !important; box-shadow: none !important; }
-    .mode-btn { background: #ffffff !important; border: 1px solid #e5e7eb !important; color: #4b5563 !important; border-radius: 99px !important; font-weight: 700 !important; font-size: 0.85rem !important; padding: 10px 18px !important; flex: 1 !important; white-space: nowrap !important; transition: 0.2s !important; box-shadow: 0 2px 4px rgba(0,0,0,0.02) !important; font-family: inherit !important;}
-    .mode-btn.active { background: #111827 !important; color: #ffffff !important; border-color: #111827 !important; box-shadow: 0 4px 10px rgba(0,0,0,0.1) !important; }
-    #modeDescription { display: none !important; }
-
-    /* 4. Kotak Form & Cards (Suno Style Rounded & Soft Shadow) */
-    .input-group, .toggle-container, .slider-wrapper, .upload-section, #miniLibraryContainer, #engineSettingsWrapper, #optionalParametersWrapper { 
-        background: #ffffff !important; border: 1px solid #e5e7eb !important; 
-        border-radius: 20px !important; padding: 20px !important; margin-bottom: 16px !important; 
-        box-shadow: 0 2px 8px rgba(0,0,0,0.03) !important; transition: 0.3s !important;
-    }
-    .input-group label { color: #111827 !important; font-weight: 800 !important; font-size: 0.9rem !important; margin-bottom: 10px !important; text-transform: none !important; display: flex !important; align-items: center !important;}
-    
-    /* 5. Input Teks & Textarea */
-    .input-group input[type="text"], .input-group textarea, .input-group input[type="number"] { 
-        background: #f9fafb !important; border: 1px solid #e5e7eb !important; box-shadow: inset 0 2px 4px rgba(0,0,0,0.01) !important; 
-        border-radius: 12px !important; padding: 14px 16px !important; font-size: 0.95rem !important; font-weight: 600 !important; color: #111827 !important; outline: none !important; font-family: inherit !important;
-    }
-    .input-group input[type="text"]:focus, .input-group textarea:focus { border-color: #111827 !important; box-shadow: 0 0 0 3px rgba(17, 24, 39, 0.1) !important; }
-    #lyricsInput { min-height: 180px !important; }
-    
-    /* 6. Tombol Kecil / Chips (AI, Deteksi, Upload) */
-    .magic-wand-btn, .action-icon-btn, .btn-custom-upload-compact, .dsp-preset-btn { 
-        background: #f3f4f6 !important; border: 1px solid #e5e7eb !important; color: #374151 !important; 
-        border-radius: 99px !important; font-weight: 700 !important; padding: 8px 14px !important; font-size: 0.75rem !important; transition: 0.2s !important;
-    }
-    .magic-wand-btn:hover, .btn-custom-upload-compact:hover { background: #e5e7eb !important; color: #111827 !important;}
-
-    /* 7. Dropdown Custom (Pilih Model V5.5) */
-    .custom-select-trigger { border: 1px solid #e5e7eb !important; background: #f9fafb !important; color: #111827 !important; border-radius: 12px !important; font-weight: 600 !important; padding: 14px 16px !important; box-shadow: none !important; display: flex !important; justify-content: space-between !important; align-items: center !important;}
-    .custom-select-options { box-shadow: 0 10px 25px rgba(0,0,0,0.1) !important; border: 1px solid #e5e7eb !important; background: #ffffff !important; border-radius: 12px !important; color: #111827 !important;}
-    .custom-select-option:hover { background: #f3f4f6 !important; color: #111827 !important; }
-    .custom-select-option.selected { background: #111827 !important; color: #ffffff !important; }
-
-    /* 8. Sliders & Toggles */
-    .toggle-label, .slider-title { color: #111827 !important; font-weight: 700 !important; font-size: 0.85rem !important; text-transform: none !important;}
-    input:checked + .slider-toggle { background-color: #111827 !important; }
-    .slider-range::-webkit-slider-thumb { background: #111827 !important; border: 2px solid #fff !important; box-shadow: 0 2px 4px rgba(0,0,0,0.2) !important;}
-    .slider-val-box { border: 1px solid #e5e7eb !important; background: #f9fafb !important; color: #111827 !important; border-radius: 8px !important;}
-    
-    /* 9. TOMBOL CREATE (TIDAK MELAYANG) */
-    #generateBtn {
-        width: 100% !important; background: #111827 !important; color: #ffffff !important; 
-        border-radius: 99px !important; padding: 18px !important; box-shadow: 0 8px 20px rgba(17, 24, 39, 0.2) !important;
-        font-size: 1.15rem !important; border: none !important; justify-content: center !important; font-weight: 800 !important; display: flex !important; align-items: center !important; gap: 8px !important;
-    }
-    #generateBtn:active { transform: scale(0.98) !important; box-shadow: 0 4px 10px rgba(17, 24, 39, 0.2) !important;}
-    #generateCostBadge { background: rgba(255,255,255,0.2) !important; color: #fff !important; padding: 4px 10px !important; border-radius: 8px !important; font-size: 0.85rem !important;}
-    #generateBtn svg { display: none !important; } /* Ganti icon svg lama */
-    #generateBtn::before { content: '\f001'; font-family: "Font Awesome 6 Free"; font-weight: 900; margin-right: 4px; }
-
-    /* 10. DSP Studio & Modals Light Mode */
-    #dspStudioWrapper { background: #f9fafb !important; color: #111827 !important; border: 1px solid #e5e7eb !important; border-radius: 20px !important; box-shadow: 0 4px 20px rgba(0,0,0,0.03) !important;}
-    #dspStudioWrapper > div:first-child { background: #ffffff !important; border-bottom: 1px solid #e5e7eb !important; border-radius: 20px 20px 0 0 !important; box-shadow: none !important; padding: 16px 20px !important;}
-    #dspStudioWrapper svg text { fill: #111827 !important; }
-    #dspStudioWrapper span, #dspStudioWrapper div { color: #111827 !important; }
-    #dspStudioWrapper button { color: #111827 !important; border-color: #e5e7eb !important; }
-    #dspStudioBody .dsp-control-box, #dspStudioBody .modern-player-box { background: #ffffff !important; border: 1px solid #e5e7eb !important; box-shadow: 0 2px 8px rgba(0,0,0,0.02) !important; border-radius: 16px !important;}
-    #dspStudioBody .trim-inputs-wrapper { background: #f9fafb !important; border: 1px solid #e5e7eb !important; }
-    #dspStudioBody .trim-input-time { background: #ffffff !important; color: #111827 !important; border: 1px solid #e5e7eb !important;}
-    #dspStudioBody .trim-play-btn { background: #111827 !important; color: #ffffff !important; }
-    #dspStudioBody .audio-seek-slider::-webkit-slider-thumb { background: #111827 !important; box-shadow: 0 2px 4px rgba(0,0,0,0.2) !important; }
-    
-    .krea-modal-overlay { background: rgba(17, 24, 39, 0.7) !important; }
-    .krea-modal-box { background: #ffffff !important; border: none !important; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25) !important; color: #111827 !important; border-radius: 24px !important; }
-    .krea-modal-title, .krea-modal-desc { color: #111827 !important; }
-    .krea-modal-btn-confirm { background: #111827 !important; color: #ffffff !important; }
-
-    /* Hapus pop-up helper lama yang bertabrakan */
-    #helperPopup { display: none !important; }
 </style>
 
 <div id="krea-mt-overlay">
