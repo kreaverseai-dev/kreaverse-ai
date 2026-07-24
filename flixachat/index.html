@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>FlixaChat - AI Multimodal</title>
-    <!-- Menggunakan Tailwind CSS agar tampilan langsung bagus tanpa file CSS terpisah -->
+    <!-- Menggunakan Tailwind CSS agar tampilan langsung bagus -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Icon untuk tombol -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
@@ -14,7 +14,7 @@
     <!-- Header -->
     <header class="bg-blue-600 text-white p-4 shadow-md flex justify-between items-center">
         <h1 class="text-xl font-bold"><i class="fas fa-robot mr-2"></i>FlixaChat AI</h1>
-        <span class="text-xs bg-blue-800 px-2 py-1 rounded-full">Status: Menunggu Backend</span>
+        <span class="text-xs bg-blue-800 px-2 py-1 rounded-full">Status: Menunggu API</span>
     </header>
 
     <!-- Area Chat -->
@@ -54,7 +54,108 @@
         </div>
     </footer>
 
-    <!-- Panggil file JavaScript -->
-    <script src="script.js"></script>
+    <!-- ========================================== -->
+    <!-- SCRIPT JAVASCRIPT DIGABUNG DI SINI -->
+    <!-- ========================================== -->
+    <script>
+        const chatBox = document.getElementById('chat-box');
+        const messageInput = document.getElementById('message-input');
+        const sendBtn = document.getElementById('send-btn');
+        const attachBtn = document.getElementById('attach-btn');
+        const fileInput = document.getElementById('file-input');
+        const filePreview = document.getElementById('file-preview');
+        const fileNameDisplay = document.getElementById('file-name');
+        const removeFileBtn = document.getElementById('remove-file');
+
+        let selectedFile = null;
+
+        // Buka folder saat tombol klip diklik
+        attachBtn.addEventListener('click', () => {
+            fileInput.click();
+        });
+
+        // Saat file dipilih
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                selectedFile = e.target.files[0];
+                fileNameDisplay.textContent = selectedFile.name;
+                filePreview.classList.remove('hidden');
+            }
+        });
+
+        // Batal pilih file
+        removeFileBtn.addEventListener('click', () => {
+            selectedFile = null;
+            fileInput.value = '';
+            filePreview.classList.add('hidden');
+        });
+
+        // Fungsi memunculkan chat ke layar
+        function appendMessage(sender, text, fileName = null) {
+            if (chatBox.innerHTML.includes('Mulai percakapan')) {
+                chatBox.innerHTML = '';
+            }
+
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `flex ${sender === 'user' ? 'justify-end' : 'justify-start'}`;
+            
+            let fileHtml = '';
+            if (fileName) {
+                fileHtml = `<div class="mb-2 p-2 bg-black/10 rounded text-sm flex items-center gap-2"><i class="fas fa-paperclip"></i> ${fileName}</div>`;
+            }
+
+            const bubbleClass = sender === 'user' 
+                ? 'bg-blue-500 text-white rounded-br-none' 
+                : 'bg-white text-gray-800 border border-gray-200 rounded-bl-none';
+
+            messageDiv.innerHTML = `
+                <div class="max-w-[75%] p-3 rounded-lg shadow-sm ${bubbleClass}">
+                    ${fileHtml}
+                    <p class="whitespace-pre-wrap">${text}</p>
+                </div>
+            `;
+            
+            chatBox.appendChild(messageDiv);
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        // Fungsi tombol kirim
+        async function sendMessage() {
+            const text = messageInput.value.trim();
+            if (!text && !selectedFile) return;
+
+            appendMessage('user', text, selectedFile ? selectedFile.name : null);
+            
+            messageInput.value = '';
+            const fileToSend = selectedFile;
+            
+            selectedFile = null;
+            fileInput.value = '';
+            filePreview.classList.add('hidden');
+
+            const loadingId = 'loading-' + Date.now();
+            const loadingDiv = document.createElement('div');
+            loadingDiv.id = loadingId;
+            loadingDiv.className = 'flex justify-start';
+            loadingDiv.innerHTML = `<div class="bg-white border border-gray-200 text-gray-500 p-3 rounded-lg rounded-bl-none shadow-sm">AI sedang memproses...</div>`;
+            chatBox.appendChild(loadingDiv);
+            chatBox.scrollTop = chatBox.scrollHeight;
+
+            // SIMULASI BALASAN (Karena API belum dipasang)
+            setTimeout(() => {
+                document.getElementById(loadingId).remove();
+                let balasanAI = "Ini adalah balasan simulasi. Tampilan sudah siap, tinggal pasang API Kie.ai!";
+                if (fileToSend) {
+                    balasanAI = `Saya melihat Anda mengirim file: ${fileToSend.name}. Tapi saya belum bisa membacanya karena API belum dipasang.`;
+                }
+                appendMessage('ai', balasanAI);
+            }, 1500);
+        }
+
+        sendBtn.addEventListener('click', sendMessage);
+        messageInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') sendMessage();
+        });
+    </script>
 </body>
 </html>
