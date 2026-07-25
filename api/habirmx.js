@@ -158,7 +158,7 @@ module.exports = async (req, res) => {
                 let promptHint = pastedLyrics.trim() !== "" ? pastedLyrics.substring(0, 500).replace(/\n/g, ', ') : (title ? `${title}, lirik lagu, musik.` : "Lirik lagu, musik.");
 
                 formData.append("prompt", promptHint);
-                // Dihapus: formData.append("condition_on_previous_text", "false"); -> Bikin error di Groq
+                // Baris condition_on_previous_text dihapus karena API Groq tidak mendukungnya
 
                 const whisperRes = await fetch("https://api.groq.com/openai/v1/audio/transcriptions", {
                     method: "POST", headers: { "Authorization": `Bearer ${whisperKey}` }, body: formData
@@ -176,12 +176,13 @@ module.exports = async (req, res) => {
                 let cleanText = rawText.trim();
                 
                 try {
+                    // Cari provider LLM aktif di database
                     const providersDoc = await db.collection("settings").doc("api_providers").get();
                     const allProviders = providersDoc.data().list || [];
                     const llmProviders = allProviders.filter(p => p.serviceType && (String(p.serviceType).toLowerCase() === "llm" || String(p.serviceType).toLowerCase() === "text" || String(p.serviceType).toLowerCase() === "chat"));
                     
                     if (llmProviders.length > 0) {
-                        const llmProv = llmProviders[0]; 
+                        const llmProv = llmProviders[0]; // Ambil LLM prioritas pertama (Claude/Google)
                         const llmKeysQuery = await db.collection("api_keys").where("provider", "==", llmProv.value).where("status", "==", "aktif").get();
                         
                         if (!llmKeysQuery.empty) {
@@ -380,7 +381,7 @@ ATURAN MUTLAK:
 2. JANGAN PERNAH memasukkan nama genre (seperti "Lagu Dangdut") ke dalam teks lirik!
 3. STRUKTUR WAJIB SUNO AI: Gunakan tag meta standar: [Intro], [Verse 1], [Pre-Chorus], [Chorus], [Bridge], [Guitar Solo] atau [Instrumental], [Outro].
 4. Buat lirik layaknya manusia asli: puitis, rima bagus, dan emosional.
-5. SANGAT PENTING: Jawab HANYA dengan lirik lagunya saja. DILARANG memberikan kalimat pembuka atau penutup.`;
+5. Jawab HANYA dengan lirik lagunya saja.`;
                     } else {
                         let whisperTextWithStructure = "";
                         if (audioUrl) {
@@ -402,36 +403,42 @@ ATURAN MUTLAK:
                                         let lastEnd = 0;
                                         let structuredText = "";
                                         
-                                        // Deteksi Intro
-                                        if (wData.segments[0].start > 6.0) structuredText += `[Intro / Instrumental]\n`;
+                                        // Deteksi Intro (Jika vokal pertama mulai lebih dari 6 detik)
+                                        if (wData.segments[0].start > 6.0) {
+                                            structuredText += `[0.00 - ${wData.segments[0].start.toFixed(2)}] [Intro / Instrumental]\n`;
+                                        }
                                         
                                         for (let i = 0; i < wData.segments.length; i++) {
                                             let seg = wData.segments[i];
-                                            // Deteksi Jeda Musik Tengah
-                                            if (seg.start - lastEnd > 8.0 && lastEnd > 0) structuredText += `[Instrumental Break]\n`;
-                                            structuredText += `${seg.text.trim()}\n`;
+                                            // Deteksi Instrumental Break (Jeda antar vokal lebih dari 8 detik)
+                                            if (seg.start - lastEnd > 8.0 && lastEnd > 0) {
+                                                structuredText += `[${lastEnd.toFixed(2)} - ${seg.start.toFixed(2)}] [Instrumental Break]\n`;
+                                            }
+                                            structuredText += `[${seg.start.toFixed(2)} - ${seg.end.toFixed(2)}] ${seg.text.trim()}\n`;
                                             lastEnd = seg.end;
                                         }
+                                        
                                         // Deteksi Outro
-                                        structuredText += `[Outro / Instrumental]\n`;
+                                        structuredText += `[${lastEnd.toFixed(2)} - Selesai] [Outro / Instrumental]\n`;
                                         whisperTextWithStructure = structuredText;
                                     } else if (wData.text) {
                                         whisperTextWithStructure = wData.text;
                                     }
                                 }
-                            } catch(e) { console.error("Whisper error in Magic Wand:", e); }
+                            } catch(e) { console.error("Whisper error:", e); }
                         }
                         
                         systemPrompt = `Kamu adalah Music Arranger Profesional. Tugasmu menyusun ulang lirik mentah dari user agar pas dengan struktur lagu aslinya.
-ATURAN MUTLAK (DILARANG MELANGGAR):
+ATURAN MUTLAK:
 1. User memberikan "Lirik Mentah" (ejaan benar tapi susunan salah).
-2. Sistem memberikan "Transkripsi Audio" (Acuan kapan penyanyi bernyanyi dan kapan musik kosong).
+2. Sistem memberikan "Transkripsi Audio Berwaktu" (berisi timestamp kapan vokal berbunyi dan kapan ada jeda instrumen).
 3. TUGASMU: Susun ulang Lirik Mentah agar pengulangannya persis mengikuti Transkripsi Audio.
-4. JIKA DI TRANSKRIPSI ADA TAG [Intro / Instrumental] atau [Instrumental Break] atau [Outro], KAMU WAJIB MENULISKANNYA JUGA DI HASIL AKHIRMU! Jangan dihilangkan!
-5. Gunakan tag [Verse], [Chorus], [Bridge] dengan tepat.
-6. SANGAT PENTING: Jawab HANYA dengan lirik lagu. DILARANG KERAS memberikan kalimat pembuka (seperti "Berikut adalah hasilnya") atau kalimat penutup (seperti "Catatan: Saya telah..."). LANGSUNG ke lirik baris pertama!`;
+4. JIKA ADA TAG [Intro / Instrumental] atau [Instrumental Break] di Transkripsi Audio, kamu WAJIB menyisipkan tag [Instrumental] atau [Guitar Solo] di bagian tersebut pada hasil akhirmu!
+5. JIKA ADA TAG [Outro / Instrumental], WAJIB akhiri lirik dengan tag [Outro].
+6. Gunakan tag [Verse], [Chorus], [Bridge] sesuai instingmu berdasarkan pola liriknya.
+7. Jawab HANYA dengan lirik yang sudah tersusun rapi beserta tag-tag strukturnya. JANGAN sertakan timestamp (angka waktu) di hasil akhirmu!`;
                         
-                        finalInputText = `LIRIK MENTAH USER:\n${inputText}\n\nTRANSKRIPSI AUDIO (Acuan Struktur & Instrumen):\n${whisperTextWithStructure || "Gunakan instingmu untuk menata lirik ini"}`;
+                        finalInputText = `LIRIK MENTAH USER:\n${inputText}\n\nTRANSKRIPSI AUDIO BERWAKTU (Acuan Struktur & Instrumen):\n${whisperTextWithStructure || "Gunakan instingmu untuk menata lirik ini"}`;
                     }
                 }
 
@@ -481,21 +488,7 @@ ATURAN MUTLAK (DILARANG MELANGGAR):
                     if (success) break;
                 }
                 if (!success) throw new Error(`Semua model LLM gagal merespons. Error terakhir: ${lastError}`);
-                
-                // FILTER PEMBERSIH MULUT AI (Hapus basa-basi)
-                let finalCleanText = resultText.trim();
-                
-                // Jika AI masih ngeyel ngasih kalimat pembuka, kita potong sampai ketemu kurung siku '[' pertama
-                const firstBracketIndex = finalCleanText.indexOf('[');
-                if (firstBracketIndex > 0 && firstBracketIndex < 150) { 
-                    finalCleanText = finalCleanText.substring(firstBracketIndex);
-                }
-                
-                // Hapus kalimat penutup seperti "Catatan:" atau "Note:"
-                finalCleanText = finalCleanText.replace(/\n\s*(Catatan|Note|Sebagai catatan):[\s\S]*$/gi, '');
-                finalCleanText = finalCleanText.replace(/Berikut adalah[\s\S]*?:/gi, '');
-
-                return res.status(200).json({ success: true, result: finalCleanText.trim() });
+                return res.status(200).json({ success: true, result: resultText.trim() });
             } catch (err) {
                 return res.status(500).json({ error: err.message });
             }
@@ -571,24 +564,57 @@ ATURAN MUTLAK (DILARANG MELANGGAR):
         }
 
         // ============================================================
-        // ROUTE 1D: FETCH AUDIO (BYPASS CORS UNTUK MASTERING LOKAL)
+        // ROUTE 1C: AUDIO MASTERING STUDIO HD (POST-PROCESSING)
         // ============================================================
-        if (action === 'fetch_audio') {
-            const { audioUrl } = body;
-            if (!audioUrl) return res.status(400).json({ error: 'Audio URL wajib diisi.' });
+        if (action === 'mastering') {
+            const { docId, audioUrl, profile } = body;
+            if (!audioUrl) return res.status(400).json({ error: 'Audio URL wajib diisi untuk proses mastering.' });
 
             try {
-                // Backend Vercel mendownload langsung dari server sumber (Kebal CORS)
-                const audioFetch = await fetch(audioUrl);
-                if (!audioFetch.ok) throw new Error("Gagal mengunduh audio dari server sumber.");
+                // 1. Cari provider yang memiliki konfigurasi endpointMastering
+                const providersDoc = await db.collection("settings").doc("api_providers").get();
+                const allProviders = providersDoc.data().list || [];
+                const masteringProvider = allProviders.find(p => p.endpointMastering && p.endpointMastering.trim() !== "");
+
+                if (!masteringProvider) {
+                    throw new Error("Fitur Mastering belum dikonfigurasi. Tambahkan Endpoint Mastering di Dasbor Admin.");
+                }
+
+                // 2. Ambil API Key
+                const keysQuery = await db.collection("api_keys").where("provider", "==", masteringProvider.value).where("status", "==", "aktif").get();
+                const sortedKeysDocs = keysQuery.docs.sort((a, b) => (a.data().priority || 1) - (b.data().priority || 1));
+                if (sortedKeysDocs.length === 0) throw new Error(`API Key untuk ${masteringProvider.label} habis atau tidak aktif.`);
+                const activeApiKey = sortedKeysDocs[0].data().key;
+
+                // 3. Siapkan Payload (Mendukung Opsi B: Profile Platform)
+                const variables = { 
+                    targetAudioUrl: audioUrl,
+                    profile: profile || "spotify" // default
+                };
+                let parsedBodyString = renderTemplate(masteringProvider.payloadMasteringTemplate || "{}", variables);
+                const finalPayload = JSON.parse(parsedBodyString);
+
+                const headers = { "Content-Type": "application/json" };
+                headers[masteringProvider.headerName || "Authorization"] = (masteringProvider.headerValue || "Bearer {apiKey}").replace("{apiKey}", activeApiKey);
+
+                // 4. Kirim Request ke Provider Mastering (Contoh: Dolby / Auphonic)
+                const providerUrl = `${masteringProvider.baseUrl}${masteringProvider.endpointMastering}`;
+                const response = await fetch(providerUrl, { method: 'POST', headers: headers, body: JSON.stringify(finalPayload) });
+                const resData = await response.json();
+
+                if (!response.ok || (resData.code && resData.code !== 200)) {
+                    throw new Error(getValueByPath(resData, masteringProvider.errorPath) || extractErrorString(resData) || "API Error saat Mastering");
+                }
+
+                // 5. Ekstrak Hasil URL Audio
+                let masteredUrl = getValueByPath(resData, masteringProvider.responseMasteringPath || "url") || findAudioUrlRecursively(resData);
                 
-                const arrayBuffer = await audioFetch.arrayBuffer();
-                const buffer = Buffer.from(arrayBuffer);
-                
-                // Kirim balik ke Frontend sebagai file utuh
-                res.setHeader('Content-Type', audioFetch.headers.get('content-type') || 'audio/mpeg');
-                res.setHeader('Content-Length', buffer.length);
-                return res.send(buffer);
+                if (masteredUrl) {
+                    return res.status(200).json({ success: true, masteredUrl: masteredUrl });
+                } else {
+                    throw new Error("URL Hasil Mastering tidak ditemukan dari respons provider. Pastikan Path Response di Dasbor Admin benar.");
+                }
+
             } catch (err) {
                 return res.status(500).json({ error: err.message });
             }
