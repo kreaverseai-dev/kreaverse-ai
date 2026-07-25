@@ -383,7 +383,7 @@ ATURAN MUTLAK:
 4. Buat lirik layaknya manusia asli: puitis, rima bagus, dan emosional.
 5. Jawab HANYA dengan lirik lagunya saja.`;
                     } else {
-                        let whisperText = "";
+                        let whisperTextWithStructure = "";
                         if (audioUrl) {
                             try {
                                 const wQuery = await db.collection("api_keys").where("provider", "==", "Groq Whisper").where("status", "==", "aktif").get();
@@ -394,21 +394,51 @@ ATURAN MUTLAK:
                                     const fData = new FormData();
                                     fData.append("file", aBlob, "audio.mp3");
                                     fData.append("model", "whisper-large-v3-turbo");
+                                    fData.append("response_format", "verbose_json"); // Minta timestamp detail
+                                    
                                     const wRes = await fetch("https://api.groq.com/openai/v1/audio/transcriptions", { method: "POST", headers: { "Authorization": `Bearer ${wKey}` }, body: fData });
                                     const wData = await wRes.json();
-                                    if (wData.text) whisperText = wData.text;
+                                    
+                                    if (wData.segments && wData.segments.length > 0) {
+                                        let lastEnd = 0;
+                                        let structuredText = "";
+                                        
+                                        // Deteksi Intro (Jika vokal pertama mulai lebih dari 6 detik)
+                                        if (wData.segments[0].start > 6.0) {
+                                            structuredText += `[0.00 - ${wData.segments[0].start.toFixed(2)}] [Intro / Instrumental]\n`;
+                                        }
+                                        
+                                        for (let i = 0; i < wData.segments.length; i++) {
+                                            let seg = wData.segments[i];
+                                            // Deteksi Instrumental Break (Jeda antar vokal lebih dari 8 detik)
+                                            if (seg.start - lastEnd > 8.0 && lastEnd > 0) {
+                                                structuredText += `[${lastEnd.toFixed(2)} - ${seg.start.toFixed(2)}] [Instrumental Break]\n`;
+                                            }
+                                            structuredText += `[${seg.start.toFixed(2)} - ${seg.end.toFixed(2)}] ${seg.text.trim()}\n`;
+                                            lastEnd = seg.end;
+                                        }
+                                        
+                                        // Deteksi Outro
+                                        structuredText += `[${lastEnd.toFixed(2)} - Selesai] [Outro / Instrumental]\n`;
+                                        whisperTextWithStructure = structuredText;
+                                    } else if (wData.text) {
+                                        whisperTextWithStructure = wData.text;
+                                    }
                                 }
-                            } catch(e) { }
+                            } catch(e) { console.error("Whisper error:", e); }
                         }
-                        systemPrompt = `Kamu adalah Music Arranger Profesional. Tugasmu menyusun ulang lirik mentah dari user agar sesuai dengan lagu aslinya.
+                        
+                        systemPrompt = `Kamu adalah Music Arranger Profesional. Tugasmu menyusun ulang lirik mentah dari user agar pas dengan struktur lagu aslinya.
 ATURAN MUTLAK:
 1. User memberikan "Lirik Mentah" (ejaan benar tapi susunan salah).
-2. Sistem memberikan "Transkripsi Audio" (susunan benar tapi ejaan mungkin halusinasi/salah).
-3. TUGASMU: Susun ulang Lirik Mentah agar pengulangannya (A-B-A-B) persis mengikuti Transkripsi Audio!
-4. Jika penyanyi mengulang bait 3x di Transkripsi, tulis bait itu 3x menggunakan ejaan Lirik Mentah.
-5. Sisipkan tag [Intro], [Verse], [Chorus], [Instrumental] di tempat yang tepat.
-6. Jawab HANYA dengan lirik yang sudah tersusun rapi.`;
-                        finalInputText = `LIRIK MENTAH USER:\n${inputText}\n\nTRANSKRIPSI AUDIO (Acuan Pengulangan):\n${whisperText || "Gunakan instingmu untuk menata lirik ini"}`;
+2. Sistem memberikan "Transkripsi Audio Berwaktu" (berisi timestamp kapan vokal berbunyi dan kapan ada jeda instrumen).
+3. TUGASMU: Susun ulang Lirik Mentah agar pengulangannya persis mengikuti Transkripsi Audio.
+4. JIKA ADA TAG [Intro / Instrumental] atau [Instrumental Break] di Transkripsi Audio, kamu WAJIB menyisipkan tag [Instrumental] atau [Guitar Solo] di bagian tersebut pada hasil akhirmu!
+5. JIKA ADA TAG [Outro / Instrumental], WAJIB akhiri lirik dengan tag [Outro].
+6. Gunakan tag [Verse], [Chorus], [Bridge] sesuai instingmu berdasarkan pola liriknya.
+7. Jawab HANYA dengan lirik yang sudah tersusun rapi beserta tag-tag strukturnya. JANGAN sertakan timestamp (angka waktu) di hasil akhirmu!`;
+                        
+                        finalInputText = `LIRIK MENTAH USER:\n${inputText}\n\nTRANSKRIPSI AUDIO BERWAKTU (Acuan Struktur & Instrumen):\n${whisperTextWithStructure || "Gunakan instingmu untuk menata lirik ini"}`;
                     }
                 }
 
@@ -947,6 +977,47 @@ ATURAN MUTLAK:
                     if (audioUrlVal) tracks.push({ audioId: resData.id || resData.audio_id || resData.audioId || taskId, audioUrl: audioUrlVal, imageUrl: "https://i.postimg.cc/Jh211FTG/46cc61ec-de7f-4c62-8245-946e22312d2b.jpg" });
                 }
                 if (!audioUrlVal) { isCompleted = false; isProcessing = true; }
+
+                // === AUTO-SPLIT TRACKS KE DATABASE SAAT POLLING SELESAI ===
+                if (isCompleted && tracks.length > 0) {
+                    try {
+                        const taskQuery = await db.collection("render_gallery").where("taskId", "==", taskId).get();
+                        if (!taskQuery.empty) {
+                            const mainDoc = taskQuery.docs[0];
+                            const mainData = mainDoc.data();
+                            
+                            // Hanya pecah track jika status di database masih processing
+                            if (mainData.status !== "complete") {
+                                let baseTitle = mainData.title || "Lagu Flixa AI";
+                                // Bersihkan embel-embel lama jika ada
+                                baseTitle = baseTitle.replace(/\s*-\s*Track\s*\d+/gi, '').trim();
+                                
+                                // Update dokumen pertama menjadi Track 1
+                                await mainDoc.ref.update({
+                                    status: "complete",
+                                    url: tracks[0].audioUrl,
+                                    imageUrl: tracks[0].imageUrl || mainData.imageUrl || "https://i.postimg.cc/Jh211FTG/46cc61ec-de7f-4c62-8245-946e22312d2b.jpg",
+                                    title: `${baseTitle} - Track 1`
+                                });
+                                
+                                // Jika Suno menghasilkan 2 lagu, buat dokumen baru untuk Track 2
+                                if (tracks.length > 1) {
+                                    await db.collection("render_gallery").add({
+                                        ...mainData,
+                                        status: "complete",
+                                        url: tracks[1].audioUrl,
+                                        imageUrl: tracks[1].imageUrl || mainData.imageUrl || "https://i.postimg.cc/Jh211FTG/46cc61ec-de7f-4c62-8245-946e22312d2b.jpg",
+                                        title: `${baseTitle} - Track 2`,
+                                        timestamp: Date.now() + 1000 // Tambah 1 detik agar muncul di atas Track 1
+                                    });
+                                }
+                            }
+                        }
+                    } catch (dbErr) {
+                        console.error("Gagal auto-split tracks ke database:", dbErr);
+                    }
+                }
+                // ==========================================================
             }
 
             let finalStatus = isCompleted ? "completed" : (isFailed ? "failed" : "processing");
