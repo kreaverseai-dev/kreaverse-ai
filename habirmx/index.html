@@ -8346,45 +8346,133 @@ window.startDspBypassAndUpload = async function() {
                 const selectedProfile = document.getElementById('masteringProfileSelect').value;
                 
                 showTopProgress("Mastering Audio...", "#D95040");
-                updateTopProgress(10, "Menyiapkan file audio");
+                updateTopProgress(5, "Mengunduh audio asli...");
 
                 try {
-                    let fakeProgress = 10;
-                    const fakeInterval = setInterval(() => {
-                        if (fakeProgress < 85) {
-                            fakeProgress += Math.floor(Math.random() * 5) + 1;
-                            updateTopProgress(fakeProgress, "Memoles di Studio AI");
-                        }
-                    }, 800);
-
-                    const response = await fetch('/api/habirmx', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            action: 'mastering',
-                            docId: docId,
-                            audioUrl: docData.url,
-                            profile: selectedProfile
-                        })
-                    });
-
-                    const data = await response.json();
-                    clearInterval(fakeInterval);
-
-                    if (!response.ok) throw new Error(data.error || "Gagal melakukan mastering.");
-
-                    updateTopProgress(95, "Menyimpan hasil mastering");
+                    // 1. Fetch Audio (Menggunakan Proxy agar lolos dari blokir CORS Browser)
+                    const proxyUrl = `https://kreaverse-proxy.kreaverse-ai.workers.dev/?targetUrl=${encodeURIComponent(docData.url)}`;
+                    const audioRes = await fetch(proxyUrl);
+                    if (!audioRes.ok) throw new Error("Gagal mengunduh audio asli.");
+                    const arrayBuffer = await audioRes.arrayBuffer();
                     
-                    await updateDoc(doc(db, "render_gallery", docId), {
-                        url: data.masteredUrl,
-                        isMastered: true
+                    updateTopProgress(20, "Menganalisis frekuensi...");
+                    
+                    // 2. Decode Audio
+                    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                    const audioBuffer = await audioCtx.decodeAudioData(arrayBuffer);
+                    
+                    updateTopProgress(40, "Menerapkan Studio EQ & Kompresor...");
+                    
+                    // 3. Setup OfflineAudioContext untuk Rendering
+                    const offlineCtx = new OfflineAudioContext(audioBuffer.numberOfChannels, audioBuffer.length, audioBuffer.sampleRate);
+                    const source = offlineCtx.createBufferSource();
+                    source.buffer = audioBuffer;
+
+                    // --- ALGORITMA MASTERING DSP INTERNAL ---
+                    // A. EQ (Equalization)
+                    const lowShelf = offlineCtx.createBiquadFilter();
+                    lowShelf.type = 'lowshelf';
+                    lowShelf.frequency.value = 100;
+                    
+                    const highShelf = offlineCtx.createBiquadFilter();
+                    highShelf.type = 'highshelf';
+                    highShelf.frequency.value = 8000;
+
+                    const presenceEq = offlineCtx.createBiquadFilter();
+                    presenceEq.type = 'peaking';
+                    presenceEq.frequency.value = 3500;
+                    presenceEq.Q.value = 1.0;
+
+                    // Sesuaikan EQ berdasarkan Platform
+                    if (selectedProfile === 'spotify') {
+                        lowShelf.gain.value = 3.5;   // Bass punchy
+                        highShelf.gain.value = 2.5;  // Clarity
+                        presenceEq.gain.value = 1.0;
+                    } else if (selectedProfile === 'youtube') {
+                        lowShelf.gain.value = 2.0;
+                        highShelf.gain.value = 3.0;
+                        presenceEq.gain.value = 3.5; // Vokal menonjol
+                    } else if (selectedProfile === 'tiktok') {
+                        lowShelf.gain.value = 4.5;   // Bass extreme untuk HP
+                        highShelf.gain.value = 4.0;  // Treble extreme
+                        presenceEq.gain.value = 2.0;
+                    }
+
+                    // B. Multiband Compressor (Glue)
+                    const compressor = offlineCtx.createDynamicsCompressor();
+                    compressor.threshold.value = -15;
+                    compressor.knee.value = 5;
+                    compressor.ratio.value = 3;
+                    compressor.attack.value = 0.01;
+                    compressor.release.value = 0.1;
+
+                    // C. Brickwall Limiter (Loudness Maximizer)
+                    const limiter = offlineCtx.createDynamicsCompressor();
+                    limiter.threshold.value = -1.0;
+                    limiter.knee.value = 0.0;
+                    limiter.ratio.value = 20.0;
+                    limiter.attack.value = 0.001;
+                    limiter.release.value = 0.05;
+
+                    // D. Make-Up Gain
+                    const makeUpGain = offlineCtx.createGain();
+                    if (selectedProfile === 'tiktok') makeUpGain.gain.value = 2.5;
+                    else makeUpGain.gain.value = 1.8;
+
+                    // Routing Signal
+                    source.connect(lowShelf);
+                    lowShelf.connect(presenceEq);
+                    presenceEq.connect(highShelf);
+                    highShelf.connect(compressor);
+                    compressor.connect(makeUpGain);
+                    makeUpGain.connect(limiter);
+                    limiter.connect(offlineCtx.destination);
+
+                    source.start(0);
+
+                    updateTopProgress(60, "Merender audio kualitas tinggi...");
+                    
+                    // 4. Render Audio
+                    const renderedBuffer = await offlineCtx.startRendering();
+
+                    updateTopProgress(80, "Mengonversi ke MP3 Studio...");
+
+                    // 5. Encode ke MP3
+                    const mp3Blob = await encodeAudioBufferToMp3(renderedBuffer, (percent) => {
+                        updateTopProgress(80 + (percent * 0.1), "Mengonversi ke MP3 Studio...");
                     });
 
-                    updateTopProgress(100, "Selesai");
+                    updateTopProgress(90, "Menyimpan ke Cloud...");
+
+                    // 6. Upload ke Cloudinary
+                    const safeTitle = (docData.title || "Mastered_Audio").replace(/[^a-zA-Z0-9]/g, "_");
+                    const fileName = `Mastered_${selectedProfile}_${safeTitle}.mp3`;
+                    
+                    let finalDurStr = "0:00";
+                    if (isFinite(renderedBuffer.duration)) {
+                        const m = Math.floor(renderedBuffer.duration / 60);
+                        const s = Math.floor(renderedBuffer.duration % 60);
+                        finalDurStr = `${m}:${s < 10 ? '0' : ''}${s}`;
+                    }
+
+                    await uploadBlobToCloudinary(mp3Blob, fileName, true, finalDurStr);
+                    const masteredUrl = selectedAudioUrl; // This is updated inside uploadBlobToCloudinary
+
+                    updateTopProgress(95, "Memperbarui database...");
+
+                    // 7. Update Firestore
+                    await updateDoc(doc(db, "render_gallery", docId), {
+                        url: masteredUrl,
+                        isMastered: true,
+                        masteringProfile: selectedProfile
+                    });
+
+                    updateTopProgress(100, "Selesai!");
                     setTimeout(() => hideTopProgress(), 1500);
                     showIphoneToast("Mastering Selesai!", "Audio Anda sekarang berkualitas Studio HD.", "fa-wand-magic-sparkles");
 
                 } catch (err) {
+                    console.error(err);
                     hideTopProgress();
                     showIphoneToast("Gagal Mastering", err.message, "fa-triangle-exclamation");
                 }
