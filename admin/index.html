@@ -463,6 +463,20 @@
                         <span style="color:var(--accent); font-weight:600;"><i class="fa-solid fa-circle-info"></i> Info:</span> Sistem akan mengirim file audio sebagai <code>multipart/form-data</code>. ID yang didapat akan disimpan ke database Klien. Anda bisa memanggil ID ini di Endpoint Text-to-Audio menggunakan variabel <code>{{voice_id}}</code> (Contoh: <code>/v1/text-to-speech/{{voice_id}}</code>).
                     </div>
                 </div>
+                <!-- TAMBAHAN BARU: AUDIO MASTERING -->
+                <div style="padding:15px; background:rgba(255,149,0,0.05); border:1px solid rgba(255,149,0,0.2); border-radius:12px; display:flex; flex-direction:column; gap:10px;">
+                    <div style="font-weight:800; font-size:0.9rem; color:var(--warning);"><i class="fa-solid fa-wand-magic-sparkles"></i> Audio Mastering (Post-Processing)</div>
+                    <div><label>Endpoint Mastering (POST)</label><input type="text" id="prov-pathMastering-audio" placeholder="Contoh: /media/enhance"></div>
+                    <div>
+                        <label>Payload Template JSON</label>
+                        <textarea id="prov-payloadMastering-audio" rows="3" placeholder="Format JSON Request Body"></textarea>
+                        <div style="font-size:0.75rem; color:var(--text-sec); margin-top:4px; line-height: 1.5;">
+                            <b>Variabel:</b> {{targetAudioUrl}}<br>
+                            <span style="color:var(--accent); font-weight:600;"><i class="fa-solid fa-circle-info"></i> Info:</span> Gunakan variabel <code>{{targetAudioUrl}}</code> untuk mengambil URL lagu yang sudah jadi dan mengirimkannya ke API Mastering (Contoh: Dolby.io atau Auphonic).
+                        </div>
+                    </div>
+                    <div><label>Response Path (URL/Task ID)</label><input type="text" id="prov-responseMastering-audio" placeholder="Contoh: data.outputUrl atau task_id"></div>
+                </div>
                 <!-- POLLING AUDIO -->
                 <div id="poll-box-audio" style="padding:15px; background:#111; color:#FFF; border-radius:12px; display:flex; flex-direction:column; gap:10px;">
                     <div style="font-weight:800; font-size:0.95rem; color:var(--warning);"><i class="fa-solid fa-clock-rotate-left"></i> Asynchronous Polling (Task ID) Audio</div>
@@ -3342,6 +3356,9 @@ function clearAllProviderInputs() {
     document.getElementById('prov-payloadCover-audio').value = '';
     document.getElementById('prov-pathClone-audio').value = '';
     document.getElementById('prov-responseVoiceId-audio').value = '';
+    document.getElementById('prov-pathMastering-audio').value = '';
+    document.getElementById('prov-payloadMastering-audio').value = '';
+    document.getElementById('prov-responseMastering-audio').value = '';
     document.getElementById('prov-responsePath-audio').value = '';
     document.getElementById('prov-statusUrl-audio').value = '';
     document.getElementById('prov-statusPath-audio').value = 'status';
@@ -3439,6 +3456,9 @@ window.editLyricshotProvider = function(val) {
         if (safeType === 'audio') {
             document.getElementById('prov-pathClone-audio').value = p.endpointClone || '';
             document.getElementById('prov-responseVoiceId-audio').value = p.responseVoiceId || '';
+            document.getElementById('prov-pathMastering-audio').value = p.endpointMastering || '';
+            document.getElementById('prov-payloadMastering-audio').value = p.payloadMasteringTemplate || '';
+            document.getElementById('prov-responseMastering-audio').value = p.responseMasteringPath || '';
         }
         
         // Set Polling Khusus Tab Ini Saja
@@ -3512,6 +3532,9 @@ window.saveProviderModal = async function() {
         payloadCustomTemplate: type === 'audio' ? document.getElementById('prov-payloadCustom').value.trim() : '',
         endpointClone: type === 'audio' ? document.getElementById('prov-pathClone-audio').value.trim() : '',
         responseVoiceId: type === 'audio' ? document.getElementById('prov-responseVoiceId-audio').value.trim() : '',
+        endpointMastering: type === 'audio' ? document.getElementById('prov-pathMastering-audio').value.trim() : '',
+        payloadMasteringTemplate: type === 'audio' ? document.getElementById('prov-payloadMastering-audio').value.trim() : '',
+        responseMasteringPath: type === 'audio' ? document.getElementById('prov-responseMastering-audio').value.trim() : '',
         
         // Polling (Hanya untuk Audio, Video, Image)
         responsePath: type !== 'llm' ? document.getElementById(`prov-responsePath-${type}`).value.trim() : '',
