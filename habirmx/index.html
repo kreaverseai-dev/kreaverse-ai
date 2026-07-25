@@ -8349,10 +8349,25 @@ window.startDspBypassAndUpload = async function() {
                 updateTopProgress(5, "Mengunduh audio asli...");
 
                 try {
-                    // 1. Fetch Audio (Menggunakan Proxy agar lolos dari blokir CORS Browser)
-                    const proxyUrl = `https://kreaverse-proxy.kreaverse-ai.workers.dev/?targetUrl=${encodeURIComponent(docData.url)}`;
-                    const audioRes = await fetch(proxyUrl);
-                    if (!audioRes.ok) throw new Error("Gagal mengunduh audio asli.");
+                    // 1. Fetch Audio (Coba direct dulu, kalau CORS error baru pakai proxy)
+                    let audioRes;
+                    try {
+                        audioRes = await fetch(docData.url);
+                        if (!audioRes.ok) throw new Error("Direct fetch HTTP error");
+                    } catch (e) {
+                        console.warn("Direct fetch gagal (CORS/Network), mencoba proxy utama...", e);
+                        try {
+                            const proxyUrl = `https://kreaverse-proxy.kreaverse-ai.workers.dev/?targetUrl=${encodeURIComponent(docData.url)}`;
+                            audioRes = await fetch(proxyUrl);
+                            if (!audioRes.ok) throw new Error("Proxy utama HTTP error");
+                        } catch (e2) {
+                            console.warn("Proxy utama gagal, mencoba proxy cadangan...", e2);
+                            const backupProxy = `https://corsproxy.io/?${encodeURIComponent(docData.url)}`;
+                            audioRes = await fetch(backupProxy);
+                            if (!audioRes.ok) throw new Error("Gagal mengunduh audio asli dari semua jalur.");
+                        }
+                    }
+                    
                     const arrayBuffer = await audioRes.arrayBuffer();
                     
                     updateTopProgress(20, "Menganalisis frekuensi...");
