@@ -7228,6 +7228,7 @@ window.startDspBypassAndUpload = async function() {
                 return;
             }
             selectedAudioUrl = urlInput;
+            window.originalRawUrl = urlInput; // Menyimpan URL asli agar fitur Deteksi Lirik tidak salah ambil lagu DSP
             
             // Ekstrak nama file dari URL atau gunakan default
             let fileName = urlInput.split('/').pop().split('?')[0];
@@ -7479,7 +7480,7 @@ window.startDspBypassAndUpload = async function() {
         };
 
         // ============================================================
-        // DETEKSI LIRIK (ASR WHISPER + VOCAL FOCUS FILTER)
+        // DETEKSI LIRIK (ASR WHISPER + VOCAL ENHANCER FILTER)
         // ============================================================
         window.detectLyrics = async function() {
             if (!isLoggedIn || !currentUser) {
@@ -7487,7 +7488,11 @@ window.startDspBypassAndUpload = async function() {
                 return;
             }
 
-            if (!rawAudioFile && !selectedAudioUrl) {
+            // PASTIKAN HANYA MENGAMBIL AUDIO ORIGINAL, BUKAN YANG SUDAH DI-DSP
+            let sourceToUse = rawAudioFile;
+            let urlToUse = window.originalRawUrl || selectedAudioUrl;
+
+            if (!sourceToUse && !urlToUse) {
                 showIphoneToast("Error", "Silakan unggah audio referensi terlebih dahulu untuk mendeteksi lirik!", "fa-triangle-exclamation");
                 return;
             }
@@ -7501,23 +7506,23 @@ window.startDspBypassAndUpload = async function() {
             btn.disabled = true;
             inputEl.disabled = true;
             progressBox.classList.remove('hidden');
-            statusText.innerText = "Menyiapkan filter vokal...";
+            statusText.innerText = "Mengambil Audio Original...";
 
             try {
-                // 1. Dapatkan Audio Buffer (Dari File Lokal atau URL)
+                // 1. Dapatkan Audio Buffer dari File Asli
                 let arrayBuffer;
-                if (rawAudioFile) {
-                    arrayBuffer = await rawAudioFile.arrayBuffer();
+                if (sourceToUse) {
+                    arrayBuffer = await sourceToUse.arrayBuffer();
                 } else {
-                    const proxyUrl = `https://kreaverse-proxy.kreaverse-ai.workers.dev/?targetUrl=${encodeURIComponent(selectedAudioUrl)}`;
+                    const proxyUrl = `https://kreaverse-proxy.kreaverse-ai.workers.dev/?targetUrl=${encodeURIComponent(urlToUse)}`;
                     const audioRes = await fetch(proxyUrl);
-                    if (!audioRes.ok) throw new Error("Gagal mengambil audio untuk filter vokal.");
+                    if (!audioRes.ok) throw new Error("Gagal mengambil audio original.");
                     arrayBuffer = await audioRes.arrayBuffer();
                 }
 
-                statusText.innerText = "Memisahkan vokal dari instrumen...";
+                statusText.innerText = "Mengekstrak frekuensi vokal...";
 
-                // 2. Terapkan VOCAL FOCUS FILTER (Bandpass EQ)
+                // 2. Terapkan VOCAL ENHANCER FILTER (Lebih cerdas untuk Whisper)
                 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
                 const audioBuffer = await audioCtx.decodeAudioData(arrayBuffer);
                 
@@ -7525,23 +7530,32 @@ window.startDspBypassAndUpload = async function() {
                 const source = offlineCtx.createBufferSource();
                 source.buffer = audioBuffer;
 
-                // Filter Highpass (Buang suara Bass/Kick Drum di bawah 300Hz)
+                // Filter Highpass (Buang Bass/Kick Drum di bawah 200Hz)
                 const highpass = offlineCtx.createBiquadFilter();
                 highpass.type = 'highpass';
-                highpass.frequency.value = 300;
+                highpass.frequency.value = 200;
 
-                // Filter Lowpass (Buang suara Treble/Simbal di atas 3000Hz)
+                // Filter Peaking (Angkat kejelasan vokal / konsonan di 3000Hz agar Whisper bisa dengar huruf S, T, K)
+                const vocalBoost = offlineCtx.createBiquadFilter();
+                vocalBoost.type = 'peaking';
+                vocalBoost.frequency.value = 3000;
+                vocalBoost.Q.value = 1.0;
+                vocalBoost.gain.value = 8.0; // Boost 8dB agar kata-kata sangat jelas
+
+                // Filter Lowpass (Buang desis simbal berlebih di atas 8000Hz)
                 const lowpass = offlineCtx.createBiquadFilter();
                 lowpass.type = 'lowpass';
-                lowpass.frequency.value = 3000;
+                lowpass.frequency.value = 8000;
 
-                // Kompresor ekstrim agar suara vokal yang tersisa menjadi rata dan keras
+                // Kompresor Vokal (Ratakan volume)
                 const compressor = offlineCtx.createDynamicsCompressor();
-                compressor.threshold.value = -30;
-                compressor.ratio.value = 10;
+                compressor.threshold.value = -24;
+                compressor.ratio.value = 12;
+                compressor.attack.value = 0.003;
 
                 source.connect(highpass);
-                highpass.connect(lowpass);
+                highpass.connect(vocalBoost);
+                vocalBoost.connect(lowpass);
                 lowpass.connect(compressor);
                 compressor.connect(offlineCtx.destination);
                 source.start(0);
@@ -7567,9 +7581,9 @@ window.startDspBypassAndUpload = async function() {
                 const dataUpload = await resUpload.json();
                 const tempAudioUrl = dataUpload.secure_url;
 
-                statusText.innerText = "AI sedang mendengarkan lirik...";
+                statusText.innerText = "AI sedang mengetik lirik...";
                 
-                // 4. Kirim URL Audio Vokal (Tanpa Bass/Drum) ke Groq Whisper
+                // 4. Kirim URL Audio Vokal ke Groq Whisper
                 const response = await fetch('/api/habirmx', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -7585,7 +7599,7 @@ window.startDspBypassAndUpload = async function() {
 
                 inputEl.value = data.result;
                 updateCounter('lyricsInput', 'lyricsCounter', 5000);
-                showIphoneToast("Selesai", "Lirik berhasil dideteksi! Silakan klik tombol AI untuk menata baitnya.", "fa-circle-check");
+                showIphoneToast("Selesai", "Lirik berhasil dideteksi dari audio original!", "fa-circle-check");
 
             } catch (err) {
                 showIphoneToast("ASR Gagal", err.message, "fa-triangle-exclamation");
