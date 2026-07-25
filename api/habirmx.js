@@ -135,11 +135,12 @@ module.exports = async (req, res) => {
         const { action, email, providerId, modelId, title, prompt, instrumental, lyrics, audioUrl, options, llmType, inputText, vocalGender, currentMode } = body;
 
         // ============================================================
-        // ROUTE 1A: DETEKSI LIRIK (ASR WHISPER)
+        // ROUTE 1A: DETEKSI LIRIK (ASR WHISPER + AUTO-CLEANUP LLM)
         // ============================================================
         if (action === 'detect_lyrics') {
             if (!audioUrl) return res.status(400).json({ error: 'Audio URL wajib diisi untuk deteksi lirik.' });
             try {
+                // 1. PROSES WHISPER (ASR MENTAH)
                 const whisperKeysQuery = await db.collection("api_keys").where("provider", "==", "Groq Whisper").where("status", "==", "aktif").get();
                 if (whisperKeysQuery.empty) throw new Error("API Key untuk Groq Whisper tidak ditemukan atau mati.");
                 const whisperKey = whisperKeysQuery.docs.sort((a, b) => (a.data().priority || 1) - (b.data().priority || 1))[0].data().key;
@@ -151,7 +152,7 @@ module.exports = async (req, res) => {
                 const formData = new FormData();
                 formData.append("file", audioBlob, "audio.mp3");
                 formData.append("model", "whisper-large-v3-turbo");
-                formData.append("temperature", "0.0");
+                formData.append("temperature", "0.0"); // 0.0 agar tidak terlalu berhalusinasi
                 
                 const pastedLyrics = lyrics || inputText || ""; 
                 let promptHint = pastedLyrics.trim() !== "" ? pastedLyrics.substring(0, 500).replace(/\n/g, ', ') : (title ? `${title}, lirik lagu, musik.` : "Lirik lagu, musik.");
@@ -167,12 +168,55 @@ module.exports = async (req, res) => {
                 if (!whisperRes.ok) throw new Error(whisperData.error?.message || "Gagal transkripsi audio via Whisper.");
                 if (!whisperData.text) throw new Error("Suara tidak terdeteksi atau audio kosong.");
 
-                let cleanText = whisperData.text;
-                cleanText = cleanText.replace(/Terima kasih telah menonton!?/gi, "").replace(/Thanks for watching!?/gi, "").replace(/Terima kasih!?/gi, "").replace(/Subtitle by .+/gi, "").replace(/Subtitles by .+/gi, "");
-                cleanText = cleanText.replace(/作词.*?(\n|$)/g, "").replace(/作曲.*?(\n|$)/g, "").replace(/编曲.*?(\n|$)/g, "");
-                cleanText = cleanText.replace(/\n\s*\n/g, '\n').trim();
+                let rawText = whisperData.text;
+                rawText = rawText.replace(/Terima kasih telah menonton!?/gi, "").replace(/Thanks for watching!?/gi, "").replace(/Terima kasih!?/gi, "").replace(/Subtitle by .+/gi, "").replace(/Subtitles by .+/gi, "");
+                rawText = rawText.replace(/作词.*?(\n|$)/g, "").replace(/作曲.*?(\n|$)/g, "").replace(/编曲.*?(\n|$)/g, "");
 
-                if (!cleanText) cleanText = "[Musik Instrumental / Vokal tidak terdengar jelas oleh AI]";
+                // 2. PROSES AUTO-CLEANUP MENGGUNAKAN CLAUDE / GOOGLE PRO
+                let cleanText = rawText.trim();
+                
+                try {
+                    // Cari provider LLM aktif di database
+                    const providersDoc = await db.collection("settings").doc("api_providers").get();
+                    const allProviders = providersDoc.data().list || [];
+                    const llmProviders = allProviders.filter(p => p.serviceType && (String(p.serviceType).toLowerCase() === "llm" || String(p.serviceType).toLowerCase() === "text" || String(p.serviceType).toLowerCase() === "chat"));
+                    
+                    if (llmProviders.length > 0) {
+                        const llmProv = llmProviders[0]; // Ambil LLM prioritas pertama (Claude/Google)
+                        const llmKeysQuery = await db.collection("api_keys").where("provider", "==", llmProv.value).where("status", "==", "aktif").get();
+                        
+                        if (!llmKeysQuery.empty) {
+                            const llmKey = llmKeysQuery.docs.sort((a, b) => (a.data().priority || 1) - (b.data().priority || 1))[0].data().key;
+                            let activeModel = llmProv.models ? llmProv.models.split(',')[0].trim() : "default";
+
+                            const systemPrompt = `Anda adalah Audio Engineer & Ahli Lirik. Teks di bawah ini adalah hasil transkripsi AI (Speech-to-Text) dari sebuah lagu full instrumen. Karena suara musiknya keras, AI transkripsi sering berhalusinasi (menulis kata-kata aneh/asalan yang tidak masuk akal).
+TUGAS ANDA:
+1. Bersihkan teks tersebut dari kata-kata halusinasi atau asalan.
+2. Tebak dan perbaiki kata-kata yang salah dengar menjadi lirik yang masuk akal sesuai konteks.
+3. Susun menjadi bait-bait lirik lagu yang rapi.
+4. JANGAN tambahkan komentar apapun. HANYA berikan lirik yang sudah bersih.`;
+
+                            const variables = { model: activeModel, systemPrompt: systemPrompt, prompt: `TEKS MENTAH BERANTAKAN:\n${rawText}` };
+                            let parsedBodyString = renderTemplate(llmProv.payloadTemplate || `{"model": "{{model}}", "messages": [{"role": "system", "content": "{{systemPrompt}}"}, {"role": "user", "content": "{{prompt}}"}]}`, variables);
+                            const finalPayload = JSON.parse(parsedBodyString);
+
+                            const headers = { "Content-Type": "application/json" };
+                            headers[llmProv.headerName || "Authorization"] = (llmProv.headerValue || "Bearer {apiKey}").replace("{apiKey}", llmKey);
+
+                            const llmRes = await fetch(`${llmProv.baseUrl}${llmProv.endpoint}`, { method: 'POST', headers: headers, body: JSON.stringify(finalPayload) });
+                            const llmData = await llmRes.json();
+
+                            if (llmRes.ok) {
+                                if (llmData.choices && llmData.choices[0].message) cleanText = llmData.choices[0].message.content;
+                                else if (llmData.candidates && llmData.candidates[0].content) cleanText = llmData.candidates[0].content.parts[0].text;
+                            }
+                        }
+                    }
+                } catch (llmErr) {
+                    console.warn("Auto-cleanup LLM gagal, menggunakan teks mentah Whisper:", llmErr);
+                }
+
+                if (!cleanText || cleanText.trim() === "") cleanText = "[Musik Instrumental / Vokal tidak terdengar jelas oleh AI]";
 
                 return res.status(200).json({ success: true, result: cleanText });
             } catch (err) {
