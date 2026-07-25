@@ -8307,58 +8307,88 @@ window.startDspBypassAndUpload = async function() {
             const docData = window.globalLibraryDocs.find(d => d.id === docId);
             if (!docData) return;
 
-            // Jika lagu sudah di-mastering sebelumnya, beri tahu user
             if (docData.isMastered) {
                 showIphoneToast("Sudah Dimastering", "Lagu ini sudah melewati proses Mastering Studio HD.", "fa-circle-check");
                 return;
             }
 
-            // Tampilkan Top Progress Bar
-            showTopProgress("Mastering Audio...", "#D95040");
-            updateTopProgress(10, "Menyiapkan file audio");
-
-            try {
-                // Simulasi progress bar berjalan (Karena API Mastering butuh waktu)
-                let fakeProgress = 10;
-                const fakeInterval = setInterval(() => {
-                    if (fakeProgress < 85) {
-                        fakeProgress += Math.floor(Math.random() * 5) + 1;
-                        updateTopProgress(fakeProgress, "Memproses di Studio AI");
-                    }
-                }, 800);
-
-                // Mengirim request ke Backend API Flixa AI
-                const response = await fetch('/api/habirmx', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        action: 'mastering',
-                        docId: docId,
-                        audioUrl: docData.url
-                    })
-                });
-
-                const data = await response.json();
-                clearInterval(fakeInterval);
-
-                if (!response.ok) throw new Error(data.error || "Gagal melakukan mastering.");
-
-                updateTopProgress(95, "Menyimpan hasil mastering");
-                
-                // Update Firestore dengan URL lagu baru yang sudah jernih
-                await updateDoc(doc(db, "render_gallery", docId), {
-                    url: data.masteredUrl,
-                    isMastered: true
-                });
-
-                updateTopProgress(100, "Selesai");
-                setTimeout(() => hideTopProgress(), 1500);
-                showIphoneToast("Mastering Selesai!", "Audio Anda sekarang berkualitas Studio HD.", "fa-wand-magic-sparkles");
-
-            } catch (err) {
-                hideTopProgress();
-                showIphoneToast("Gagal Mastering", err.message, "fa-triangle-exclamation");
+            // Buat Modal Pilihan Platform secara Dinamis
+            let overlay = document.getElementById('masteringProfileModal');
+            if (!overlay) {
+                overlay = document.createElement('div');
+                overlay.id = 'masteringProfileModal';
+                overlay.className = 'krea-modal-overlay';
+                overlay.style.zIndex = '9999999';
+                overlay.innerHTML = `
+                    <div class="krea-modal-box" style="max-width: 340px; padding: 24px; border-radius: 24px; text-align: left;">
+                        <h3 style="font-size: 1.15rem; font-weight: 900; color: var(--text-primary); margin-bottom: 8px;"><i class="fa-solid fa-sliders" style="color: #D95040;"></i> Target Platform</h3>
+                        <p style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 16px; line-height: 1.5;">AI akan mengoptimalkan frekuensi (EQ) dan tingkat kebisingan (Loudness) agar sesuai dengan standar platform berikut:</p>
+                        
+                        <select id="masteringProfileSelect" style="width: 100%; padding: 14px; border-radius: 12px; border: 1.5px solid var(--border-color); font-size: 0.9rem; font-weight: 700; margin-bottom: 24px; outline: none; background: #f8fafc; color: var(--text-primary);">
+                            <option value="spotify">🎧 Spotify / Apple Music (Standar)</option>
+                            <option value="youtube">▶️ YouTube (Vokal Menonjol)</option>
+                            <option value="tiktok">📱 TikTok / Reels (Loudness Maksimal)</option>
+                        </select>
+                        
+                        <div style="display: flex; gap: 10px;">
+                            <button onclick="document.getElementById('masteringProfileModal').classList.remove('show')" style="flex: 1; padding: 12px; border-radius: 12px; font-weight: 800; font-size: 0.85rem; cursor: pointer; border: none; background: #f1f5f9; color: var(--text-secondary); transition: 0.2s;">Batal</button>
+                            <button id="btnConfirmMastering" style="flex: 1; padding: 12px; border-radius: 12px; font-weight: 800; font-size: 0.85rem; cursor: pointer; border: none; background: linear-gradient(135deg, #1A1449, #D95040); color: #fff; box-shadow: 0 4px 15px rgba(217, 80, 64, 0.3); transition: 0.2s;">Proses</button>
+                        </div>
+                    </div>
+                `;
+                document.body.appendChild(overlay);
             }
+
+            overlay.classList.add('show');
+
+            document.getElementById('btnConfirmMastering').onclick = async () => {
+                overlay.classList.remove('show');
+                const selectedProfile = document.getElementById('masteringProfileSelect').value;
+                
+                showTopProgress("Mastering Audio...", "#D95040");
+                updateTopProgress(10, "Menyiapkan file audio");
+
+                try {
+                    let fakeProgress = 10;
+                    const fakeInterval = setInterval(() => {
+                        if (fakeProgress < 85) {
+                            fakeProgress += Math.floor(Math.random() * 5) + 1;
+                            updateTopProgress(fakeProgress, "Memoles di Studio AI");
+                        }
+                    }, 800);
+
+                    const response = await fetch('/api/habirmx', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            action: 'mastering',
+                            docId: docId,
+                            audioUrl: docData.url,
+                            profile: selectedProfile
+                        })
+                    });
+
+                    const data = await response.json();
+                    clearInterval(fakeInterval);
+
+                    if (!response.ok) throw new Error(data.error || "Gagal melakukan mastering.");
+
+                    updateTopProgress(95, "Menyimpan hasil mastering");
+                    
+                    await updateDoc(doc(db, "render_gallery", docId), {
+                        url: data.masteredUrl,
+                        isMastered: true
+                    });
+
+                    updateTopProgress(100, "Selesai");
+                    setTimeout(() => hideTopProgress(), 1500);
+                    showIphoneToast("Mastering Selesai!", "Audio Anda sekarang berkualitas Studio HD.", "fa-wand-magic-sparkles");
+
+                } catch (err) {
+                    hideTopProgress();
+                    showIphoneToast("Gagal Mastering", err.message, "fa-triangle-exclamation");
+                }
+            };
         };
 
         // Fungsi Redirect dengan Prompt
