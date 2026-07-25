@@ -1393,19 +1393,18 @@
     <nav class="navbar">
         <button onclick="window.openSidebar()" class="back-btn" title="Menu" style="font-size: 1rem;"><i class="fa-solid fa-bars"></i></button>
         <a href="/" class="logo-container" title="Kembali ke Beranda" style="text-decoration: none; pointer-events: auto;">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 60" class="krea-logo-svg">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 250 60" class="krea-logo-svg">
                 <defs>
-                    <linearGradient id="kreaGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                        <stop offset="0%" stop-color="#D97757" />
-                        <stop offset="50%" stop-color="#AF52DE" />
-                        <stop offset="100%" stop-color="#007AFF" />
+                    <linearGradient id="flixaMiniNav" x1="0%" y1="100%" x2="100%" y2="0%">
+                        <stop offset="0%" stop-color="#1A1449" />
+                        <stop offset="50%" stop-color="#7B2956" />
+                        <stop offset="100%" stop-color="#D95040" />
                     </linearGradient>
                 </defs>
-                <g>
-                    <path d="M 30,10 Q 30,30 50,30 Q 30,30 30,50 Q 30,30 10,30 Q 30,30 30,10 Z" fill="url(#kreaGrad)" />
-                    <path d="M 30,17 Q 30,30 43,30 Q 30,30 30,43 Q 30,30 17,30 Q 30,30 30,17 Z" fill="url(#kreaGrad)" transform="rotate(45, 30, 30)" opacity="0.85" />
-                </g>
-                <text x="65" y="38" font-family="'Plus Jakarta Sans', sans-serif" font-weight="800" font-size="21" fill="currentColor" letter-spacing="-0.5px">Kreaverse<tspan font-weight="500" fill="#D97757"> AI</tspan></text>
+                <rect x="0" y="5" width="50" height="50" rx="12" fill="url(#flixaMiniNav)"/>
+                <path d="M 32 16 C 32 6, 19 6, 19 20 C 19 29, 23 32, 23 40" stroke="#FFFFFF" stroke-width="6" stroke-linecap="round" fill="none" />
+                <path d="M 12 25 Q 21 20 30 25" stroke="#FFFFFF" stroke-width="6" stroke-linecap="round" fill="none" />
+                <text x="60" y="36" font-family="'Plus Jakarta Sans', sans-serif" font-weight="900" font-size="24" fill="currentColor" dominant-baseline="middle" letter-spacing="-0.5px">Flixa AI</text>
             </svg>
         </a>
         <div class="nav-right" style="width: 32px;"></div>
@@ -1415,12 +1414,18 @@
     <div id="sidebarOverlay" class="sidebar-overlay" onclick="window.closeSidebar()"></div>
     <aside id="sidebarMenu" class="sidebar-menu">
         <div class="sidebar-header">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 60" style="width: 140px; height: 35px;">
-                <g>
-                    <path d="M 30,10 Q 30,30 50,30 Q 30,30 30,50 Q 30,30 10,30 Q 30,30 30,10 Z" fill="url(#kreaGrad)" />
-                    <path d="M 30,17 Q 30,30 43,30 Q 30,30 30,43 Q 30,30 17,30 Q 30,30 30,17 Z" fill="url(#kreaGrad)" transform="rotate(45, 30, 30)" opacity="0.85" />
-                </g>
-                <text x="65" y="38" font-family="'Plus Jakarta Sans', sans-serif" font-weight="800" font-size="21" fill="#0f172a" letter-spacing="-0.5px">Kreaverse<tspan font-weight="500" fill="#D97757"> AI</tspan></text>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 250 60" style="width: 140px; height: 35px;">
+                <defs>
+                    <linearGradient id="flixaMiniSide" x1="0%" y1="100%" x2="100%" y2="0%">
+                        <stop offset="0%" stop-color="#1A1449" />
+                        <stop offset="50%" stop-color="#7B2956" />
+                        <stop offset="100%" stop-color="#D95040" />
+                    </linearGradient>
+                </defs>
+                <rect x="0" y="5" width="50" height="50" rx="12" fill="url(#flixaMiniSide)"/>
+                <path d="M 32 16 C 32 6, 19 6, 19 20 C 19 29, 23 32, 23 40" stroke="#FFFFFF" stroke-width="6" stroke-linecap="round" fill="none" />
+                <path d="M 12 25 Q 21 20 30 25" stroke="#FFFFFF" stroke-width="6" stroke-linecap="round" fill="none" />
+                <text x="60" y="36" font-family="'Plus Jakarta Sans', sans-serif" font-weight="900" font-size="24" fill="#0f172a" dominant-baseline="middle" letter-spacing="-0.5px">Flixa AI</text>
             </svg>
             <button class="sidebar-close-btn" onclick="window.closeSidebar()"><i class="fa-solid fa-xmark"></i></button>
         </div>
@@ -2656,12 +2661,12 @@
         <footer class="footer">
             <div class="footer-logo">
                 <a href="/" style="display: block; width: 100%; height: 100%; text-decoration: none;" title="Kembali ke Beranda">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 60" style="width: 100%; height: 100%;">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 250 60" style="width: 100%; height: 100%;">
                         <defs>
-                            <linearGradient id="kreaGradFooterPage" x1="0%" y1="0%" x2="100%" y2="100%">
-                                <stop offset="0%" stop-color="#D97757" />
-                                <stop offset="50%" stop-color="#AF52DE" />
-                                <stop offset="100%" stop-color="#007AFF" />
+                            <linearGradient id="flixaMiniFooter" x1="0%" y1="100%" x2="100%" y2="0%">
+                                <stop offset="0%" stop-color="#1A1449" />
+                                <stop offset="50%" stop-color="#7B2956" />
+                                <stop offset="100%" stop-color="#D95040" />
                             </linearGradient>
                             <linearGradient id="shimmerGlowFooter" x1="-100%" y1="0%" x2="0%" y2="0%">
                                 <stop offset="0%" stop-color="rgba(255,255,255,0)" />
@@ -2675,10 +2680,11 @@
                         </defs>
                         <g>
                             <g class="star-glow">
-                                <path d="M 30,10 Q 30,30 50,30 Q 30,30 30,50 Q 30,30 10,30 Q 30,30 30,10 Z" fill="url(#kreaGradFooterPage)" />
-                                <path d="M 30,17 Q 30,30 43,30 Q 30,30 30,43 Q 30,30 17,30 Q 30,30 30,17 Z" fill="url(#kreaGradFooterPage)" transform="rotate(45, 30, 30)" opacity="0.85" />
+                                <rect x="0" y="5" width="50" height="50" rx="12" fill="url(#flixaMiniFooter)"/>
+                                <path d="M 32 16 C 32 6, 19 6, 19 20 C 19 29, 23 32, 23 40" stroke="#FFFFFF" stroke-width="6" stroke-linecap="round" fill="none" />
+                                <path d="M 12 25 Q 21 20 30 25" stroke="#FFFFFF" stroke-width="6" stroke-linecap="round" fill="none" />
                             </g>
-                            <text x="65" y="38" font-family="'Plus Jakarta Sans', sans-serif" font-weight="800" font-size="21" fill="url(#kreaGradFooterPage)" letter-spacing="-0.5px">Kreaverse<tspan font-weight="500" fill="#D97757"> AI</tspan></text>
+                            <text x="60" y="36" font-family="'Plus Jakarta Sans', sans-serif" font-weight="900" font-size="24" fill="#0f172a" dominant-baseline="middle" letter-spacing="-0.5px">Flixa AI</text>
                         </g>
                     </svg>
                 </a>
