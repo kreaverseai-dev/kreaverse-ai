@@ -2926,6 +2926,24 @@
         </div>
     </div>
 
+    <!-- MODAL OPSI LAINNYA (TITIK TIGA) -->
+    <div id="moreOptionsModalOverlay" class="krea-modal-overlay" style="z-index: 9999999;">
+        <div class="krea-modal-box" style="max-width: 320px; padding: 24px; border-radius: 24px; text-align: left;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                <h3 style="font-size: 1.1rem; font-weight: 900; color: var(--text-primary); margin: 0;">Opsi Lagu</h3>
+                <button onclick="window.closeMoreOptions()" style="background: rgba(15, 23, 42, 0.05); border: none; width: 30px; height: 30px; border-radius: 50%; font-size: 1.2rem; color: var(--text-secondary); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.2s;">&times;</button>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 12px;">
+                <button id="btnOptDetail" class="btn-custom-upload-compact" style="width: 100%; justify-content: flex-start; padding: 14px 16px !important; font-size: 0.9rem !important; border-radius: 14px !important; background: #f8fafc !important; border: 1.5px solid #e2e8f0 !important; color: var(--text-primary) !important; box-shadow: 0 2px 4px rgba(0,0,0,0.02) !important;">
+                    <i class="fa-solid fa-compact-disc" style="width: 24px; color: var(--accent-color); font-size: 1.1rem;"></i> Detail Track
+                </button>
+                <button id="btnOptMastering" class="btn-custom-upload-compact" style="width: 100%; justify-content: flex-start; padding: 14px 16px !important; font-size: 0.9rem !important; border-radius: 14px !important; background: linear-gradient(135deg, #1A1449, #D95040) !important; border: none !important; color: #fff !important; box-shadow: 0 6px 15px rgba(217, 80, 64, 0.3) !important;">
+                    <i class="fa-solid fa-wand-magic-sparkles" style="width: 24px; font-size: 1.1rem;"></i> Mastering Studio HD
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- CUSTOM CONFIRM MODAL (PENGGANTI ALERT BAWAAN) -->
     <div id="customConfirmOverlay" class="krea-modal-overlay" style="z-index: 999999;">
         <div class="krea-modal-box" style="max-width: 320px; padding: 24px; text-align: center;">
@@ -3552,7 +3570,7 @@
                                 <div class="suno-btn-group" style="margin-top: 6px; display: flex; gap: 6px; align-items: center; flex-wrap: wrap;">
                                     <button onclick="window.toggleLike('${d.id}', 'like')" class="suno-action-btn ${isLiked}" title="Like" style="flex-shrink: 0; width: 28px; height: 28px; font-size: 0.8rem;"><i class="fa-solid fa-thumbs-up"></i></button>
                                     <button onclick="window.toggleLike('${d.id}', 'dislike')" class="suno-action-btn ${isDisliked}" title="Dislike" style="flex-shrink: 0; width: 28px; height: 28px; font-size: 0.8rem;"><i class="fa-solid fa-thumbs-down"></i></button>
-                                    <button onclick="if(!window.isSelectionMode) window.openSongDetails('${d.id}')" class="suno-action-btn" title="Opsi Lainnya" style="flex-shrink: 0; width: 28px; height: 28px; font-size: 0.8rem;"><i class="fa-solid fa-ellipsis"></i></button>
+                                    <button onclick="if(!window.isSelectionMode) window.openMoreOptions('${d.id}')" class="suno-action-btn" title="Opsi Lainnya" style="flex-shrink: 0; width: 28px; height: 28px; font-size: 0.8rem;"><i class="fa-solid fa-ellipsis"></i></button>
                                     
                                     <!-- BADGE MODEL (V5.5) KOTAK, DEKAT TOMBOL & KILAUAN TEKS 10 DETIK -->
                                     <style>
@@ -8259,6 +8277,88 @@ window.startDspBypassAndUpload = async function() {
             const clickX = e.clientX - rect.left;
             const percent = clickX / rect.width;
             audioEl.currentTime = percent * audioEl.duration;
+        };
+
+        // ============================================================
+        // LOGIKA OPSI LAINNYA & MASTERING STUDIO
+        // ============================================================
+        let currentOptionsDocId = null;
+
+        window.openMoreOptions = function(docId) {
+            currentOptionsDocId = docId;
+            document.getElementById('moreOptionsModalOverlay').classList.add('show');
+            
+            document.getElementById('btnOptDetail').onclick = () => {
+                window.closeMoreOptions();
+                window.openSongDetails(docId);
+            };
+            
+            document.getElementById('btnOptMastering').onclick = () => {
+                window.closeMoreOptions();
+                window.startMasteringProcess(docId);
+            };
+        };
+
+        window.closeMoreOptions = function() {
+            document.getElementById('moreOptionsModalOverlay').classList.remove('show');
+        };
+
+        window.startMasteringProcess = async function(docId) {
+            const docData = window.globalLibraryDocs.find(d => d.id === docId);
+            if (!docData) return;
+
+            // Jika lagu sudah di-mastering sebelumnya, beri tahu user
+            if (docData.isMastered) {
+                showIphoneToast("Sudah Dimastering", "Lagu ini sudah melewati proses Mastering Studio HD.", "fa-circle-check");
+                return;
+            }
+
+            // Tampilkan Top Progress Bar
+            showTopProgress("Mastering Audio...", "#D95040");
+            updateTopProgress(10, "Menyiapkan file audio");
+
+            try {
+                // Simulasi progress bar berjalan (Karena API Mastering butuh waktu)
+                let fakeProgress = 10;
+                const fakeInterval = setInterval(() => {
+                    if (fakeProgress < 85) {
+                        fakeProgress += Math.floor(Math.random() * 5) + 1;
+                        updateTopProgress(fakeProgress, "Memproses di Studio AI");
+                    }
+                }, 800);
+
+                // Mengirim request ke Backend API Flixa AI
+                const response = await fetch('/api/habirmx', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: 'mastering',
+                        docId: docId,
+                        audioUrl: docData.url
+                    })
+                });
+
+                const data = await response.json();
+                clearInterval(fakeInterval);
+
+                if (!response.ok) throw new Error(data.error || "Gagal melakukan mastering.");
+
+                updateTopProgress(95, "Menyimpan hasil mastering");
+                
+                // Update Firestore dengan URL lagu baru yang sudah jernih
+                await updateDoc(doc(db, "render_gallery", docId), {
+                    url: data.masteredUrl,
+                    isMastered: true
+                });
+
+                updateTopProgress(100, "Selesai");
+                setTimeout(() => hideTopProgress(), 1500);
+                showIphoneToast("Mastering Selesai!", "Audio Anda sekarang berkualitas Studio HD.", "fa-wand-magic-sparkles");
+
+            } catch (err) {
+                hideTopProgress();
+                showIphoneToast("Gagal Mastering", err.message, "fa-triangle-exclamation");
+            }
         };
 
         // Fungsi Redirect dengan Prompt
