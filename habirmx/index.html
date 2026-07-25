@@ -7944,27 +7944,57 @@ window.startDspBypassAndUpload = async function() {
                 // Simpan ke Firebase. Karena kita pakai onSnapshot di initLibraryAndProgress, 
                 // UI akan otomatis terupdate tanpa perlu kode tambahan di sini!
                 const modelLabel = document.getElementById('modelSelectedLabel').innerText.split(' - ')[0] || modelId;
-                await addDoc(collection(db, "render_gallery"), {
-                    email: currentUser.email,
-                    url: data.tracks ? (data.tracks[0]?.audioUrl || "") : "",
-                    prompt: style,
-                    lyrics: lyrics,
-                    title: title || "Untitled Song",
-                    tool: "Habi RMX",
-                    type: "audio",
-                    status: data.status === "completed" ? "complete" : "processing",
-                    taskId: data.taskId || "sync_task",
-                    provider: data.provider,
-                    model: modelLabel,
-                    timestamp: Date.now(),
-                    mode: currentMode,
-                    personaId: options.personaId || "",
-                    vocalGender: options.vocalGender || "",
-                    styleWeight: options.styleWeight || "",
-                    weirdness: options.weirdness || "",
-                    audioWeight: options.audioWeight || "",
-                    originalAudioUrl: currentMode === 'cover' ? selectedAudioUrl : ""
-                });
+                
+                if (data.status === "completed" && data.tracks && data.tracks.length > 0) {
+                    // Jika API Synchronous (Langsung Selesai), simpan semua track yang dihasilkan
+                    for (let i = 0; i < data.tracks.length; i++) {
+                        await addDoc(collection(db, "render_gallery"), {
+                            email: currentUser.email,
+                            url: data.tracks[i].audioUrl,
+                            imageUrl: data.tracks[i].imageUrl || "https://i.postimg.cc/Jh211FTG/46cc61ec-de7f-4c62-8245-946e22312d2b.jpg",
+                            prompt: style,
+                            lyrics: lyrics,
+                            title: `${title || "Untitled Song"} - Track ${i + 1}`,
+                            tool: "Habi RMX",
+                            type: "audio",
+                            status: "complete",
+                            taskId: data.taskId || `sync_task_${Date.now()}_${i}`,
+                            provider: data.provider,
+                            model: modelLabel,
+                            timestamp: Date.now() + i, // Bedakan waktu sedikit agar berurutan
+                            mode: currentMode,
+                            personaId: options.personaId || "",
+                            vocalGender: options.vocalGender || "",
+                            styleWeight: options.styleWeight || "",
+                            weirdness: options.weirdness || "",
+                            audioWeight: options.audioWeight || "",
+                            originalAudioUrl: currentMode === 'cover' ? selectedAudioUrl : ""
+                        });
+                    }
+                } else {
+                    // Jika API Asynchronous (Polling), simpan 1 dokumen "processing"
+                    await addDoc(collection(db, "render_gallery"), {
+                        email: currentUser.email,
+                        url: "",
+                        prompt: style,
+                        lyrics: lyrics,
+                        title: title || "Untitled Song",
+                        tool: "Habi RMX",
+                        type: "audio",
+                        status: "processing",
+                        taskId: data.taskId || "sync_task",
+                        provider: data.provider,
+                        model: modelLabel,
+                        timestamp: Date.now(),
+                        mode: currentMode,
+                        personaId: options.personaId || "",
+                        vocalGender: options.vocalGender || "",
+                        styleWeight: options.styleWeight || "",
+                        weirdness: options.weirdness || "",
+                        audioWeight: options.audioWeight || "",
+                        originalAudioUrl: currentMode === 'cover' ? selectedAudioUrl : ""
+                    });
+                }
                 
                 generateBtn.disabled = false;
                 generateBtn.innerHTML = originalBtnHtml;
