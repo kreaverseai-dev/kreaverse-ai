@@ -5211,8 +5211,9 @@
         window.cleanAudioTitle = function(rawName) {
             if (!rawName) return "Audio Baru";
             let name = rawName.replace(/\.(mp3|wav|ogg|m4a|flac|aac)$/i, ''); // Hapus ekstensi
-            name = name.replace(/[-_]+/g, ' | ').replace(/\s+\|\s+/g, ' | ').replace(/\|+/g, '|'); // Ganti simbol ke |
-            return name.trim();
+            // Bersihkan karakter aneh seperti [ ], ( ), |, _, - berlebihan menjadi spasi biasa
+            name = name.replace(/[\[\]\(\)\|\-_]/g, ' ').replace(/\s+/g, ' ').trim();
+            return name;
         };
 
         // GLOBAL HELPER: Aktifkan Mini Player dari mana saja
@@ -5227,7 +5228,12 @@
             // Auto-fill ke kotak Input Judul jika kosong
             const titleInput = document.getElementById('titleInput');
             if (titleInput && !titleInput.value.trim()) {
-                titleInput.value = cleanName;
+                let finalTitle = `Flixa AI - ${cleanName}`;
+                // Batasi maksimal 99 karakter agar aman masuk database
+                if (finalTitle.length > 99) {
+                    finalTitle = finalTitle.substring(0, 99);
+                }
+                titleInput.value = finalTitle;
                 if(typeof updateCounter === 'function') updateCounter('titleInput', 'titleCounter', 100);
             }
             
@@ -7887,11 +7893,11 @@ window.startDspBypassAndUpload = async function() {
             if (!title && (selectedAudioUrl || rawAudioFile)) {
                 let rawName = document.getElementById('uploadedMiniFileName').innerText;
                 if (rawName && rawName !== '-' && !rawName.startsWith('http')) {
-                    // Hapus ekstensi file
                     let cleanName = rawName.replace(/\.(mp3|wav|ogg|m4a|flac|aac)$/i, '');
-                    // Ganti simbol aneh (-_- atau _ atau -) menjadi |
-                    cleanName = cleanName.replace(/[-_]+/g, ' | ').replace(/\s+\|\s+/g, ' | ').replace(/\|+/g, '|');
-                    title = cleanName.trim();
+                    cleanName = cleanName.replace(/[\[\]\(\)\|\-_]/g, ' ').replace(/\s+/g, ' ').trim();
+                    let finalTitle = `Flixa AI - ${cleanName}`;
+                    if (finalTitle.length > 99) finalTitle = finalTitle.substring(0, 99);
+                    title = finalTitle;
                     document.getElementById('titleInput').value = title; // Tampilkan di UI
                 }
             }
@@ -8124,9 +8130,15 @@ window.startDspBypassAndUpload = async function() {
         }
 
         window.downloadFileWithCustomName = function(url, songTitle) {
-            showIphoneToast('Mengunduh...', 'Mengalirkan audio premium langsung dari server Kreaverse...', 'fa-cloud-arrow-down');
+            showIphoneToast('Mengunduh...', 'Mengalirkan audio premium langsung dari server Flixa AI...', 'fa-cloud-arrow-down');
             const CLOUDFLARE_WORKER_PROXY = "https://kreaverse-proxy.kreaverse-ai.workers.dev";
-            const customFileName = `Kreaverse AI - ${songTitle}.mp3`;
+            
+            // Bersihkan judul dari karakter yang tidak diizinkan di nama file windows/mac
+            let safeTitle = songTitle.replace(/[\\/:*?"<>|]/g, "");
+            
+            // Pastikan formatnya Flixa AI - [Judul].mp3
+            let customFileName = safeTitle.startsWith("Flixa AI") ? `${safeTitle}.mp3` : `Flixa AI - ${safeTitle}.mp3`;
+            
             const proxyUrl = `${CLOUDFLARE_WORKER_PROXY}/?targetUrl=${encodeURIComponent(url)}&filename=${encodeURIComponent(customFileName)}`;
             
             setTimeout(() => {
@@ -8792,8 +8804,8 @@ window.startDspBypassAndUpload = async function() {
             // UPDATE PRESET ANTI-COPYRIGHT SESUAI SCREENSHOT
             switch(val) {
                 case 'bypass_lyrics': setValues(1.15, -200, 59, 79, 49, 30, [false, true, true, true, false, false]); break;
-                case 'preset1': setValues(1.05, 100, 40, 60, 30, 20, [true, true, true, false, false, false]); break;
-                case 'preset2': setValues(1.10, -100, 70, 85, 60, 40, [true, true, true, true, false, true]); break;
+                case 'preset1': setValues(1.15, -400, 59, 60, 49, 30, [true, true, true, true, true, true]); break;
+                case 'preset2': setValues(1.15, -400, 59, 60, 49, 30, [false, true, true, true, false, false]); break;
                 case 'preset3': setValues(1.18, 400, 15, 5, 10, 10, [true, false, true, false, true, false]); break;
                 case 'preset4': setValues(1.00, 0, 40, 10, 20, 50, [false, true, false, true, false, true]); break;
                 case 'preset5': setValues(1.12, -300, 50, 20, 30, 25, [true, true, true, true, true, true]); break;
