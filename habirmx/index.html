@@ -8307,6 +8307,11 @@ window.startDspBypassAndUpload = async function() {
             const docData = window.globalLibraryDocs.find(d => d.id === docId);
             if (!docData) return;
 
+            if (!docData.url) {
+                showIphoneToast("Error", "URL Audio tidak valid atau kosong.", "fa-triangle-exclamation");
+                return;
+            }
+
             if (docData.isMastered) {
                 showIphoneToast("Sudah Dimastering", "Lagu ini sudah melewati proses Mastering Studio HD.", "fa-circle-check");
                 return;
@@ -8349,23 +8354,33 @@ window.startDspBypassAndUpload = async function() {
                 updateTopProgress(5, "Mengunduh audio asli...");
 
                 try {
-                    // 1. Fetch Audio (Coba direct dulu, kalau CORS error baru pakai proxy)
-                    let audioRes;
-                    try {
-                        audioRes = await fetch(docData.url);
-                        if (!audioRes.ok) throw new Error("Direct fetch HTTP error");
-                    } catch (e) {
-                        console.warn("Direct fetch gagal (CORS/Network), mencoba proxy utama...", e);
+                    // 1. Fetch Audio dengan Super Proxy Loop (4 Jalur Bypass)
+                    const targetUrl = encodeURIComponent(docData.url);
+                    const proxies = [
+                        docData.url, // 1. Direct fetch
+                        `https://api.allorigins.win/raw?url=${targetUrl}`, // 2. AllOrigins (Sangat handal)
+                        `https://kreaverse-proxy.kreaverse-ai.workers.dev/?targetUrl=${targetUrl}`, // 3. Worker Anda
+                        `https://corsproxy.io/?${targetUrl}` // 4. Corsproxy
+                    ];
+
+                    let audioRes = null;
+                    let fetchSuccess = false;
+
+                    for (const pUrl of proxies) {
                         try {
-                            const proxyUrl = `https://kreaverse-proxy.kreaverse-ai.workers.dev/?targetUrl=${encodeURIComponent(docData.url)}`;
-                            audioRes = await fetch(proxyUrl);
-                            if (!audioRes.ok) throw new Error("Proxy utama HTTP error");
-                        } catch (e2) {
-                            console.warn("Proxy utama gagal, mencoba proxy cadangan...", e2);
-                            const backupProxy = `https://corsproxy.io/?${encodeURIComponent(docData.url)}`;
-                            audioRes = await fetch(backupProxy);
-                            if (!audioRes.ok) throw new Error("Gagal mengunduh audio asli dari semua jalur.");
+                            const res = await fetch(pUrl);
+                            if (res.ok) {
+                                audioRes = res;
+                                fetchSuccess = true;
+                                break; // Berhenti di proxy pertama yang berhasil
+                            }
+                        } catch (e) {
+                            console.warn("Bypass gagal di jalur:", pUrl);
                         }
+                    }
+
+                    if (!fetchSuccess || !audioRes) {
+                        throw new Error("Sistem terhalang oleh proteksi keamanan server sumber (CORS).");
                     }
                     
                     const arrayBuffer = await audioRes.arrayBuffer();
