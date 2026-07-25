@@ -1404,7 +1404,7 @@
                 <rect x="0" y="5" width="50" height="50" rx="12" fill="url(#flixaMiniNav)"/>
                 <path d="M 32 16 C 32 6, 19 6, 19 20 C 19 29, 23 32, 23 40" stroke="#FFFFFF" stroke-width="6" stroke-linecap="round" fill="none" />
                 <path d="M 12 25 Q 21 20 30 25" stroke="#FFFFFF" stroke-width="6" stroke-linecap="round" fill="none" />
-                <text x="60" y="36" font-family="'Plus Jakarta Sans', sans-serif" font-weight="900" font-size="24" fill="currentColor" dominant-baseline="middle" letter-spacing="-0.5px">Flixa AI</text>
+                <text x="60" y="36" font-family="'Plus Jakarta Sans', sans-serif" font-weight="900" font-size="24" fill="#0f172a" dominant-baseline="middle" letter-spacing="-0.5px">Flixa AI</text>
             </svg>
         </a>
         <div class="nav-right" style="width: 32px;"></div>
@@ -2659,8 +2659,28 @@
 
         <!-- FOOTER -->
         <footer class="footer">
-            <div class="footer-logo">
-                <a href="/" style="display: block; width: 100%; height: 100%; text-decoration: none;" title="Kembali ke Beranda">
+            <div class="footer-logo" style="position: relative; overflow: hidden; display: inline-block;">
+                <style>
+                    .footer-shimmer::after {
+                        content: '';
+                        position: absolute;
+                        top: 0;
+                        left: -100%;
+                        width: 50%;
+                        height: 100%;
+                        background: linear-gradient(to right, rgba(255,255,255,0) 0%, rgba(255,255,255,0.8) 50%, rgba(255,255,255,0) 100%);
+                        transform: skewX(-25deg);
+                        animation: shimmerSweepEffect 10s infinite;
+                        pointer-events: none;
+                        z-index: 2;
+                    }
+                    @keyframes shimmerSweepEffect {
+                        0% { left: -100%; }
+                        70% { left: 200%; }
+                        100% { left: 200%; }
+                    }
+                </style>
+                <a href="/" class="footer-shimmer" style="display: block; width: 100%; height: 100%; text-decoration: none; position: relative;" title="Kembali ke Beranda">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 60" style="width: 100%; height: 100%;">
                         <defs>
                             <linearGradient id="flixaMiniFooter" x1="0%" y1="100%" x2="100%" y2="0%">
@@ -2668,22 +2688,11 @@
                                 <stop offset="50%" stop-color="#7B2956" />
                                 <stop offset="100%" stop-color="#D95040" />
                             </linearGradient>
-                            <linearGradient id="shimmerGlowFooter" x1="-100%" y1="0%" x2="0%" y2="0%">
-                                <stop offset="0%" stop-color="rgba(255,255,255,0)" />
-                                <stop offset="45%" stop-color="rgba(255,255,255,0)" />
-                                <stop offset="50%" stop-color="rgba(255,255,255,0.9)" />
-                                <stop offset="55%" stop-color="rgba(255,255,255,0)" />
-                                <stop offset="100%" stop-color="rgba(255,255,255,0)" />
-                                <animate attributeName="x1" values="-100%; 200%" dur="10s" repeatCount="indefinite" />
-                                <animate attributeName="x2" values="0%; 300%" dur="10s" repeatCount="indefinite" />
-                            </linearGradient>
                         </defs>
                         <g>
-                            <g class="star-glow">
-                                <rect x="0" y="5" width="50" height="50" rx="12" fill="url(#flixaMiniFooter)"/>
-                                <path d="M 32 16 C 32 6, 19 6, 19 20 C 19 29, 23 32, 23 40" stroke="#FFFFFF" stroke-width="6" stroke-linecap="round" fill="none" />
-                                <path d="M 12 25 Q 21 20 30 25" stroke="#FFFFFF" stroke-width="6" stroke-linecap="round" fill="none" />
-                            </g>
+                            <rect x="0" y="5" width="50" height="50" rx="12" fill="url(#flixaMiniFooter)"/>
+                            <path d="M 32 16 C 32 6, 19 6, 19 20 C 19 29, 23 32, 23 40" stroke="#FFFFFF" stroke-width="6" stroke-linecap="round" fill="none" />
+                            <path d="M 12 25 Q 21 20 30 25" stroke="#FFFFFF" stroke-width="6" stroke-linecap="round" fill="none" />
                             <text x="60" y="36" font-family="'Plus Jakarta Sans', sans-serif" font-weight="900" font-size="24" fill="#0f172a" dominant-baseline="middle" letter-spacing="-0.5px">Flixa AI</text>
                         </g>
                     </svg>
