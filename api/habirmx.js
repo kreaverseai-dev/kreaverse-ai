@@ -490,6 +490,63 @@ ATURAN MUTLAK:
         }
 
         // ============================================================
+        // ROUTE 1C: AUDIO MASTERING STUDIO HD (POST-PROCESSING)
+        // ============================================================
+        if (action === 'mastering') {
+            const { docId, audioUrl, profile } = body;
+            if (!audioUrl) return res.status(400).json({ error: 'Audio URL wajib diisi untuk proses mastering.' });
+
+            try {
+                // 1. Cari provider yang memiliki konfigurasi endpointMastering
+                const providersDoc = await db.collection("settings").doc("api_providers").get();
+                const allProviders = providersDoc.data().list || [];
+                const masteringProvider = allProviders.find(p => p.endpointMastering && p.endpointMastering.trim() !== "");
+
+                if (!masteringProvider) {
+                    throw new Error("Fitur Mastering belum dikonfigurasi. Tambahkan Endpoint Mastering di Dasbor Admin.");
+                }
+
+                // 2. Ambil API Key
+                const keysQuery = await db.collection("api_keys").where("provider", "==", masteringProvider.value).where("status", "==", "aktif").get();
+                const sortedKeysDocs = keysQuery.docs.sort((a, b) => (a.data().priority || 1) - (b.data().priority || 1));
+                if (sortedKeysDocs.length === 0) throw new Error(`API Key untuk ${masteringProvider.label} habis atau tidak aktif.`);
+                const activeApiKey = sortedKeysDocs[0].data().key;
+
+                // 3. Siapkan Payload (Mendukung Opsi B: Profile Platform)
+                const variables = { 
+                    targetAudioUrl: audioUrl,
+                    profile: profile || "spotify" // default
+                };
+                let parsedBodyString = renderTemplate(masteringProvider.payloadMasteringTemplate || "{}", variables);
+                const finalPayload = JSON.parse(parsedBodyString);
+
+                const headers = { "Content-Type": "application/json" };
+                headers[masteringProvider.headerName || "Authorization"] = (masteringProvider.headerValue || "Bearer {apiKey}").replace("{apiKey}", activeApiKey);
+
+                // 4. Kirim Request ke Provider Mastering (Contoh: Dolby / Auphonic)
+                const providerUrl = `${masteringProvider.baseUrl}${masteringProvider.endpointMastering}`;
+                const response = await fetch(providerUrl, { method: 'POST', headers: headers, body: JSON.stringify(finalPayload) });
+                const resData = await response.json();
+
+                if (!response.ok || (resData.code && resData.code !== 200)) {
+                    throw new Error(getValueByPath(resData, masteringProvider.errorPath) || extractErrorString(resData) || "API Error saat Mastering");
+                }
+
+                // 5. Ekstrak Hasil URL Audio
+                let masteredUrl = getValueByPath(resData, masteringProvider.responseMasteringPath || "url") || findAudioUrlRecursively(resData);
+                
+                if (masteredUrl) {
+                    return res.status(200).json({ success: true, masteredUrl: masteredUrl });
+                } else {
+                    throw new Error("URL Hasil Mastering tidak ditemukan dari respons provider. Pastikan Path Response di Dasbor Admin benar.");
+                }
+
+            } catch (err) {
+                return res.status(500).json({ error: err.message });
+            }
+        }
+
+        // ============================================================
         // ROUTE 2: GENERATE MUSIC (DYNAMIC PROVIDER SUPPORT)
         // ============================================================
         if (!email || !prompt) return res.status(400).json({ error: 'Parameter email dan prompt wajib diisi!' });
