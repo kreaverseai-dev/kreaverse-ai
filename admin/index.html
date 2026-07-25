@@ -3496,8 +3496,14 @@ window.saveProviderModal = async function() {
     const execMode = type !== 'llm' ? document.getElementById(`prov-execMode-${type}`).value : 'sync';
     const isStreaming = type === 'llm' ? document.getElementById('prov-stream-llm').checked : false;
 
-    if(!name || !url || !path) { 
-        showToast("Nama, Base URL, dan Endpoint Utama (POST) wajib diisi!", "warning"); 
+    // Cek apakah ada endpoint alternatif yang diisi (Mastering / Clone) khusus Audio
+    const pathMastering = type === 'audio' ? document.getElementById('prov-pathMastering-audio').value.trim() : '';
+    const pathClone = type === 'audio' ? document.getElementById('prov-pathClone-audio').value.trim() : '';
+    
+    const hasValidEndpoint = path !== '' || pathMastering !== '' || pathClone !== '';
+
+    if(!name || !url || !hasValidEndpoint) { 
+        showToast("Nama, Base URL, dan minimal 1 Endpoint (Utama/Mastering/Clone) wajib diisi!", "warning"); 
         return; 
     }
 
