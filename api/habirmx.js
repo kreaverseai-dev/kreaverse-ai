@@ -158,7 +158,7 @@ module.exports = async (req, res) => {
                 let promptHint = pastedLyrics.trim() !== "" ? pastedLyrics.substring(0, 500).replace(/\n/g, ', ') : (title ? `${title}, lirik lagu, musik.` : "Lirik lagu, musik.");
 
                 formData.append("prompt", promptHint);
-                formData.append("condition_on_previous_text", "false");
+                // Baris condition_on_previous_text dihapus karena API Groq tidak mendukungnya
 
                 const whisperRes = await fetch("https://api.groq.com/openai/v1/audio/transcriptions", {
                     method: "POST", headers: { "Authorization": `Bearer ${whisperKey}` }, body: formData
