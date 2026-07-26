@@ -7774,17 +7774,40 @@ window.startDspBypassAndUpload = async function() {
 
             try {
                 let finalAudioUrl = selectedAudioUrl;
-                if (!finalAudioUrl && rawAudioFile) {
-                    let finalDurStr = "0:00";
-                    const origPlayer = document.getElementById('originalAudioPlayer');
-                    if (origPlayer && isFinite(origPlayer.duration) && origPlayer.duration > 0) {
-                        finalDurStr = formatTime(origPlayer.duration);
+                const isDspActive = document.getElementById('uploadedMiniBadge') && document.getElementById('uploadedMiniBadge').innerText === "DSP Bypassed";
+                
+                // LOGIKA PINTAR: Gunakan URL Original yang sudah diupload saat "Deteksi" jika ada
+                if (window.originalCleanAudioUrl) {
+                    finalAudioUrl = window.originalCleanAudioUrl;
+                    statusText.innerText = "Menggunakan audio original yang tersimpan...";
+                } 
+                // Jika belum ada, dan yang aktif adalah DSP, maka upload originalnya sekarang
+                else if ((!finalAudioUrl || isDspActive) && rawAudioFile) {
+                    statusText.innerText = "Mengunggah audio original khusus untuk AI Lirik...";
+                    
+                    await fetchCloudinaryAccounts();
+                    if (activeCloudinaryAccounts.length > 0) {
+                        const targetAccount = activeCloudinaryAccounts[0];
+                        const formData = new FormData();
+                        formData.append("file", rawAudioFile, "original_sync.mp3");
+                        formData.append("upload_preset", targetAccount.uploadPreset);
+                        
+                        const resUpload = await fetch(`https://api.cloudinary.com/v1_1/${targetAccount.cloudName}/auto/upload`, {
+                            method: 'POST', body: formData
+                        });
+                        const dataUpload = await resUpload.json();
+                        finalAudioUrl = dataUpload.secure_url;
+                        
+                        // Simpan ke memori agar ke depannya tidak perlu upload ulang
+                        window.originalCleanAudioUrl = finalAudioUrl;
+                        
+                        if (!selectedAudioUrl) {
+                            selectedAudioUrl = finalAudioUrl;
+                        }
                     }
-                    await uploadBlobToCloudinary(rawAudioFile, rawAudioFile.name, false, finalDurStr);
-                    finalAudioUrl = selectedAudioUrl; 
                 }
 
-                statusText.innerText = "AI sedang menyinkronkan waktu...";
+                statusText.innerText = "Menganalisis vokal & menyinkronkan ketukan (Karaoke)...";
                 
                 // Ambil durasi asli dari player audio
                 let audioDurSec = 240; // Default 4 menit
@@ -7885,7 +7908,8 @@ window.startDspBypassAndUpload = async function() {
 
                 statusText.innerText = "Mengekstrak frekuensi vokal...";
 
-                // 2. Terapkan VOCAL ENHANCER FILTER (Lebih cerdas untuk Whisper)
+                // 2. NORMALISASI AUDIO UNTUK WHISPER (Tanpa EQ yang merusak)
+                // Whisper AI jauh lebih akurat menggunakan audio mentah (raw) daripada audio yang di-filter secara ekstrem.
                 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
                 const audioBuffer = await audioCtx.decodeAudioData(arrayBuffer);
                 
@@ -7893,34 +7917,20 @@ window.startDspBypassAndUpload = async function() {
                 const source = offlineCtx.createBufferSource();
                 source.buffer = audioBuffer;
 
-                // Filter Highpass (Buang Bass/Kick Drum di bawah 200Hz)
-                const highpass = offlineCtx.createBiquadFilter();
-                highpass.type = 'highpass';
-                highpass.frequency.value = 200;
-
-                // Filter Peaking (Angkat kejelasan vokal / konsonan di 3000Hz agar Whisper bisa dengar huruf S, T, K)
-                const vocalBoost = offlineCtx.createBiquadFilter();
-                vocalBoost.type = 'peaking';
-                vocalBoost.frequency.value = 3000;
-                vocalBoost.Q.value = 1.0;
-                vocalBoost.gain.value = 8.0; // Boost 8dB agar kata-kata sangat jelas
-
-                // Filter Lowpass (Buang desis simbal berlebih di atas 8000Hz)
-                const lowpass = offlineCtx.createBiquadFilter();
-                lowpass.type = 'lowpass';
-                lowpass.frequency.value = 8000;
-
-                // Kompresor Vokal (Ratakan volume)
+                // Kompresor ringan hanya untuk meratakan volume agar AI bisa mendengar bagian yang pelan dengan jelas
                 const compressor = offlineCtx.createDynamicsCompressor();
-                compressor.threshold.value = -24;
-                compressor.ratio.value = 12;
-                compressor.attack.value = 0.003;
+                compressor.threshold.value = -18;
+                compressor.knee.value = 5;
+                compressor.ratio.value = 4;
+                compressor.attack.value = 0.01;
+                compressor.release.value = 0.1;
 
-                source.connect(highpass);
-                highpass.connect(vocalBoost);
-                vocalBoost.connect(lowpass);
-                lowpass.connect(compressor);
-                compressor.connect(offlineCtx.destination);
+                const makeUpGain = offlineCtx.createGain();
+                makeUpGain.gain.value = 2.0; // Naikkan volume sedikit agar vokal terbaca jelas
+
+                source.connect(compressor);
+                compressor.connect(makeUpGain);
+                makeUpGain.connect(offlineCtx.destination);
                 source.start(0);
 
                 const renderedBuffer = await offlineCtx.startRendering();
@@ -7928,23 +7938,27 @@ window.startDspBypassAndUpload = async function() {
                 statusText.innerText = "Mengunggah vokal ke AI...";
 
                 // 3. Encode ke MP3 & Upload Sementara ke Cloudinary
+                statusText.innerText = "Mengunggah audio ke server AI...";
                 const mp3Blob = await encodeAudioBufferToMp3(renderedBuffer, () => {});
                 
                 await fetchCloudinaryAccounts();
                 if (activeCloudinaryAccounts.length === 0) throw new Error("Storage limit");
                 const targetAccount = activeCloudinaryAccounts[0];
                 const formData = new FormData();
-                formData.append("file", mp3Blob, "temp_vocal_filter.mp3");
+                formData.append("file", mp3Blob, "temp_original_groq.mp3");
                 formData.append("upload_preset", targetAccount.uploadPreset);
                 
                 const resUpload = await fetch(`https://api.cloudinary.com/v1_1/${targetAccount.cloudName}/auto/upload`, {
                     method: 'POST', body: formData
                 });
-                if(!resUpload.ok) throw new Error("Upload vokal sementara gagal");
+                if(!resUpload.ok) throw new Error("Upload audio sementara gagal");
                 const dataUpload = await resUpload.json();
                 const tempAudioUrl = dataUpload.secure_url;
+                
+                // SIMPAN URL ORIGINAL AGAR TIDAK PERLU UPLOAD LAGI SAAT SYNC
+                window.originalCleanAudioUrl = tempAudioUrl;
 
-                statusText.innerText = "AI sedang mengetik lirik...";
+                statusText.innerText = "AI sedang mendengarkan & mengetik lirik...";
                 
                 // 4. Kirim URL Audio Vokal ke Groq Whisper
                 const response = await fetch('/api/habirmx', {
@@ -10560,10 +10574,16 @@ window.startDspBypassAndUpload = async function() {
                         throw new Error("Kunci API Groq Whisper tidak ditemukan di database. Pastikan sudah didaftarkan di tab Audio!");
                     }
 
-                    // 3. Kirim ke API Groq Whisper (ASR)
+                    // 3. Kirim ke API Groq Whisper (ASR) dengan Parameter ANTI-HALUSINASI
                     const formData = new FormData();
                     formData.append("file", audioBlob, "audio.mp3");
                     formData.append("model", "whisper-large-v3");
+                    
+                    // KUNCI UTAMA: Matikan imajinasi AI (Temperature 0) agar tidak halusinasi/manipulasi teks saat mendengar instrumen
+                    formData.append("temperature", "0.0"); 
+                    
+                    // PROMPT PENGAMAN: Beri tahu AI untuk fokus ke lirik dan mengabaikan instrumen
+                    formData.append("prompt", "This is a song with music and vocals. Transcribe the lyrics accurately in its original language. Ignore instrumental breaks, drums, and melodies. Do not hallucinate words.");
 
                     const whisperResponse = await fetch("https://api.groq.com/openai/v1/audio/transcriptions", {
                         method: "POST",
