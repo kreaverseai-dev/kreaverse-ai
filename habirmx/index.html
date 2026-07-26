@@ -7783,20 +7783,41 @@ window.startDspBypassAndUpload = async function() {
                 } 
                 // Jika belum ada, dan yang aktif adalah DSP, maka upload originalnya sekarang
                 else if ((!finalAudioUrl || isDspActive) && rawAudioFile) {
-                    statusText.innerText = "Mengunggah audio original khusus untuk AI Lirik...";
+                    statusText.innerText = "Menyiapkan audio original...";
                     
                     await fetchCloudinaryAccounts();
                     if (activeCloudinaryAccounts.length > 0) {
                         const targetAccount = activeCloudinaryAccounts[0];
-                        const formData = new FormData();
-                        formData.append("file", rawAudioFile, "original_sync.mp3");
-                        formData.append("upload_preset", targetAccount.uploadPreset);
+                        const formDataCloudinary = new FormData();
+                        formDataCloudinary.append("file", rawAudioFile, "original_sync.mp3");
+                        formDataCloudinary.append("upload_preset", targetAccount.uploadPreset);
                         
-                        const resUpload = await fetch(`https://api.cloudinary.com/v1_1/${targetAccount.cloudName}/auto/upload`, {
-                            method: 'POST', body: formData
+                        // USING XHR HERE TOO UNTUK PROGRESS BAR
+                        finalAudioUrl = await new Promise((resolve, reject) => {
+                            const xhr = new XMLHttpRequest();
+                            xhr.open('POST', `https://api.cloudinary.com/v1_1/${targetAccount.cloudName}/auto/upload`);
+                            
+                            xhr.upload.onprogress = (event) => {
+                                if (event.lengthComputable) {
+                                    const percentComplete = Math.round((event.loaded / event.total) * 100);
+                                    const loadedMB = (event.loaded / (1024 * 1024)).toFixed(2);
+                                    const totalMB = (event.total / (1024 * 1024)).toFixed(2);
+                                    statusText.innerHTML = `Mengunggah ke Flixa AI... <b>${percentComplete}%</b> (${loadedMB} MB / ${totalMB} MB)`;
+                                }
+                            };
+                            
+                            xhr.onload = () => {
+                                if (xhr.status >= 200 && xhr.status < 300) {
+                                    const response = JSON.parse(xhr.responseText);
+                                    resolve(response.secure_url);
+                                } else {
+                                    reject(new Error("Upload audio gagal"));
+                                }
+                            };
+                            
+                            xhr.onerror = () => reject(new Error("Terjadi kesalahan jaringan saat upload"));
+                            xhr.send(formDataCloudinary);
                         });
-                        const dataUpload = await resUpload.json();
-                        finalAudioUrl = dataUpload.secure_url;
                         
                         // Simpan ke memori agar ke depannya tidak perlu upload ulang
                         window.originalCleanAudioUrl = finalAudioUrl;
@@ -7807,7 +7828,7 @@ window.startDspBypassAndUpload = async function() {
                     }
                 }
 
-                statusText.innerText = "Menganalisis vokal & menyinkronkan ketukan (Karaoke)...";
+                statusText.innerHTML = "Flixa AI sedang menganalisis vokal & menyinkronkan ketukan... <br><small>(Biasanya butuh 10-20 detik)</small>";
                 
                 // Ambil durasi asli dari player audio
                 let audioDurSec = 240; // Default 4 menit
@@ -7909,7 +7930,6 @@ window.startDspBypassAndUpload = async function() {
                 statusText.innerText = "Mengekstrak frekuensi vokal...";
 
                 // 2. NORMALISASI AUDIO UNTUK WHISPER (Tanpa EQ yang merusak)
-                // Whisper AI jauh lebih akurat menggunakan audio mentah (raw) daripada audio yang di-filter secara ekstrem.
                 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
                 const audioBuffer = await audioCtx.decodeAudioData(arrayBuffer);
                 
@@ -7917,7 +7937,6 @@ window.startDspBypassAndUpload = async function() {
                 const source = offlineCtx.createBufferSource();
                 source.buffer = audioBuffer;
 
-                // Kompresor ringan hanya untuk meratakan volume agar AI bisa mendengar bagian yang pelan dengan jelas
                 const compressor = offlineCtx.createDynamicsCompressor();
                 compressor.threshold.value = -18;
                 compressor.knee.value = 5;
@@ -7926,7 +7945,7 @@ window.startDspBypassAndUpload = async function() {
                 compressor.release.value = 0.1;
 
                 const makeUpGain = offlineCtx.createGain();
-                makeUpGain.gain.value = 2.0; // Naikkan volume sedikit agar vokal terbaca jelas
+                makeUpGain.gain.value = 2.0; 
 
                 source.connect(compressor);
                 compressor.connect(makeUpGain);
@@ -7935,55 +7954,141 @@ window.startDspBypassAndUpload = async function() {
 
                 const renderedBuffer = await offlineCtx.startRendering();
 
-                statusText.innerText = "Mengunggah vokal ke AI...";
-
-                // 3. Encode ke MP3 & Upload Sementara ke Cloudinary
-                statusText.innerText = "Mengunggah audio ke server AI...";
+                // 3. Encode ke MP3 & Upload Sementara ke Cloudinary (DENGAN PROGRESS BAR MB)
+                statusText.innerText = "Menyiapkan file audio...";
                 const mp3Blob = await encodeAudioBufferToMp3(renderedBuffer, () => {});
                 
                 await fetchCloudinaryAccounts();
                 if (activeCloudinaryAccounts.length === 0) throw new Error("Storage limit");
                 const targetAccount = activeCloudinaryAccounts[0];
-                const formData = new FormData();
-                formData.append("file", mp3Blob, "temp_original_groq.mp3");
-                formData.append("upload_preset", targetAccount.uploadPreset);
+                const formDataCloudinary = new FormData();
+                formDataCloudinary.append("file", mp3Blob, "temp_original_groq.mp3");
+                formDataCloudinary.append("upload_preset", targetAccount.uploadPreset);
                 
-                const resUpload = await fetch(`https://api.cloudinary.com/v1_1/${targetAccount.cloudName}/auto/upload`, {
-                    method: 'POST', body: formData
+                const tempAudioUrl = await new Promise((resolve, reject) => {
+                    const xhr = new XMLHttpRequest();
+                    xhr.open('POST', `https://api.cloudinary.com/v1_1/${targetAccount.cloudName}/auto/upload`);
+                    
+                    xhr.upload.onprogress = (event) => {
+                        if (event.lengthComputable) {
+                            const percentComplete = Math.round((event.loaded / event.total) * 100);
+                            const loadedMB = (event.loaded / (1024 * 1024)).toFixed(2);
+                            const totalMB = (event.total / (1024 * 1024)).toFixed(2);
+                            statusText.innerHTML = `Mengunggah ke Flixa AI... <b>${percentComplete}%</b> (${loadedMB} MB / ${totalMB} MB)`;
+                        }
+                    };
+                    
+                    xhr.onload = () => {
+                        if (xhr.status >= 200 && xhr.status < 300) {
+                            const response = JSON.parse(xhr.responseText);
+                            resolve(response.secure_url);
+                        } else {
+                            reject(new Error("Upload audio sementara gagal"));
+                        }
+                    };
+                    
+                    xhr.onerror = () => reject(new Error("Terjadi kesalahan jaringan saat upload"));
+                    xhr.send(formDataCloudinary);
                 });
-                if(!resUpload.ok) throw new Error("Upload audio sementara gagal");
-                const dataUpload = await resUpload.json();
-                const tempAudioUrl = dataUpload.secure_url;
                 
                 // SIMPAN URL ORIGINAL AGAR TIDAK PERLU UPLOAD LAGI SAAT SYNC
                 window.originalCleanAudioUrl = tempAudioUrl;
 
-                statusText.innerText = "AI sedang mendengarkan & mengetik lirik...";
+                // 4. Kirim ke API Groq Whisper (ASR) dengan Parameter ANTI-HALUSINASI
+                statusText.innerHTML = "Flixa AI sedang mentranskripsi lirik... <br><small>(Biasanya butuh 10-30 detik)</small>";
                 
-                // 4. Kirim URL Audio Vokal ke Groq Whisper
+                // Ambil Kunci API Groq
+                let groqKey = "";
+                try {
+                    const collections = ["api_keys", "keys", "database_keys", "api_providers"];
+                    for (let col of collections) {
+                        const snap = await getDocs(collection(db, col));
+                        snap.forEach(docSnap => {
+                            const d = docSnap.data();
+                            const name = (d.provider || d.name || d.id || "").toLowerCase();
+                            if (name.includes("groq") || name.includes("whisper")) {
+                                if (d.apiKey) groqKey = d.apiKey;
+                                else if (d.key) groqKey = d.key;
+                            }
+                        });
+                        if (groqKey) break;
+                    }
+                } catch(e) {
+                    console.warn("Firestore fetch key fallback:", e);
+                }
+
+                if (!groqKey) {
+                    throw new Error("Kunci API Groq Whisper tidak ditemukan di database.");
+                }
+
+                const formDataGroq = new FormData();
+                formDataGroq.append("file", mp3Blob, "audio.mp3"); 
+                formDataGroq.append("model", "whisper-large-v3");
+                formDataGroq.append("temperature", "0.0"); 
+                formDataGroq.append("prompt", "This is a song with music and vocals. Transcribe the lyrics accurately in its original language. Ignore instrumental breaks, drums, and melodies. Do not hallucinate words.");
+
+                const whisperResponse = await fetch("https://api.groq.com/openai/v1/audio/transcriptions", {
+                    method: "POST",
+                    headers: { "Authorization": `Bearer ${groqKey}` },
+                    body: formDataGroq
+                });
+                
+                const whisperData = await whisperResponse.json();
+                if (!whisperResponse.ok) throw new Error(whisperData.error?.message || "Gagal transkripsi audio.");
+
+                const rawText = whisperData.text;
+
+                // 5. Kirim teks mentah dari Whisper ke LLM (Groq Llama 3.1)
+                statusText.innerText = "Flixa AI sedang merapikan struktur lagu...";
+                
+                const llmProviderId = document.getElementById('llmSelect').value;
+                const llmModelId = document.getElementById('llmModelSelect').value;
+                const vocalGenderVal = document.getElementById('vocalGenderSelect').value;
+                const currentMode = document.getElementById('modeGenerateBtn').classList.contains('active') ? 'generate' : 'cover';
+
                 const response = await fetch('/api/habirmx', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        action: 'detect_lyrics',
-                        audioUrl: tempAudioUrl,
-                        title: document.getElementById('titleInput') ? document.getElementById('titleInput').value.trim() : ""
+                        action: 'magic_wand',
+                        providerId: llmProviderId,
+                        modelId: llmModelId,
+                        llmType: 'lyrics',
+                        inputText: rawText,
+                        vocalGender: vocalGenderVal,
+                        currentMode: currentMode
                     })
                 });
 
                 const data = await response.json();
-                if (!response.ok) throw new Error(data.error || "Gagal mendeteksi lirik.");
+                if (!response.ok) throw new Error(data.error || "Gagal merapikan lirik.");
 
-                inputEl.value = data.result;
-                updateCounter('lyricsInput', 'lyricsCounter', 5000);
-                showIphoneToast("Selesai", "Lirik berhasil dideteksi dari audio original!", "fa-circle-check");
+                let finalResult = data.result.trim();
+                inputEl.value = "";
+                let i = 0;
+                const chunkSize = 15; 
+                
+                function typeWriter() {
+                    if (i < finalResult.length) {
+                        inputEl.value += finalResult.substring(i, i + chunkSize);
+                        i += chunkSize;
+                        setTimeout(typeWriter, 1); 
+                    } else {
+                        inputEl.disabled = false;
+                        btn.disabled = false;
+                        btn.innerHTML = originalBtnHtml;
+                        updateCounter('lyricsInput', 'lyricsCounter', 5000);
+                        showIphoneToast("Selesai", "Lirik otomatis berhasil disusun oleh Flixa AI!", "fa-circle-check");
+                    }
+                }
+                typeWriter();
 
             } catch (err) {
-                showIphoneToast("ASR Gagal", err.message, "fa-triangle-exclamation");
-            } finally {
                 inputEl.disabled = false;
                 btn.disabled = false;
                 btn.innerHTML = originalBtnHtml;
+                showIphoneToast("ASR Gagal", err.message, "fa-circle-xmark");
+            } finally {
                 progressBox.classList.add('hidden');
             }
         };
