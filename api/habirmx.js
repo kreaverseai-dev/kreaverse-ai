@@ -966,9 +966,31 @@ ATURAN MUTLAK (DILARANG MELANGGAR):
                     tracks.push({ audioId: resData.id || resData.audio_id || resData.audioId || taskId, audioUrl: audioUrlVal, imageUrl: "https://i.postimg.cc/Jh211FTG/46cc61ec-de7f-4c62-8245-946e22312d2b.jpg" });
                 }
 
-                if (!audioUrlVal) {
-                    audioUrlVal = findAudioUrlRecursively(resData);
-                    if (audioUrlVal) tracks.push({ audioId: resData.id || resData.audio_id || resData.audioId || taskId, audioUrl: audioUrlVal, imageUrl: "https://i.postimg.cc/Jh211FTG/46cc61ec-de7f-4c62-8245-946e22312d2b.jpg" });
+                if (!audioUrlVal || tracks.length === 0) {
+                    // Cari semua kemungkinan track jika data adalah array
+                    let searchTargets = [];
+                    if (Array.isArray(resData.data)) searchTargets = resData.data;
+                    else if (Array.isArray(resData.result)) searchTargets = resData.result;
+                    else if (Array.isArray(resData.tracks)) searchTargets = resData.tracks;
+                    else if (Array.isArray(resData)) searchTargets = resData;
+
+                    if (searchTargets.length > 0) {
+                        searchTargets.forEach(item => {
+                            let url = findAudioUrlRecursively(item);
+                            if (url) {
+                                let img = item.image_url || item.imageUrl || item.cover_url || "https://i.postimg.cc/Jh211FTG/46cc61ec-de7f-4c62-8245-946e22312d2b.jpg";
+                                tracks.push({ audioId: item.id || item.audio_id || item.audioId || taskId, audioUrl: url, imageUrl: img });
+                            }
+                        });
+                    }
+
+                    // Jika gagal ekstrak array, cari 1 URL secara rekursif global
+                    if (tracks.length === 0) {
+                        audioUrlVal = findAudioUrlRecursively(resData);
+                        if (audioUrlVal) tracks.push({ audioId: resData.id || resData.audio_id || resData.audioId || taskId, audioUrl: audioUrlVal, imageUrl: "https://i.postimg.cc/Jh211FTG/46cc61ec-de7f-4c62-8245-946e22312d2b.jpg" });
+                    }
+                    
+                    if (tracks.length > 0) audioUrlVal = tracks[0].audioUrl;
                 }
                 if (!audioUrlVal) { isCompleted = false; isProcessing = true; }
 
@@ -994,16 +1016,18 @@ ATURAN MUTLAK (DILARANG MELANGGAR):
                                     title: `${baseTitle} - Track 1`
                                 });
                                 
-                                // Jika Suno menghasilkan 2 lagu, buat dokumen baru untuk Track 2
+                                // Jika API menghasilkan banyak lagu, buat dokumen baru untuk Track 2 dan seterusnya
                                 if (tracks.length > 1) {
-                                    await db.collection("render_gallery").add({
-                                        ...mainData,
-                                        status: "complete",
-                                        url: tracks[1].audioUrl,
-                                        imageUrl: tracks[1].imageUrl || mainData.imageUrl || "https://i.postimg.cc/Jh211FTG/46cc61ec-de7f-4c62-8245-946e22312d2b.jpg",
-                                        title: `${baseTitle} - Track 2`,
-                                        timestamp: Date.now() + 1000 // Tambah 1 detik agar muncul di atas Track 1
-                                    });
+                                    for (let j = 1; j < tracks.length; j++) {
+                                        await db.collection("render_gallery").add({
+                                            ...mainData,
+                                            status: "complete",
+                                            url: tracks[j].audioUrl,
+                                            imageUrl: tracks[j].imageUrl || mainData.imageUrl || "https://i.postimg.cc/Jh211FTG/46cc61ec-de7f-4c62-8245-946e22312d2b.jpg",
+                                            title: `${baseTitle} - Track ${j + 1}`,
+                                            timestamp: Date.now() + (j * 1000) // Tambah jeda detik agar berurutan dari atas ke bawah
+                                        });
+                                    }
                                 }
                             }
                         }
