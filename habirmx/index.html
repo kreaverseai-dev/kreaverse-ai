@@ -2615,32 +2615,32 @@
         </div>
 
         <!-- MINI LIBRARY & PERSISTENT PROGRESS -->
-        <div id="miniLibraryContainer" style="display: none; background: #ffffff; border: 1px solid var(--border-color); border-radius: 24px; padding: 24px; margin-bottom: 30px; box-shadow: var(--shadow-md);">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; border-bottom: 2px solid #f1f5f9; padding-bottom: 12px; flex-wrap: wrap; gap: 10px;">
+        <div id="miniLibraryContainer" style="display: none; background: transparent; border: none; padding: 0; margin-bottom: 30px; box-shadow: none;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px;">
                 <div style="display: flex; align-items: center; gap: 12px;">
-                    <h2 style="font-size: 1.2rem; font-weight: 900; color: var(--text-primary); margin: 0;"><i class="fa-solid fa-book-open" style="color: var(--accent-color);"></i> Library</h2>
-                    <div style="display: flex; gap: 6px; background: #f1f5f9; padding: 4px; border-radius: 8px;">
-                        <button id="tabLibBerhasil" onclick="window.switchLibraryTab('berhasil')" style="background: #fff; border: 1px solid rgba(0,0,0,0.05); padding: 4px 10px; border-radius: 6px; font-size: 0.75rem; font-weight: 800; color: var(--accent-color); cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.02); transition: 0.2s;">Berhasil</button>
-                        <button id="tabLibGagal" onclick="window.switchLibraryTab('gagal')" style="background: transparent; border: 1px solid transparent; padding: 4px 10px; border-radius: 6px; font-size: 0.75rem; font-weight: 700; color: var(--text-secondary); cursor: pointer; transition: 0.2s;">Gagal</button>
+                    <h2 style="font-size: 1.35rem; font-weight: 900; color: var(--text-primary); margin: 0; letter-spacing: -0.5px;"><i class="fa-solid fa-book-open" style="color: var(--accent-color);"></i> Library</h2>
+                    <div style="display: flex; gap: 6px; background: #e2e8f0; padding: 4px; border-radius: 12px;">
+                        <button id="tabLibBerhasil" onclick="window.switchLibraryTab('berhasil')" style="background: #ffffff; border: none; padding: 6px 14px; border-radius: 8px; font-size: 0.75rem; font-weight: 800; color: var(--accent-color); cursor: pointer; box-shadow: 0 4px 10px rgba(0, 122, 255, 0.15); transition: 0.2s;">Berhasil</button>
+                        <button id="tabLibGagal" onclick="window.switchLibraryTab('gagal')" style="background: transparent; border: none; padding: 6px 14px; border-radius: 8px; font-size: 0.75rem; font-weight: 700; color: var(--text-secondary); cursor: pointer; transition: 0.2s;">Gagal</button>
                     </div>
                 </div>
                 <!-- Tombol Normal -->
                 <div style="display: flex; gap: 8px;" id="libNormalActions">
-                    <button onclick="window.toggleSelectionMode(true)" style="font-size: 0.75rem; font-weight: 800; color: #ef4444; background: rgba(239,68,68,0.1); padding: 6px 12px; border-radius: 8px; border: none; cursor: pointer; transition: 0.2s;"><i class="fa-solid fa-list-check"></i> Pilih Item</button>
-                    <a href="/berkas/" style="font-size: 0.75rem; font-weight: 800; color: var(--accent-color); text-decoration: none; background: rgba(0,122,255,0.1); padding: 6px 12px; border-radius: 8px; transition: 0.2s;">Berkas <i class="fa-solid fa-arrow-right"></i></a>
+                    <button onclick="window.toggleSelectionMode(true)" style="font-size: 0.75rem; font-weight: 800; color: #ef4444; background: rgba(239,68,68,0.1); padding: 8px 14px; border-radius: 10px; border: none; cursor: pointer; transition: 0.2s;"><i class="fa-solid fa-list-check"></i> Pilih Item</button>
+                    <a href="/berkas/" style="font-size: 0.75rem; font-weight: 800; color: var(--accent-color); text-decoration: none; background: rgba(0,122,255,0.1); padding: 8px 14px; border-radius: 10px; transition: 0.2s;">Berkas <i class="fa-solid fa-arrow-right"></i></a>
                 </div>
                 <!-- Menu Seleksi (Hidden by default) -->
-                <div style="display: none; gap: 8px; align-items: center; background: #fff1f2; padding: 6px 12px; border-radius: 12px; border: 1px solid #fecaca;" id="libSelectionActions">
+                <div style="display: none; gap: 8px; align-items: center; background: #ffffff; padding: 8px 14px; border-radius: 12px; border: 1px solid #fecaca; box-shadow: 0 10px 25px -5px rgba(239,68,68,0.1);" id="libSelectionActions">
                     <label style="display:flex; align-items:center; gap:6px; font-size:0.75rem; font-weight:800; color:#991b1b; cursor:pointer; margin:0;">
-                        <input type="checkbox" id="selectAllCheckbox" onchange="window.toggleSelectAll(this.checked)" style="accent-color:#ef4444; width:16px; height:16px;"> Semua
+                        <input type="checkbox" id="selectAllCheckbox" onchange="window.toggleSelectAll(this.checked)" style="accent-color:#ef4444; width:18px; height:18px;"> Semua
                     </label>
-                    <div style="width:1px; height:14px; background:#fca5a5; margin:0 4px;"></div>
-                    <button onclick="window.deleteSelectedItems()" id="btnDeleteSelected" style="font-size: 0.75rem; font-weight: 800; color: #fff; background: #ef4444; padding: 6px 12px; border-radius: 8px; border: none; cursor: pointer; transition: 0.2s;" disabled>Hapus (0)</button>
-                    <button onclick="window.toggleSelectionMode(false)" style="font-size: 0.75rem; font-weight: 800; color: var(--text-secondary); background: #ffffff; padding: 6px 12px; border-radius: 8px; border: 1px solid rgba(0,0,0,0.05); cursor: pointer; transition: 0.2s; box-shadow: 0 2px 4px rgba(0,0,0,0.02);">Batal</button>
+                    <div style="width:1px; height:16px; background:#fca5a5; margin:0 4px;"></div>
+                    <button onclick="window.deleteSelectedItems()" id="btnDeleteSelected" style="font-size: 0.75rem; font-weight: 800; color: #fff; background: #ef4444; padding: 6px 14px; border-radius: 8px; border: none; cursor: pointer; transition: 0.2s;" disabled>Hapus (0)</button>
+                    <button onclick="window.toggleSelectionMode(false)" style="font-size: 0.75rem; font-weight: 800; color: var(--text-secondary); background: #f1f5f9; padding: 6px 14px; border-radius: 8px; border: none; cursor: pointer; transition: 0.2s;">Batal</button>
                 </div>
             </div>
-            <div id="activeProgressGrid" style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 15px;"></div>
-            <div id="miniLibraryGrid" style="display: flex; flex-direction: column; gap: 12px;"></div>
+            <div id="activeProgressGrid" style="display: flex; flex-direction: column; gap: 16px; margin-bottom: 20px;"></div>
+            <div id="miniLibraryGrid" style="display: flex; flex-direction: column; gap: 16px;"></div>
         </div>
 
         <!-- LOADER SCREEN -->
@@ -3345,33 +3345,40 @@
             const grid = document.getElementById('activeProgressGrid');
             if(!grid) return;
             if(docs.length === 0) { grid.innerHTML = ''; return; }
+            
+            // Inject CSS animasi kilauan (Shimmer) jika belum ada
+            if (!document.getElementById('krea-processing-shimmer')) {
+                document.head.insertAdjacentHTML('beforeend', '<style id="krea-processing-shimmer">@keyframes kreaProcessShimmer { 0% { left: -100%; } 100% { left: 200%; } }</style>');
+            }
+
             let html = '';
             docs.forEach(d => {
                 // Logika Estimasi Waktu Dinamis
                 const estTime = d.mode === 'cover' ? 'Estimasi: 3-5 Menit' : 'Estimasi: 2-3 Menit';
 
                 html += `
-                    <div class="storyboard-card" style="border-left: 4px solid #F59E0B; background: #FFFBEB;">
-                        <div class="card-body" style="display: flex; flex-direction: column; gap: 12px; padding: 14px 16px;">
-                            <div style="display: flex; align-items: flex-start; gap: 12px;">
-                                <div style="width: 40px; height: 40px; background: #FDE68A; color: #D97706; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; flex-shrink: 0; margin-top: 2px;">
-                                    <i class="fa-solid fa-music fa-spin-pulse"></i>
-                                </div>
-                                <div style="flex: 1; min-width: 0;">
-                                    <div style="font-weight: 700; font-size: 0.95rem; color: #92400E; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 6px;">Memproses: ${d.title || 'Lagu Baru'}</div>
-                                    <div style="font-size: 0.72rem; color: #B45309; line-height: 1.5; font-weight: 500;">
-                                        Sistem AI sedang bekerja.<br>Anda boleh menutup aplikasi, proses tetap berjalan di latar belakang.
-                                        <div style="margin-top: 6px; display: inline-block; background: rgba(217, 119, 6, 0.15); padding: 4px 8px; border-radius: 6px; font-weight: 800; color: #D97706; letter-spacing: 0.2px;">
-                                            <i class="fa-regular fa-clock"></i> ${estTime}
-                                        </div>
+                    <div style="border-radius: 20px; background: linear-gradient(145deg, #ffffff, #f4f8ff); border: 1px solid rgba(0, 122, 255, 0.15); box-shadow: 0 10px 30px -5px rgba(0, 122, 255, 0.1); padding: 16px; position: relative; overflow: hidden; margin-bottom: 8px;">
+                        <!-- Animasi Kilauan AI -->
+                        <div style="position: absolute; top: 0; left: -100%; width: 50%; height: 100%; background: linear-gradient(90deg, transparent, rgba(0, 122, 255, 0.05), transparent); animation: kreaProcessShimmer 2.5s infinite linear; pointer-events: none;"></div>
+                        
+                        <div style="display: flex; align-items: flex-start; gap: 14px; position: relative; z-index: 2;">
+                            <div style="width: 46px; height: 46px; background: linear-gradient(135deg, #007AFF, #8b5cf6); color: #fff; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; flex-shrink: 0; box-shadow: 0 4px 12px rgba(0, 122, 255, 0.3);">
+                                <i class="fa-solid fa-compact-disc fa-spin"></i>
+                            </div>
+                            <div style="flex: 1; min-width: 0;">
+                                <div style="font-weight: 900; font-size: 1rem; color: #0f172a; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 4px; letter-spacing: -0.2px;">Memproses: ${d.title || 'Lagu Baru'}</div>
+                                <div style="font-size: 0.72rem; color: #475569; line-height: 1.5; font-weight: 500;">
+                                    Sistem AI sedang meracik aransemen. Anda boleh menutup aplikasi, proses tetap berjalan.
+                                    <div style="margin-top: 8px; display: inline-block; background: rgba(0, 122, 255, 0.1); padding: 4px 10px; border-radius: 8px; font-weight: 800; color: #007AFF; border: 1px solid rgba(0, 122, 255, 0.2);">
+                                        <i class="fa-solid fa-stopwatch fa-beat-fade"></i> ${estTime}
                                     </div>
                                 </div>
                             </div>
-                            <div style="border-top: 1px dashed #FCD34D; padding-top: 12px; margin-top: 2px;">
-                                <div style="font-size: 0.7rem; font-family: monospace; color: #B45309; background: #FEF3C7; padding: 6px 10px; border-radius: 8px; font-weight: 700; word-break: break-all; display: flex; align-items: center; gap: 8px;">
-                                    <i class="fa-solid fa-fingerprint" style="color: #D97706;"></i> 
-                                    <span style="user-select: all;">Task ID: ${d.taskId || 'Syncing...'}</span>
-                                </div>
+                        </div>
+                        <div style="border-top: 1px solid rgba(0, 122, 255, 0.1); padding-top: 12px; margin-top: 14px; position: relative; z-index: 2;">
+                            <div style="font-size: 0.7rem; font-family: monospace; color: #64748b; background: #ffffff; border: 1px solid #e2e8f0; padding: 6px 12px; border-radius: 8px; font-weight: 700; word-break: break-all; display: flex; align-items: center; gap: 8px; box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);">
+                                <i class="fa-solid fa-microchip" style="color: #94a3b8;"></i> 
+                                <span style="user-select: all;">Task ID: ${d.taskId || 'Syncing...'}</span>
                             </div>
                         </div>
                     </div>
@@ -3393,10 +3400,10 @@
             const btnGagal = document.getElementById('tabLibGagal');
             
             if (tab === 'berhasil') {
-                btnBerhasil.style.background = '#fff'; btnBerhasil.style.color = 'var(--accent-color)'; btnBerhasil.style.fontWeight = '800'; btnBerhasil.style.boxShadow = '0 2px 4px rgba(0,0,0,0.02)';
+                btnBerhasil.style.background = '#ffffff'; btnBerhasil.style.color = 'var(--accent-color)'; btnBerhasil.style.fontWeight = '800'; btnBerhasil.style.boxShadow = '0 4px 10px rgba(0, 122, 255, 0.15)';
                 btnGagal.style.background = 'transparent'; btnGagal.style.color = 'var(--text-secondary)'; btnGagal.style.fontWeight = '700'; btnGagal.style.boxShadow = 'none';
             } else {
-                btnGagal.style.background = '#fff'; btnGagal.style.color = 'var(--accent-color)'; btnGagal.style.fontWeight = '800'; btnGagal.style.boxShadow = '0 2px 4px rgba(0,0,0,0.02)';
+                btnGagal.style.background = '#ffffff'; btnGagal.style.color = 'var(--accent-color)'; btnGagal.style.fontWeight = '800'; btnGagal.style.boxShadow = '0 4px 10px rgba(0, 122, 255, 0.15)';
                 btnBerhasil.style.background = 'transparent'; btnBerhasil.style.color = 'var(--text-secondary)'; btnBerhasil.style.fontWeight = '700'; btnBerhasil.style.boxShadow = 'none';
             }
             
@@ -3591,21 +3598,21 @@
                     const safeErrorJS = displayError.replace(/'/g, "\\'").replace(/"/g, "&quot;").replace(/\n/g, " ").replace(/\r/g, "");
                     
                     html += `
-                        <div class="suno-lib-item ${selectionClass}" style="background:#FEE2E2; border-color:#FECACA; border-radius: 12px;">
+                        <div class="suno-lib-item ${selectionClass}" style="background:#ffffff; border: 1px solid #FECACA; border-radius: 20px; box-shadow: 0 10px 30px -10px rgba(239,68,68,0.08); padding: 16px;">
                             ${checkboxHtml}
-                            <div class="suno-thumb-wrapper" style="background:#EF4444; display:flex; align-items:center; justify-content:center; color:#fff; font-size:1.5rem; cursor:default;">
+                            <div class="suno-thumb-wrapper" style="background:#EF4444; display:flex; align-items:center; justify-content:center; color:#fff; font-size:1.5rem; cursor:default; border-radius: 12px; width: 65px; height: 65px;">
                                 <i class="fa-solid fa-triangle-exclamation"></i>
                             </div>
-                            <div class="suno-lib-details">
+                            <div class="suno-lib-details" style="gap: 6px;">
                                 <div class="suno-title-row" style="align-items: flex-start;">
-                                    <div class="suno-title" style="color:#991B1B; white-space: normal; line-height: 1.3; font-weight: 700; font-size: 0.95rem;">${displayTitle}</div>
+                                    <div class="suno-title" style="color:#991B1B; white-space: normal; line-height: 1.35; font-weight: 800; font-size: 1.05rem; letter-spacing: -0.3px;">${displayTitle}</div>
                                 </div>
-                                <div style="margin-top: 4px;">
+                                <div style="margin-top: 2px;">
                                     <span class="suno-badge" style="background:rgba(239,68,68,0.1); color:#DC2626; border-color:rgba(239,68,68,0.2);"><i class="fa-solid fa-bug"></i> Gagal</span>
                                 </div>
-                                <div class="suno-prompt" style="color:#DC2626; margin-top:4px; display:-webkit-box; -webkit-line-clamp:1; -webkit-box-orient:vertical; overflow:hidden; font-weight: 500;">Alasan: ${displayError}</div>
+                                <div class="suno-prompt" style="color:#DC2626; margin-top:2px; display:-webkit-box; -webkit-line-clamp:1; -webkit-box-orient:vertical; overflow:hidden; font-weight: 500;">Alasan: ${displayError}</div>
                                 <div style="margin-top: 4px;">
-                                    <button onclick="if(!window.isSelectionMode) window.openErrorDetail('${safeTitleForJS}', '${safeErrorJS}')" style="background:#EF4444; color:#fff; border:none; padding:4px 10px; border-radius:6px; font-size:0.7rem; font-weight:800; cursor:pointer; box-shadow:0 2px 4px rgba(239,68,68,0.2); transition:0.2s;"><i class="fa-solid fa-magnifying-glass"></i> Lihat Alasan</button>
+                                    <button onclick="if(!window.isSelectionMode) window.openErrorDetail('${safeTitleForJS}', '${safeErrorJS}')" style="background:#EF4444; color:#fff; border:none; padding:6px 12px; border-radius:8px; font-size:0.75rem; font-weight:800; cursor:pointer; box-shadow:0 4px 10px rgba(239,68,68,0.3); transition:0.2s;"><i class="fa-solid fa-magnifying-glass"></i> Lihat Alasan</button>
                                 </div>
                             </div>
                         </div>
@@ -3639,19 +3646,19 @@
                     }
 
                     html += `
-                        <div class="suno-lib-item ${selectionClass}" style="border-radius: 16px; background: linear-gradient(145deg, #f8fafc, #f1f5f9); border: 1px solid #e2e8f0; box-shadow: 0 4px 12px rgba(0,0,0,0.03); transition: 0.2s; padding: 14px;">
+                        <div class="suno-lib-item ${selectionClass}" style="border-radius: 20px; background: #ffffff; border: 1px solid rgba(0, 122, 255, 0.08); box-shadow: 0 10px 30px -10px rgba(0,0,0,0.06); transition: transform 0.3s, box-shadow 0.3s; padding: 16px;">
                             ${checkboxHtml}
-                            <div class="suno-thumb-wrapper" onclick="if(!window.isSelectionMode) window.playGlobalAudio('${safeUrlForJS}', '${safeTitleForJS}', '${safeThumbForJS}', '${d.id}')">
-                                <img src="${safeThumb}" alt="Cover">
-                                <div class="suno-play-overlay"><i class="fa-solid fa-play"></i></div>
+                            <div class="suno-thumb-wrapper" onclick="if(!window.isSelectionMode) window.playGlobalAudio('${safeUrlForJS}', '${safeTitleForJS}', '${safeThumbForJS}', '${d.id}')" style="border-radius: 12px; width: 65px; height: 65px;">
+                                <img src="${safeThumb}" alt="Cover" style="border-radius: 12px;">
+                                <div class="suno-play-overlay" style="border-radius: 12px;"><i class="fa-solid fa-play"></i></div>
                                 <div class="suno-dur-badge" id="lib-dur-${d.id}">${d.duration || '--:--'}</div>
                             </div>
                             
-                            <div class="suno-lib-details" style="gap: 4px;">
+                            <div class="suno-lib-details" style="gap: 6px;">
                                 <!-- JUDUL FULL, FONT LEBIH RAPI (POIN 4) -->
                                 <div class="suno-title-row" style="align-items: flex-start;">
                                     ${redDotHtml}
-                                    <div class="suno-title" onclick="if(!window.isSelectionMode) window.openSongDetails('${d.id}')" style="white-space: normal; line-height: 1.25; margin-top: -2px; font-weight: 700; font-size: 0.98rem;">${displayTitle}</div>
+                                    <div class="suno-title" onclick="if(!window.isSelectionMode) window.openSongDetails('${d.id}')" style="white-space: normal; line-height: 1.35; margin-top: -2px; font-weight: 800; font-size: 1.05rem; letter-spacing: -0.3px; color: #0f172a;">${displayTitle}</div>
                                 </div>
                                 
                                 <!-- MODE & TRACK DI KIRI (POIN 5) -->
