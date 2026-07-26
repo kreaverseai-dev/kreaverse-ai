@@ -656,9 +656,25 @@ ATURAN MUTLAK (DILARANG MELANGGAR):
                 }
 
                 let activeModel = "V5_5";
+                let isModelSupported = false;
+                let requestedModels = modelId ? modelId.split(',').map(m => m.trim()).filter(m => m) : [];
+
                 if (currentProvider.models) {
                     const modelList = currentProvider.models.split(',').map(m => m.trim()).filter(m => m);
-                    if (modelList.length > 0) activeModel = (modelId && modelList.includes(modelId)) ? modelId : modelList[0];
+                    if (modelList.length > 0) {
+                        for (let rm of requestedModels) {
+                            if (modelList.includes(rm)) {
+                                activeModel = rm;
+                                isModelSupported = true;
+                                break;
+                            }
+                        }
+                        // Jika mode Auto Pool dan provider ini tidak punya model yang diminta, lewati provider ini
+                        if (!isModelSupported && isAutoPool) continue;
+                        
+                        // Fallback aman jika strict mode tapi model tidak cocok
+                        if (!isModelSupported) activeModel = modelList[0];
+                    }
                 }
 
                 for (const keyDoc of sortedKeysDocs) {
@@ -714,8 +730,12 @@ ATURAN MUTLAK (DILARANG MELANGGAR):
 
                         const response = await fetch(providerUrl, { method: 'POST', headers: headers, body: fetchBody });
                         let resData = {};
-                        if (response.headers.get("content-type")?.includes("application/json")) resData = await response.json();
-                        else throw new Error(`Provider mengembalikan respons non-JSON`);
+                        if (response.headers.get("content-type")?.includes("application/json")) {
+                            resData = await response.json();
+                        } else {
+                            const errorText = await response.text();
+                            throw new Error(`Provider HTTP ${response.status}: ${errorText.substring(0, 100)}`);
+                        }
 
                         if (!response.ok || (resData.code && resData.code !== 200)) {
                             throw new Error(getValueByPath(resData, currentProvider.errorPath) || extractErrorString(resData) || "API Error");
@@ -867,7 +887,7 @@ ATURAN MUTLAK (DILARANG MELANGGAR):
                 if (response.status === 413 || textData.includes('413') || textData.toLowerCase().includes('payload too large')) {
                      return res.status(200).json({ status: "failed", audioUrl: null, reason: "Hak Cipta / Payload Terlalu Besar: Lirik atau audio melebihi batas yang diizinkan server AI.", raw: textData });
                 }
-                throw new Error(`Provider status mengembalikan respons non-JSON`);
+                throw new Error(`Provider status mengembalikan respons non-JSON (HTTP ${response.status})`);
             }
 
             let actualErrorMessage = getValueByPath(resData, activeProvider.errorPath) || extractErrorString(resData);
