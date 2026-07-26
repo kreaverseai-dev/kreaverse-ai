@@ -8856,58 +8856,306 @@ window.startDspBypassAndUpload = async function() {
                 return;
             }
 
-            if (docData.isMastered) {
-                showIphoneToast("Sudah Dimastering", "Lagu ini sudah melewati proses Mastering Studio HD.", "fa-circle-check");
-                return;
-            }
-
-            // Buat Modal Pilihan Platform secara Dinamis
-            let overlay = document.getElementById('masteringProfileModal');
+            // Buat Modal UI Mastering Profesional secara Dinamis (Sesuai Gambar Referensi)
+            let overlay = document.getElementById('masteringProModal');
             if (!overlay) {
                 overlay = document.createElement('div');
-                overlay.id = 'masteringProfileModal';
+                overlay.id = 'masteringProModal';
                 overlay.className = 'krea-modal-overlay';
                 overlay.style.zIndex = '9999999';
+                overlay.style.background = 'rgba(15, 23, 42, 0.8)';
+                
+                // Inject CSS Khusus untuk UI Mastering ini
+                const style = document.createElement('style');
+                style.innerHTML = `
+                    .mst-container { background: #eef2f6; width: 100%; max-width: 400px; height: 90vh; border-radius: 20px; display: flex; flex-direction: column; overflow: hidden; font-family: 'Plus Jakarta Sans', sans-serif; position: relative; box-shadow: 0 20px 50px rgba(0,0,0,0.3); }
+                    .mst-header { display: flex; align-items: center; justify-content: space-between; padding: 20px; background: #eef2f6; z-index: 10; }
+                    .mst-title { font-size: 1.2rem; font-weight: 800; color: #1e293b; margin: 0; text-align: center; flex: 1; }
+                    .mst-close { background: none; border: none; font-size: 1.5rem; color: #475569; cursor: pointer; padding: 0 10px; }
+                    .mst-body { flex: 1; overflow-y: auto; padding: 0 20px 20px 20px; }
+                    .mst-card { background: #ffffff; border-radius: 16px; padding: 20px; margin-bottom: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); }
+                    .mst-card-title { font-size: 0.8rem; font-weight: 900; color: #0f172a; text-transform: uppercase; margin-bottom: 16px; letter-spacing: 0.5px; }
+                    
+                    .mst-btn-import { background: #6b4c9a; color: #fff; width: 100%; padding: 14px; border-radius: 12px; border: none; font-weight: 700; font-size: 0.95rem; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 10px rgba(107, 76, 154, 0.3); pointer-events: none; }
+                    
+                    .mst-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+                    .mst-label { font-size: 0.8rem; font-weight: 700; color: #0f172a; margin-bottom: 8px; display: block; }
+                    .mst-select { width: 100%; padding: 12px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; font-size: 0.9rem; font-weight: 600; color: #334155; outline: none; appearance: none; }
+                    
+                    .mst-pill-group { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+                    .mst-pill { background: #f1f5f9; color: #475569; border: 1px solid #e2e8f0; padding: 8px 16px; border-radius: 99px; font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: 0.2s; }
+                    .mst-pill.active { background: #06b6d4; color: #fff; border-color: #06b6d4; box-shadow: 0 4px 10px rgba(6, 182, 212, 0.3); }
+                    
+                    .mst-slider-row { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
+                    .mst-slider-label { width: 60px; font-size: 0.85rem; font-weight: 700; color: #0f172a; }
+                    .mst-slider-val { width: 60px; font-size: 0.85rem; font-weight: 800; color: #0f172a; text-align: right; }
+                    
+                    /* Custom Slider CSS */
+                    .mst-slider { flex: 1; -webkit-appearance: none; height: 6px; background: #e2e8f0; border-radius: 10px; outline: none; position: relative; }
+                    .mst-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 16px; height: 16px; border-radius: 50%; background: #fbcfe8; border: 2px solid #06b6d4; cursor: pointer; position: relative; z-index: 2; }
+                    .mst-slider-track { position: absolute; top: 0; left: 0; height: 100%; background: #06b6d4; border-radius: 10px; z-index: 1; pointer-events: none; }
+                    
+                    .mst-btn-submit { background: #e2e8f0; color: #0f172a; width: 100%; padding: 16px; border-radius: 12px; border: none; font-weight: 800; font-size: 1rem; cursor: pointer; transition: 0.2s; margin-top: 10px; }
+                    .mst-btn-submit:hover { background: #cbd5e1; }
+                    
+                    .mst-bottom-tabs { display: flex; background: #ffffff; padding: 10px 20px; border-top: 1px solid #e2e8f0; }
+                    .mst-tab-btn { flex: 1; background: none; border: none; padding: 12px; font-size: 0.95rem; font-weight: 800; color: #0f172a; cursor: pointer; border-radius: 12px; transition: 0.2s; }
+                    .mst-tab-btn.active { background: #ffffff; color: #06b6d4; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+                `;
+                document.head.appendChild(style);
+
                 overlay.innerHTML = `
-                    <div class="krea-modal-box" style="max-width: 340px; padding: 24px; border-radius: 24px; text-align: left;">
-                        <h3 style="font-size: 1.15rem; font-weight: 900; color: var(--text-primary); margin-bottom: 8px;"><i class="fa-solid fa-sliders" style="color: #D95040;"></i> Target Platform</h3>
-                        <p style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 16px; line-height: 1.5;">AI akan mengoptimalkan frekuensi (EQ) dan tingkat kebisingan (Loudness) agar sesuai dengan standar platform berikut:</p>
+                    <div class="mst-container">
+                        <div class="mst-header">
+                            <button class="mst-close" onclick="document.getElementById('masteringProModal').classList.remove('show')"><i class="fa-solid fa-bars"></i></button>
+                            <h2 class="mst-title" id="mstMainTitle">Auto Mastering</h2>
+                            <div style="width: 30px;"></div>
+                        </div>
                         
-                        <select id="masteringProfileSelect" style="width: 100%; padding: 14px; border-radius: 12px; border: 1.5px solid var(--border-color); font-size: 0.9rem; font-weight: 700; margin-bottom: 24px; outline: none; background: #f8fafc; color: var(--text-primary);">
-                            <option value="spotify">🎧 Spotify / Apple Music (Standar)</option>
-                            <option value="youtube">▶️ YouTube (Vokal Menonjol)</option>
-                            <option value="tiktok">📱 TikTok / Reels (Loudness Maksimal)</option>
-                        </select>
+                        <div class="mst-body" id="mstBodyAuto">
+                            <div class="mst-card" style="background: transparent; box-shadow: none; padding: 0 0 16px 0;">
+                                <button class="mst-btn-import">+ Import Audio</button>
+                                <div style="text-align: center; margin-top: 8px; font-size: 0.75rem; color: #64748b; font-weight: 600;" id="mstAudioName">Memuat audio...</div>
+                            </div>
+                            
+                            <div class="mst-card">
+                                <div class="mst-card-title">3. ALGORITHM PRESETS</div>
+                                <div class="mst-grid-2">
+                                    <div>
+                                        <span class="mst-label">Genre Engine</span>
+                                        <select id="mstGenre" class="mst-select">
+                                            <option value="pop">Pop / Balanced</option>
+                                            <option value="dj">DJ / EDM</option>
+                                            <option value="dangdut">Dangdut / Koplo</option>
+                                            <option value="sholawat">Sholawat / Religi</option>
+                                            <option value="rock">Rock / Metal</option>
+                                            <option value="cinematic">Cinematic / Epic</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <span class="mst-label">Dynamics</span>
+                                        <select id="mstDynamics" class="mst-select">
+                                            <option value="loud">Loud (Punchy)</option>
+                                            <option value="balanced">Balanced</option>
+                                            <option value="clean">Clean (Acoustic)</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="mst-card">
+                                <div class="mst-card-title">4. STUDIO OUTPUT FORMAT</div>
+                                <span class="mst-label">Bit Depth Resolution</span>
+                                <div class="mst-pill-group" id="mstBitGroup">
+                                    <div class="mst-pill active" data-val="16">16-bit</div>
+                                    <div class="mst-pill" data-val="24">24-bit</div>
+                                    <div class="mst-pill" data-val="32">32-bit</div>
+                                    <div class="mst-pill" data-val="64">64-bit</div>
+                                </div>
+                                
+                                <span class="mst-label">Sample Rate (kHz)</span>
+                                <div class="mst-pill-group" id="mstSampleGroup">
+                                    <div class="mst-pill active" data-val="44100">44.1 kHz</div>
+                                    <div class="mst-pill" data-val="48000">48 kHz</div>
+                                    <div class="mst-pill" data-val="96000">96 kHz</div>
+                                    <div class="mst-pill" data-val="192000">192 kHz</div>
+                                </div>
+
+                                <span class="mst-label">File Format (Auto Download)</span>
+                                <div class="mst-pill-group" id="mstFormatGroup">
+                                    <div class="mst-pill active" data-val="mp3">.MP3 (Kecil)</div>
+                                    <div class="mst-pill" data-val="wav">.WAV (Lossless)</div>
+                                </div>
+                            </div>
+                            
+                            <button class="mst-btn-submit" id="btnMulaiAuto">Mulai Mastering</button>
+                        </div>
                         
-                        <div style="display: flex; gap: 10px;">
-                            <button onclick="document.getElementById('masteringProfileModal').classList.remove('show')" style="flex: 1; padding: 12px; border-radius: 12px; font-weight: 800; font-size: 0.85rem; cursor: pointer; border: none; background: #f1f5f9; color: var(--text-secondary); transition: 0.2s;">Batal</button>
-                            <button id="btnConfirmMastering" style="flex: 1; padding: 12px; border-radius: 12px; font-weight: 800; font-size: 0.85rem; cursor: pointer; border: none; background: linear-gradient(135deg, #1A1449, #D95040); color: #fff; box-shadow: 0 4px 15px rgba(217, 80, 64, 0.3); transition: 0.2s;">Proses</button>
+                        <div class="mst-body" id="mstBodyManual" style="display: none;">
+                            <div class="mst-card">
+                                <div class="mst-card-title">3. GAIN STAGING</div>
+                                <div class="mst-slider-row">
+                                    <span class="mst-slider-label">Input</span>
+                                    <div style="position: relative; flex: 1;">
+                                        <div class="mst-slider-track" id="track-inGain" style="width: 50%;"></div>
+                                        <input type="range" id="sl-inGain" class="mst-slider" min="-12" max="12" step="0.1" value="0" oninput="window.updateMstSlider(this, 'val-inGain', 'dB', 'track-inGain')">
+                                    </div>
+                                    <span class="mst-slider-val" id="val-inGain">0.0dB</span>
+                                </div>
+                            </div>
+                            
+                            <div class="mst-card">
+                                <div class="mst-card-title">4. 5-BAND SURGICAL EQ</div>
+                                <div style="background: linear-gradient(to bottom, #e0f2fe, #bae6fd); height: 60px; border-radius: 8px; margin-bottom: 20px; position: relative; overflow: hidden; border: 1px solid #7dd3fc;">
+                                    <div style="position: absolute; top: 50%; left: 0; width: 100%; height: 2px; background: #0ea5e9;"></div>
+                                </div>
+                                
+                                <div class="mst-slider-row">
+                                    <span class="mst-slider-label">Low</span>
+                                    <div style="position: relative; flex: 1;">
+                                        <div class="mst-slider-track" id="track-eqLow" style="width: 50%;"></div>
+                                        <input type="range" id="sl-eqLow" class="mst-slider" min="-12" max="12" step="0.5" value="0" oninput="window.updateMstSlider(this, 'val-eqLow', 'dB', 'track-eqLow')">
+                                    </div>
+                                    <span class="mst-slider-val" id="val-eqLow">0.0dB</span>
+                                </div>
+                                <div class="mst-slider-row">
+                                    <span class="mst-slider-label">L-Mid</span>
+                                    <div style="position: relative; flex: 1;">
+                                        <div class="mst-slider-track" id="track-eqLMid" style="width: 50%;"></div>
+                                        <input type="range" id="sl-eqLMid" class="mst-slider" min="-12" max="12" step="0.5" value="0" oninput="window.updateMstSlider(this, 'val-eqLMid', 'dB', 'track-eqLMid')">
+                                    </div>
+                                    <span class="mst-slider-val" id="val-eqLMid">0.0dB</span>
+                                </div>
+                                <div class="mst-slider-row">
+                                    <span class="mst-slider-label">Mid</span>
+                                    <div style="position: relative; flex: 1;">
+                                        <div class="mst-slider-track" id="track-eqMid" style="width: 50%;"></div>
+                                        <input type="range" id="sl-eqMid" class="mst-slider" min="-12" max="12" step="0.5" value="0" oninput="window.updateMstSlider(this, 'val-eqMid', 'dB', 'track-eqMid')">
+                                    </div>
+                                    <span class="mst-slider-val" id="val-eqMid">0.0dB</span>
+                                </div>
+                                <div class="mst-slider-row">
+                                    <span class="mst-slider-label">H-Mid</span>
+                                    <div style="position: relative; flex: 1;">
+                                        <div class="mst-slider-track" id="track-eqHMid" style="width: 50%;"></div>
+                                        <input type="range" id="sl-eqHMid" class="mst-slider" min="-12" max="12" step="0.5" value="0" oninput="window.updateMstSlider(this, 'val-eqHMid', 'dB', 'track-eqHMid')">
+                                    </div>
+                                    <span class="mst-slider-val" id="val-eqHMid">0.0dB</span>
+                                </div>
+                                <div class="mst-slider-row">
+                                    <span class="mst-slider-label">High</span>
+                                    <div style="position: relative; flex: 1;">
+                                        <div class="mst-slider-track" id="track-eqHigh" style="width: 50%;"></div>
+                                        <input type="range" id="sl-eqHigh" class="mst-slider" min="-12" max="12" step="0.5" value="0" oninput="window.updateMstSlider(this, 'val-eqHigh', 'dB', 'track-eqHigh')">
+                                    </div>
+                                    <span class="mst-slider-val" id="val-eqHigh">0.0dB</span>
+                                </div>
+                            </div>
+                            
+                            <div class="mst-card">
+                                <div class="mst-card-title">5. TRUE RMS COMPRESSOR</div>
+                                <div class="mst-slider-row">
+                                    <span class="mst-slider-label">Thresh</span>
+                                    <div style="position: relative; flex: 1;">
+                                        <div class="mst-slider-track" id="track-compThresh" style="width: 60%;"></div>
+                                        <input type="range" id="sl-compThresh" class="mst-slider" min="-40" max="0" step="1" value="-12" oninput="window.updateMstSlider(this, 'val-compThresh', 'dB', 'track-compThresh', true)">
+                                    </div>
+                                    <span class="mst-slider-val" id="val-compThresh">-12.0dB</span>
+                                </div>
+                                <div class="mst-slider-row">
+                                    <span class="mst-slider-label">Ratio</span>
+                                    <div style="position: relative; flex: 1;">
+                                        <div class="mst-slider-track" id="track-compRatio" style="width: 15%;"></div>
+                                        <input type="range" id="sl-compRatio" class="mst-slider" min="1" max="20" step="0.5" value="3.0" oninput="window.updateMstSlider(this, 'val-compRatio', ':1', 'track-compRatio', false, 1, 20)">
+                                    </div>
+                                    <span class="mst-slider-val" id="val-compRatio">3.0:1</span>
+                                </div>
+                                <div class="mst-slider-row">
+                                    <span class="mst-slider-label">Attack</span>
+                                    <div style="position: relative; flex: 1;">
+                                        <div class="mst-slider-track" id="track-compAttack" style="width: 15%;"></div>
+                                        <input type="range" id="sl-compAttack" class="mst-slider" min="1" max="100" step="1" value="15" oninput="window.updateMstSlider(this, 'val-compAttack', 'ms', 'track-compAttack', false, 1, 100)">
+                                    </div>
+                                    <span class="mst-slider-val" id="val-compAttack">15.0ms</span>
+                                </div>
+                                <div class="mst-slider-row">
+                                    <span class="mst-slider-label">Release</span>
+                                    <div style="position: relative; flex: 1;">
+                                        <div class="mst-slider-track" id="track-compRelease" style="width: 15%;"></div>
+                                        <input type="range" id="sl-compRelease" class="mst-slider" min="10" max="1000" step="10" value="150" oninput="window.updateMstSlider(this, 'val-compRelease', 'ms', 'track-compRelease', false, 10, 1000)">
+                                    </div>
+                                    <span class="mst-slider-val" id="val-compRelease">150.0ms</span>
+                                </div>
+                                <div class="mst-slider-row">
+                                    <span class="mst-slider-label">Make-up</span>
+                                    <div style="position: relative; flex: 1;">
+                                        <div class="mst-slider-track" id="track-compGain" style="width: 0%;"></div>
+                                        <input type="range" id="sl-compGain" class="mst-slider" min="0" max="12" step="0.5" value="0" oninput="window.updateMstSlider(this, 'val-compGain', 'dB', 'track-compGain', false, 0, 12)">
+                                    </div>
+                                    <span class="mst-slider-val" id="val-compGain">0.0dB</span>
+                                </div>
+                            </div>
+                            
+                            <button class="mst-btn-submit" id="btnMulaiManual">Mulai Mastering</button>
+                        </div>
+                        
+                        <div class="mst-bottom-tabs">
+                            <button class="mst-tab-btn active" id="btnTabAuto" onclick="window.switchMstTab('auto')">Auto</button>
+                            <button class="mst-tab-btn" id="btnTabManual" onclick="window.switchMstTab('manual')">Manual</button>
                         </div>
                     </div>
                 `;
                 document.body.appendChild(overlay);
+
+                // Setup Pill Selection Logic
+                const setupPills = (groupId) => {
+                    const group = document.getElementById(groupId);
+                    if(!group) return;
+                    const pills = group.querySelectorAll('.mst-pill');
+                    pills.forEach(p => {
+                        p.onclick = () => {
+                            pills.forEach(x => x.classList.remove('active'));
+                            p.classList.add('active');
+                        };
+                    });
+                };
+                setupPills('mstBitGroup');
+                setupPills('mstSampleGroup');
+                setupPills('mstFormatGroup');
             }
+
+            // Update UI Helper Functions
+            window.switchMstTab = function(tab) {
+                document.getElementById('btnTabAuto').classList.remove('active');
+                document.getElementById('btnTabManual').classList.remove('active');
+                document.getElementById('mstBodyAuto').style.display = 'none';
+                document.getElementById('mstBodyManual').style.display = 'none';
+                
+                if (tab === 'auto') {
+                    document.getElementById('btnTabAuto').classList.add('active');
+                    document.getElementById('mstBodyAuto').style.display = 'block';
+                    document.getElementById('mstMainTitle').innerText = 'Auto Mastering';
+                } else {
+                    document.getElementById('btnTabManual').classList.add('active');
+                    document.getElementById('mstBodyManual').style.display = 'block';
+                    document.getElementById('mstMainTitle').innerText = 'Manual Mastering';
+                }
+            };
+
+            window.updateMstSlider = function(el, valId, suffix, trackId, isNegativeOnly = false, min = -12, max = 12) {
+                const val = parseFloat(el.value);
+                document.getElementById(valId).innerText = val.toFixed(1) + suffix;
+                
+                let percent = 0;
+                if (isNegativeOnly) {
+                    percent = ((val - parseFloat(el.min)) / (parseFloat(el.max) - parseFloat(el.min))) * 100;
+                } else {
+                    percent = ((val - min) / (max - min)) * 100;
+                }
+                document.getElementById(trackId).style.width = percent + '%';
+            };
+
+            // Set Judul Audio
+            const cleanTitle = (docData.title || "Untitled").replace(/\s*\(Part\s*\d+\)/gi, '').replace(/\s*-\s*Versi\s*\d+/gi, '').trim();
+            document.getElementById('mstAudioName').innerText = cleanTitle;
 
             overlay.classList.add('show');
 
-            document.getElementById('btnConfirmMastering').onclick = async () => {
+            // --- CORE MASTERING ENGINE ---
+            const processMastering = async (isAuto) => {
                 overlay.classList.remove('show');
-                const selectedProfile = document.getElementById('masteringProfileSelect').value;
-                
-                showTopProgress("Mastering Audio...", "#D95040");
+                showTopProgress("Mastering Audio...", "#06b6d4");
                 updateTopProgress(5, "Mencari jalur unduh yang aman...");
 
                 try {
-                    // 1. Fetch Audio dengan Super Proxy Loop (5 Jalur Bypass Anti-CORS)
+                    // 1. Fetch Audio via Proxies
                     const rawUrl = docData.url;
                     const encodedUrl = encodeURIComponent(rawUrl);
-                    
                     const proxies = [
                         { name: "Direct", url: rawUrl },
                         { name: "Proxy Alpha", url: `https://api.codetabs.com/v1/proxy?quest=${rawUrl}` },
                         { name: "Proxy Beta", url: `https://api.allorigins.win/raw?url=${encodedUrl}` },
-                        { name: "Proxy Gamma", url: `https://kreaverse-proxy.kreaverse-ai.workers.dev/?targetUrl=${encodedUrl}` },
-                        { name: "Proxy Delta", url: `https://corsproxy.io/?${encodedUrl}` }
+                        { name: "Proxy Gamma", url: `https://kreaverse-proxy.kreaverse-ai.workers.dev/?targetUrl=${encodedUrl}` }
                     ];
 
                     let arrayBuffer = null;
@@ -8918,139 +9166,207 @@ window.startDspBypassAndUpload = async function() {
                             updateTopProgress(10, `Mencoba ${proxy.name}...`);
                             const res = await fetch(proxy.url);
                             if (res.ok) {
-                                // Pastikan yang didapat benar-benar file audio, bukan halaman error HTML dari proxy
                                 const contentType = res.headers.get('content-type') || '';
                                 if (!contentType.includes('text/html')) {
                                     arrayBuffer = await res.arrayBuffer();
                                     fetchSuccess = true;
-                                    updateTopProgress(15, `${proxy.name} Berhasil!`);
                                     break;
                                 }
                             }
-                        } catch (e) {
-                            console.warn(`${proxy.name} gagal:`, e);
-                        }
+                        } catch (e) { console.warn(e); }
                     }
 
-                    if (!fetchSuccess || !arrayBuffer) {
-                        throw new Error("Sistem terhalang oleh proteksi keamanan server sumber (CORS).");
-                    }
+                    if (!fetchSuccess || !arrayBuffer) throw new Error("Sistem terhalang oleh proteksi keamanan server sumber (CORS).");
                     
                     updateTopProgress(20, "Menganalisis frekuensi...");
                     
-                    // 2. Decode Audio
+                    // 2. Decode Audio & Setup Offline Context
+                    // Ambil Sample Rate dari UI
+                    const activeSamplePill = document.querySelector('#mstSampleGroup .mst-pill.active');
+                    const targetSampleRate = activeSamplePill ? parseInt(activeSamplePill.getAttribute('data-val')) : 44100;
+                    
                     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
                     const audioBuffer = await audioCtx.decodeAudioData(arrayBuffer);
                     
-                    updateTopProgress(40, "Menerapkan Studio EQ & Kompresor...");
-                    
-                    // 3. Setup OfflineAudioContext untuk Rendering
-                    const offlineCtx = new OfflineAudioContext(audioBuffer.numberOfChannels, audioBuffer.length, audioBuffer.sampleRate);
+                    const offlineCtx = new OfflineAudioContext(audioBuffer.numberOfChannels, (audioBuffer.length * targetSampleRate) / audioBuffer.sampleRate, targetSampleRate);
                     const source = offlineCtx.createBufferSource();
                     source.buffer = audioBuffer;
 
-                    // --- ALGORITMA MASTERING DSP INTERNAL ---
-                    // A. EQ (Equalization)
-                    const lowShelf = offlineCtx.createBiquadFilter();
-                    lowShelf.type = 'lowshelf';
-                    lowShelf.frequency.value = 100;
-                    
-                    const highShelf = offlineCtx.createBiquadFilter();
-                    highShelf.type = 'highshelf';
-                    highShelf.frequency.value = 8000;
+                    // 3. SETUP DSP GRAPH
+                    let eqLow = 0, eqLMid = 0, eqMid = 0, eqHMid = 0, eqHigh = 0;
+                    let cThresh = -12, cRatio = 3, cAttack = 0.015, cRelease = 0.15, cGain = 0;
+                    let inGain = 0;
 
-                    const presenceEq = offlineCtx.createBiquadFilter();
-                    presenceEq.type = 'peaking';
-                    presenceEq.frequency.value = 3500;
-                    presenceEq.Q.value = 1.0;
+                    if (isAuto) {
+                        const genre = document.getElementById('mstGenre').value;
+                        const dyn = document.getElementById('mstDynamics').value;
+                        
+                        // Default Fix untuk Suno AI (Sakit di telinga / Harshness removal)
+                        // Suno AI sering tajam di 2.5kHz - 4kHz dan kurang sub-bass.
+                        eqMid = -1.5; // Potong harshness
+                        eqLow = 1.0;  // Tambah warmth
+                        eqHigh = 2.0; // Tambah air/clarity
 
-                    // Sesuaikan EQ berdasarkan Platform
-                    if (selectedProfile === 'spotify') {
-                        lowShelf.gain.value = 3.5;   // Bass punchy
-                        highShelf.gain.value = 2.5;  // Clarity
-                        presenceEq.gain.value = 1.0;
-                    } else if (selectedProfile === 'youtube') {
-                        lowShelf.gain.value = 2.0;
-                        highShelf.gain.value = 3.0;
-                        presenceEq.gain.value = 3.5; // Vokal menonjol
-                    } else if (selectedProfile === 'tiktok') {
-                        lowShelf.gain.value = 4.5;   // Bass extreme untuk HP
-                        highShelf.gain.value = 4.0;  // Treble extreme
-                        presenceEq.gain.value = 2.0;
+                        switch(genre) {
+                            case 'dj': eqLow += 3.5; eqHigh += 2.0; eqLMid -= 1.5; break;
+                            case 'dangdut': eqLow += 2.5; eqMid += 1.5; eqHigh += 1.5; break; // Mid naik untuk kendang/vokal
+                            case 'sholawat': eqLMid += 1.5; eqMid -= 2.0; eqHigh += 3.0; break; // Vokal hangat, hilangkan cempreng, tambah air
+                            case 'rock': eqLow += 2.0; eqHMid += 2.0; eqHigh += 1.0; break;
+                            case 'cinematic': eqLow += 3.0; eqLMid += 1.0; eqHigh += 1.5; break;
+                            case 'pop': eqLow += 1.5; eqHigh += 1.5; break;
+                        }
+
+                        switch(dyn) {
+                            case 'loud': cThresh = -16; cRatio = 4; cGain = 3.5; break;
+                            case 'balanced': cThresh = -12; cRatio = 3; cGain = 2.0; break;
+                            case 'clean': cThresh = -8; cRatio = 2; cGain = 1.0; break;
+                        }
+                    } else {
+                        inGain = parseFloat(document.getElementById('sl-inGain').value);
+                        eqLow = parseFloat(document.getElementById('sl-eqLow').value);
+                        eqLMid = parseFloat(document.getElementById('sl-eqLMid').value);
+                        eqMid = parseFloat(document.getElementById('sl-eqMid').value);
+                        eqHMid = parseFloat(document.getElementById('sl-eqHMid').value);
+                        eqHigh = parseFloat(document.getElementById('sl-eqHigh').value);
+                        
+                        cThresh = parseFloat(document.getElementById('sl-compThresh').value);
+                        cRatio = parseFloat(document.getElementById('sl-compRatio').value);
+                        cAttack = parseFloat(document.getElementById('sl-compAttack').value) / 1000;
+                        cRelease = parseFloat(document.getElementById('sl-compRelease').value) / 1000;
+                        cGain = parseFloat(document.getElementById('sl-compGain').value);
                     }
 
-                    // B. Multiband Compressor (Glue)
-                    const compressor = offlineCtx.createDynamicsCompressor();
-                    compressor.threshold.value = -15;
-                    compressor.knee.value = 5;
-                    compressor.ratio.value = 3;
-                    compressor.attack.value = 0.01;
-                    compressor.release.value = 0.1;
+                    updateTopProgress(40, "Menerapkan Surgical EQ & True RMS Compressor...");
 
-                    // C. Brickwall Limiter (Loudness Maximizer)
+                    // A. Input Gain
+                    const inputNode = offlineCtx.createGain();
+                    inputNode.gain.value = Math.pow(10, inGain / 20);
+
+                    // B. 5-Band Surgical EQ
+                    const filterLow = offlineCtx.createBiquadFilter();
+                    filterLow.type = 'lowshelf'; filterLow.frequency.value = 60; filterLow.gain.value = eqLow;
+
+                    const filterLMid = offlineCtx.createBiquadFilter();
+                    filterLMid.type = 'peaking'; filterLMid.frequency.value = 300; filterLMid.Q.value = 1.0; filterLMid.gain.value = eqLMid;
+
+                    const filterMid = offlineCtx.createBiquadFilter();
+                    filterMid.type = 'peaking'; filterMid.frequency.value = 2500; filterMid.Q.value = 1.5; filterMid.gain.value = eqMid; // Sering jadi biang kerok "sakit di telinga"
+
+                    const filterHMid = offlineCtx.createBiquadFilter();
+                    filterHMid.type = 'peaking'; filterHMid.frequency.value = 5000; filterHMid.Q.value = 1.2; filterHMid.gain.value = eqHMid;
+
+                    const filterHigh = offlineCtx.createBiquadFilter();
+                    filterHigh.type = 'highshelf'; filterHigh.frequency.value = 10000; filterHigh.gain.value = eqHigh;
+
+                    // C. True RMS Compressor (Glue)
+                    const compressor = offlineCtx.createDynamicsCompressor();
+                    compressor.threshold.value = cThresh;
+                    compressor.knee.value = 5;
+                    compressor.ratio.value = cRatio;
+                    compressor.attack.value = cAttack;
+                    compressor.release.value = cRelease;
+
+                    // D. Make-Up Gain
+                    const makeUpNode = offlineCtx.createGain();
+                    makeUpNode.gain.value = Math.pow(10, cGain / 20);
+
+                    // E. Brickwall Limiter (Mencegah Clipping)
                     const limiter = offlineCtx.createDynamicsCompressor();
-                    limiter.threshold.value = -1.0;
+                    limiter.threshold.value = -0.3;
                     limiter.knee.value = 0.0;
                     limiter.ratio.value = 20.0;
                     limiter.attack.value = 0.001;
                     limiter.release.value = 0.05;
 
-                    // D. Make-Up Gain
-                    const makeUpGain = offlineCtx.createGain();
-                    if (selectedProfile === 'tiktok') makeUpGain.gain.value = 2.5;
-                    else makeUpGain.gain.value = 1.8;
-
-                    // Routing Signal
-                    source.connect(lowShelf);
-                    lowShelf.connect(presenceEq);
-                    presenceEq.connect(highShelf);
-                    highShelf.connect(compressor);
-                    compressor.connect(makeUpGain);
-                    makeUpGain.connect(limiter);
+                    // Routing
+                    source.connect(inputNode);
+                    inputNode.connect(filterLow);
+                    filterLow.connect(filterLMid);
+                    filterLMid.connect(filterMid);
+                    filterMid.connect(filterHMid);
+                    filterHMid.connect(filterHigh);
+                    filterHigh.connect(compressor);
+                    compressor.connect(makeUpNode);
+                    makeUpNode.connect(limiter);
                     limiter.connect(offlineCtx.destination);
 
                     source.start(0);
 
                     updateTopProgress(60, "Merender audio kualitas tinggi...");
-                    
-                    // 4. Render Audio
                     const renderedBuffer = await offlineCtx.startRendering();
 
-                    updateTopProgress(80, "Mengonversi ke MP3 Studio...");
+                    updateTopProgress(80, "Mengonversi Format Output...");
 
-                    // 5. Encode ke MP3
-                    const mp3Blob = await encodeAudioBufferToMp3(renderedBuffer, (percent) => {
-                        updateTopProgress(80 + (percent * 0.1), "Mengonversi ke MP3 Studio...");
-                    });
-
-                    updateTopProgress(90, "Menyimpan ke Cloud...");
-
-                    // 6. Upload ke Cloudinary
-                    const safeTitle = (docData.title || "Mastered_Audio").replace(/[^a-zA-Z0-9]/g, "_");
-                    const fileName = `Mastered_${selectedProfile}_${safeTitle}.mp3`;
+                    // 4. Encode & Download
+                    const activeFormatPill = document.querySelector('#mstFormatGroup .mst-pill.active');
+                    const targetFormat = activeFormatPill ? activeFormatPill.getAttribute('data-val') : 'mp3';
                     
-                    let finalDurStr = "0:00";
-                    if (isFinite(renderedBuffer.duration)) {
-                        const m = Math.floor(renderedBuffer.duration / 60);
-                        const s = Math.floor(renderedBuffer.duration % 60);
-                        finalDurStr = `${m}:${s < 10 ? '0' : ''}${s}`;
+                    const safeTitle = cleanTitle.replace(/[^a-zA-Z0-9\s]/g, "_");
+                    const finalFileName = `Mastered_${safeTitle}.${targetFormat}`;
+                    
+                    let finalBlob = null;
+
+                    if (targetFormat === 'mp3') {
+                        finalBlob = await encodeAudioBufferToMp3(renderedBuffer, (percent) => {
+                            updateTopProgress(80 + (percent * 0.1), "Mengonversi ke MP3 Studio...");
+                        });
+                    } else {
+                        // Custom WAV Encoder untuk format Lossless
+                        updateTopProgress(85, "Membangun file WAV Lossless...");
+                        finalBlob = await new Promise(resolve => {
+                            setTimeout(() => {
+                                const numOfChan = renderedBuffer.numberOfChannels;
+                                const length = renderedBuffer.length * numOfChan * 2 + 44;
+                                const bufferArray = new ArrayBuffer(length);
+                                const view = new DataView(bufferArray);
+                                const channels = [];
+                                let i, sample, offset = 0, pos = 0;
+
+                                const setUint16 = (data) => { view.setUint16(pos, data, true); pos += 2; };
+                                const setUint32 = (data) => { view.setUint32(pos, data, true); pos += 4; };
+
+                                setUint32(0x46464952); setUint32(length - 8); setUint32(0x45564157);
+                                setUint32(0x20746d66); setUint32(16); setUint16(1); setUint16(numOfChan);
+                                setUint32(renderedBuffer.sampleRate); setUint32(renderedBuffer.sampleRate * 2 * numOfChan);
+                                setUint16(numOfChan * 2); setUint16(16); setUint32(0x61746164); setUint32(length - pos - 4);
+
+                                for (i = 0; i < renderedBuffer.numberOfChannels; i++) channels.push(renderedBuffer.getChannelData(i));
+
+                                while (pos < length) {
+                                    for (i = 0; i < numOfChan; i++) {
+                                        sample = Math.max(-1, Math.min(1, channels[i][offset]));
+                                        sample = (0.5 + sample < 0 ? sample * 32768 : sample * 32767) | 0;
+                                        view.setInt16(pos, sample, true); pos += 2;
+                                    }
+                                    offset++;
+                                }
+                                resolve(new Blob([bufferArray], { type: 'audio/wav' }));
+                            }, 10);
+                        });
                     }
 
-                    await uploadBlobToCloudinary(mp3Blob, fileName, true, finalDurStr);
-                    const masteredUrl = selectedAudioUrl; // This is updated inside uploadBlobToCloudinary
+                    updateTopProgress(95, "Mengunduh File...");
 
-                    updateTopProgress(95, "Memperbarui database...");
-
-                    // 7. Update Firestore
-                    await updateDoc(doc(db, "render_gallery", docId), {
-                        url: masteredUrl,
-                        isMastered: true,
-                        masteringProfile: selectedProfile
-                    });
+                    // Trigger Auto Download
+                    const downloadUrl = URL.createObjectURL(finalBlob);
+                    const a = document.createElement('a');
+                    a.href = downloadUrl;
+                    a.download = finalFileName;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    
+                    // Optional: Update status di Firebase agar dapat badge "Mastered"
+                    try {
+                        await updateDoc(doc(db, "render_gallery", docId), {
+                            isMastered: true,
+                            masteringProfile: isAuto ? document.getElementById('mstGenre').value : 'manual'
+                        });
+                    } catch(e) {}
 
                     updateTopProgress(100, "Selesai!");
-                    setTimeout(() => hideTopProgress(), 1500);
-                    showIphoneToast("Mastering Selesai!", "Audio Anda sekarang berkualitas Studio HD.", "fa-wand-magic-sparkles");
+                    setTimeout(() => { hideTopProgress(); URL.revokeObjectURL(downloadUrl); }, 2000);
+                    showIphoneToast("Mastering Selesai!", "Audio bersih dan jernih berhasil diunduh.", "fa-wand-magic-sparkles");
 
                 } catch (err) {
                     console.error(err);
@@ -9058,6 +9374,9 @@ window.startDspBypassAndUpload = async function() {
                     showIphoneToast("Gagal Mastering", err.message, "fa-triangle-exclamation");
                 }
             };
+
+            document.getElementById('btnMulaiAuto').onclick = () => processMastering(true);
+            document.getElementById('btnMulaiManual').onclick = () => processMastering(false);
         };
 
         // Fungsi Redirect dengan Prompt
