@@ -5192,12 +5192,12 @@
                                 
                                 let badgeHtml = '';
                                 if (badgeType === 'Pro') {
-                                    badgeHtml = `<span style="background: var(--accent-color); color: #ffffff; padding: 1px 6px; border-radius: 4px; font-size: 0.6rem; margin-left: 6px; font-weight: 800;">Pro</span>`;
+                                    badgeHtml = `<span style="background: var(--accent-color); color: #ffffff; padding: 1px 6px; border-radius: 4px; font-size: 0.6rem; font-weight: 800;">Pro</span>`;
                                 } else if (badgeType) {
-                                    badgeHtml = `<span style="color: var(--accent-color); margin-left: 6px; font-size: 0.8rem;">${badgeType}</span>`;
+                                    badgeHtml = `<span style="color: var(--accent-color); font-size: 0.8rem;">${badgeType}</span>`;
                                 }
 
-                                document.getElementById('activeSunoModelName').innerHTML = `${modelName} ${badgeHtml}`;
+                                document.getElementById('activeSunoModelName').innerHTML = `${modelName}${badgeHtml}`;
                                 document.getElementById('sunoModelDropdown').classList.add('hidden');
                                 
                                 localStorage.setItem('kreaverse_last_model', modelVal);
@@ -5287,27 +5287,6 @@
                         setTimeout(() => {
                             const savedMode = localStorage.getItem('kreaverse_last_mode');
                             if (savedMode === 'cover') window.switchMode('cover');
-
-                            const savedProvider = localStorage.getItem('kreaverse_last_provider');
-                            if (savedProvider && globalAudioProviders.find(p => p.value === savedProvider)) {
-                                const pData = globalAudioProviders.find(p => p.value === savedProvider);
-                                window.selectProviderOption(savedProvider, pData.label);
-                                
-                                const savedModel = localStorage.getItem('kreaverse_last_model');
-                                if (savedModel) {
-                                    setTimeout(() => {
-                                        const modelDropdownEl = document.getElementById('modelDropdown');
-                                        if (modelDropdownEl) {
-                                            const modelOpts = modelDropdownEl.querySelectorAll('.custom-select-option');
-                                            modelOpts.forEach(opt => {
-                                                if (opt.innerText.includes(savedModel) || savedModel.includes(opt.innerText.split(' - ')[0])) {
-                                                    opt.click();
-                                                }
-                                            });
-                                        }
-                                    }, 200);
-                                }
-                            }
 
                             const savedLlmProvider = localStorage.getItem('kreaverse_last_llm_provider');
                             const savedLlmModel = localStorage.getItem('kreaverse_last_llm_model');
@@ -8310,8 +8289,15 @@ window.startDspBypassAndUpload = async function() {
             }
 
             const generateBtn = document.getElementById('generateBtn');
-            const providerId = document.getElementById('providerSelect').value;
-            const modelId = document.getElementById('modelSelect').value;
+            let providerId = document.getElementById('providerSelect').value;
+            let modelId = document.getElementById('modelSelect').value;
+
+            if (!modelId) {
+                providerId = 'auto_pool';
+                modelId = 'v5.5';
+                document.getElementById('providerSelect').value = providerId;
+                document.getElementById('modelSelect').value = modelId;
+            }
 
             if (!providerId || !modelId) {
                 // Daftarkan fungsi scroll ke global window agar bisa dipanggil tombol Pop-Up
