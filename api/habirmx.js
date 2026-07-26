@@ -645,6 +645,10 @@ ATURAN MUTLAK (DILARANG MELANGGAR):
                 const keysQuery = await db.collection("api_keys").where("provider", "==", currentProvider.value).where("status", "==", "aktif").get();
                 let sortedKeysDocs = keysQuery.docs.sort((a, b) => (a.data().priority || 1) - (b.data().priority || 1));
 
+                if (sortedKeysDocs.length === 0) {
+                    lastErrorMessage = `API Key untuk provider '${currentProvider.value}' tidak ditemukan atau mati.`;
+                }
+
                 // FILTER KHUSUS VOICE: Paksa sistem hanya melirik API Key si pembuat suara
                 if (requiredKeyDocId) {
                     const specificKeyDoc = sortedKeysDocs.find(k => k.id === requiredKeyDocId);
@@ -800,15 +804,18 @@ ATURAN MUTLAK (DILARANG MELANGGAR):
             }
 
             if (!taskResponse) {
-                if (isAutoPool) {
-                    return res.status(502).json({ error: 'Seluruh server AI sedang sibuk memproses antrean. Silakan coba lagi beberapa saat.' });
+                const isAdmin = userData && userData.role === 'admin';
+                let finalOutputError = lastErrorMessage || "Tidak ada respons dari server.";
+
+                if (isAdmin) {
+                    return res.status(502).json({ error: `[ADMIN DEBUG] Gagal: ${finalOutputError}` });
                 } else {
-                    let finalOutputError = lastErrorMessage;
-                    // Jaga-jaga agar error "Saldo Habis" tidak bocor ke user saat mode strict provider
-                    if (finalOutputError.toLowerCase().includes('insufficient') || finalOutputError.toLowerCase().includes('balance') || finalOutputError.toLowerCase().includes('quota')) {
+                    if (finalOutputError.toLowerCase().includes('insufficient') || finalOutputError.toLowerCase().includes('balance') || finalOutputError.toLowerCase().includes('quota') || finalOutputError.toLowerCase().includes('api key')) {
                         finalOutputError = "Server sedang penuh atau antrean terlalu panjang. Silakan coba beberapa saat lagi.";
+                    } else {
+                        finalOutputError = "Seluruh server AI sedang sibuk memproses antrean. Silakan coba lagi beberapa saat.";
                     }
-                    return res.status(502).json({ error: `Server yang Anda pilih gagal merespons: ${finalOutputError}` });
+                    return res.status(502).json({ error: finalOutputError });
                 }
             }
 
