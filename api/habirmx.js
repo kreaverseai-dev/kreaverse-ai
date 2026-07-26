@@ -1014,7 +1014,7 @@ ATURAN MUTLAK (DILARANG MELANGGAR):
                             for (let j = 0; j < tracks.length; j++) {
                                 let baseTitle = existingDocs[0].data().title || "Lagu Flixa AI";
                                 // Bersihkan embel-embel lama jika ada
-                                baseTitle = baseTitle.replace(/\s*-\s*Track\s*\d+/gi, '').trim();
+                                baseTitle = baseTitle.replace(/\s*-\s*(?:Track|Versi)\s*\d+/gi, '').trim();
                                 
                                 if (j < existingDocs.length) {
                                     // Update dokumen processing yang sudah ada di frontend
@@ -1024,7 +1024,7 @@ ATURAN MUTLAK (DILARANG MELANGGAR):
                                             status: "complete",
                                             url: tracks[j].audioUrl,
                                             imageUrl: tracks[j].imageUrl || docToUpdate.data().imageUrl || "https://i.postimg.cc/Jh211FTG/46cc61ec-de7f-4c62-8245-946e22312d2b.jpg",
-                                            title: `${baseTitle} - Track ${j + 1}`
+                                            title: `${baseTitle} - Versi ${j + 1}`
                                         });
                                     }
                                 } else {
@@ -1034,7 +1034,7 @@ ATURAN MUTLAK (DILARANG MELANGGAR):
                                         status: "complete",
                                         url: tracks[j].audioUrl,
                                         imageUrl: tracks[j].imageUrl || existingDocs[0].data().imageUrl || "https://i.postimg.cc/Jh211FTG/46cc61ec-de7f-4c62-8245-946e22312d2b.jpg",
-                                        title: `${baseTitle} - Track ${j + 1}`,
+                                        title: `${baseTitle} - Versi ${j + 1}`,
                                         timestamp: Date.now() - (j * 1000) // Kurangi agar berurutan dengan benar
                                     });
                                 }
