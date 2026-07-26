@@ -7957,8 +7957,11 @@ window.startDspBypassAndUpload = async function() {
                 // Groq menerima berbagai format, kita beri nama dummy .mp3 agar lolos validasi ekstensi
                 formDataGroq.append("file", audioBlobToGroq, "audio.mp3"); 
                 formDataGroq.append("model", "whisper-large-v3");
+                
+                // KUNCI UTAMA: Matikan imajinasi AI (Temperature 0) agar tidak halusinasi
                 formDataGroq.append("temperature", "0.0"); 
-                formDataGroq.append("prompt", "This is a song with music and vocals. Transcribe the lyrics accurately in its original language. Ignore instrumental breaks, drums, and melodies. Do not hallucinate words.");
+                
+                // PROMPT BAHASA INGGRIS DIHAPUS AGAR AI BISA AUTO-DETECT BAHASA (INDONESIA/ARAB/DLL) DENGAN BENAR
 
                 // Menggunakan XMLHttpRequest agar bisa melihat Progress Upload ke Groq
                 const whisperData = await new Promise((resolve, reject) => {
