@@ -3404,32 +3404,27 @@
                 const estTime = d.mode === 'cover' ? 'Estimasi: 3-5 Menit' : 'Estimasi: 2-3 Menit';
 
                 html += `
-                    <div style="border-radius: 20px; background: linear-gradient(135deg, #1A1449, #7B2956, #D95040); border: 1px solid rgba(255, 255, 255, 0.15); box-shadow: 0 12px 35px -5px rgba(26, 20, 73, 0.3); padding: 18px; position: relative; overflow: hidden; margin-bottom: 8px;">
+                    <div style="border-radius: 16px; background: #ffffff; border: 1px solid #e2e8f0; padding: 14px; position: relative; overflow: hidden; margin-bottom: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.02);">
                         <!-- Animasi Kilauan AI -->
-                        <div style="position: absolute; top: 0; left: -100%; width: 50%; height: 100%; background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent); animation: kreaProcessShimmer 2.5s infinite linear; pointer-events: none;"></div>
+                        <div style="position: absolute; top: 0; left: -100%; width: 50%; height: 100%; background: linear-gradient(90deg, transparent, rgba(217, 80, 64, 0.05), transparent); animation: kreaProcessShimmer 2.5s infinite linear; pointer-events: none;"></div>
                         
                         <div style="display: flex; align-items: flex-start; gap: 14px; position: relative; z-index: 2;">
-                            <div style="width: 46px; height: 46px; background: rgba(255,255,255,0.15); backdrop-filter: blur(5px); color: #fff; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; flex-shrink: 0; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2); border: 1px solid rgba(255,255,255,0.2);">
+                            <div style="width: 60px; height: 60px; background: linear-gradient(135deg, #1A1449, #7B2956, #D95040); color: #fff; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; flex-shrink: 0; box-shadow: 0 4px 10px rgba(217, 80, 64, 0.3);">
                                 <i class="fa-solid fa-compact-disc fa-spin"></i>
                             </div>
                             <div style="flex: 1; min-width: 0;">
-                                <div style="font-weight: 900; font-size: 1.05rem; color: #ffffff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 6px; letter-spacing: -0.2px; text-shadow: 0 2px 4px rgba(0,0,0,0.3);">Memproses: ${d.title || 'Lagu Baru'}</div>
-                                <div style="font-size: 0.75rem; color: rgba(255,255,255,0.85); line-height: 1.5; font-weight: 500;">
+                                <div style="font-weight: 800; font-size: 1rem; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 2px; letter-spacing: -0.2px;">Memproses: ${d.title || 'Lagu Baru'}</div>
+                                <div style="font-size: 0.75rem; color: var(--text-secondary); line-height: 1.4; font-weight: 500; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
                                     Sistem AI sedang meracik aransemen. Anda boleh menutup aplikasi, proses tetap berjalan.
                                 </div>
-                            </div>
-                        </div>
-                        
-                        <div style="position: relative; z-index: 2; margin-top: 14px;">
-                            <div style="display: inline-block; background: rgba(255, 255, 255, 0.15); backdrop-filter: blur(5px); padding: 6px 12px; border-radius: 8px; font-weight: 800; color: #ffffff; border: 1px solid rgba(255, 255, 255, 0.2); box-shadow: 0 2px 8px rgba(0,0,0,0.1); font-size: 0.75rem;">
-                                <i class="fa-solid fa-stopwatch fa-beat-fade"></i> ${estTime}
-                            </div>
-                        </div>
-
-                        <div style="border-top: 1px solid rgba(255, 255, 255, 0.15); padding-top: 12px; margin-top: 14px; position: relative; z-index: 2;">
-                            <div style="font-size: 0.7rem; font-family: monospace; color: rgba(255,255,255,0.7); display: flex; align-items: center; gap: 8px;">
-                                <i class="fa-solid fa-fingerprint"></i> 
-                                <span style="user-select: all;">Task ID: ${d.taskId || 'Syncing...'}</span>
+                                <div style="margin-top: 6px; display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
+                                    <span style="background: rgba(217, 80, 64, 0.1); color: #D95040; padding: 2px 6px; border-radius: 6px; font-size: 0.65rem; font-weight: 800; border: 1px solid rgba(217, 80, 64, 0.2);">
+                                        <i class="fa-solid fa-stopwatch fa-beat-fade"></i> ${estTime}
+                                    </span>
+                                    <span title="${d.taskId || ''}" style="font-size: 0.65rem; font-family: monospace; color: var(--text-light); background: #f8fafc; border: 1px solid #e2e8f0; padding: 2px 6px; border-radius: 6px; cursor: help;">
+                                        <i class="fa-solid fa-fingerprint"></i> ID: ${d.taskId ? (d.taskId.length > 8 ? d.taskId.substring(0,8) + '...' : d.taskId) : 'Syncing...'}
+                                    </span>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -3491,7 +3486,7 @@
             const lowerErr = errorMsg.toLowerCase();
             
             if (lowerErr.includes('copyright') || lowerErr.includes('hak cipta') || lowerErr.includes('artist')) {
-                solution = "Sistem mendeteksi adanya perlindungan Hak Cipta (Copyright) pada lirik atau audio referensi yang Anda gunakan.<br><br><b>Langkah Solusi Kreaverse AI:</b><br><br><b>1. Jika masalah pada Lirik:</b><br>Gunakan fitur <b>'Encrypt'</b> (ikon <i class='fa-solid fa-user-secret'></i>) yang berada tepat di atas kotak pengisian lirik. Fitur ini akan menyisipkan karakter anti-sensor agar lirik Anda tidak terbaca oleh bot Hak Cipta.<br><br><b>2. Jika masalah pada Audio Referensi:</b><br>Saat mengunggah audio, bukalah menu <b>'SUNO Audio Kreaverse AI <i class='fa-solid fa-triangle-exclamation' style='color: #eab308;'></i> AI SENSOR DETECTED'</b> dan gunakan tombol Upload berwarna merah. Sistem akan mengacak sidik jari audio Anda agar lolos dari deteksi bot AI.<br><br><i>*Semua fitur bypass premium ini tersedia 100% Gratis untuk Anda!</i>";
+                solution = "Sistem mendeteksi adanya perlindungan Hak Cipta (Copyright) pada lirik atau audio referensi yang Anda gunakan.<br><br><b>Langkah Solusi Flixa AI:</b><br><br><b>1. Jika masalah pada Lirik:</b><br>Gunakan fitur <b>'Encrypt'</b> (ikon <i class='fa-solid fa-user-secret'></i>) yang berada tepat di atas kotak pengisian lirik. Fitur ini akan menyisipkan karakter anti-sensor agar lirik Anda tidak terbaca oleh bot Hak Cipta.<br><br><b>2. Jika masalah pada Audio Referensi:</b><br>Saat mengunggah audio, bukalah menu <b>'Flixa AI Audio DSP &nbsp;<i class=\"fa-solid fa-triangle-exclamation\" style=\"color: #eab308;\"></i>&nbsp; AI SENSOR DETECTED'</b> dan gunakan tombol Upload berwarna merah. Sistem akan mengacak sidik jari audio Anda agar lolos dari deteksi bot AI.<br><br><i>*Semua fitur bypass premium ini tersedia 100% Gratis untuk Anda!</i>";
             } else if (lowerErr.includes('voice has expired') || lowerErr.includes('voice')) {
                 solution = "Karakter suara (Voice) yang Anda gunakan sudah kedaluwarsa atau tidak tersedia di server AI. Solusi: Pilih karakter suara (Vocal Gender) yang lain atau biarkan default.";
             } else if (lowerErr.includes('saldo') || lowerErr.includes('balance') || lowerErr.includes('credit') || lowerErr.includes('sibuk')) {
@@ -3770,11 +3765,49 @@
             window.kreaConfirm("Hapus Lagu", "Hapus lagu ini dari Library secara permanen? File akan hilang dari Server VPS.", async () => {
                 try {
                     await deleteDoc(doc(db, "render_gallery", docId));
-                    showIphoneToast("Dihapus", "Lagu berhasil dihapus.", "fa-trash");
+                    window.showIphoneToast("Dihapus", "Lagu berhasil dihapus.", "fa-trash");
                 } catch(e) {
-                    showIphoneToast("Error", "Gagal menghapus lagu.", "fa-triangle-exclamation");
+                    window.showIphoneToast("Error", "Gagal menghapus lagu.", "fa-triangle-exclamation");
                 }
             });
+        };
+
+        window.remixFailedAudio = function(docId) {
+            const docData = window.globalLibraryDocs.find(d => d.id === docId);
+            if (!docData) return;
+
+            if (docData.mode === 'cover') {
+                window.switchMode('cover');
+                if (docData.originalAudioUrl) {
+                    selectedAudioUrl = docData.originalAudioUrl;
+                    window.activateMiniPlayerUI("Audio_Referensi.mp3", "URL Diterapkan", "rgba(14,165,233,0.1)", "#0ea5e9");
+                    document.getElementById('originalAudioPlayer').src = selectedAudioUrl;
+                    document.getElementById('urlInputBox').classList.add('hidden');
+                    document.getElementById('uploadTriggerBox').classList.add('hidden');
+                }
+            } else {
+                window.switchMode('generate');
+            }
+
+            const cleanTitle = (docData.title || "Untitled").replace(/\s*\(Part\s*\d+\)/gi, '').replace(/\s*-\s*Versi\s*\d+/gi, '').trim();
+            document.getElementById('titleInput').value = cleanTitle;
+            if(typeof window.updateCounter === 'function') window.updateCounter('titleInput', 'titleCounter', 100);
+
+            document.getElementById('styleInput').value = docData.prompt || '';
+            if(typeof window.updateCounter === 'function') window.updateCounter('styleInput', 'styleCounter', 1000);
+            
+            document.getElementById('lyricsInput').value = docData.lyrics || '';
+            if(typeof window.updateCounter === 'function') window.updateCounter('lyricsInput', 'lyricsCounter', 5000);
+            window.checkLyricsState();
+
+            if (docData.vocalGender) window.selectGenderOption(docData.vocalGender, docData.vocalGender === 'male' ? 'Male' : (docData.vocalGender === 'female' ? 'Female' : 'Not specified'));
+            if (docData.personaId) document.getElementById('personaIdInput').value = docData.personaId;
+            if (docData.styleWeight) { document.getElementById('styleWeightSlider').value = docData.styleWeight; document.getElementById('styleWeightVal').innerText = docData.styleWeight; }
+            if (docData.weirdness) { document.getElementById('weirdnessSlider').value = docData.weirdness; document.getElementById('weirdnessVal').innerText = docData.weirdness; }
+            if (docData.audioWeight) { document.getElementById('audioWeightSlider').value = docData.audioWeight; document.getElementById('audioWeightVal').innerText = docData.audioWeight; }
+
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            window.showIphoneToast("Edit Mode Siap", "Pengaturan, lirik, dan audio referensi berhasil dimuat.", "fa-pen-to-square");
         };
 
         // --- NEW: GLOBAL MINI PLAYER LOGIC ---
