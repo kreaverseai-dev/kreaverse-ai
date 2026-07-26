@@ -7913,89 +7913,21 @@ window.startDspBypassAndUpload = async function() {
             btn.disabled = true;
             inputEl.disabled = true;
             progressBox.classList.remove('hidden');
-            statusText.innerText = "Mengambil Audio Original...";
 
             try {
-                // 1. Dapatkan Audio Buffer dari File Asli
-                let arrayBuffer;
-                if (sourceToUse) {
-                    arrayBuffer = await sourceToUse.arrayBuffer();
-                } else {
+                let audioBlobToGroq = sourceToUse;
+
+                // Jika tidak ada file lokal, unduh dari URL
+                if (!audioBlobToGroq) {
+                    statusText.innerText = "Mengunduh audio dari server...";
                     const proxyUrl = `https://kreaverse-proxy.kreaverse-ai.workers.dev/?targetUrl=${encodeURIComponent(urlToUse)}`;
                     const audioRes = await fetch(proxyUrl);
                     if (!audioRes.ok) throw new Error("Gagal mengambil audio original.");
-                    arrayBuffer = await audioRes.arrayBuffer();
+                    audioBlobToGroq = await audioRes.blob();
                 }
 
-                statusText.innerText = "Mengekstrak frekuensi vokal...";
-
-                // 2. NORMALISASI AUDIO UNTUK WHISPER (Tanpa EQ yang merusak)
-                const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-                const audioBuffer = await audioCtx.decodeAudioData(arrayBuffer);
-                
-                const offlineCtx = new OfflineAudioContext(audioBuffer.numberOfChannels, audioBuffer.length, audioBuffer.sampleRate);
-                const source = offlineCtx.createBufferSource();
-                source.buffer = audioBuffer;
-
-                const compressor = offlineCtx.createDynamicsCompressor();
-                compressor.threshold.value = -18;
-                compressor.knee.value = 5;
-                compressor.ratio.value = 4;
-                compressor.attack.value = 0.01;
-                compressor.release.value = 0.1;
-
-                const makeUpGain = offlineCtx.createGain();
-                makeUpGain.gain.value = 2.0; 
-
-                source.connect(compressor);
-                compressor.connect(makeUpGain);
-                makeUpGain.connect(offlineCtx.destination);
-                source.start(0);
-
-                const renderedBuffer = await offlineCtx.startRendering();
-
-                // 3. Encode ke MP3 & Upload Sementara ke Cloudinary (DENGAN PROGRESS BAR MB)
-                statusText.innerText = "Menyiapkan file audio...";
-                const mp3Blob = await encodeAudioBufferToMp3(renderedBuffer, () => {});
-                
-                await fetchCloudinaryAccounts();
-                if (activeCloudinaryAccounts.length === 0) throw new Error("Storage limit");
-                const targetAccount = activeCloudinaryAccounts[0];
-                const formDataCloudinary = new FormData();
-                formDataCloudinary.append("file", mp3Blob, "temp_original_groq.mp3");
-                formDataCloudinary.append("upload_preset", targetAccount.uploadPreset);
-                
-                const tempAudioUrl = await new Promise((resolve, reject) => {
-                    const xhr = new XMLHttpRequest();
-                    xhr.open('POST', `https://api.cloudinary.com/v1_1/${targetAccount.cloudName}/auto/upload`);
-                    
-                    xhr.upload.onprogress = (event) => {
-                        if (event.lengthComputable) {
-                            const percentComplete = Math.round((event.loaded / event.total) * 100);
-                            const loadedMB = (event.loaded / (1024 * 1024)).toFixed(2);
-                            const totalMB = (event.total / (1024 * 1024)).toFixed(2);
-                            statusText.innerHTML = `Mengunggah ke Flixa AI... <b>${percentComplete}%</b> (${loadedMB} MB / ${totalMB} MB)`;
-                        }
-                    };
-                    
-                    xhr.onload = () => {
-                        if (xhr.status >= 200 && xhr.status < 300) {
-                            const response = JSON.parse(xhr.responseText);
-                            resolve(response.secure_url);
-                        } else {
-                            reject(new Error("Upload audio sementara gagal"));
-                        }
-                    };
-                    
-                    xhr.onerror = () => reject(new Error("Terjadi kesalahan jaringan saat upload"));
-                    xhr.send(formDataCloudinary);
-                });
-                
-                // SIMPAN URL ORIGINAL AGAR TIDAK PERLU UPLOAD LAGI SAAT SYNC
-                window.originalCleanAudioUrl = tempAudioUrl;
-
-                // 4. Kirim ke API Groq Whisper (ASR) dengan Parameter ANTI-HALUSINASI
-                statusText.innerHTML = "Flixa AI sedang mentranskripsi lirik... <br><small>(Biasanya butuh 10-30 detik)</small>";
+                // LANGSUNG KIRIM KE GROQ (Tanpa proses lokal yang bikin HP hang/crash)
+                statusText.innerHTML = "Mengunggah ke Flixa AI... <br><small>(Mohon tunggu, bergantung kecepatan internet Anda)</small>";
                 
                 // Ambil Kunci API Groq
                 let groqKey = "";
@@ -8022,19 +7954,43 @@ window.startDspBypassAndUpload = async function() {
                 }
 
                 const formDataGroq = new FormData();
-                formDataGroq.append("file", mp3Blob, "audio.mp3"); 
+                // Groq menerima berbagai format, kita beri nama dummy .mp3 agar lolos validasi ekstensi
+                formDataGroq.append("file", audioBlobToGroq, "audio.mp3"); 
                 formDataGroq.append("model", "whisper-large-v3");
                 formDataGroq.append("temperature", "0.0"); 
                 formDataGroq.append("prompt", "This is a song with music and vocals. Transcribe the lyrics accurately in its original language. Ignore instrumental breaks, drums, and melodies. Do not hallucinate words.");
 
-                const whisperResponse = await fetch("https://api.groq.com/openai/v1/audio/transcriptions", {
-                    method: "POST",
-                    headers: { "Authorization": `Bearer ${groqKey}` },
-                    body: formDataGroq
+                // Menggunakan XMLHttpRequest agar bisa melihat Progress Upload ke Groq
+                const whisperData = await new Promise((resolve, reject) => {
+                    const xhr = new XMLHttpRequest();
+                    xhr.open('POST', 'https://api.groq.com/openai/v1/audio/transcriptions');
+                    xhr.setRequestHeader('Authorization', `Bearer ${groqKey}`);
+                    
+                    xhr.upload.onprogress = (event) => {
+                        if (event.lengthComputable) {
+                            const percentComplete = Math.round((event.loaded / event.total) * 100);
+                            const loadedMB = (event.loaded / (1024 * 1024)).toFixed(2);
+                            const totalMB = (event.total / (1024 * 1024)).toFixed(2);
+                            statusText.innerHTML = `Mengunggah ke Flixa AI... <b>${percentComplete}%</b> (${loadedMB} MB / ${totalMB} MB)`;
+                        }
+                    };
+                    
+                    xhr.onload = () => {
+                        if (xhr.status >= 200 && xhr.status < 300) {
+                            resolve(JSON.parse(xhr.responseText));
+                        } else {
+                            try {
+                                const errResp = JSON.parse(xhr.responseText);
+                                reject(new Error(errResp.error?.message || "Gagal transkripsi audio."));
+                            } catch(e) {
+                                reject(new Error("Gagal transkripsi audio. Server error."));
+                            }
+                        }
+                    };
+                    
+                    xhr.onerror = () => reject(new Error("Terjadi kesalahan jaringan saat upload ke Flixa AI."));
+                    xhr.send(formDataGroq);
                 });
-                
-                const whisperData = await whisperResponse.json();
-                if (!whisperResponse.ok) throw new Error(whisperData.error?.message || "Gagal transkripsi audio.");
 
                 const rawText = whisperData.text;
 
