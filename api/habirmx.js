@@ -151,14 +151,14 @@ module.exports = async (req, res) => {
 
                 const formData = new FormData();
                 formData.append("file", audioBlob, "audio.mp3");
-                formData.append("model", "whisper-large-v3-turbo");
-                formData.append("temperature", "0.0"); // 0.0 agar tidak terlalu berhalusinasi
+                formData.append("model", "whisper-large-v3"); // Ganti ke V3 Murni agar sangat akurat untuk semua bahasa
+                formData.append("temperature", "0.0"); // 0.0 agar tidak berhalusinasi
                 
                 const pastedLyrics = lyrics || inputText || ""; 
                 let promptHint = pastedLyrics.trim() !== "" ? pastedLyrics.substring(0, 500).replace(/\n/g, ', ') : (title ? `${title}, lirik lagu, musik.` : "Lirik lagu, musik.");
 
-                formData.append("prompt", promptHint);
-                // Dihapus: formData.append("condition_on_previous_text", "false"); -> Bikin error di Groq
+                // Prompt ketat anti terjemahan dan pertahankan pengulangan
+                formData.append("prompt", "This is a song with music and vocals. Transcribe the lyrics accurately in its original language. Do not translate. Keep all repetitions. " + promptHint);
 
                 const whisperRes = await fetch("https://api.groq.com/openai/v1/audio/transcriptions", {
                     method: "POST", headers: { "Authorization": `Bearer ${whisperKey}` }, body: formData
@@ -240,12 +240,13 @@ TUGAS ANDA:
 
                 const formData = new FormData();
                 formData.append("file", audioBlob, "audio.mp3");
-                formData.append("model", "whisper-large-v3-turbo");
+                formData.append("model", "whisper-large-v3"); // Gunakan V3 murni agar sinkronisasi sangat akurat
                 formData.append("temperature", "0.0");
                 formData.append("response_format", "verbose_json");
                 
                 const promptHint = lyrics.substring(0, 400).replace(/\n/g, ', ');
-                formData.append("prompt", "Ini adalah lagu panjang. Lanjutkan transkripsi sampai akhir musik. " + promptHint); 
+                // Prompt ketat mempertahankan bahasa asli
+                formData.append("prompt", "This is a song with music and vocals. Transcribe the lyrics accurately in its original language. Do not translate. Keep all repetitions. " + promptHint); 
 
                 const whisperRes = await fetch("https://api.groq.com/openai/v1/audio/transcriptions", {
                     method: "POST", headers: { "Authorization": `Bearer ${whisperKey}` }, body: formData
@@ -392,8 +393,9 @@ ATURAN MUTLAK:
                                     const aBlob = await aFetch.blob();
                                     const fData = new FormData();
                                     fData.append("file", aBlob, "audio.mp3");
-                                    fData.append("model", "whisper-large-v3-turbo");
-                                    fData.append("response_format", "verbose_json"); // Minta timestamp detail
+                                    fData.append("model", "whisper-large-v3"); // Ganti ke v3 murni
+                                    fData.append("temperature", "0.0"); // Matikan halusinasi
+                                    fData.append("response_format", "verbose_json"); 
                                     
                                     const wRes = await fetch("https://api.groq.com/openai/v1/audio/transcriptions", { method: "POST", headers: { "Authorization": `Bearer ${wKey}` }, body: fData });
                                     const wData = await wRes.json();
@@ -402,17 +404,14 @@ ATURAN MUTLAK:
                                         let lastEnd = 0;
                                         let structuredText = "";
                                         
-                                        // Deteksi Intro
                                         if (wData.segments[0].start > 6.0) structuredText += `[Intro / Instrumental]\n`;
                                         
                                         for (let i = 0; i < wData.segments.length; i++) {
                                             let seg = wData.segments[i];
-                                            // Deteksi Jeda Musik Tengah
                                             if (seg.start - lastEnd > 8.0 && lastEnd > 0) structuredText += `[Instrumental Break]\n`;
                                             structuredText += `${seg.text.trim()}\n`;
                                             lastEnd = seg.end;
                                         }
-                                        // Deteksi Outro
                                         structuredText += `[Outro / Instrumental]\n`;
                                         whisperTextWithStructure = structuredText;
                                     } else if (wData.text) {
@@ -422,16 +421,19 @@ ATURAN MUTLAK:
                             } catch(e) { console.error("Whisper error in Magic Wand:", e); }
                         }
                         
-                        systemPrompt = `Kamu adalah Music Arranger Profesional. Tugasmu menyusun ulang lirik mentah dari user agar pas dengan struktur lagu aslinya.
+                        systemPrompt = `Kamu adalah Ahli Lirik Lagu Profesional. Tugasmu adalah merapikan teks mentah menjadi lirik lagu terstruktur.
 ATURAN MUTLAK (DILARANG MELANGGAR):
-1. User memberikan "Lirik Mentah" (ejaan benar tapi susunan salah).
-2. Sistem memberikan "Transkripsi Audio" (Acuan kapan penyanyi bernyanyi dan kapan musik kosong).
-3. TUGASMU: Susun ulang Lirik Mentah agar pengulangannya persis mengikuti Transkripsi Audio.
-4. JIKA DI TRANSKRIPSI ADA TAG [Intro / Instrumental] atau [Instrumental Break] atau [Outro], KAMU WAJIB MENULISKANNYA JUGA DI HASIL AKHIRMU! Jangan dihilangkan!
-5. Gunakan tag [Verse], [Chorus], [Bridge] dengan tepat.
-6. SANGAT PENTING: Jawab HANYA dengan lirik lagu. DILARANG KERAS memberikan kalimat pembuka (seperti "Berikut adalah hasilnya") atau kalimat penutup (seperti "Catatan: Saya telah..."). LANGSUNG ke lirik baris pertama!`;
+1. BAHASA ASLI: Pertahankan bahasa asli teks 100%. Jika teks berbahasa Arab, biarkan full Arab. Jika Indonesia, biarkan full Indonesia. JANGAN PERNAH MENERJEMAHKANNYA!
+2. PENGULANGAN: Jika ada kalimat yang diulang di teks mentah, tulis ulang semuanya persis seperti aslinya dari awal sampai akhir. Jangan disingkat (misal: 2x).
+3. BERSIHKAN HALUSINASI: Hapus huruf-huruf aneh (seperti karakter Mandarin/China/Jepang) jika lagunya bukan bahasa tersebut, karena itu adalah halusinasi AI saat mendengar instrumen.
+4. STRUKTUR: Tambahkan tag struktur lagu seperti [Intro], [Verse], [Chorus], [Bridge], [Outro] di tempat yang tepat.
+5. SANGAT PENTING: Jawab HANYA dengan lirik lagu. DILARANG KERAS memberikan kalimat pembuka atau kalimat penutup. LANGSUNG ke lirik baris pertama!`;
                         
-                        finalInputText = `LIRIK MENTAH USER:\n${inputText}\n\nTRANSKRIPSI AUDIO (Acuan Struktur & Instrumen):\n${whisperTextWithStructure || "Gunakan instingmu untuk menata lirik ini"}`;
+                        if (audioUrl && whisperTextWithStructure) {
+                            finalInputText = `LIRIK MENTAH USER:\n${inputText}\n\nTRANSKRIPSI AUDIO (Acuan Struktur & Pengulangan):\n${whisperTextWithStructure}`;
+                        } else {
+                            finalInputText = `TEKS MENTAH:\n${inputText}`;
+                        }
                     }
                 }
 
