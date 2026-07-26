@@ -1001,34 +1001,43 @@ ATURAN MUTLAK (DILARANG MELANGGAR):
                     try {
                         const taskQuery = await db.collection("render_gallery").where("taskId", "==", taskId).get();
                         if (!taskQuery.empty) {
-                            const mainDoc = taskQuery.docs[0];
-                            const mainData = mainDoc.data();
+                            // Urutkan berdasarkan timestamp descending (karena di frontend Track 1 dibuat dengan timestamp lebih besar)
+                            const existingDocs = taskQuery.docs.sort((a, b) => b.data().timestamp - a.data().timestamp);
                             
-                            // Hanya pecah track jika status di database masih processing
-                            if (mainData.status !== "complete") {
-                                let baseTitle = mainData.title || "Lagu Flixa AI";
+                            for (let j = 0; j < tracks.length; j++) {
+                                let baseTitle = existingDocs[0].data().title || "Lagu Flixa AI";
                                 // Bersihkan embel-embel lama jika ada
                                 baseTitle = baseTitle.replace(/\s*-\s*Track\s*\d+/gi, '').trim();
                                 
-                                // Update dokumen pertama menjadi Track 1
-                                await mainDoc.ref.update({
-                                    status: "complete",
-                                    url: tracks[0].audioUrl,
-                                    imageUrl: tracks[0].imageUrl || mainData.imageUrl || "https://i.postimg.cc/Jh211FTG/46cc61ec-de7f-4c62-8245-946e22312d2b.jpg",
-                                    title: `${baseTitle} - Track 1`
-                                });
-                                
-                                // Jika API menghasilkan banyak lagu, buat dokumen baru untuk Track 2 dan seterusnya
-                                if (tracks.length > 1) {
-                                    for (let j = 1; j < tracks.length; j++) {
-                                        await db.collection("render_gallery").add({
-                                            ...mainData,
+                                if (j < existingDocs.length) {
+                                    // Update dokumen processing yang sudah ada di frontend
+                                    const docToUpdate = existingDocs[j];
+                                    if (docToUpdate.data().status !== "complete") {
+                                        await docToUpdate.ref.update({
                                             status: "complete",
                                             url: tracks[j].audioUrl,
-                                            imageUrl: tracks[j].imageUrl || mainData.imageUrl || "https://i.postimg.cc/Jh211FTG/46cc61ec-de7f-4c62-8245-946e22312d2b.jpg",
-                                            title: `${baseTitle} - Track ${j + 1}`,
-                                            timestamp: Date.now() + (j * 1000) // Tambah jeda detik agar berurutan dari atas ke bawah
+                                            imageUrl: tracks[j].imageUrl || docToUpdate.data().imageUrl || "https://i.postimg.cc/Jh211FTG/46cc61ec-de7f-4c62-8245-946e22312d2b.jpg",
+                                            title: `${baseTitle} - Track ${j + 1}`
                                         });
+                                    }
+                                } else {
+                                    // Jika API menghasilkan lebih banyak lagu daripada progress bar yang disiapkan frontend
+                                    await db.collection("render_gallery").add({
+                                        ...existingDocs[0].data(),
+                                        status: "complete",
+                                        url: tracks[j].audioUrl,
+                                        imageUrl: tracks[j].imageUrl || existingDocs[0].data().imageUrl || "https://i.postimg.cc/Jh211FTG/46cc61ec-de7f-4c62-8245-946e22312d2b.jpg",
+                                        title: `${baseTitle} - Track ${j + 1}`,
+                                        timestamp: Date.now() - (j * 1000) // Kurangi agar berurutan dengan benar
+                                    });
+                                }
+                            }
+                            
+                            // Hapus sisa progress bar jika API mengembalikan lagu lebih sedikit dari yang diharapkan
+                            if (existingDocs.length > tracks.length) {
+                                for (let j = tracks.length; j < existingDocs.length; j++) {
+                                    if (existingDocs[j].data().status !== "complete") {
+                                        await existingDocs[j].ref.delete();
                                     }
                                 }
                             }
