@@ -3500,8 +3500,12 @@
 
                     const redDotHtml = d.isNew ? `<div style="width:8px; height:8px; background:#ef4444; border-radius:50%; flex-shrink:0; box-shadow: 0 0 6px rgba(239,68,68,0.6); margin-top:5px;" title="Lagu Baru"></div>` : '';
 
-                    // 1. Bersihkan nama model (Hapus kata 'Suno')
-                    const cleanModel = modelBadge.replace(/Suno /i, '').trim();
+                    // 1. Bersihkan nama model (Menampilkan format Flixa AI)
+                    let cleanModel = modelBadge.trim();
+                    if (!cleanModel.toLowerCase().includes('flixa')) {
+                        cleanModel = cleanModel.replace(/Suno /i, '').trim();
+                        cleanModel = `Flixa AI ${cleanModel}`;
+                    }
                     
                     // 2. Tentukan Mode & Icon
                     const modeText = d.mode === 'cover' ? 'Cover Lagu' : 'Lagu Sendiri';
@@ -3730,7 +3734,13 @@
             // Set Header UI (Gambar, Judul, Model Badge)
             document.getElementById('detailTitleDisplay').innerText = currentDetailTitle;
             document.getElementById('detailThumb').src = docData.imageUrl || "https://i.postimg.cc/Jh211FTG/46cc61ec-de7f-4c62-8245-946e22312d2b.jpg";
-            document.getElementById('detailModelBadge').innerText = docData.model || 'v5.5-all';
+            
+            let displayModel = docData.model || 'Flixa AI v5.5';
+            if (!displayModel.toLowerCase().includes('flixa')) {
+                displayModel = displayModel.replace(/Suno /i, '').trim();
+                displayModel = `Flixa AI ${displayModel}`;
+            }
+            document.getElementById('detailModelBadge').innerText = displayModel;
             
             // Set Meta Info (Format Waktu Custom)
             const dateObj = new Date(docData.timestamp || Date.now());
@@ -4819,21 +4829,20 @@
                         });
                         
                         if (globalAudioProviders.length > 0) {
-                            // KAMUS DESKRIPSI MODEL ALA SUNO AI (BAHASA INDONESIA)
+                            // KAMUS DESKRIPSI MODEL FLIXA AI
                             const modelDict = {
-                                "v5_5": { name: "v5.5", badge: "Pro", desc: "Mendukung Suara Kustom, Model Kustom, dan Gaya Saya" },
-                                "v5": { name: "v5", badge: "Pro", desc: "Vokal autentik, kualitas audio dan kontrol superior" },
-                                "v4_5+": { name: "v4.5+", badge: "Pro", desc: "Metode pembuatan lanjutan" },
-                                "v4_5": { name: "v4.5", badge: "Pro", desc: "Prompt cerdas" },
-                                "v4_5-all": { name: "v4.5-all", badge: '<i class="fa-solid fa-circle-check"></i>', desc: "Model gratis terbaik" },
-                                "v4": { name: "v4", badge: "Pro", desc: "Kualitas suara yang ditingkatkan" },
-                                "v3_5": { name: "v3.5", badge: "", desc: "Model versi lama" }
+                                "v5.5": { name: "Flixa AI v5.5", badge: "Pro", desc: "Mendukung Suara Kustom, Model Kustom, dan Gaya Saya" },
+                                "v5": { name: "Flixa AI v5", badge: "Pro", desc: "Vokal autentik, kualitas audio dan kontrol superior" },
+                                "v4.5+": { name: "Flixa AI v4.5+", badge: "Pro", desc: "Metode pembuatan lanjutan" },
+                                "v4.5": { name: "Flixa AI v4.5", badge: "Pro", desc: "Prompt cerdas" },
+                                "v4.5-all": { name: "Flixa AI v4.5-all", badge: '<i class="fa-solid fa-circle-check"></i>', desc: "Model gratis terbaik" },
+                                "v4": { name: "Flixa AI v4", badge: "Pro", desc: "Kualitas suara yang ditingkatkan" },
+                                "v3.5": { name: "Flixa AI v3.5", badge: "", desc: "Model versi lama" }
                             };
 
-                            let allModels = [];
-                            let seenModels = new Set();
+                            let unifiedModels = {};
 
-                            // Ekstrak semua model dari provider Audio yang ada di Dasbor Admin
+                            // Ekstrak dan Kelompokkan model dari semua provider Audio
                             globalAudioProviders.forEach(p => {
                                 if (p.models) {
                                     const mList = p.models.split(',').map(m => m.trim()).filter(m => m);
@@ -4843,24 +4852,53 @@
                                         // BLOKIR MODEL ASR/WHISPER AGAR TIDAK MUNCUL DI SINI
                                         if (modKey.includes('whisper') || modKey.includes('asr') || modKey.includes('transcribe')) return;
 
-                                        if (!seenModels.has(modKey)) {
-                                            seenModels.add(modKey);
-                                            // Ambil data dari kamus, jika tidak ada buat default
-                                            const dictData = modelDict[modKey] || { name: mod, badge: "", desc: "Model Audio Kustom" };
-                                            allModels.push({
-                                                rawVal: mod,
-                                                providerVal: p.value,
+                                        let unifiedVer = 'unknown';
+                                        if (modKey.includes('v5_5') || modKey.includes('v5.5') || modKey.includes('v5-5')) unifiedVer = 'v5.5';
+                                        else if (modKey.includes('v4_5+') || modKey.includes('v4.5+') || modKey.includes('v4-5+')) unifiedVer = 'v4.5+';
+                                        else if (modKey.includes('v4_5') || modKey.includes('v4.5') || modKey.includes('v4-5')) unifiedVer = 'v4.5';
+                                        else if (modKey.includes('v3_5') || modKey.includes('v3.5') || modKey.includes('v3-5')) unifiedVer = 'v3.5';
+                                        else if (modKey.includes('v5')) unifiedVer = 'v5';
+                                        else if (modKey.includes('v4')) unifiedVer = 'v4';
+                                        else unifiedVer = mod; // fallback
+
+                                        if (!unifiedModels[unifiedVer]) {
+                                            const dictData = modelDict[unifiedVer] || { name: `Flixa AI ${unifiedVer.toUpperCase()}`, badge: "", desc: "Model Audio Kustom" };
+                                            unifiedModels[unifiedVer] = {
+                                                rawVals: new Set(),
                                                 name: dictData.name,
                                                 badge: dictData.badge,
-                                                desc: dictData.desc
-                                            });
+                                                desc: dictData.desc,
+                                                sortKey: unifiedVer
+                                            };
                                         }
+                                        // Kumpulkan semua raw ID dari berbagai provider ke dalam satu Set
+                                        unifiedModels[unifiedVer].rawVals.add(mod);
                                     });
                                 }
                             });
 
-                            // Urutkan model (v5.5 paling atas)
-                            allModels.sort((a, b) => b.name.localeCompare(a.name));
+                            let allModels = [];
+                            for (const key in unifiedModels) {
+                                const group = unifiedModels[key];
+                                allModels.push({
+                                    rawVal: Array.from(group.rawVals).join(','), // Gabungkan semua ID dengan koma agar backend bisa melakukan fallback lintas provider
+                                    name: group.name,
+                                    badge: group.badge,
+                                    desc: group.desc,
+                                    sortKey: group.sortKey
+                                });
+                            }
+
+                            // Urutkan model secara manual agar standar V5.5 dll berada di atas
+                            const sortOrder = ['v5.5', 'v5', 'v4.5+', 'v4.5', 'v4.5-all', 'v4', 'v3.5'];
+                            allModels.sort((a, b) => {
+                                let idxA = sortOrder.indexOf(a.sortKey);
+                                let idxB = sortOrder.indexOf(b.sortKey);
+                                if (idxA === -1) idxA = 999;
+                                if (idxB === -1) idxB = 999;
+                                if (idxA !== idxB) return idxA - idxB;
+                                return a.name.localeCompare(b.name);
+                            });
 
                             // Buat HTML Dropdown dengan warna Abu-abu Gelap (Soft Dark)
                             let dropdownHtml = `<div style="font-size: 0.65rem; color: #A1A1AA; font-weight: 800; padding: 8px 12px; letter-spacing: 0.5px; text-transform: uppercase;">Semua Model</div>`;
@@ -4874,7 +4912,7 @@
                                 }
 
                                 dropdownHtml += `
-                                    <div class="custom-select-option" style="padding: 12px; border-radius: 10px; cursor: pointer; transition: 0.2s;" onclick="window.selectSunoModel('${m.rawVal}', '${m.name}', '${m.badge}', '${m.providerVal}')" onmouseover="this.style.background='#3F3F46'" onmouseout="this.style.background='transparent'">
+                                    <div class="custom-select-option" style="padding: 12px; border-radius: 10px; cursor: pointer; transition: 0.2s;" onclick="window.selectSunoModel('${m.rawVal}', '${m.name}', '${m.badge}')" onmouseover="this.style.background='#3F3F46'" onmouseout="this.style.background='transparent'">
                                         <div style="color: #F4F4F5; font-weight: 700; font-size: 0.95rem; display: flex; align-items: center;">
                                             ${m.name} ${badgeHtml}
                                         </div>
@@ -4889,9 +4927,9 @@
                             if (dropdownContainer) dropdownContainer.innerHTML = dropdownHtml;
 
                             // FUNGSI UNTUK MENANGANI KLIK MODEL
-                            window.selectSunoModel = function(modelVal, modelName, badgeType, providerVal) {
+                            window.selectSunoModel = function(modelVal, modelName, badgeType) {
                                 document.getElementById('modelSelect').value = modelVal;
-                                document.getElementById('providerSelect').value = 'auto_pool'; 
+                                document.getElementById('providerSelect').value = 'auto_pool'; // Pastikan selalu auto_pool
                                 
                                 let badgeHtml = '';
                                 if (badgeType === 'Pro') {
@@ -4911,7 +4949,7 @@
                             const targetModel = allModels.find(m => m.rawVal === savedModel) || allModels[0];
                             
                             if (targetModel) {
-                                window.selectSunoModel(targetModel.rawVal, targetModel.name, targetModel.badge, targetModel.providerVal);
+                                window.selectSunoModel(targetModel.rawVal, targetModel.name, targetModel.badge);
                             }
 
                         } else {
@@ -8071,7 +8109,12 @@ window.startDspBypassAndUpload = async function() {
 
                 // Simpan ke Firebase. Karena kita pakai onSnapshot di initLibraryAndProgress, 
                 // UI akan otomatis terupdate tanpa perlu kode tambahan di sini!
-                const modelLabel = document.getElementById('modelSelectedLabel').innerText.split(' - ')[0] || modelId;
+                let modelLabelText = modelId;
+                const activeSunoModelNameEl = document.getElementById('activeSunoModelName');
+                if (activeSunoModelNameEl) {
+                    modelLabelText = activeSunoModelNameEl.innerText.replace(/Pro/g, '').trim();
+                }
+                const modelLabel = modelLabelText;
                 
                 if (data.status === "completed" && data.tracks && data.tracks.length > 0) {
                     // Jika API Synchronous (Langsung Selesai), simpan semua track yang dihasilkan
@@ -8254,7 +8297,12 @@ window.startDspBypassAndUpload = async function() {
                             status: "complete"
                         });
                     } else {
-                        const modelLabel = document.getElementById('modelSelectedLabel').innerText.split(' - ')[0] || 'v5.5-all';
+                        let modelLabelText = 'Flixa AI v5.5';
+                        const activeSunoModelNameEl = document.getElementById('activeSunoModelName');
+                        if (activeSunoModelNameEl) {
+                            modelLabelText = activeSunoModelNameEl.innerText.replace(/Pro/g, '').trim();
+                        }
+                        const modelLabel = modelLabelText;
                         const currentMode = document.getElementById('modeGenerateBtn').classList.contains('active') ? 'generate' : 'cover';
                         await addDoc(collection(db, "render_gallery"), {
                             email: currentUser.email,
