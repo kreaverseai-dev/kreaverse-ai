@@ -9305,7 +9305,19 @@ window.startDspBypassAndUpload = async function() {
                                 mstLiveNodes.limiter.attack.value = 0.001;
                                 mstLiveNodes.limiter.release.value = 0.05;
 
-                                // --- REVERB KHUSUS VOKAL (ISOLASI FREKUENSI) ---
+                                // --- SOFT NOISE GATE (MEMBERSIHKAN NOISE/MUD) ---
+                                mstLiveNodes.noiseGate = mstLiveAudioCtx.createWaveShaper();
+                                const n_samples = 44100;
+                                const curve = new Float32Array(n_samples);
+                                const threshold = 0.005; // Batas noise yang akan dibungkam
+                                for (let i = 0; i < n_samples; ++i) {
+                                    const x = i * 2 / n_samples - 1;
+                                    if (Math.abs(x) < threshold) curve[i] = x * Math.pow(Math.abs(x) / threshold, 2);
+                                    else curve[i] = x;
+                                }
+                                mstLiveNodes.noiseGate.curve = curve;
+
+                                // --- REVERB KHUSUS VOKAL (ISOLASI GANDA) ---
                                 const revLen = mstLiveAudioCtx.sampleRate * 1.5;
                                 const impulse = mstLiveAudioCtx.createBuffer(2, revLen, mstLiveAudioCtx.sampleRate);
                                 for (let i = 0; i < 2; i++) {
@@ -9315,20 +9327,25 @@ window.startDspBypassAndUpload = async function() {
                                 mstLiveNodes.convolver = mstLiveAudioCtx.createConvolver();
                                 mstLiveNodes.convolver.buffer = impulse;
                                 
-                                // BANDPASS FILTER: Memblokir Bass (Drum) dan Extreme High (Simbal) masuk ke Reverb
-                                mstLiveNodes.revFilter = mstLiveAudioCtx.createBiquadFilter();
-                                mstLiveNodes.revFilter.type = 'bandpass';
-                                mstLiveNodes.revFilter.frequency.value = 2200; // Fokus ke inti suara vokal
-                                mstLiveNodes.revFilter.Q.value = 0.8; 
+                                // HIGHPASS & LOWPASS: Memblokir mutlak Bass (Drum) dan Ces-ces (Simbal) agar tidak ikut bergema
+                                mstLiveNodes.revHPF = mstLiveAudioCtx.createBiquadFilter();
+                                mstLiveNodes.revHPF.type = 'highpass';
+                                mstLiveNodes.revHPF.frequency.value = 400; // Buang bass drum dari reverb
+                                
+                                mstLiveNodes.revLPF = mstLiveAudioCtx.createBiquadFilter();
+                                mstLiveNodes.revLPF.type = 'lowpass';
+                                mstLiveNodes.revLPF.frequency.value = 4500; // Buang simbal dari reverb
                                 
                                 mstLiveNodes.wetGain = mstLiveAudioCtx.createGain();
-                                mstLiveNodes.wetGain.gain.value = 0.08; // Tipis & elegan (8%)
+                                mstLiveNodes.wetGain.gain.value = 0.12; // Reverb sedikit dinaikkan (12%)
                                 
                                 mstLiveNodes.dryGain = mstLiveAudioCtx.createGain();
                                 mstLiveNodes.dryGain.gain.value = 1.0;
 
+                                // Routing dengan Noise Gate di awal
                                 mstLiveSource.connect(mstLiveNodes.inGain);
-                                mstLiveNodes.inGain.connect(mstLiveNodes.eqLow);
+                                mstLiveNodes.inGain.connect(mstLiveNodes.noiseGate);
+                                mstLiveNodes.noiseGate.connect(mstLiveNodes.eqLow);
                                 mstLiveNodes.eqLow.connect(mstLiveNodes.eqLMid);
                                 mstLiveNodes.eqLMid.connect(mstLiveNodes.eqMid);
                                 mstLiveNodes.eqMid.connect(mstLiveNodes.eqHMid);
@@ -9337,8 +9354,9 @@ window.startDspBypassAndUpload = async function() {
                                 
                                 // Split ke Reverb (Hanya Vokal) & Dry (Semua Suara)
                                 mstLiveNodes.comp.connect(mstLiveNodes.dryGain);
-                                mstLiveNodes.comp.connect(mstLiveNodes.revFilter);
-                                mstLiveNodes.revFilter.connect(mstLiveNodes.convolver);
+                                mstLiveNodes.comp.connect(mstLiveNodes.revHPF);
+                                mstLiveNodes.revHPF.connect(mstLiveNodes.revLPF);
+                                mstLiveNodes.revLPF.connect(mstLiveNodes.convolver);
                                 mstLiveNodes.convolver.connect(mstLiveNodes.wetGain);
                                 
                                 mstLiveNodes.dryGain.connect(mstLiveNodes.makeUp);
@@ -9407,20 +9425,20 @@ window.startDspBypassAndUpload = async function() {
                     const genre = document.getElementById('mstGenreVal').value;
                     const dyn = document.getElementById('mstDynVal').value;
                     
-                    // RACIKAN VOCAL PRO: Bass Vokal(+3.5), Mid/Sakit Telinga(-4.0), Ces-ces(+5.5), Noise/Mud(-3.0)
-                    eqM = -4.0; eqL = 3.5; eqH = 5.5; eqLM = -3.0; eqHM = 3.0; 
+                    // RACIKAN VOCAL PRO V2: Bass/Kick Drum(+5.0), Mid/Sakit Telinga(-4.5), Ces-ces(+7.5), Noise/Mud(-5.0)
+                    eqMid = -4.5; eqLow = 5.0; eqHigh = 7.5; eqLMid = -5.0; eqHMid = 4.5; 
                     switch(genre) {
-                        case 'dj': eqL += 2.0; eqH += 1.5; eqLM -= 1.0; break;
-                        case 'dangdut': eqL += 1.5; eqM += 1.0; eqH += 1.5; break;
-                        case 'sholawat': eqLM += 1.0; eqM -= 1.0; eqH += 2.5; break;
-                        case 'rock': eqL += 1.0; eqHM += 1.5; eqH += 1.0; break;
-                        case 'cinematic': eqL += 2.0; eqLM += 1.0; eqH += 1.0; break;
-                        case 'pop': eqL += 1.0; eqH += 1.0; break;
+                        case 'dj': eqLow += 3.0; eqHigh += 2.5; eqLMid -= 1.0; break;
+                        case 'dangdut': eqLow += 2.5; eqMid += 1.0; eqHigh += 2.5; break;
+                        case 'sholawat': eqLMid += 1.0; eqMid -= 1.0; eqHigh += 3.5; break;
+                        case 'rock': eqLow += 2.0; eqHMid += 2.5; eqHigh += 2.0; break;
+                        case 'cinematic': eqLow += 3.0; eqLMid += 1.0; eqHigh += 2.0; break;
+                        case 'pop': eqLow += 2.0; eqHigh += 2.0; break;
                     }
                     switch(dyn) {
-                        case 'loud': cTh = -16; cRat = 4; cGain = 3.5; break;
-                        case 'balanced': cTh = -12; cRat = 3; cGain = 2.0; break;
-                        case 'clean': cTh = -8; cRat = 2; cGain = 1.0; break;
+                        case 'loud': cTh = -18; cRat = 4.5; cGain = 5.5; break; // Volume dimaksimalkan, aman karena ada limiter
+                        case 'balanced': cTh = -14; cRat = 3.5; cGain = 3.5; break;
+                        case 'clean': cTh = -10; cRat = 2.5; cGain = 2.0; break;
                     }
                 } else {
                     inG = parseFloat(document.getElementById('sl-inGain').value);
@@ -9485,22 +9503,22 @@ window.startDspBypassAndUpload = async function() {
                         const genre = document.getElementById('mstGenreVal').value;
                         const dyn = document.getElementById('mstDynVal').value;
                         
-                        // RACIKAN VOCAL PRO: Bass Vokal(+3.5), Mid/Sakit Telinga(-4.0), Ces-ces(+5.5), Noise/Mud(-3.0)
-                        eqMid = -4.0; eqLow = 3.5; eqHigh = 5.5; eqLMid = -3.0; eqHMid = 3.0;
+                        // RACIKAN VOCAL PRO V2: Bass/Kick Drum(+5.0), Mid/Sakit Telinga(-4.5), Ces-ces(+7.5), Noise/Mud(-5.0)
+                        eqMid = -4.5; eqLow = 5.0; eqHigh = 7.5; eqLMid = -5.0; eqHMid = 4.5;
 
                         switch(genre) {
-                            case 'dj': eqLow += 2.0; eqHigh += 1.5; eqLMid -= 1.0; break;
-                            case 'dangdut': eqLow += 1.5; eqMid += 1.0; eqHigh += 1.5; break; 
-                            case 'sholawat': eqLMid += 1.0; eqMid -= 1.0; eqHigh += 2.5; break; 
-                            case 'rock': eqLow += 1.0; eqHMid += 1.5; eqHigh += 1.0; break;
-                            case 'cinematic': eqLow += 2.0; eqLMid += 1.0; eqHigh += 1.0; break;
-                            case 'pop': eqLow += 1.0; eqHigh += 1.0; break;
+                            case 'dj': eqLow += 3.0; eqHigh += 2.5; eqLMid -= 1.0; break;
+                            case 'dangdut': eqLow += 2.5; eqMid += 1.0; eqHigh += 2.5; break; 
+                            case 'sholawat': eqLMid += 1.0; eqMid -= 1.0; eqHigh += 3.5; break; 
+                            case 'rock': eqLow += 2.0; eqHMid += 2.5; eqHigh += 2.0; break;
+                            case 'cinematic': eqLow += 3.0; eqLMid += 1.0; eqHigh += 2.0; break;
+                            case 'pop': eqLow += 2.0; eqHigh += 2.0; break;
                         }
 
                         switch(dyn) {
-                            case 'loud': cThresh = -16; cRatio = 4; cGain = 3.5; break;
-                            case 'balanced': cThresh = -12; cRatio = 3; cGain = 2.0; break;
-                            case 'clean': cThresh = -8; cRatio = 2; cGain = 1.0; break;
+                            case 'loud': cThresh = -18; cRatio = 4.5; cGain = 5.5; break;
+                            case 'balanced': cThresh = -14; cRatio = 3.5; cGain = 3.5; break;
+                            case 'clean': cThresh = -10; cRatio = 2.5; cGain = 2.0; break;
                         }
                     } else {
                         inGain = parseFloat(document.getElementById('sl-inGain').value);
@@ -9519,6 +9537,18 @@ window.startDspBypassAndUpload = async function() {
 
                     updateTopProgress(40, "Menerapkan Surgical EQ & True RMS Compressor...");
 
+                    // --- SOFT NOISE GATE (MEMBERSIHKAN NOISE/MUD) ---
+                    const noiseGate = offlineCtx.createWaveShaper();
+                    const n_samples = 44100;
+                    const curve = new Float32Array(n_samples);
+                    const threshold = 0.005; 
+                    for (let i = 0; i < n_samples; ++i) {
+                        const x = i * 2 / n_samples - 1;
+                        if (Math.abs(x) < threshold) curve[i] = x * Math.pow(Math.abs(x) / threshold, 2);
+                        else curve[i] = x;
+                    }
+                    noiseGate.curve = curve;
+
                     const inputNode = offlineCtx.createGain(); inputNode.gain.value = Math.pow(10, inGain / 20);
                     const filterLow = offlineCtx.createBiquadFilter(); filterLow.type = 'lowshelf'; filterLow.frequency.value = 60; filterLow.gain.value = eqLow;
                     const filterLMid = offlineCtx.createBiquadFilter(); filterLMid.type = 'peaking'; filterLMid.frequency.value = 300; filterLMid.Q.value = 1.0; filterLMid.gain.value = eqLMid;
@@ -9534,7 +9564,7 @@ window.startDspBypassAndUpload = async function() {
                     const limiter = offlineCtx.createDynamicsCompressor();
                     limiter.threshold.value = -0.3; limiter.knee.value = 0.0; limiter.ratio.value = 20.0; limiter.attack.value = 0.001; limiter.release.value = 0.05;
 
-                    // --- REVERB KHUSUS VOKAL (ISOLASI FREKUENSI) ---
+                    // --- REVERB KHUSUS VOKAL (ISOLASI GANDA) ---
                     const revLen = offlineCtx.sampleRate * 1.5;
                     const impulse = offlineCtx.createBuffer(2, revLen, offlineCtx.sampleRate);
                     for (let i = 0; i < 2; i++) {
@@ -9544,20 +9574,25 @@ window.startDspBypassAndUpload = async function() {
                     const convolver = offlineCtx.createConvolver();
                     convolver.buffer = impulse;
                     
-                    // BANDPASS FILTER: Memblokir Bass (Drum) dan Extreme High (Simbal) masuk ke Reverb
-                    const revFilter = offlineCtx.createBiquadFilter();
-                    revFilter.type = 'bandpass';
-                    revFilter.frequency.value = 2200; // Fokus ke inti suara vokal
-                    revFilter.Q.value = 0.8;
+                    // HIGHPASS & LOWPASS: Memblokir mutlak Bass (Drum) dan Ces-ces (Simbal) agar tidak ikut bergema
+                    const revHPF = offlineCtx.createBiquadFilter();
+                    revHPF.type = 'highpass';
+                    revHPF.frequency.value = 400;
+                    
+                    const revLPF = offlineCtx.createBiquadFilter();
+                    revLPF.type = 'lowpass';
+                    revLPF.frequency.value = 4500;
                     
                     const wetGain = offlineCtx.createGain();
-                    wetGain.gain.value = 0.08; // Tipis & elegan (8%)
+                    wetGain.gain.value = 0.12; // Reverb sedikit dinaikkan (12%)
                     
                     const dryGain = offlineCtx.createGain();
                     dryGain.gain.value = 1.0;
 
+                    // Routing dengan Noise Gate di awal
                     source.connect(inputNode); 
-                    inputNode.connect(filterLow); 
+                    inputNode.connect(noiseGate);
+                    noiseGate.connect(filterLow); 
                     filterLow.connect(filterLMid); 
                     filterLMid.connect(filterMid); 
                     filterMid.connect(filterHMid); 
@@ -9566,8 +9601,9 @@ window.startDspBypassAndUpload = async function() {
                     
                     // Split ke Reverb (Hanya Vokal) & Dry (Semua Suara)
                     compressor.connect(dryGain);
-                    compressor.connect(revFilter);
-                    revFilter.connect(convolver);
+                    compressor.connect(revHPF);
+                    revHPF.connect(revLPF);
+                    revLPF.connect(convolver);
                     convolver.connect(wetGain);
                     
                     dryGain.connect(makeUpNode);
