@@ -3608,7 +3608,7 @@
                 const safeThumb = d.imageUrl || "https://i.postimg.cc/Jh211FTG/46cc61ec-de7f-4c62-8245-946e22312d2b.jpg";
                 // Membersihkan teks (Part X) atau - Versi X dari judul utama karena sudah ada di Badge Track
                 const rawTitle = d.title || 'Untitled Song';
-                const displayTitle = rawTitle.replace(/\s*\(Part\s*\d+\)/gi, '').replace(/\s*-\s*Versi\s*\d+/gi, '').trim();
+                const displayTitle = rawTitle.replace(/\s*\(Part\s*\d+\)/gi, '').replace(/\s*-\s*(?:Versi|Track)\s*\d+/gi, '').trim();
                 const displayPrompt = d.prompt || 'No style provided';
                 const modelBadge = d.model || 'v5.5-all'; 
                 
@@ -3712,7 +3712,7 @@
                     // 3. Ekstrak Nomor Track dari Judul Asli (Sebelum dibersihkan)
                     let trackNum = "1";
                     const regPart = new RegExp("\\(Part\\s*(\\d+)\\)", "i");
-                    const regVersi = new RegExp("-\\s*Versi\\s*(\\d+)", "i");
+                    const regVersi = new RegExp("-\\s*(?:Versi|Track)\\s*(\\d+)", "i");
                     // Gunakan rawTitle agar angka Part masih terbaca
                     const trackMatch = rawTitle.match(regPart) || rawTitle.match(regVersi);
                     if (trackMatch) {
@@ -8457,7 +8457,7 @@ window.startDspBypassAndUpload = async function() {
                             imageUrl: data.tracks[i].imageUrl || "https://i.postimg.cc/Jh211FTG/46cc61ec-de7f-4c62-8245-946e22312d2b.jpg",
                             prompt: style,
                             lyrics: lyrics,
-                            title: `${title || "Untitled Song"} - Track ${i + 1}`,
+                            title: `${title || "Untitled Song"} - Versi ${i + 1}`,
                             tool: "Habi RMX",
                             type: "audio",
                             status: "complete",
@@ -8482,7 +8482,7 @@ window.startDspBypassAndUpload = async function() {
                             url: "",
                             prompt: style,
                             lyrics: lyrics,
-                            title: `${title || "Untitled Song"} - Track ${i + 1}`,
+                            title: `${title || "Untitled Song"} - Versi ${i + 1}`,
                             tool: "Habi RMX",
                             type: "audio",
                             status: "processing",
