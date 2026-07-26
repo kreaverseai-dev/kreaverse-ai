@@ -3634,10 +3634,28 @@
                 // --- PEMISAH ANTAR GENERATE (POIN 3) ---
                 const currentGroup = d.taskId || Math.floor((d.timestamp || 0) / 5000);
                 if (index > 0 && currentGroup !== lastTaskId) {
+                    // Format Waktu Detail untuk Sesi Sebelumnya
+                    const dateObj = new Date(d.timestamp || Date.now());
+                    const days = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+                    const months = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+                    
+                    let h = dateObj.getHours();
+                    let m = dateObj.getMinutes().toString().padStart(2, '0');
+                    let period = 'pagi';
+                    if (h >= 11 && h < 15) period = 'siang';
+                    else if (h >= 15 && h < 18) period = 'sore';
+                    else if (h >= 18 || h < 4) period = 'malam';
+                    let displayH = h % 12 || 12;
+                    
+                    const timeString = `${days[dateObj.getDay()]}, ${dateObj.getDate()} ${months[dateObj.getMonth()]} ${dateObj.getFullYear()} • Pukul ${displayH}.${m} ${period}`;
+
                     html += `
                         <div style="text-align: center; margin: 16px 0 24px 0; position: relative;">
                             <div style="position: absolute; top: 50%; left: 0; width: 100%; border-top: 2px dashed #94a3b8; z-index: 1; opacity: 0.3;"></div>
-                            <span style="position: relative; z-index: 2; background: #fafafc; padding: 0 14px; font-size: 0.7rem; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 1px;"><i class="fa-solid fa-layer-group"></i> Sesi Generate Sebelumnya</span>
+                            <span style="position: relative; z-index: 2; background: #fafafc; padding: 0 14px; font-size: 0.7rem; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 1px; display: inline-flex; flex-direction: column; align-items: center; gap: 4px;">
+                                <span><i class="fa-solid fa-layer-group"></i> Sesi Generate Sebelumnya</span>
+                                <span style="font-size: 0.6rem; font-weight: 700; color: #94a3b8; text-transform: none; letter-spacing: 0;">${timeString}</span>
+                            </span>
                         </div>
                     `;
                 }
@@ -8460,7 +8478,7 @@ window.startDspBypassAndUpload = async function() {
                             taskId: data.taskId || `sync_task_${Date.now()}_${i}`,
                             provider: data.provider,
                             model: modelLabel,
-                            timestamp: Date.now() + i, // Bedakan waktu sedikit agar berurutan
+                            timestamp: Date.now() - i, // Kurangi agar Track 1 (waktu lebih besar) selalu di atas Track 2 saat disortir
                             mode: currentMode,
                             personaId: options.personaId || "",
                             vocalGender: options.vocalGender || "",
@@ -8471,28 +8489,30 @@ window.startDspBypassAndUpload = async function() {
                         });
                     }
                 } else {
-                    // Jika API Asynchronous (Polling), simpan 1 dokumen "processing"
-                    await addDoc(collection(db, "render_gallery"), {
-                        email: currentUser.email,
-                        url: "",
-                        prompt: style,
-                        lyrics: lyrics,
-                        title: title || "Untitled Song",
-                        tool: "Habi RMX",
-                        type: "audio",
-                        status: "processing",
-                        taskId: data.taskId || "sync_task",
-                        provider: data.provider,
-                        model: modelLabel,
-                        timestamp: Date.now(),
-                        mode: currentMode,
-                        personaId: options.personaId || "",
-                        vocalGender: options.vocalGender || "",
-                        styleWeight: options.styleWeight || "",
-                        weirdness: options.weirdness || "",
-                        audioWeight: options.audioWeight || "",
-                        originalAudioUrl: currentMode === 'cover' ? selectedAudioUrl : ""
-                    });
+                    // Jika API Asynchronous (Polling), simpan 2 dokumen "processing" karena Suno AI menghasilkan 2 lagu sekaligus
+                    for (let i = 0; i < 2; i++) {
+                        await addDoc(collection(db, "render_gallery"), {
+                            email: currentUser.email,
+                            url: "",
+                            prompt: style,
+                            lyrics: lyrics,
+                            title: `${title || "Untitled Song"} - Track ${i + 1}`,
+                            tool: "Habi RMX",
+                            type: "audio",
+                            status: "processing",
+                            taskId: data.taskId || "sync_task",
+                            provider: data.provider,
+                            model: modelLabel,
+                            timestamp: Date.now() - i, // Kurangi agar Track 1 selalu di atas Track 2
+                            mode: currentMode,
+                            personaId: options.personaId || "",
+                            vocalGender: options.vocalGender || "",
+                            styleWeight: options.styleWeight || "",
+                            weirdness: options.weirdness || "",
+                            audioWeight: options.audioWeight || "",
+                            originalAudioUrl: currentMode === 'cover' ? selectedAudioUrl : ""
+                        });
+                    }
                 }
                 
                 generateBtn.disabled = false;
