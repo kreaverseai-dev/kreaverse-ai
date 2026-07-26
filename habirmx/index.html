@@ -338,10 +338,10 @@
             background: #f8fafc;
         }
         .mode-btn.active { 
-            background: #0f172a; 
+            background: var(--accent-color); 
             color: #ffffff; 
-            box-shadow: 0 4px 10px rgba(0,0,0,0.15); 
-            border: 1px solid #0f172a;
+            box-shadow: 0 4px 10px rgba(0,122,255,0.25); 
+            border: 1px solid var(--accent-color);
         }
         .badge-new {
             background: #ef4444;
@@ -1241,8 +1241,10 @@
             bottom: 0;
             left: 0;
             width: 100%;
-            background: #111111; /* Warna solid lebih ringan dari blur */
-            border-top: 1px solid rgba(255,255,255,0.08);
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-top: 1px solid var(--border-color);
             z-index: 9999;
             padding: 10px 16px;
             display: flex;
@@ -1250,7 +1252,7 @@
             gap: 14px;
             transform: translate3d(0, 100%, 0); /* Hardware Acceleration GPU */
             transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            box-shadow: 0 -4px 20px rgba(0,0,0,0.4);
+            box-shadow: 0 -4px 20px rgba(0,0,0,0.05);
             will-change: transform;
         }
         .global-mini-player.show {
@@ -1261,7 +1263,8 @@
             height: 44px;
             border-radius: 6px;
             object-fit: cover;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            border: 1px solid var(--border-color);
         }
         .gmp-info {
             flex: 1;
@@ -1272,9 +1275,9 @@
             gap: 2px;
         }
         .gmp-title {
-            color: #ffffff;
+            color: var(--text-primary);
             font-family: 'Inter', sans-serif;
-            font-weight: 700;
+            font-weight: 800;
             font-size: 0.95rem;
             line-height: 1.2;
             white-space: nowrap;
@@ -1282,7 +1285,7 @@
             text-overflow: ellipsis;
         }
         .gmp-author {
-            color: rgba(255,255,255,0.6);
+            color: var(--text-secondary);
             font-family: 'Inter', sans-serif;
             font-size: 0.75rem;
             font-weight: 500;
@@ -1298,18 +1301,18 @@
         .gmp-btn {
             background: none;
             border: none;
-            color: #fff;
+            color: var(--text-secondary);
             font-size: 1.2rem;
             cursor: pointer;
-            transition: transform 0.2s;
+            transition: transform 0.2s, color 0.2s;
         }
-        .gmp-btn:hover { transform: scale(1.1); }
+        .gmp-btn:hover { transform: scale(1.1); color: var(--accent-color); }
         .gmp-play-btn {
             width: 42px;
             height: 42px;
             border-radius: 50%;
-            background: #ffffff;
-            color: #111111;
+            background: var(--accent-color);
+            color: #ffffff;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -1317,6 +1320,7 @@
             border: none;
             cursor: pointer;
             transition: 0.2s;
+            box-shadow: 0 4px 10px rgba(0, 122, 255, 0.2);
         }
         .gmp-play-btn:active { transform: scale(0.95); }
         .gmp-progress-wrapper {
@@ -1324,13 +1328,13 @@
             top: -2px;
             left: 0;
             width: 100%;
-            height: 2px;
-            background: rgba(255,255,255,0.1);
+            height: 4px;
+            background: #e2e8f0;
             cursor: pointer;
         }
         .gmp-progress-fill {
             height: 100%;
-            background: #ffffff;
+            background: var(--accent-color);
             width: 0%;
             pointer-events: none;
             position: relative;
@@ -1340,23 +1344,23 @@
             content: '';
             position: absolute;
             right: -4px;
-            top: -4px;
+            top: -3px;
             width: 10px;
             height: 10px;
-            background: #fff;
+            background: var(--accent-color);
             border-radius: 50%;
             opacity: 0;
             transition: opacity 0.2s;
-            box-shadow: 0 0 4px rgba(0,0,0,0.3);
+            box-shadow: 0 0 4px rgba(0, 122, 255, 0.4);
         }
         .gmp-progress-wrapper:hover .gmp-progress-fill::after {
             opacity: 1;
         }
         .gmp-time {
             font-size: 0.7rem;
-            color: rgba(255,255,255,0.5);
+            color: var(--text-light);
             font-family: monospace;
-            font-weight: 600;
+            font-weight: 700;
             min-width: 70px;
             text-align: right;
             margin-right: 4px;
@@ -1472,16 +1476,16 @@
                         <span style="font-weight: 800; font-size: 0.8rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px;">Pilihan Model AI :</span>
                     </label>
                     
-                    <!-- Suno Style Dropdown Trigger (Pill Shape & Soft Dark) -->
-                    <div class="custom-select-trigger" onclick="window.toggleCustomSelect('sunoModelDropdown')" style="background: #222222; color: #E4E4E7; border: 1px solid #3F3F46; border-radius: 99px; padding: 10px 18px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); display: inline-flex; align-items: center; gap: 12px; width: max-content; cursor: pointer; transition: 0.2s;">
-                        <span id="activeSunoModelName" style="font-weight: 700; font-size: 0.85rem; display: flex; align-items: center; gap: 6px;">
+                    <!-- Suno Style Dropdown Trigger (Pill Shape & Light Theme) -->
+                    <div class="custom-select-trigger" onclick="window.toggleCustomSelect('sunoModelDropdown')" style="background: #ffffff; color: var(--text-primary); border: 1px solid var(--border-color); border-radius: 99px; padding: 8px 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.02); display: inline-flex; align-items: center; gap: 12px; width: max-content; cursor: pointer; transition: 0.2s; font-size: 0.85rem; height: 38px;">
+                        <span id="activeSunoModelName" style="font-weight: 700; display: flex; align-items: center; gap: 6px;">
                             Memuat Model...
                         </span>
-                        <i class="fa-solid fa-chevron-down" style="color: #A1A1AA; font-size: 0.75rem;"></i>
+                        <i class="fa-solid fa-chevron-down" style="color: var(--text-light); font-size: 0.75rem;"></i>
                     </div>
 
-                    <!-- Dropdown Options (Soft Dark) -->
-                    <div class="custom-select-options hidden" id="sunoModelDropdown" style="background: #222222; border: 1px solid #3F3F46; padding: 6px; border-radius: 16px; top: calc(100% + 8px); left: 0; z-index: 9999; max-height: 350px; overflow-y: auto; box-shadow: 0 10px 25px rgba(0,0,0,0.2); width: 100%; min-width: 280px; position: absolute;">
+                    <!-- Dropdown Options (Light Theme) -->
+                    <div class="custom-select-options hidden" id="sunoModelDropdown" style="background: #ffffff; border: 1px solid var(--border-color); padding: 6px; border-radius: 16px; top: calc(100% + 8px); left: 0; z-index: 9999; max-height: 350px; overflow-y: auto; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 100%; min-width: 280px; position: absolute;">
                         <!-- Diisi otomatis oleh JS -->
                     </div>
                     
@@ -4831,13 +4835,13 @@
                         if (globalAudioProviders.length > 0) {
                             // KAMUS DESKRIPSI MODEL FLIXA AI
                             const modelDict = {
-                                "v5.5": { name: "Flixa AI v5.5", badge: "Pro", desc: "Mendukung Suara Kustom, Model Kustom, dan Gaya Saya" },
-                                "v5": { name: "Flixa AI v5", badge: "Pro", desc: "Vokal autentik, kualitas audio dan kontrol superior" },
-                                "v4.5+": { name: "Flixa AI v4.5+", badge: "Pro", desc: "Metode pembuatan lanjutan" },
-                                "v4.5": { name: "Flixa AI v4.5", badge: "Pro", desc: "Prompt cerdas" },
-                                "v4.5-all": { name: "Flixa AI v4.5-all", badge: '<i class="fa-solid fa-circle-check"></i>', desc: "Model gratis terbaik" },
-                                "v4": { name: "Flixa AI v4", badge: "Pro", desc: "Kualitas suara yang ditingkatkan" },
-                                "v3.5": { name: "Flixa AI v3.5", badge: "", desc: "Model versi lama" }
+                                "v5.5": { name: "Flixa AI - v5.5", badge: "Pro", desc: "Mendukung Suara Kustom, Model Kustom, dan Gaya Saya" },
+                                "v5": { name: "Flixa AI - v5", badge: "Pro", desc: "Vokal autentik, kualitas audio dan kontrol superior" },
+                                "v4.5+": { name: "Flixa AI - v4.5+", badge: "Pro", desc: "Metode pembuatan lanjutan" },
+                                "v4.5": { name: "Flixa AI - v4.5", badge: "Pro", desc: "Prompt cerdas" },
+                                "v4.5-all": { name: "Flixa AI - v4.5-all", badge: '<i class="fa-solid fa-circle-check"></i>', desc: "Model gratis terbaik" },
+                                "v4": { name: "Flixa AI - v4", badge: "Pro", desc: "Kualitas suara yang ditingkatkan" },
+                                "v3.5": { name: "Flixa AI - v3.5", badge: "", desc: "Model versi lama" }
                             };
 
                             let unifiedModels = {};
@@ -4862,7 +4866,7 @@
                                         else unifiedVer = mod; // fallback
 
                                         if (!unifiedModels[unifiedVer]) {
-                                            const dictData = modelDict[unifiedVer] || { name: `Flixa AI ${unifiedVer.toUpperCase()}`, badge: "", desc: "Model Audio Kustom" };
+                                            const dictData = modelDict[unifiedVer] || { name: `Flixa AI - ${unifiedVer.toUpperCase()}`, badge: "", desc: "Model Audio Kustom" };
                                             unifiedModels[unifiedVer] = {
                                                 rawVals: new Set(),
                                                 name: dictData.name,
@@ -4900,23 +4904,23 @@
                                 return a.name.localeCompare(b.name);
                             });
 
-                            // Buat HTML Dropdown dengan warna Abu-abu Gelap (Soft Dark)
-                            let dropdownHtml = `<div style="font-size: 0.65rem; color: #A1A1AA; font-weight: 800; padding: 8px 12px; letter-spacing: 0.5px; text-transform: uppercase;">Semua Model</div>`;
+                            // Buat HTML Dropdown dengan warna Terang (Light Theme)
+                            let dropdownHtml = `<div style="font-size: 0.65rem; color: var(--text-light); font-weight: 800; padding: 8px 12px; letter-spacing: 0.5px; text-transform: uppercase;">Semua Model</div>`;
                             
                             allModels.forEach(m => {
                                 let badgeHtml = '';
                                 if (m.badge === 'Pro') {
-                                    badgeHtml = `<span style="background: #E4E4E7; color: #18181B; padding: 1px 6px; border-radius: 4px; font-size: 0.6rem; margin-left: 6px; font-weight: 800;">Pro</span>`;
+                                    badgeHtml = `<span style="background: var(--accent-color); color: #ffffff; padding: 1px 6px; border-radius: 4px; font-size: 0.6rem; margin-left: 6px; font-weight: 800;">Pro</span>`;
                                 } else if (m.badge) {
-                                    badgeHtml = `<span style="color: #E4E4E7; margin-left: 6px; font-size: 0.8rem;">${m.badge}</span>`;
+                                    badgeHtml = `<span style="color: var(--accent-color); margin-left: 6px; font-size: 0.8rem;">${m.badge}</span>`;
                                 }
 
                                 dropdownHtml += `
-                                    <div class="custom-select-option" style="padding: 12px; border-radius: 10px; cursor: pointer; transition: 0.2s;" onclick="window.selectSunoModel('${m.rawVal}', '${m.name}', '${m.badge}')" onmouseover="this.style.background='#3F3F46'" onmouseout="this.style.background='transparent'">
-                                        <div style="color: #F4F4F5; font-weight: 700; font-size: 0.95rem; display: flex; align-items: center;">
+                                    <div class="custom-select-option" style="padding: 12px; border-radius: 10px; cursor: pointer; transition: 0.2s;" onclick="window.selectSunoModel('${m.rawVal}', '${m.name}', '${m.badge}')" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='transparent'">
+                                        <div style="color: var(--text-primary); font-weight: 700; font-size: 0.95rem; display: flex; align-items: center;">
                                             ${m.name} ${badgeHtml}
                                         </div>
-                                        <div style="color: #A1A1AA; font-size: 0.75rem; margin-top: 4px; font-weight: 500;">
+                                        <div style="color: var(--text-secondary); font-size: 0.75rem; margin-top: 4px; font-weight: 500;">
                                             ${m.desc}
                                         </div>
                                     </div>
@@ -4933,9 +4937,9 @@
                                 
                                 let badgeHtml = '';
                                 if (badgeType === 'Pro') {
-                                    badgeHtml = `<span style="background: #E4E4E7; color: #18181B; padding: 1px 6px; border-radius: 4px; font-size: 0.6rem; margin-left: 6px; font-weight: 800;">Pro</span>`;
+                                    badgeHtml = `<span style="background: var(--accent-color); color: #ffffff; padding: 1px 6px; border-radius: 4px; font-size: 0.6rem; margin-left: 6px; font-weight: 800;">Pro</span>`;
                                 } else if (badgeType) {
-                                    badgeHtml = `<span style="color: #E4E4E7; margin-left: 6px; font-size: 0.8rem;">${badgeType}</span>`;
+                                    badgeHtml = `<span style="color: var(--accent-color); margin-left: 6px; font-size: 0.8rem;">${badgeType}</span>`;
                                 }
 
                                 document.getElementById('activeSunoModelName').innerHTML = `${modelName} ${badgeHtml}`;
