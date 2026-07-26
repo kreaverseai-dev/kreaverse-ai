@@ -7997,9 +7997,15 @@ window.startDspBypassAndUpload = async function() {
                 // 5. Kirim teks mentah dari Whisper ke LLM (Groq Llama 3.1)
                 statusText.innerText = "Flixa AI sedang merapikan struktur lagu...";
                 
-                const llmProviderId = document.getElementById('llmSelect').value;
-                const llmModelId = document.getElementById('llmModelSelect').value;
-                const vocalGenderVal = document.getElementById('vocalGenderSelect').value;
+                // Pengecekan Aman (Safe Fallback) agar tidak error "Cannot read properties of null"
+                const llmProviderEl = document.getElementById('llmSelect');
+                const llmModelEl = document.getElementById('llmModelSelect');
+                const vocalGenderEl = document.getElementById('vocalGenderSelect');
+                
+                const llmProviderId = llmProviderEl ? llmProviderEl.value : 'auto_pool';
+                const llmModelId = llmModelEl ? llmModelEl.value : 'auto_pool';
+                const vocalGenderVal = vocalGenderEl ? vocalGenderEl.value : 'not_specified';
+                
                 const currentMode = document.getElementById('modeGenerateBtn').classList.contains('active') ? 'generate' : 'cover';
 
                 const response = await fetch('/api/habirmx', {
