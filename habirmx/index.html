@@ -8011,6 +8011,9 @@ window.startDspBypassAndUpload = async function() {
                 
                 const currentMode = document.getElementById('modeGenerateBtn').classList.contains('active') ? 'generate' : 'cover';
 
+                // INJEKSI INSTRUKSI KETAT (ANTI-HALUSINASI & ANTI-TERJEMAHAN)
+                const strictInstruction = "TUGAS: Rapikan teks ini menjadi format lirik lagu untuk Suno AI (gunakan tag [Verse], [Chorus], dll).\n\nATURAN MUTLAK:\n1. JANGAN PERNAH menerjemahkan lirik.\n2. DILARANG KERAS menambahkan teks [Terjemahan: ...].\n3. HAPUS SEMUA huruf Mandarin/China/Jepang/Korea (itu adalah halusinasi AI saat mendengar instrumen).\n4. HANYA pertahankan lirik aslinya saja sesuai bahasa aslinya.\n5. Jangan tambahkan komentar apapun.\n\nLIRIK MENTAH:\n" + rawText;
+
                 const response = await fetch('/api/habirmx', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -8019,7 +8022,7 @@ window.startDspBypassAndUpload = async function() {
                         providerId: llmProviderId,
                         modelId: llmModelId,
                         llmType: 'lyrics',
-                        inputText: rawText,
+                        inputText: strictInstruction,
                         vocalGender: vocalGenderVal,
                         currentMode: currentMode
                     })
