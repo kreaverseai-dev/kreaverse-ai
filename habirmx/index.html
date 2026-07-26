@@ -3019,19 +3019,65 @@
         </div>
     </div>
 
-    <!-- MODAL OPSI LAINNYA (TITIK TIGA) -->
-    <div id="moreOptionsModalOverlay" class="krea-modal-overlay" style="z-index: 9999999;">
-        <div class="krea-modal-box" style="max-width: 320px; padding: 24px; border-radius: 24px; text-align: left;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
-                <h3 style="font-size: 1.1rem; font-weight: 900; color: var(--text-primary); margin: 0;">Opsi Lagu</h3>
-                <button onclick="window.closeMoreOptions()" style="background: rgba(15, 23, 42, 0.05); border: none; width: 30px; height: 30px; border-radius: 50%; font-size: 1.2rem; color: var(--text-secondary); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.2s;">&times;</button>
+    <!-- MODAL OPSI LAINNYA (SUNO STYLE BOTTOM SHEET) -->
+    <style>
+        .suno-bottom-sheet { background: #18181b; width: 100%; max-width: 500px; border-radius: 20px 20px 0 0; padding: 0; transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); display: flex; flex-direction: column; border-top: 1px solid #27272a; box-shadow: 0 -10px 40px rgba(0,0,0,0.5); }
+        .suno-menu-item { display: flex; align-items: center; justify-content: space-between; padding: 16px 20px; background: transparent; border: none; border-bottom: 1px solid #27272a; width: 100%; cursor: pointer; transition: background 0.2s; color: #e4e4e7; font-family: 'Plus Jakarta Sans', sans-serif; font-size: 0.95rem; font-weight: 600; text-align: left; }
+        .suno-menu-item:hover { background: #27272a; }
+        .suno-menu-item:last-child { border-bottom: none; }
+        .suno-menu-left { display: flex; align-items: center; gap: 16px; }
+        .suno-menu-left i { font-size: 1.1rem; width: 20px; text-align: center; color: #a1a1aa; }
+        .suno-menu-right i { font-size: 0.8rem; color: #52525b; }
+        .suno-menu-item.danger { color: #ef4444; }
+        .suno-menu-item.danger .suno-menu-left i { color: #ef4444; }
+        .suno-menu-item.pro { color: #f59e0b; }
+        .suno-menu-item.pro .suno-menu-left i { color: #f59e0b; }
+    </style>
+    <div id="moreOptionsModalOverlay" class="krea-modal-overlay" style="z-index: 9999999; align-items: flex-end; padding: 0; background: rgba(0,0,0,0.6);" onclick="if(event.target === this) window.closeMoreOptions()">
+        <div class="suno-bottom-sheet" id="sunoOptionsMenuSheet" onclick="event.stopPropagation()">
+            <!-- Handle Drag Indicator -->
+            <div style="display: flex; justify-content: center; padding: 12px 0 8px 0; cursor: pointer;" onclick="window.closeMoreOptions()">
+                <div style="width: 40px; height: 5px; background: #3f3f46; border-radius: 10px;"></div>
             </div>
-            <div style="display: flex; flex-direction: column; gap: 12px;">
-                <button id="btnOptDetail" class="btn-custom-upload-compact" style="width: 100%; justify-content: flex-start; padding: 14px 16px !important; font-size: 0.9rem !important; border-radius: 14px !important; background: #f8fafc !important; border: 1.5px solid #e2e8f0 !important; color: var(--text-primary) !important; box-shadow: 0 2px 4px rgba(0,0,0,0.02) !important;">
-                    <i class="fa-solid fa-compact-disc" style="width: 24px; color: var(--accent-color); font-size: 1.1rem;"></i> Detail Track
+            
+            <div style="padding: 0 20px 10px 20px;">
+                <div id="sunoMenuTitle" style="color: #fff; font-size: 1rem; font-weight: 800; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 2px;">Judul Lagu</div>
+                <div id="sunoMenuSubtitle" style="color: #a1a1aa; font-size: 0.75rem; font-weight: 500;">Opsi Track</div>
+            </div>
+
+            <!-- Menu List -->
+            <div style="display: flex; flex-direction: column; overflow-y: auto; max-height: 75vh; padding-bottom: 20px;">
+                <button class="suno-menu-item" onclick="window.menuAction('detail')">
+                    <div class="suno-menu-left"><i class="fa-solid fa-compact-disc"></i> Detail Track</div>
+                    <div class="suno-menu-right"><i class="fa-solid fa-chevron-right"></i></div>
                 </button>
-                <button id="btnOptMastering" class="btn-custom-upload-compact" style="width: 100%; justify-content: flex-start; padding: 14px 16px !important; font-size: 0.9rem !important; border-radius: 14px !important; background: linear-gradient(135deg, #1A1449, #D95040) !important; border: none !important; color: #fff !important; box-shadow: 0 6px 15px rgba(217, 80, 64, 0.3) !important;">
-                    <i class="fa-solid fa-wand-magic-sparkles" style="width: 24px; font-size: 1.1rem;"></i> Mastering Studio HD
+                <button class="suno-menu-item pro" onclick="window.menuAction('master_pro')">
+                    <div class="suno-menu-left"><i class="fa-solid fa-wand-magic-sparkles"></i> Mastering Pro (API)</div>
+                    <div class="suno-menu-right"><i class="fa-solid fa-chevron-right"></i></div>
+                </button>
+                <button class="suno-menu-item" onclick="window.menuAction('master_free')">
+                    <div class="suno-menu-left"><i class="fa-solid fa-wand-magic"></i> Mastering Free (Web)</div>
+                    <div class="suno-menu-right"><i class="fa-solid fa-chevron-right"></i></div>
+                </button>
+                <button class="suno-menu-item" onclick="window.menuAction('remix')">
+                    <div class="suno-menu-left"><i class="fa-solid fa-retweet"></i> Cover Kembali (Remix)</div>
+                    <div class="suno-menu-right"><i class="fa-solid fa-chevron-right"></i></div>
+                </button>
+                <button class="suno-menu-item" onclick="window.menuAction('playlist')">
+                    <div class="suno-menu-left"><i class="fa-solid fa-list-ul"></i> Tambahkan ke Playlist</div>
+                    <div class="suno-menu-right"><i class="fa-solid fa-chevron-right"></i></div>
+                </button>
+                <button class="suno-menu-item" onclick="window.menuAction('share')">
+                    <div class="suno-menu-left"><i class="fa-solid fa-share-nodes"></i> Bagikan</div>
+                    <div class="suno-menu-right"><i class="fa-solid fa-chevron-right"></i></div>
+                </button>
+                <button class="suno-menu-item" onclick="window.menuAction('download')">
+                    <div class="suno-menu-left"><i class="fa-solid fa-download"></i> Unduh Original</div>
+                    <div class="suno-menu-right"><i class="fa-solid fa-chevron-right"></i></div>
+                </button>
+                <button class="suno-menu-item danger" onclick="window.menuAction('delete')">
+                    <div class="suno-menu-left"><i class="fa-solid fa-trash"></i> Hapus Generate</div>
+                    <div class="suno-menu-right"></div>
                 </button>
             </div>
         </div>
@@ -3849,6 +3895,20 @@
                     document.getElementById('gmpPlayBtn').querySelector('i').className = 'fa-solid fa-play';
                     document.getElementById('gmpProgressFill').style.width = '0%';
                     document.getElementById('gmpCurrTime').innerText = '0:00';
+                    
+                    // LOGIKA AUTOPLAY PLAYLIST (SPOTIFY STYLE)
+                    if (window.globalPlaylistQueue && window.globalPlaylistQueue.length > 0) {
+                        const nextTrack = window.globalPlaylistQueue.shift(); // Ambil & hapus lagu pertama di antrean
+                        const cleanTitle = (nextTrack.title || "Untitled").replace(/\s*\(Part\s*\d+\)/gi, '').replace(/\s*-\s*Versi\s*\d+/gi, '').trim();
+                        const safeThumb = nextTrack.imageUrl || "https://i.postimg.cc/Jh211FTG/46cc61ec-de7f-4c62-8245-946e22312d2b.jpg";
+                        
+                        window.showIphoneToast("Memutar Playlist", `Selanjutnya: ${cleanTitle}`, "fa-play");
+                        
+                        // Jeda 1 detik agar natural, lalu putar lagu selanjutnya
+                        setTimeout(() => {
+                            window.playGlobalAudio(nextTrack.url, cleanTitle, safeThumb, nextTrack.id);
+                        }, 1000);
+                    }
                 });
             }
         });
@@ -8642,24 +8702,109 @@ window.startDspBypassAndUpload = async function() {
         // LOGIKA OPSI LAINNYA & MASTERING STUDIO
         // ============================================================
         let currentOptionsDocId = null;
+        window.globalPlaylistQueue = []; // Database Antrean Playlist Sementara
 
         window.openMoreOptions = function(docId) {
             currentOptionsDocId = docId;
-            document.getElementById('moreOptionsModalOverlay').classList.add('show');
-            
-            document.getElementById('btnOptDetail').onclick = () => {
-                window.closeMoreOptions();
-                window.openSongDetails(docId);
-            };
-            
-            document.getElementById('btnOptMastering').onclick = () => {
-                window.closeMoreOptions();
-                window.startMasteringProcess(docId);
-            };
+            const docData = window.globalLibraryDocs.find(d => d.id === docId);
+            if(docData) {
+                const cleanTitle = (docData.title || "Untitled").replace(/\s*\(Part\s*\d+\)/gi, '').replace(/\s*-\s*Versi\s*\d+/gi, '').trim();
+                document.getElementById('sunoMenuTitle').innerText = cleanTitle;
+            }
+
+            const overlay = document.getElementById('moreOptionsModalOverlay');
+            const sheet = document.getElementById('sunoOptionsMenuSheet');
+            overlay.classList.add('show');
+            setTimeout(() => { sheet.style.transform = 'translateY(0)'; }, 10);
         };
 
         window.closeMoreOptions = function() {
-            document.getElementById('moreOptionsModalOverlay').classList.remove('show');
+            const overlay = document.getElementById('moreOptionsModalOverlay');
+            const sheet = document.getElementById('sunoOptionsMenuSheet');
+            sheet.style.transform = 'translateY(100%)';
+            setTimeout(() => { overlay.classList.remove('show'); }, 300);
+        };
+
+        // KUMPULAN AKSI MENU SUNO
+        window.menuAction = function(actionType) {
+            const docId = currentOptionsDocId;
+            const docData = window.globalLibraryDocs.find(d => d.id === docId);
+            if (!docData) return;
+
+            window.closeMoreOptions();
+
+            setTimeout(() => {
+                switch(actionType) {
+                    case 'detail':
+                        window.openSongDetails(docId);
+                        break;
+                        
+                    case 'master_pro':
+                        // Placeholder untuk Server API Eksternal
+                        window.showIphoneToast("Mastering Pro", "Fitur Mastering Pro (Server API) sedang dalam tahap pengembangan.", "fa-wand-magic-sparkles");
+                        break;
+                        
+                    case 'master_free':
+                        window.startMasteringProcess(docId);
+                        break;
+                        
+                    case 'remix':
+                        // 1. Tentukan Mode
+                        if (docData.mode === 'cover') {
+                            window.switchMode('cover');
+                            if (docData.originalAudioUrl) {
+                                selectedAudioUrl = docData.originalAudioUrl;
+                                window.activateMiniPlayerUI("Audio_dari_Histori.mp3", "URL Diterapkan", "rgba(14,165,233,0.1)", "#0ea5e9");
+                                document.getElementById('originalAudioPlayer').src = selectedAudioUrl;
+                                document.getElementById('urlInputBox').classList.add('hidden');
+                                document.getElementById('uploadTriggerBox').classList.add('hidden');
+                            }
+                        } else {
+                            window.switchMode('generate');
+                        }
+
+                        // 2. Isi Lirik & Style
+                        document.getElementById('styleInput').value = docData.prompt || '';
+                        if(typeof updateCounter === 'function') updateCounter('styleInput', 'styleCounter', 1000);
+                        
+                        document.getElementById('lyricsInput').value = docData.lyrics || '';
+                        if(typeof updateCounter === 'function') updateCounter('lyricsInput', 'lyricsCounter', 5000);
+                        window.checkLyricsState();
+
+                        // 3. Isi Parameter Opsional
+                        if (docData.vocalGender) window.selectGenderOption(docData.vocalGender, docData.vocalGender === 'male' ? 'Male' : (docData.vocalGender === 'female' ? 'Female' : 'Not specified'));
+                        if (docData.personaId) document.getElementById('personaIdInput').value = docData.personaId;
+                        if (docData.styleWeight) { document.getElementById('styleWeightSlider').value = docData.styleWeight; document.getElementById('styleWeightVal').innerText = docData.styleWeight; }
+                        if (docData.weirdness) { document.getElementById('weirdnessSlider').value = docData.weirdness; document.getElementById('weirdnessVal').innerText = docData.weirdness; }
+                        if (docData.audioWeight) { document.getElementById('audioWeightSlider').value = docData.audioWeight; document.getElementById('audioWeightVal').innerText = docData.audioWeight; }
+
+                        // Auto scroll ke atas
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                        window.showIphoneToast("Remix Dimulai", "Semua pengaturan & lirik lagu berhasil dimuat ulang.", "fa-retweet");
+                        break;
+                        
+                    case 'playlist':
+                        window.globalPlaylistQueue.push(docData);
+                        window.showIphoneToast("Playlist", `Lagu berhasil ditambahkan ke antrean pemutaran (${window.globalPlaylistQueue.length} lagu).`, "fa-list-ul");
+                        break;
+                        
+                    case 'share':
+                        const cleanTitle = (docData.title || "Untitled").replace(/\s*\(Part\s*\d+\)/gi, '').replace(/\s*-\s*Versi\s*\d+/gi, '').trim();
+                        const shareUrl = `${window.location.href.split('?')[0]}?play=${docId}`;
+                        navigator.clipboard.writeText(`Dengarkan lagu AI buatanku: "${cleanTitle}" \n${shareUrl}`);
+                        window.showIphoneToast('Tersalin', 'Link lagu berhasil disalin untuk dibagikan!', 'fa-share-nodes');
+                        break;
+                        
+                    case 'download':
+                        const dlTitle = (docData.title || "Lagu_Original").replace(/\s*\(Part\s*\d+\)/gi, '').replace(/\s*-\s*Versi\s*\d+/gi, '').trim();
+                        window.downloadFileWithCustomName(docData.url, dlTitle);
+                        break;
+                        
+                    case 'delete':
+                        window.deleteLibraryItem(docId);
+                        break;
+                }
+            }, 350); // Tunggu animasi menu selesai turun
         };
 
         window.startMasteringProcess = async function(docId) {
