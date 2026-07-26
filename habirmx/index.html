@@ -1465,17 +1465,26 @@
             </style>
             <!-- Wallet Container sudah dipindahkan ke Sidebar Menu (Apiframe Style) -->
 
-            <!-- ENGINE SETTINGS (DESAIN PILL BARU) -->
+            <!-- ENGINE SETTINGS (SUNO STYLE MODEL SELECTOR) -->
             <div id="engineSettingsWrapper" style="margin-bottom: 24px;">
-                <div class="input-group" style="margin-bottom: 0;">
+                <div class="input-group" style="margin-bottom: 0; position: relative;">
                     <label style="display: flex; justify-content: space-between; align-items: center;">
-                        <span><i class="fa-solid fa-server" style="color: var(--accent-color); margin-right: 4px;"></i> Provider AI:</span>
-                        <span id="activeEngineLabel" style="color: var(--accent-color); font-weight: 800; font-size: 0.75rem;">Flixa AI 5.5 PRO</span>
+                        <span><i class="fa-solid fa-compact-disc" style="color: var(--accent-color); margin-right: 4px;"></i> Versi Model AI:</span>
                     </label>
                     
-                    <!-- Scrollable Pill Container -->
-                    <div id="providerPillsContainer" style="display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px; scrollbar-width: none; -ms-overflow-style: none; margin-top: 4px;">
-                        <button type="button" class="mode-btn active" style="white-space: nowrap; flex: 0 0 auto;">Memuat...</button>
+                    <!-- Suno Style Dropdown Trigger -->
+                    <div class="custom-select-trigger" onclick="window.toggleCustomSelect('sunoModelDropdown')" style="background: #18181B; color: #fff; border: 1px solid #27272A; border-radius: 12px; padding: 12px 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+                        <div style="display: flex; flex-direction: column; align-items: flex-start; gap: 2px;">
+                            <span id="activeSunoModelName" style="font-weight: 800; font-size: 0.95rem; display: flex; align-items: center; gap: 6px;">
+                                Memuat Model...
+                            </span>
+                        </div>
+                        <i class="fa-solid fa-chevron-down" style="color: #71717A;"></i>
+                    </div>
+
+                    <!-- Dropdown Options -->
+                    <div class="custom-select-options hidden" id="sunoModelDropdown" style="background: #18181B; border: 1px solid #27272A; padding: 6px; border-radius: 12px; top: calc(100% + 6px); z-index: 9999; max-height: 350px; overflow-y: auto; box-shadow: 0 10px 25px rgba(0,0,0,0.3);">
+                        <!-- Diisi otomatis oleh JS -->
                     </div>
                     
                     <!-- Hidden inputs untuk sistem backend -->
@@ -4812,26 +4821,100 @@
                         });
                         
                         if (globalAudioProviders.length > 0) {
-                            // INJEKSI OPSI PILL BUTTONS (DESAIN BARU)
-                            let pillsHtml = `<button type="button" class="mode-btn active" style="white-space: nowrap; flex: 0 0 auto;" onclick="window.selectProviderOption('auto_pool', 'Flixa AI 5.5 PRO')"><i class="fa-solid fa-wand-magic-sparkles" style="color: #f59e0b;"></i> Flixa AI 5.5 PRO</button>`;
-                            
-                            globalAudioProviders.forEach(m => {
-                                pillsHtml += `<button type="button" class="mode-btn" style="white-space: nowrap; flex: 0 0 auto;" onclick="window.selectProviderOption('${m.value}', '${m.label.replace(/'/g, "\\'")}')">${m.label}</button>`;
+                            // KAMUS DESKRIPSI MODEL ALA SUNO AI
+                            const modelDict = {
+                                "v5_5": { name: "v5.5", badge: "Pro", desc: "Powers Voices, Custom Models and My Taste" },
+                                "v5": { name: "v5", badge: "Pro", desc: "Authentic vocals, superior audio quality and control" },
+                                "v4_5+": { name: "v4.5+", badge: "Pro", desc: "Advanced creation methods" },
+                                "v4_5": { name: "v4.5", badge: "Pro", desc: "Intelligent prompts" },
+                                "v4_5-all": { name: "v4.5-all", badge: '<i class="fa-solid fa-circle-check"></i>', desc: "Best free model" },
+                                "v4": { name: "v4", badge: "Pro", desc: "Improved sound quality" },
+                                "v3_5": { name: "v3.5", badge: "", desc: "Legacy model" }
+                            };
+
+                            let allModels = [];
+                            let seenModels = new Set();
+
+                            // Ekstrak semua model dari provider Audio yang ada di Dasbor Admin
+                            globalAudioProviders.forEach(p => {
+                                if (p.models) {
+                                    const mList = p.models.split(',').map(m => m.trim()).filter(m => m);
+                                    mList.forEach(mod => {
+                                        const modKey = mod.toLowerCase();
+                                        if (!seenModels.has(modKey)) {
+                                            seenModels.add(modKey);
+                                            // Ambil data dari kamus, jika tidak ada buat default
+                                            const dictData = modelDict[modKey] || { name: mod, badge: "", desc: "Custom Audio Model" };
+                                            allModels.push({
+                                                rawVal: mod,
+                                                providerVal: p.value, // Simpan asal providernya
+                                                name: dictData.name,
+                                                badge: dictData.badge,
+                                                desc: dictData.desc
+                                            });
+                                        }
+                                    });
+                                }
                             });
+
+                            // Urutkan model (v5.5 paling atas)
+                            allModels.sort((a, b) => b.name.localeCompare(a.name));
+
+                            // Buat HTML Dropdown
+                            let dropdownHtml = `<div style="font-size: 0.65rem; color: #71717A; font-weight: 800; padding: 8px 12px; letter-spacing: 0.5px;">ALL MODELS</div>`;
                             
-                            const pillsContainer = document.getElementById('providerPillsContainer');
-                            if (pillsContainer) pillsContainer.innerHTML = pillsHtml;
+                            allModels.forEach(m => {
+                                let badgeHtml = '';
+                                if (m.badge === 'Pro') {
+                                    badgeHtml = `<span style="background: #fff; color: #000; padding: 1px 6px; border-radius: 4px; font-size: 0.6rem; margin-left: 6px;">Pro</span>`;
+                                } else if (m.badge) {
+                                    badgeHtml = `<span style="color: #fff; margin-left: 6px; font-size: 0.8rem;">${m.badge}</span>`;
+                                }
+
+                                dropdownHtml += `
+                                    <div class="custom-select-option" style="padding: 12px; border-radius: 8px; cursor: pointer; transition: 0.2s;" onclick="window.selectSunoModel('${m.rawVal}', '${m.name}', '${m.badge}', '${m.providerVal}')" onmouseover="this.style.background='#27272A'" onmouseout="this.style.background='transparent'">
+                                        <div style="color: #fff; font-weight: 700; font-size: 0.95rem; display: flex; align-items: center;">
+                                            ${m.name} ${badgeHtml}
+                                        </div>
+                                        <div style="color: #A1A1AA; font-size: 0.75rem; margin-top: 4px; font-weight: 500;">
+                                            ${m.desc}
+                                        </div>
+                                    </div>
+                                `;
+                            });
+
+                            const dropdownContainer = document.getElementById('sunoModelDropdown');
+                            if (dropdownContainer) dropdownContainer.innerHTML = dropdownHtml;
+
+                            // FUNGSI UNTUK MENANGANI KLIK MODEL
+                            window.selectSunoModel = function(modelVal, modelName, badgeType, providerVal) {
+                                document.getElementById('modelSelect').value = modelVal;
+                                // Gunakan auto_pool agar backend mencari provider yang punya model ini
+                                document.getElementById('providerSelect').value = 'auto_pool'; 
+                                
+                                let badgeHtml = '';
+                                if (badgeType === 'Pro') {
+                                    badgeHtml = `<span style="background: #fff; color: #000; padding: 1px 6px; border-radius: 4px; font-size: 0.6rem; margin-left: 6px;">Pro</span>`;
+                                } else if (badgeType) {
+                                    badgeHtml = `<span style="color: #fff; margin-left: 6px; font-size: 0.8rem;">${badgeType}</span>`;
+                                }
+
+                                document.getElementById('activeSunoModelName').innerHTML = `${modelName} ${badgeHtml}`;
+                                document.getElementById('sunoModelDropdown').classList.add('hidden');
+                                
+                                localStorage.setItem('kreaverse_last_model', modelVal);
+                            };
+
+                            // AUTO-SELECT MODEL PERTAMA (AGAR BISA LANGSUNG GENERATE)
+                            const savedModel = localStorage.getItem('kreaverse_last_model');
+                            const targetModel = allModels.find(m => m.rawVal === savedModel) || allModels[0];
                             
-                            // Set default ke Auto Pool
-                            const providerSelectInput = document.getElementById('providerSelect');
-                            if (providerSelectInput && !providerSelectInput.value) {
-                                providerSelectInput.value = 'auto_pool';
-                                const activeLabel = document.getElementById('activeEngineLabel');
-                                if (activeLabel) activeLabel.innerText = 'Flixa AI 5.5 PRO';
+                            if (targetModel) {
+                                window.selectSunoModel(targetModel.rawVal, targetModel.name, targetModel.badge, targetModel.providerVal);
                             }
+
                         } else {
-                            const pillsContainer = document.getElementById('providerPillsContainer');
-                            if (pillsContainer) pillsContainer.innerHTML = `<span style="font-size:0.8rem; color:var(--danger-color);">Tidak ada provider aktif</span>`;
+                            document.getElementById('activeSunoModelName').innerHTML = `<span style="color: #ef4444;">Tidak ada model aktif</span>`;
                         }
 
                         // Fungsi Smart Formatter untuk merapikan nama model API bawaan
