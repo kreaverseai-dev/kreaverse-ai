@@ -5049,13 +5049,76 @@
         // PENGELOLA PROVIDER & MODEL GENERATOR
         // ============================================================
         function loadDynamicModels() {
-            const providerDropdown = document.getElementById('providerDropdown');
-            const providerSelectedLabel = document.getElementById('providerSelectedLabel');
-            const llmDropdown = document.getElementById('llmDropdown');
-            const llmSelectedLabel = document.getElementById('llmSelectedLabel');
+            const activeSunoModelName = document.getElementById('activeSunoModelName');
+            const sunoModelDropdown = document.getElementById('sunoModelDropdown');
             
-            if (providerSelectedLabel) providerSelectedLabel.innerText = "Memuat provider...";
-            if (llmSelectedLabel) llmSelectedLabel.innerText = "Memuat model chat...";
+            if (activeSunoModelName) activeSunoModelName.innerHTML = "Memuat Model...";
+
+            // Fungsi Helper untuk merender model ke dropdown
+            const renderModelsToDropdown = (modelsList) => {
+                if (!sunoModelDropdown || !activeSunoModelName) return;
+                
+                let dropdownHtml = `<div style="font-size: 0.65rem; color: var(--text-light); font-weight: 800; padding: 8px 12px; letter-spacing: 0.5px; text-transform: uppercase;">Semua Model</div>`;
+                
+                modelsList.forEach(m => {
+                    let badgeHtml = '';
+                    if (m.badge === 'Pro') {
+                        badgeHtml = `<span style="background: var(--accent-color); color: #ffffff; padding: 1px 6px; border-radius: 4px; font-size: 0.6rem; margin-left: 6px; font-weight: 800;">Pro</span>`;
+                    } else if (m.badge) {
+                        badgeHtml = `<span style="color: var(--accent-color); margin-left: 6px; font-size: 0.8rem;">${m.badge}</span>`;
+                    }
+
+                    dropdownHtml += `
+                        <div class="custom-select-option" style="padding: 12px; border-radius: 10px; cursor: pointer; transition: 0.2s;" onclick="window.selectSunoModel('${m.rawVal}', '${m.name}', '${m.badge}')" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='transparent'">
+                            <div style="color: var(--text-primary); font-weight: 700; font-size: 0.95rem; display: flex; align-items: center;">
+                                ${m.name} ${badgeHtml}
+                            </div>
+                            <div style="color: var(--text-secondary); font-size: 0.75rem; margin-top: 4px; font-weight: 500;">
+                                ${m.desc}
+                            </div>
+                        </div>
+                    `;
+                });
+                sunoModelDropdown.innerHTML = dropdownHtml;
+
+                // FUNGSI UNTUK MENANGANI KLIK MODEL
+                window.selectSunoModel = function(modelVal, modelName, badgeType) {
+                    const modelSelect = document.getElementById('modelSelect');
+                    const providerSelect = document.getElementById('providerSelect');
+                    if(modelSelect) modelSelect.value = modelVal;
+                    if(providerSelect) providerSelect.value = 'auto_pool';
+                    
+                    let badgeHtml = '';
+                    if (badgeType === 'Pro') {
+                        badgeHtml = `<span style="background: var(--accent-color); color: #ffffff; padding: 1px 6px; border-radius: 4px; font-size: 0.6rem; margin-left: 6px; font-weight: 800;">Pro</span>`;
+                    } else if (badgeType) {
+                        badgeHtml = `<span style="color: var(--accent-color); margin-left: 6px; font-size: 0.8rem;">${badgeType}</span>`;
+                    }
+
+                    const activeLabel = document.getElementById('activeSunoModelName');
+                    if(activeLabel) activeLabel.innerHTML = `${modelName} ${badgeHtml}`;
+                    
+                    const dropdown = document.getElementById('sunoModelDropdown');
+                    if(dropdown) dropdown.classList.add('hidden');
+                    
+                    localStorage.setItem('kreaverse_last_model', modelVal);
+                };
+
+                // AUTO-SELECT MODEL PERTAMA (AGAR BISA LANGSUNG GENERATE)
+                const savedModel = localStorage.getItem('kreaverse_last_model');
+                const targetModel = modelsList.find(m => m.rawVal === savedModel) || modelsList[0];
+                
+                if (targetModel) {
+                    window.selectSunoModel(targetModel.rawVal, targetModel.name, targetModel.badge);
+                }
+            };
+
+            // Fallback Models jika gagal load dari Firebase atau belum login
+            const fallbackModels = [
+                { rawVal: "v5.5", name: "Flixa AI - v5.5", badge: "Pro", desc: "Mendukung Suara Kustom, Model Kustom, dan Gaya Saya", sortKey: "v5.5" },
+                { rawVal: "v5", name: "Flixa AI - v5", badge: "Pro", desc: "Vokal autentik, kualitas audio dan kontrol superior", sortKey: "v5" },
+                { rawVal: "v4.5-all", name: "Flixa AI - v4.5-all", badge: '<i class="fa-solid fa-circle-check"></i>', desc: "Model gratis terbaik", sortKey: "v4.5-all" }
+            ];
 
             try {
                 onSnapshot(doc(db, "settings", "api_providers"), (docSnap) => {
@@ -5141,174 +5204,29 @@
                                 return a.name.localeCompare(b.name);
                             });
 
-                            // Buat HTML Dropdown dengan warna Terang (Light Theme)
-                            let dropdownHtml = `<div style="font-size: 0.65rem; color: var(--text-light); font-weight: 800; padding: 8px 12px; letter-spacing: 0.5px; text-transform: uppercase;">Semua Model</div>`;
-                            
-                            allModels.forEach(m => {
-                                let badgeHtml = '';
-                                if (m.badge === 'Pro') {
-                                    badgeHtml = `<span style="background: var(--accent-color); color: #ffffff; padding: 1px 6px; border-radius: 4px; font-size: 0.6rem; margin-left: 6px; font-weight: 800;">Pro</span>`;
-                                } else if (m.badge) {
-                                    badgeHtml = `<span style="color: var(--accent-color); margin-left: 6px; font-size: 0.8rem;">${m.badge}</span>`;
-                                }
-
-                                dropdownHtml += `
-                                    <div class="custom-select-option" style="padding: 12px; border-radius: 10px; cursor: pointer; transition: 0.2s;" onclick="window.selectSunoModel('${m.rawVal}', '${m.name}', '${m.badge}')" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='transparent'">
-                                        <div style="color: var(--text-primary); font-weight: 700; font-size: 0.95rem; display: flex; align-items: center;">
-                                            ${m.name} ${badgeHtml}
-                                        </div>
-                                        <div style="color: var(--text-secondary); font-size: 0.75rem; margin-top: 4px; font-weight: 500;">
-                                            ${m.desc}
-                                        </div>
-                                    </div>
-                                `;
-                            });
-
-                            const dropdownContainer = document.getElementById('sunoModelDropdown');
-                            if (dropdownContainer) dropdownContainer.innerHTML = dropdownHtml;
-
-                            // FUNGSI UNTUK MENANGANI KLIK MODEL
-                            window.selectSunoModel = function(modelVal, modelName, badgeType) {
-                                document.getElementById('modelSelect').value = modelVal;
-                                document.getElementById('providerSelect').value = 'auto_pool'; // Pastikan selalu auto_pool
-                                
-                                let badgeHtml = '';
-                                if (badgeType === 'Pro') {
-                                    badgeHtml = `<span style="background: var(--accent-color); color: #ffffff; padding: 1px 6px; border-radius: 4px; font-size: 0.6rem; margin-left: 6px; font-weight: 800;">Pro</span>`;
-                                } else if (badgeType) {
-                                    badgeHtml = `<span style="color: var(--accent-color); margin-left: 6px; font-size: 0.8rem;">${badgeType}</span>`;
-                                }
-
-                                document.getElementById('activeSunoModelName').innerHTML = `${modelName} ${badgeHtml}`;
-                                document.getElementById('sunoModelDropdown').classList.add('hidden');
-                                
-                                localStorage.setItem('kreaverse_last_model', modelVal);
-                            };
-
-                            // AUTO-SELECT MODEL PERTAMA (AGAR BISA LANGSUNG GENERATE)
-                            const savedModel = localStorage.getItem('kreaverse_last_model');
-                            const targetModel = allModels.find(m => m.rawVal === savedModel) || allModels[0];
-                            
-                            if (targetModel) {
-                                window.selectSunoModel(targetModel.rawVal, targetModel.name, targetModel.badge);
-                            }
+                            renderModelsToDropdown(allModels);
 
                         } else {
-                            document.getElementById('activeSunoModelName').innerHTML = `<span style="color: #ef4444;">Tidak ada model aktif</span>`;
+                            renderModelsToDropdown(fallbackModels);
                         }
 
-                        // Fungsi Smart Formatter untuk merapikan nama model API bawaan
-                        function formatLlmModelName(rawName) {
-                            if (!rawName) return "";
-                            let name = rawName.replace(/[-_]/g, ' '); 
-                            name = name.replace(/\b\w/g, l => l.toUpperCase());
-                            name = name.replace(/Llama 3 1/gi, 'Llama 3.1');
-                            name = name.replace(/Llama3/gi, 'Llama 3');
-                            name = name.replace(/Deepseek/gi, 'DeepSeek');
-                            name = name.replace(/V3 1/gi, 'V3.1');
-                            name = name.replace(/\b(\d+)b\b/gi, '$1B');
-                            const variants = ['Instant', 'Instruct', 'Pro', 'Chat', 'Ultra', 'Lite', 'Base'];
-                            variants.forEach(v => {
-                                const regex = new RegExp(`\\b${v}\\b`, 'i');
-                                if (regex.test(name)) {
-                                    name = name.replace(regex, '').trim() + ` (${v})`;
-                                }
-                            });
-                            name = name.replace(/\b(\d+B)\s*\((.*?)\)/i, '($1 $2)');
-                            return name.replace(/\s+/g, ' ').trim();
-                        }
-
-                        // Filter LLM Providers
+                        // Filter LLM Providers (Untuk Magic Wand)
                         globalLlmProviders = list.filter(m => {
                             if (!m.serviceType) return false;
                             const type = String(m.serviceType).toLowerCase();
                             return type === "llm" || type === "text" || type === "chat";
                         });
-                        
-                        if (globalLlmProviders.length > 0) {
-                            if (llmSelectedLabel) llmSelectedLabel.innerText = "Pilih Model Chat AI...";
-                            
-                            let llmOptionsHtml = `<div class="custom-select-option" style="color:var(--accent-color); background:rgba(0,122,255,0.05);" onclick="window.selectLlmOption('auto_pool', 'auto_pool', 'Otomatis (Auto Fallback)')">
-                                <span style="font-weight:800;"><i class="fa-solid fa-wand-magic-sparkles"></i> Otomatis (Auto Fallback)</span>
-                                <span style="font-size:0.65rem; color:#94a3b8; display:block; margin-top:2px;">Mencari model & server aktif secara otomatis</span>
-                            </div>`;
-                            
-                            globalLlmProviders.forEach(p => {
-                                if (p.models) {
-                                    const models = p.models.split(',').map(m => m.trim()).filter(m => m);
-                                    models.forEach(modelName => {
-                                        let displayLabel = formatLlmModelName(modelName);
-                                        llmOptionsHtml += `<div class="custom-select-option" onclick="window.selectLlmOption('${p.value}', '${modelName.replace(/'/g, "\\'")}', '${displayLabel.replace(/'/g, "\\'")}')">
-                                            <span style="font-weight:800;">${displayLabel}</span> 
-                                            <span style="font-size:0.65rem; color:#94a3b8; display:block; margin-top:2px;">Server: ${p.label}</span>
-                                        </div>`;
-                                    });
-                                } else {
-                                    let displayLabel = formatLlmModelName(p.label);
-                                    llmOptionsHtml += `<div class="custom-select-option" onclick="window.selectLlmOption('${p.value}', '', '${displayLabel.replace(/'/g, "\\'")}')">
-                                        <span style="font-weight:800;">${displayLabel}</span> 
-                                        <span style="font-size:0.65rem; color:#94a3b8; display:block; margin-top:2px;">Server: ${p.label}</span>
-                                    </div>`;
-                                }
-                            });
-                            
-                            if (llmDropdown) llmDropdown.innerHTML = llmOptionsHtml;
-                            
-                            const llmSelectInput = document.getElementById('llmSelect');
-                            const llmModelSelectInput = document.getElementById('llmModelSelect');
-                            if (llmSelectInput && !llmSelectInput.value) {
-                                llmSelectInput.value = 'auto_pool';
-                                if (llmModelSelectInput) llmModelSelectInput.value = 'auto_pool';
-                                if (llmSelectedLabel) llmSelectedLabel.innerText = 'Otomatis (Auto Fallback)';
-                            }
-                        } else {
-                            if (llmSelectedLabel) llmSelectedLabel.innerText = "Tidak ada model chat aktif";
-                        }
-
-                        // RESTORE SAVED STATE (LOCAL STORAGE)
-                        setTimeout(() => {
-                            const savedMode = localStorage.getItem('kreaverse_last_mode');
-                            if (savedMode === 'cover') window.switchMode('cover');
-
-                            const savedProvider = localStorage.getItem('kreaverse_last_provider');
-                            if (savedProvider && globalAudioProviders.find(p => p.value === savedProvider)) {
-                                const pData = globalAudioProviders.find(p => p.value === savedProvider);
-                                window.selectProviderOption(savedProvider, pData.label);
-                                
-                                const savedModel = localStorage.getItem('kreaverse_last_model');
-                                if (savedModel) {
-                                    setTimeout(() => {
-                                        const modelDropdownEl = document.getElementById('modelDropdown');
-                                        if (modelDropdownEl) {
-                                            const modelOpts = modelDropdownEl.querySelectorAll('.custom-select-option');
-                                            modelOpts.forEach(opt => {
-                                                if (opt.innerText.includes(savedModel) || savedModel.includes(opt.innerText.split(' - ')[0])) {
-                                                    opt.click();
-                                                }
-                                            });
-                                        }
-                                    }, 200);
-                                }
-                            }
-
-                            const savedLlmProvider = localStorage.getItem('kreaverse_last_llm_provider');
-                            const savedLlmModel = localStorage.getItem('kreaverse_last_llm_model');
-                            if (savedLlmProvider && savedLlmModel) {
-                                let displayLabel = savedLlmModel;
-                                if (savedLlmModel === 'auto' || savedLlmModel === 'auto_pool') {
-                                    displayLabel = 'Otomatis (Auto Fallback)';
-                                }
-                                window.selectLlmOption(savedLlmProvider, savedLlmModel, displayLabel);
-                            }
-                        }, 100);
 
                     } else {
-                        if (providerSelectedLabel) providerSelectedLabel.innerText = "Gagal memuat provider";
-                        if (llmSelectedLabel) llmSelectedLabel.innerText = "Gagal memuat model chat";
+                        renderModelsToDropdown(fallbackModels);
                     }
+                }, (error) => {
+                    console.error("Error fetching providers:", error);
+                    renderModelsToDropdown(fallbackModels);
                 });
             } catch (e) {
-                if (providerSelectedLabel) providerSelectedLabel.innerText = "Gagal memuat provider";
+                console.error("Try-catch error fetching providers:", e);
+                renderModelsToDropdown(fallbackModels);
             }
         }
 
