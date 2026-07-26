@@ -8847,6 +8847,31 @@ window.startDspBypassAndUpload = async function() {
             }, 350); // Tunggu animasi menu selesai turun
         };
 
+        // Global variables for live preview
+        let mstLiveAudioCtx = null;
+        let mstLiveSource = null;
+        let mstLiveNodes = {};
+        let mstLiveAnimFrame = null;
+        let mstOfflineArrayBuffer = null;
+        let mstIsPlaying = false;
+        let mstStartTime = 0;
+        let mstPauseTime = 0;
+
+        window.closeMstModal = function() {
+            if (mstLiveSource) {
+                try { mstLiveSource.stop(); } catch(e) {}
+                mstLiveSource.disconnect();
+                mstLiveSource = null;
+            }
+            if (mstLiveAudioCtx && mstLiveAudioCtx.state !== 'closed') {
+                mstLiveAudioCtx.close();
+            }
+            cancelAnimationFrame(mstLiveAnimFrame);
+            mstIsPlaying = false;
+            mstPauseTime = 0;
+            document.getElementById('masteringProModal').classList.remove('show');
+        };
+
         window.startMasteringProcess = async function(docId) {
             const docData = window.globalLibraryDocs.find(d => d.id === docId);
             if (!docData) return;
@@ -8856,7 +8881,7 @@ window.startDspBypassAndUpload = async function() {
                 return;
             }
 
-            // Buat Modal UI Mastering Profesional secara Dinamis (Sesuai Gambar Referensi)
+            // Buat Modal UI Mastering Profesional secara Dinamis
             let overlay = document.getElementById('masteringProModal');
             if (!overlay) {
                 overlay = document.createElement('div');
@@ -8865,7 +8890,7 @@ window.startDspBypassAndUpload = async function() {
                 overlay.style.zIndex = '9999999';
                 overlay.style.background = 'rgba(15, 23, 42, 0.8)';
                 
-                // Inject CSS Khusus untuk UI Mastering ini
+                // Inject CSS Khusus
                 const style = document.createElement('style');
                 style.innerHTML = `
                     .mst-container { background: #eef2f6; width: 100%; max-width: 400px; height: 90vh; border-radius: 20px; display: flex; flex-direction: column; overflow: hidden; font-family: 'Plus Jakarta Sans', sans-serif; position: relative; box-shadow: 0 20px 50px rgba(0,0,0,0.3); }
@@ -8876,13 +8901,19 @@ window.startDspBypassAndUpload = async function() {
                     .mst-card { background: #ffffff; border-radius: 16px; padding: 20px; margin-bottom: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); }
                     .mst-card-title { font-size: 0.8rem; font-weight: 900; color: #0f172a; text-transform: uppercase; margin-bottom: 16px; letter-spacing: 0.5px; }
                     
-                    .mst-btn-import { background: #6b4c9a; color: #fff; width: 100%; padding: 14px; border-radius: 12px; border: none; font-weight: 700; font-size: 0.95rem; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 10px rgba(107, 76, 154, 0.3); pointer-events: none; }
-                    
                     .mst-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
                     .mst-label { font-size: 0.8rem; font-weight: 700; color: #0f172a; margin-bottom: 8px; display: block; }
-                    .mst-select { width: 100%; padding: 12px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; font-size: 0.9rem; font-weight: 600; color: #334155; outline: none; appearance: none; }
                     
-                    .mst-pill-group { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+                    /* CUSTOM DROPDOWN CSS */
+                    .mst-custom-select { position: relative; }
+                    .mst-custom-trigger { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 12px; font-size: 0.85rem; font-weight: 700; color: #0f172a; display: flex; justify-content: space-between; align-items: center; cursor: pointer; transition: 0.2s; }
+                    .mst-custom-trigger:active { transform: scale(0.98); }
+                    .mst-custom-options { position: absolute; top: calc(100% + 4px); left: 0; width: 100%; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 10px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); z-index: 100; max-height: 200px; overflow-y: auto; }
+                    .mst-custom-option { padding: 10px 12px; font-size: 0.85rem; font-weight: 600; color: #334155; cursor: pointer; border-bottom: 1px solid #f1f5f9; }
+                    .mst-custom-option:hover { background: #f8fafc; color: #06b6d4; }
+                    .mst-custom-option.selected { background: rgba(6,182,212,0.1); color: #06b6d4; }
+                    
+                    .mst-pill-group { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 6px; }
                     .mst-pill { background: #f1f5f9; color: #475569; border: 1px solid #e2e8f0; padding: 8px 16px; border-radius: 99px; font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: 0.2s; }
                     .mst-pill.active { background: #06b6d4; color: #fff; border-color: #06b6d4; box-shadow: 0 4px 10px rgba(6, 182, 212, 0.3); }
                     
@@ -8890,7 +8921,6 @@ window.startDspBypassAndUpload = async function() {
                     .mst-slider-label { width: 60px; font-size: 0.85rem; font-weight: 700; color: #0f172a; }
                     .mst-slider-val { width: 60px; font-size: 0.85rem; font-weight: 800; color: #0f172a; text-align: right; }
                     
-                    /* Custom Slider CSS */
                     .mst-slider { flex: 1; -webkit-appearance: none; height: 6px; background: #e2e8f0; border-radius: 10px; outline: none; position: relative; }
                     .mst-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 16px; height: 16px; border-radius: 50%; background: #fbcfe8; border: 2px solid #06b6d4; cursor: pointer; position: relative; z-index: 2; }
                     .mst-slider-track { position: absolute; top: 0; left: 0; height: 100%; background: #06b6d4; border-radius: 10px; z-index: 1; pointer-events: none; }
@@ -8907,15 +8937,22 @@ window.startDspBypassAndUpload = async function() {
                 overlay.innerHTML = `
                     <div class="mst-container">
                         <div class="mst-header">
-                            <button class="mst-close" onclick="document.getElementById('masteringProModal').classList.remove('show')"><i class="fa-solid fa-bars"></i></button>
+                            <button class="mst-close" onclick="window.closeMstModal()"><i class="fa-solid fa-bars"></i></button>
                             <h2 class="mst-title" id="mstMainTitle">Auto Mastering</h2>
                             <div style="width: 30px;"></div>
                         </div>
                         
                         <div class="mst-body" id="mstBodyAuto">
-                            <div class="mst-card" style="background: transparent; box-shadow: none; padding: 0 0 16px 0;">
-                                <button class="mst-btn-import">+ Import Audio</button>
-                                <div style="text-align: center; margin-top: 8px; font-size: 0.75rem; color: #64748b; font-weight: 600;" id="mstAudioName">Memuat audio...</div>
+                            <!-- LIVE PREVIEW CARD (REAL-TIME) -->
+                            <div class="mst-card" style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); padding: 16px; display: flex; align-items: center; justify-content: space-between;">
+                                <div style="display: flex; align-items: center; gap: 12px; flex: 1; min-width: 0;">
+                                    <button id="mstPlayBtn" style="width: 44px; height: 44px; border-radius: 50%; background: #10b981; border: none; color: #fff; font-size: 1.2rem; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 10px rgba(16, 185, 129, 0.3); flex-shrink: 0;"><i class="fa-solid fa-spinner fa-spin"></i></button>
+                                    <div style="flex: 1; min-width: 0;">
+                                        <div id="mstAudioName" style="font-size: 0.85rem; font-weight: 800; color: #0f172a; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Memuat audio...</div>
+                                        <div id="mstLiveTime" style="font-size: 0.75rem; color: #10b981; font-weight: 600;">Menyiapkan audio...</div>
+                                    </div>
+                                </div>
+                                <div style="font-size: 0.65rem; color: #10b981; font-weight: 800; background: rgba(16,185,129,0.2); padding: 4px 8px; border-radius: 6px; flex-shrink: 0; margin-left: 10px;">LIVE DSP</div>
                             </div>
                             
                             <div class="mst-card">
@@ -8923,22 +8960,34 @@ window.startDspBypassAndUpload = async function() {
                                 <div class="mst-grid-2">
                                     <div>
                                         <span class="mst-label">Genre Engine</span>
-                                        <select id="mstGenre" class="mst-select">
-                                            <option value="pop">Pop / Balanced</option>
-                                            <option value="dj">DJ / EDM</option>
-                                            <option value="dangdut">Dangdut / Koplo</option>
-                                            <option value="sholawat">Sholawat / Religi</option>
-                                            <option value="rock">Rock / Metal</option>
-                                            <option value="cinematic">Cinematic / Epic</option>
-                                        </select>
+                                        <div class="mst-custom-select">
+                                            <div class="mst-custom-trigger" onclick="window.toggleMstDrop('genreDrop')">
+                                                <span id="mstGenreLabel">Pop / Balanced</span> <i class="fa-solid fa-chevron-down"></i>
+                                            </div>
+                                            <div class="mst-custom-options hidden" id="genreDrop">
+                                                <div class="mst-custom-option selected" onclick="window.selectMstOption('Genre', 'pop', 'Pop / Balanced')">Pop / Balanced</div>
+                                                <div class="mst-custom-option" onclick="window.selectMstOption('Genre', 'dj', 'DJ / EDM')">DJ / EDM</div>
+                                                <div class="mst-custom-option" onclick="window.selectMstOption('Genre', 'dangdut', 'Dangdut / Koplo')">Dangdut / Koplo</div>
+                                                <div class="mst-custom-option" onclick="window.selectMstOption('Genre', 'sholawat', 'Sholawat / Religi')">Sholawat / Religi</div>
+                                                <div class="mst-custom-option" onclick="window.selectMstOption('Genre', 'rock', 'Rock / Metal')">Rock / Metal</div>
+                                                <div class="mst-custom-option" onclick="window.selectMstOption('Genre', 'cinematic', 'Cinematic / Epic')">Cinematic / Epic</div>
+                                            </div>
+                                        </div>
+                                        <input type="hidden" id="mstGenreVal" value="pop">
                                     </div>
                                     <div>
                                         <span class="mst-label">Dynamics</span>
-                                        <select id="mstDynamics" class="mst-select">
-                                            <option value="loud">Loud (Punchy)</option>
-                                            <option value="balanced">Balanced</option>
-                                            <option value="clean">Clean (Acoustic)</option>
-                                        </select>
+                                        <div class="mst-custom-select">
+                                            <div class="mst-custom-trigger" onclick="window.toggleMstDrop('dynDrop')">
+                                                <span id="mstDynLabel">Loud (Punchy)</span> <i class="fa-solid fa-chevron-down"></i>
+                                            </div>
+                                            <div class="mst-custom-options hidden" id="dynDrop">
+                                                <div class="mst-custom-option selected" onclick="window.selectMstOption('Dyn', 'loud', 'Loud (Punchy)')">Loud (Punchy)</div>
+                                                <div class="mst-custom-option" onclick="window.selectMstOption('Dyn', 'balanced', 'Balanced')">Balanced</div>
+                                                <div class="mst-custom-option" onclick="window.selectMstOption('Dyn', 'clean', 'Clean (Acoustic)')">Clean (Acoustic)</div>
+                                            </div>
+                                        </div>
+                                        <input type="hidden" id="mstDynVal" value="loud">
                                     </div>
                                 </div>
                             </div>
@@ -8947,11 +8996,12 @@ window.startDspBypassAndUpload = async function() {
                                 <div class="mst-card-title">4. STUDIO OUTPUT FORMAT</div>
                                 <span class="mst-label">Bit Depth Resolution</span>
                                 <div class="mst-pill-group" id="mstBitGroup">
-                                    <div class="mst-pill active" data-val="16">16-bit</div>
-                                    <div class="mst-pill" data-val="24">24-bit</div>
+                                    <div class="mst-pill" data-val="16">16-bit</div>
+                                    <div class="mst-pill active" data-val="24">24-bit</div>
                                     <div class="mst-pill" data-val="32">32-bit</div>
                                     <div class="mst-pill" data-val="64">64-bit</div>
                                 </div>
+                                <div style="font-size: 0.7rem; color: #06b6d4; font-weight: 700; margin-bottom: 16px; background: rgba(6,182,212,0.1); padding: 6px 10px; border-radius: 6px;" id="descBitDepth">24-bit: Kualitas Studio (Paling Bagus & Rekomendasi)</div>
                                 
                                 <span class="mst-label">Sample Rate (kHz)</span>
                                 <div class="mst-pill-group" id="mstSampleGroup">
@@ -8960,12 +9010,14 @@ window.startDspBypassAndUpload = async function() {
                                     <div class="mst-pill" data-val="96000">96 kHz</div>
                                     <div class="mst-pill" data-val="192000">192 kHz</div>
                                 </div>
+                                <div style="font-size: 0.7rem; color: #06b6d4; font-weight: 700; margin-bottom: 16px; background: rgba(6,182,212,0.1); padding: 6px 10px; border-radius: 6px;" id="descSampleRate">44.1 kHz: Standar Platform Musik (Hemat Ruang)</div>
 
                                 <span class="mst-label">File Format (Auto Download)</span>
                                 <div class="mst-pill-group" id="mstFormatGroup">
-                                    <div class="mst-pill active" data-val="mp3">.MP3 (Kecil)</div>
-                                    <div class="mst-pill" data-val="wav">.WAV (Lossless)</div>
+                                    <div class="mst-pill active" data-val="mp3">.MP3</div>
+                                    <div class="mst-pill" data-val="wav">.WAV</div>
                                 </div>
+                                <div style="font-size: 0.7rem; color: #06b6d4; font-weight: 700; margin-bottom: 4px; background: rgba(6,182,212,0.1); padding: 6px 10px; border-radius: 6px;" id="descFormat">.MP3: Ukuran Kecil, Mudah Dibagikan</div>
                             </div>
                             
                             <button class="mst-btn-submit" id="btnMulaiAuto">Mulai Mastering</button>
@@ -9087,7 +9139,36 @@ window.startDspBypassAndUpload = async function() {
                 `;
                 document.body.appendChild(overlay);
 
-                // Setup Pill Selection Logic
+                // Setup Custom Dropdowns Logic
+                window.toggleMstDrop = function(id) {
+                    document.querySelectorAll('.mst-custom-options').forEach(el => {
+                        if(el.id !== id) el.classList.add('hidden');
+                    });
+                    document.getElementById(id).classList.toggle('hidden');
+                };
+
+                window.selectMstOption = function(type, val, label) {
+                    document.getElementById('mst' + type + 'Val').value = val;
+                    document.getElementById('mst' + type + 'Label').innerText = label;
+                    document.getElementById(type + 'Drop').classList.add('hidden');
+                    
+                    const opts = document.getElementById(type + 'Drop').querySelectorAll('.mst-custom-option');
+                    opts.forEach(o => {
+                        if(o.innerText === label) o.classList.add('selected');
+                        else o.classList.remove('selected');
+                    });
+                    
+                    window.updateLiveNodes(); // Update sound in real-time
+                };
+
+                // Close dropdowns if clicked outside
+                document.addEventListener('click', function(e) {
+                    if(!e.target.closest('.mst-custom-select')) {
+                        document.querySelectorAll('.mst-custom-options').forEach(el => el.classList.add('hidden'));
+                    }
+                });
+
+                // Setup Pill Selection Logic & Dynamic Descriptions
                 const setupPills = (groupId) => {
                     const group = document.getElementById(groupId);
                     if(!group) return;
@@ -9096,6 +9177,30 @@ window.startDspBypassAndUpload = async function() {
                         p.onclick = () => {
                             pills.forEach(x => x.classList.remove('active'));
                             p.classList.add('active');
+                            
+                            // Dynamic Descriptions
+                            if(groupId === 'mstBitGroup') {
+                                const val = p.getAttribute('data-val');
+                                const desc = document.getElementById('descBitDepth');
+                                if(val == '16') desc.innerText = '16-bit: Standar CD (Paling Hemat Ruang)';
+                                if(val == '24') desc.innerText = '24-bit: Kualitas Studio (Paling Bagus & Rekomendasi)';
+                                if(val == '32') desc.innerText = '32-bit: Ultra HD Audio (Ukuran Besar)';
+                                if(val == '64') desc.innerText = '64-bit: Kualitas Maksimal (Sangat Besar/Overkill)';
+                            }
+                            if(groupId === 'mstSampleGroup') {
+                                const val = p.getAttribute('data-val');
+                                const desc = document.getElementById('descSampleRate');
+                                if(val == '44100') desc.innerText = '44.1 kHz: Standar Platform Musik (Hemat Ruang)';
+                                if(val == '48000') desc.innerText = '48 kHz: Standar Video & Film';
+                                if(val == '96000') desc.innerText = '96 kHz: High-Resolution Audio';
+                                if(val == '192000') desc.innerText = '192 kHz: Audiophile Grade';
+                            }
+                            if(groupId === 'mstFormatGroup') {
+                                const val = p.getAttribute('data-val');
+                                const desc = document.getElementById('descFormat');
+                                if(val === 'mp3') desc.innerText = '.MP3: Ukuran Kecil, Mudah Dibagikan via WA';
+                                if(val === 'wav') desc.innerText = '.WAV: Audio Asli Tanpa Kompresi (Lossless)';
+                            }
                         };
                     });
                 };
@@ -9111,15 +9216,21 @@ window.startDspBypassAndUpload = async function() {
                 document.getElementById('mstBodyAuto').style.display = 'none';
                 document.getElementById('mstBodyManual').style.display = 'none';
                 
+                // Pindahkan Live Preview Card ke tab yang aktif
+                const previewCard = document.querySelector('.mst-card:first-child');
+                
                 if (tab === 'auto') {
                     document.getElementById('btnTabAuto').classList.add('active');
                     document.getElementById('mstBodyAuto').style.display = 'block';
                     document.getElementById('mstMainTitle').innerText = 'Auto Mastering';
+                    document.getElementById('mstBodyAuto').insertBefore(previewCard, document.getElementById('mstBodyAuto').firstChild);
                 } else {
                     document.getElementById('btnTabManual').classList.add('active');
                     document.getElementById('mstBodyManual').style.display = 'block';
                     document.getElementById('mstMainTitle').innerText = 'Manual Mastering';
+                    document.getElementById('mstBodyManual').insertBefore(previewCard, document.getElementById('mstBodyManual').firstChild);
                 }
+                window.updateLiveNodes();
             };
 
             window.updateMstSlider = function(el, valId, suffix, trackId, isNegativeOnly = false, min = -12, max = 12) {
@@ -9133,6 +9244,8 @@ window.startDspBypassAndUpload = async function() {
                     percent = ((val - min) / (max - min)) * 100;
                 }
                 document.getElementById(trackId).style.width = percent + '%';
+                
+                window.updateLiveNodes(); // Update sound in real-time
             };
 
             // Set Judul Audio
@@ -9141,52 +9254,191 @@ window.startDspBypassAndUpload = async function() {
 
             overlay.classList.add('show');
 
-            // --- CORE MASTERING ENGINE ---
+            // --- REAL-TIME LIVE PREVIEW ENGINE ---
+            const playBtn = document.getElementById('mstPlayBtn');
+            const timeEl = document.getElementById('mstLiveTime');
+            
+            const rawUrl = docData.url;
+            const encodedUrl = encodeURIComponent(rawUrl);
+            const proxies = [
+                { name: "Direct", url: rawUrl },
+                { name: "Proxy Alpha", url: `https://api.codetabs.com/v1/proxy?quest=${rawUrl}` },
+                { name: "Proxy Gamma", url: `https://kreaverse-proxy.kreaverse-ai.workers.dev/?targetUrl=${encodedUrl}` }
+            ];
+
+            let fetchSuccess = false;
+            for (const proxy of proxies) {
+                try {
+                    const res = await fetch(proxy.url);
+                    if (res.ok) {
+                        const contentType = res.headers.get('content-type') || '';
+                        if (!contentType.includes('text/html')) {
+                            mstOfflineArrayBuffer = await res.arrayBuffer(); // Save for offline render
+                            
+                            mstLiveAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                            const audioBuffer = await mstLiveAudioCtx.decodeAudioData(mstOfflineArrayBuffer.slice(0));
+                            
+                            // Fungsi Play/Pause untuk AudioBufferSourceNode
+                            const playLiveAudio = () => {
+                                if(mstLiveSource) mstLiveSource.disconnect();
+                                mstLiveSource = mstLiveAudioCtx.createBufferSource();
+                                mstLiveSource.buffer = audioBuffer;
+                                mstLiveSource.loop = true;
+                                
+                                // Initialize Nodes
+                                mstLiveNodes.inGain = mstLiveAudioCtx.createGain();
+                                mstLiveNodes.eqLow = mstLiveAudioCtx.createBiquadFilter(); mstLiveNodes.eqLow.type = 'lowshelf'; mstLiveNodes.eqLow.frequency.value = 60;
+                                mstLiveNodes.eqLMid = mstLiveAudioCtx.createBiquadFilter(); mstLiveNodes.eqLMid.type = 'peaking'; mstLiveNodes.eqLMid.frequency.value = 300; mstLiveNodes.eqLMid.Q.value = 1.0;
+                                mstLiveNodes.eqMid = mstLiveAudioCtx.createBiquadFilter(); mstLiveNodes.eqMid.type = 'peaking'; mstLiveNodes.eqMid.frequency.value = 2500; mstLiveNodes.eqMid.Q.value = 1.5;
+                                mstLiveNodes.eqHMid = mstLiveAudioCtx.createBiquadFilter(); mstLiveNodes.eqHMid.type = 'peaking'; mstLiveNodes.eqHMid.frequency.value = 5000; mstLiveNodes.eqHMid.Q.value = 1.2;
+                                mstLiveNodes.eqHigh = mstLiveAudioCtx.createBiquadFilter(); mstLiveNodes.eqHigh.type = 'highshelf'; mstLiveNodes.eqHigh.frequency.value = 10000;
+                                
+                                mstLiveNodes.comp = mstLiveAudioCtx.createDynamicsCompressor();
+                                mstLiveNodes.comp.knee.value = 5;
+                                
+                                mstLiveNodes.makeUp = mstLiveAudioCtx.createGain();
+                                
+                                mstLiveNodes.limiter = mstLiveAudioCtx.createDynamicsCompressor();
+                                mstLiveNodes.limiter.threshold.value = -0.3;
+                                mstLiveNodes.limiter.knee.value = 0.0;
+                                mstLiveNodes.limiter.ratio.value = 20.0;
+                                mstLiveNodes.limiter.attack.value = 0.001;
+                                mstLiveNodes.limiter.release.value = 0.05;
+
+                                mstLiveSource.connect(mstLiveNodes.inGain);
+                                mstLiveNodes.inGain.connect(mstLiveNodes.eqLow);
+                                mstLiveNodes.eqLow.connect(mstLiveNodes.eqLMid);
+                                mstLiveNodes.eqLMid.connect(mstLiveNodes.eqMid);
+                                mstLiveNodes.eqMid.connect(mstLiveNodes.eqHMid);
+                                mstLiveNodes.eqHMid.connect(mstLiveNodes.eqHigh);
+                                mstLiveNodes.eqHigh.connect(mstLiveNodes.comp);
+                                mstLiveNodes.comp.connect(mstLiveNodes.makeUp);
+                                mstLiveNodes.makeUp.connect(mstLiveNodes.limiter);
+                                mstLiveNodes.limiter.connect(mstLiveAudioCtx.destination);
+
+                                window.updateLiveNodes(); 
+                                
+                                mstLiveSource.start(0, mstPauseTime);
+                                mstStartTime = mstLiveAudioCtx.currentTime - mstPauseTime;
+                                mstIsPlaying = true;
+                            };
+
+                            playBtn.innerHTML = '<i class="fa-solid fa-play" style="margin-left: 3px;"></i>';
+                            timeEl.innerText = "Siap diputar (Real-time)";
+                            fetchSuccess = true;
+                            
+                            playBtn.onclick = () => {
+                                if(mstLiveAudioCtx.state === 'suspended') mstLiveAudioCtx.resume();
+                                
+                                if(!mstIsPlaying) {
+                                    playLiveAudio();
+                                    playBtn.innerHTML = '<i class="fa-solid fa-pause"></i>';
+                                    
+                                    function updateTime() {
+                                        if(mstIsPlaying) {
+                                            const currentPos = (mstLiveAudioCtx.currentTime - mstStartTime) % audioBuffer.duration;
+                                            const m = Math.floor(currentPos / 60);
+                                            const s = Math.floor(currentPos % 60).toString().padStart(2, '0');
+                                            timeEl.innerText = `Memutar: ${m}:${s}`;
+                                            mstLiveAnimFrame = requestAnimationFrame(updateTime);
+                                        }
+                                    }
+                                    updateTime();
+                                } else {
+                                    mstPauseTime = (mstLiveAudioCtx.currentTime - mstStartTime) % audioBuffer.duration;
+                                    mstLiveSource.stop();
+                                    mstIsPlaying = false;
+                                    playBtn.innerHTML = '<i class="fa-solid fa-play" style="margin-left: 3px;"></i>';
+                                    cancelAnimationFrame(mstLiveAnimFrame);
+                                    timeEl.innerText = "Jeda";
+                                }
+                            };
+
+                            break;
+                        }
+                    }
+                } catch (e) { console.warn(e); }
+            }
+            
+            if(!fetchSuccess) {
+                playBtn.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i>';
+                timeEl.innerText = "Gagal memuat audio";
+            }
+
+            window.updateLiveNodes = function() {
+                if(!mstLiveNodes.inGain) return;
+                const isAuto = document.getElementById('btnTabAuto').classList.contains('active');
+                
+                let inG=0, eqL=0, eqLM=0, eqM=0, eqHM=0, eqH=0;
+                let cTh=-12, cRat=3, cAtt=0.015, cRel=0.15, cGain=0;
+
+                if (isAuto) {
+                    const genre = document.getElementById('mstGenreVal').value;
+                    const dyn = document.getElementById('mstDynVal').value;
+                    
+                    eqM = -1.5; eqL = 1.0; eqH = 2.0; // Default fix harshness
+                    switch(genre) {
+                        case 'dj': eqL += 3.5; eqH += 2.0; eqLM -= 1.5; break;
+                        case 'dangdut': eqL += 2.5; eqM += 1.5; eqH += 1.5; break;
+                        case 'sholawat': eqLM += 1.5; eqM -= 2.0; eqH += 3.0; break;
+                        case 'rock': eqL += 2.0; eqHM += 2.0; eqH += 1.0; break;
+                        case 'cinematic': eqL += 3.0; eqLM += 1.0; eqH += 1.5; break;
+                        case 'pop': eqL += 1.5; eqH += 1.5; break;
+                    }
+                    switch(dyn) {
+                        case 'loud': cTh = -16; cRat = 4; cGain = 3.5; break;
+                        case 'balanced': cTh = -12; cRat = 3; cGain = 2.0; break;
+                        case 'clean': cTh = -8; cRat = 2; cGain = 1.0; break;
+                    }
+                } else {
+                    inG = parseFloat(document.getElementById('sl-inGain').value);
+                    eqL = parseFloat(document.getElementById('sl-eqLow').value);
+                    eqLM = parseFloat(document.getElementById('sl-eqLMid').value);
+                    eqM = parseFloat(document.getElementById('sl-eqMid').value);
+                    eqHM = parseFloat(document.getElementById('sl-eqHMid').value);
+                    eqH = parseFloat(document.getElementById('sl-eqHigh').value);
+                    
+                    cTh = parseFloat(document.getElementById('sl-compThresh').value);
+                    cRat = parseFloat(document.getElementById('sl-compRatio').value);
+                    cAtt = parseFloat(document.getElementById('sl-compAttack').value) / 1000;
+                    cRel = parseFloat(document.getElementById('sl-compRelease').value) / 1000;
+                    cGain = parseFloat(document.getElementById('sl-compGain').value);
+                }
+
+                const t = mstLiveAudioCtx.currentTime;
+                mstLiveNodes.inGain.gain.setTargetAtTime(Math.pow(10, inG / 20), t, 0.1);
+                mstLiveNodes.eqLow.gain.setTargetAtTime(eqL, t, 0.1);
+                mstLiveNodes.eqLMid.gain.setTargetAtTime(eqLM, t, 0.1);
+                mstLiveNodes.eqMid.gain.setTargetAtTime(eqM, t, 0.1);
+                mstLiveNodes.eqHMid.gain.setTargetAtTime(eqHM, t, 0.1);
+                mstLiveNodes.eqHigh.gain.setTargetAtTime(eqH, t, 0.1);
+                
+                mstLiveNodes.comp.threshold.setTargetAtTime(cTh, t, 0.1);
+                mstLiveNodes.comp.ratio.setTargetAtTime(cRat, t, 0.1);
+                mstLiveNodes.comp.attack.setTargetAtTime(cAtt, t, 0.1);
+                mstLiveNodes.comp.release.setTargetAtTime(cRel, t, 0.1);
+                mstLiveNodes.makeUp.gain.setTargetAtTime(Math.pow(10, cGain / 20), t, 0.1);
+            };
+
+            // --- OFFLINE MASTERING ENGINE (RENDER & DOWNLOAD) ---
             const processMastering = async (isAuto) => {
-                overlay.classList.remove('show');
+                if(!mstOfflineArrayBuffer) {
+                    showIphoneToast("Error", "Audio belum selesai dimuat.", "fa-triangle-exclamation");
+                    return;
+                }
+                
+                window.closeMstModal(); // Stop live preview and close UI
                 showTopProgress("Mastering Audio...", "#06b6d4");
-                updateTopProgress(5, "Mencari jalur unduh yang aman...");
 
                 try {
-                    // 1. Fetch Audio via Proxies
-                    const rawUrl = docData.url;
-                    const encodedUrl = encodeURIComponent(rawUrl);
-                    const proxies = [
-                        { name: "Direct", url: rawUrl },
-                        { name: "Proxy Alpha", url: `https://api.codetabs.com/v1/proxy?quest=${rawUrl}` },
-                        { name: "Proxy Beta", url: `https://api.allorigins.win/raw?url=${encodedUrl}` },
-                        { name: "Proxy Gamma", url: `https://kreaverse-proxy.kreaverse-ai.workers.dev/?targetUrl=${encodedUrl}` }
-                    ];
-
-                    let arrayBuffer = null;
-                    let fetchSuccess = false;
-
-                    for (const proxy of proxies) {
-                        try {
-                            updateTopProgress(10, `Mencoba ${proxy.name}...`);
-                            const res = await fetch(proxy.url);
-                            if (res.ok) {
-                                const contentType = res.headers.get('content-type') || '';
-                                if (!contentType.includes('text/html')) {
-                                    arrayBuffer = await res.arrayBuffer();
-                                    fetchSuccess = true;
-                                    break;
-                                }
-                            }
-                        } catch (e) { console.warn(e); }
-                    }
-
-                    if (!fetchSuccess || !arrayBuffer) throw new Error("Sistem terhalang oleh proteksi keamanan server sumber (CORS).");
-                    
                     updateTopProgress(20, "Menganalisis frekuensi...");
                     
-                    // 2. Decode Audio & Setup Offline Context
-                    // Ambil Sample Rate dari UI
                     const activeSamplePill = document.querySelector('#mstSampleGroup .mst-pill.active');
                     const targetSampleRate = activeSamplePill ? parseInt(activeSamplePill.getAttribute('data-val')) : 44100;
                     
                     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-                    const audioBuffer = await audioCtx.decodeAudioData(arrayBuffer);
+                    // Gunakan buffer yang sudah didownload di awal
+                    const audioBuffer = await audioCtx.decodeAudioData(mstOfflineArrayBuffer.slice(0)); 
                     
                     const offlineCtx = new OfflineAudioContext(audioBuffer.numberOfChannels, (audioBuffer.length * targetSampleRate) / audioBuffer.sampleRate, targetSampleRate);
                     const source = offlineCtx.createBufferSource();
@@ -9198,19 +9450,15 @@ window.startDspBypassAndUpload = async function() {
                     let inGain = 0;
 
                     if (isAuto) {
-                        const genre = document.getElementById('mstGenre').value;
-                        const dyn = document.getElementById('mstDynamics').value;
+                        const genre = document.getElementById('mstGenreVal').value;
+                        const dyn = document.getElementById('mstDynVal').value;
                         
-                        // Default Fix untuk Suno AI (Sakit di telinga / Harshness removal)
-                        // Suno AI sering tajam di 2.5kHz - 4kHz dan kurang sub-bass.
-                        eqMid = -1.5; // Potong harshness
-                        eqLow = 1.0;  // Tambah warmth
-                        eqHigh = 2.0; // Tambah air/clarity
+                        eqMid = -1.5; eqLow = 1.0; eqHigh = 2.0;
 
                         switch(genre) {
                             case 'dj': eqLow += 3.5; eqHigh += 2.0; eqLMid -= 1.5; break;
-                            case 'dangdut': eqLow += 2.5; eqMid += 1.5; eqHigh += 1.5; break; // Mid naik untuk kendang/vokal
-                            case 'sholawat': eqLMid += 1.5; eqMid -= 2.0; eqHigh += 3.0; break; // Vokal hangat, hilangkan cempreng, tambah air
+                            case 'dangdut': eqLow += 2.5; eqMid += 1.5; eqHigh += 1.5; break; 
+                            case 'sholawat': eqLMid += 1.5; eqMid -= 2.0; eqHigh += 3.0; break; 
                             case 'rock': eqLow += 2.0; eqHMid += 2.0; eqHigh += 1.0; break;
                             case 'cinematic': eqLow += 3.0; eqLMid += 1.0; eqHigh += 1.5; break;
                             case 'pop': eqLow += 1.5; eqHigh += 1.5; break;
@@ -9238,57 +9486,22 @@ window.startDspBypassAndUpload = async function() {
 
                     updateTopProgress(40, "Menerapkan Surgical EQ & True RMS Compressor...");
 
-                    // A. Input Gain
-                    const inputNode = offlineCtx.createGain();
-                    inputNode.gain.value = Math.pow(10, inGain / 20);
+                    const inputNode = offlineCtx.createGain(); inputNode.gain.value = Math.pow(10, inGain / 20);
+                    const filterLow = offlineCtx.createBiquadFilter(); filterLow.type = 'lowshelf'; filterLow.frequency.value = 60; filterLow.gain.value = eqLow;
+                    const filterLMid = offlineCtx.createBiquadFilter(); filterLMid.type = 'peaking'; filterLMid.frequency.value = 300; filterLMid.Q.value = 1.0; filterLMid.gain.value = eqLMid;
+                    const filterMid = offlineCtx.createBiquadFilter(); filterMid.type = 'peaking'; filterMid.frequency.value = 2500; filterMid.Q.value = 1.5; filterMid.gain.value = eqMid;
+                    const filterHMid = offlineCtx.createBiquadFilter(); filterHMid.type = 'peaking'; filterHMid.frequency.value = 5000; filterHMid.Q.value = 1.2; filterHMid.gain.value = eqHMid;
+                    const filterHigh = offlineCtx.createBiquadFilter(); filterHigh.type = 'highshelf'; filterHigh.frequency.value = 10000; filterHigh.gain.value = eqHigh;
 
-                    // B. 5-Band Surgical EQ
-                    const filterLow = offlineCtx.createBiquadFilter();
-                    filterLow.type = 'lowshelf'; filterLow.frequency.value = 60; filterLow.gain.value = eqLow;
-
-                    const filterLMid = offlineCtx.createBiquadFilter();
-                    filterLMid.type = 'peaking'; filterLMid.frequency.value = 300; filterLMid.Q.value = 1.0; filterLMid.gain.value = eqLMid;
-
-                    const filterMid = offlineCtx.createBiquadFilter();
-                    filterMid.type = 'peaking'; filterMid.frequency.value = 2500; filterMid.Q.value = 1.5; filterMid.gain.value = eqMid; // Sering jadi biang kerok "sakit di telinga"
-
-                    const filterHMid = offlineCtx.createBiquadFilter();
-                    filterHMid.type = 'peaking'; filterHMid.frequency.value = 5000; filterHMid.Q.value = 1.2; filterHMid.gain.value = eqHMid;
-
-                    const filterHigh = offlineCtx.createBiquadFilter();
-                    filterHigh.type = 'highshelf'; filterHigh.frequency.value = 10000; filterHigh.gain.value = eqHigh;
-
-                    // C. True RMS Compressor (Glue)
                     const compressor = offlineCtx.createDynamicsCompressor();
-                    compressor.threshold.value = cThresh;
-                    compressor.knee.value = 5;
-                    compressor.ratio.value = cRatio;
-                    compressor.attack.value = cAttack;
-                    compressor.release.value = cRelease;
+                    compressor.threshold.value = cThresh; compressor.knee.value = 5; compressor.ratio.value = cRatio; compressor.attack.value = cAttack; compressor.release.value = cRelease;
 
-                    // D. Make-Up Gain
-                    const makeUpNode = offlineCtx.createGain();
-                    makeUpNode.gain.value = Math.pow(10, cGain / 20);
+                    const makeUpNode = offlineCtx.createGain(); makeUpNode.gain.value = Math.pow(10, cGain / 20);
 
-                    // E. Brickwall Limiter (Mencegah Clipping)
                     const limiter = offlineCtx.createDynamicsCompressor();
-                    limiter.threshold.value = -0.3;
-                    limiter.knee.value = 0.0;
-                    limiter.ratio.value = 20.0;
-                    limiter.attack.value = 0.001;
-                    limiter.release.value = 0.05;
+                    limiter.threshold.value = -0.3; limiter.knee.value = 0.0; limiter.ratio.value = 20.0; limiter.attack.value = 0.001; limiter.release.value = 0.05;
 
-                    // Routing
-                    source.connect(inputNode);
-                    inputNode.connect(filterLow);
-                    filterLow.connect(filterLMid);
-                    filterLMid.connect(filterMid);
-                    filterMid.connect(filterHMid);
-                    filterHMid.connect(filterHigh);
-                    filterHigh.connect(compressor);
-                    compressor.connect(makeUpNode);
-                    makeUpNode.connect(limiter);
-                    limiter.connect(offlineCtx.destination);
+                    source.connect(inputNode); inputNode.connect(filterLow); filterLow.connect(filterLMid); filterLMid.connect(filterMid); filterMid.connect(filterHMid); filterHMid.connect(filterHigh); filterHigh.connect(compressor); compressor.connect(makeUpNode); makeUpNode.connect(limiter); limiter.connect(offlineCtx.destination);
 
                     source.start(0);
 
@@ -9297,7 +9510,6 @@ window.startDspBypassAndUpload = async function() {
 
                     updateTopProgress(80, "Mengonversi Format Output...");
 
-                    // 4. Encode & Download
                     const activeFormatPill = document.querySelector('#mstFormatGroup .mst-pill.active');
                     const targetFormat = activeFormatPill ? activeFormatPill.getAttribute('data-val') : 'mp3';
                     
@@ -9311,7 +9523,6 @@ window.startDspBypassAndUpload = async function() {
                             updateTopProgress(80 + (percent * 0.1), "Mengonversi ke MP3 Studio...");
                         });
                     } else {
-                        // Custom WAV Encoder untuk format Lossless
                         updateTopProgress(85, "Membangun file WAV Lossless...");
                         finalBlob = await new Promise(resolve => {
                             setTimeout(() => {
@@ -9347,7 +9558,6 @@ window.startDspBypassAndUpload = async function() {
 
                     updateTopProgress(95, "Mengunduh File...");
 
-                    // Trigger Auto Download
                     const downloadUrl = URL.createObjectURL(finalBlob);
                     const a = document.createElement('a');
                     a.href = downloadUrl;
@@ -9356,11 +9566,10 @@ window.startDspBypassAndUpload = async function() {
                     a.click();
                     document.body.removeChild(a);
                     
-                    // Optional: Update status di Firebase agar dapat badge "Mastered"
                     try {
                         await updateDoc(doc(db, "render_gallery", docId), {
                             isMastered: true,
-                            masteringProfile: isAuto ? document.getElementById('mstGenre').value : 'manual'
+                            masteringProfile: isAuto ? document.getElementById('mstGenreVal').value : 'manual'
                         });
                     } catch(e) {}
 
