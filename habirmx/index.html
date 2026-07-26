@@ -9305,7 +9305,7 @@ window.startDspBypassAndUpload = async function() {
                                 mstLiveNodes.limiter.attack.value = 0.001;
                                 mstLiveNodes.limiter.release.value = 0.05;
 
-                                // --- REVERB VOCAL/TWEETER (CES CES) ---
+                                // --- REVERB KHUSUS VOKAL (ISOLASI FREKUENSI) ---
                                 const revLen = mstLiveAudioCtx.sampleRate * 1.5;
                                 const impulse = mstLiveAudioCtx.createBuffer(2, revLen, mstLiveAudioCtx.sampleRate);
                                 for (let i = 0; i < 2; i++) {
@@ -9315,9 +9315,11 @@ window.startDspBypassAndUpload = async function() {
                                 mstLiveNodes.convolver = mstLiveAudioCtx.createConvolver();
                                 mstLiveNodes.convolver.buffer = impulse;
                                 
-                                mstLiveNodes.revHPF = mstLiveAudioCtx.createBiquadFilter();
-                                mstLiveNodes.revHPF.type = 'highpass';
-                                mstLiveNodes.revHPF.frequency.value = 1500; // Reverb HANYA untuk vokal atas dan tweeter
+                                // BANDPASS FILTER: Memblokir Bass (Drum) dan Extreme High (Simbal) masuk ke Reverb
+                                mstLiveNodes.revFilter = mstLiveAudioCtx.createBiquadFilter();
+                                mstLiveNodes.revFilter.type = 'bandpass';
+                                mstLiveNodes.revFilter.frequency.value = 2200; // Fokus ke inti suara vokal
+                                mstLiveNodes.revFilter.Q.value = 0.8; 
                                 
                                 mstLiveNodes.wetGain = mstLiveAudioCtx.createGain();
                                 mstLiveNodes.wetGain.gain.value = 0.08; // Tipis & elegan (8%)
@@ -9333,10 +9335,10 @@ window.startDspBypassAndUpload = async function() {
                                 mstLiveNodes.eqHMid.connect(mstLiveNodes.eqHigh);
                                 mstLiveNodes.eqHigh.connect(mstLiveNodes.comp);
                                 
-                                // Split ke Reverb & Dry
+                                // Split ke Reverb (Hanya Vokal) & Dry (Semua Suara)
                                 mstLiveNodes.comp.connect(mstLiveNodes.dryGain);
-                                mstLiveNodes.comp.connect(mstLiveNodes.revHPF);
-                                mstLiveNodes.revHPF.connect(mstLiveNodes.convolver);
+                                mstLiveNodes.comp.connect(mstLiveNodes.revFilter);
+                                mstLiveNodes.revFilter.connect(mstLiveNodes.convolver);
                                 mstLiveNodes.convolver.connect(mstLiveNodes.wetGain);
                                 
                                 mstLiveNodes.dryGain.connect(mstLiveNodes.makeUp);
@@ -9405,8 +9407,8 @@ window.startDspBypassAndUpload = async function() {
                     const genre = document.getElementById('mstGenreVal').value;
                     const dyn = document.getElementById('mstDynVal').value;
                     
-                    // RACIKAN BARU: Bass(+3.5), Mid/Sakit Telinga(-3.5), Tweeter/Ces-ces(+5.0), Noise/Mud(-1.5)
-                    eqM = -3.5; eqL = 3.5; eqH = 5.0; eqLM = -1.5; eqHM = 1.0; 
+                    // RACIKAN VOCAL PRO: Bass Vokal(+3.5), Mid/Sakit Telinga(-4.0), Ces-ces(+5.5), Noise/Mud(-3.0)
+                    eqM = -4.0; eqL = 3.5; eqH = 5.5; eqLM = -3.0; eqHM = 3.0; 
                     switch(genre) {
                         case 'dj': eqL += 2.0; eqH += 1.5; eqLM -= 1.0; break;
                         case 'dangdut': eqL += 1.5; eqM += 1.0; eqH += 1.5; break;
@@ -9483,8 +9485,8 @@ window.startDspBypassAndUpload = async function() {
                         const genre = document.getElementById('mstGenreVal').value;
                         const dyn = document.getElementById('mstDynVal').value;
                         
-                        // RACIKAN BARU: Bass(+3.5), Mid/Sakit Telinga(-3.5), Tweeter/Ces-ces(+5.0), Noise/Mud(-1.5)
-                        eqMid = -3.5; eqLow = 3.5; eqHigh = 5.0; eqLMid = -1.5; eqHMid = 1.0;
+                        // RACIKAN VOCAL PRO: Bass Vokal(+3.5), Mid/Sakit Telinga(-4.0), Ces-ces(+5.5), Noise/Mud(-3.0)
+                        eqMid = -4.0; eqLow = 3.5; eqHigh = 5.5; eqLMid = -3.0; eqHMid = 3.0;
 
                         switch(genre) {
                             case 'dj': eqLow += 2.0; eqHigh += 1.5; eqLMid -= 1.0; break;
@@ -9532,7 +9534,7 @@ window.startDspBypassAndUpload = async function() {
                     const limiter = offlineCtx.createDynamicsCompressor();
                     limiter.threshold.value = -0.3; limiter.knee.value = 0.0; limiter.ratio.value = 20.0; limiter.attack.value = 0.001; limiter.release.value = 0.05;
 
-                    // --- REVERB VOCAL/TWEETER (CES CES) ---
+                    // --- REVERB KHUSUS VOKAL (ISOLASI FREKUENSI) ---
                     const revLen = offlineCtx.sampleRate * 1.5;
                     const impulse = offlineCtx.createBuffer(2, revLen, offlineCtx.sampleRate);
                     for (let i = 0; i < 2; i++) {
@@ -9542,9 +9544,11 @@ window.startDspBypassAndUpload = async function() {
                     const convolver = offlineCtx.createConvolver();
                     convolver.buffer = impulse;
                     
-                    const revHPF = offlineCtx.createBiquadFilter();
-                    revHPF.type = 'highpass';
-                    revHPF.frequency.value = 1500; // Reverb HANYA untuk vokal atas dan tweeter
+                    // BANDPASS FILTER: Memblokir Bass (Drum) dan Extreme High (Simbal) masuk ke Reverb
+                    const revFilter = offlineCtx.createBiquadFilter();
+                    revFilter.type = 'bandpass';
+                    revFilter.frequency.value = 2200; // Fokus ke inti suara vokal
+                    revFilter.Q.value = 0.8;
                     
                     const wetGain = offlineCtx.createGain();
                     wetGain.gain.value = 0.08; // Tipis & elegan (8%)
@@ -9560,10 +9564,10 @@ window.startDspBypassAndUpload = async function() {
                     filterHMid.connect(filterHigh); 
                     filterHigh.connect(compressor); 
                     
-                    // Split ke Reverb & Dry
+                    // Split ke Reverb (Hanya Vokal) & Dry (Semua Suara)
                     compressor.connect(dryGain);
-                    compressor.connect(revHPF);
-                    revHPF.connect(convolver);
+                    compressor.connect(revFilter);
+                    revFilter.connect(convolver);
                     convolver.connect(wetGain);
                     
                     dryGain.connect(makeUpNode);
