@@ -10385,13 +10385,13 @@ window.startDspBypassAndUpload = async function() {
                                 // --- UPGRADED: REAL BASS & KICK ENHANCER ---
                                 mstLiveNodes.bassBoost = mstLiveAudioCtx.createBiquadFilter();
                                 mstLiveNodes.bassBoost.type = 'lowshelf';
-                                mstLiveNodes.bassBoost.frequency.value = 85;
-                                mstLiveNodes.bassBoost.gain.value = 5.5; // Bass lebih punchy
+                                mstLiveNodes.bassBoost.frequency.value = 75; // REVISI: Fokus ke sub-bass agar tidak boomy
+                                mstLiveNodes.bassBoost.gain.value = 3.5; // REVISI: Turun dari 5.5 agar limiter tidak overwork (ketarik)
 
                                 // --- UPGRADED: VOCAL & MELODY CLARITY ---
                                 mstLiveNodes.vocalPresence = mstLiveAudioCtx.createBiquadFilter();
                                 mstLiveNodes.vocalPresence.type = 'peaking';
-                                mstLiveNodes.vocalPresence.frequency.value = 3200; // Geser ke area vokal yang lebih jernih
+                                mstLiveNodes.vocalPresence.frequency.value = 3200; 
                                 mstLiveNodes.vocalPresence.Q.value = 1.2;
                                 mstLiveNodes.vocalPresence.gain.value = 3.5;
 
@@ -10411,22 +10411,22 @@ window.startDspBypassAndUpload = async function() {
                                 mstLiveNodes.limiter.knee.value = 0.0;
                                 mstLiveNodes.limiter.ratio.value = 20.0;
                                 mstLiveNodes.limiter.attack.value = 0.001;
-                                mstLiveNodes.limiter.release.value = 0.05;
+                                mstLiveNodes.limiter.release.value = 0.15; // REVISI: Dilambatkan (150ms) agar audio tidak terasa "ketarik" / pumping
 
-                                // --- REVERB KHUSUS VOKAL (REVISI EXTREME: ISOLASI DARI BASS & KICK) ---
-                                const revLen = mstLiveAudioCtx.sampleRate * 0.5; // Ekor lebih pendek lagi
+                                // --- REVERB KHUSUS VOKAL (REVISI EXTREME: ANTI GEMA INSTRUMEN) ---
+                                const revLen = mstLiveAudioCtx.sampleRate * 0.5; 
                                 const impulse = mstLiveAudioCtx.createBuffer(2, revLen, mstLiveAudioCtx.sampleRate);
                                 for (let i = 0; i < 2; i++) {
                                     const ch = impulse.getChannelData(i);
-                                    for (let j = 0; j < revLen; j++) ch[j] = (Math.random() * 2 - 1) * Math.pow(1 - j / revLen, 5); 
+                                    for (let j = 0; j < revLen; j++) ch[j] = (Math.random() * 2 - 1) * Math.pow(1 - j / revLen, 3); // REVISI: Ekor reverb lebih natural (pangkat 3)
                                 }
                                 mstLiveNodes.convolver = mstLiveAudioCtx.createConvolver();
                                 mstLiveNodes.convolver.buffer = impulse;
                                 
-                                // CASCADE HIGHPASS FILTER (-24dB/oct) agar Harmonic Bass/Kick TIDAK bocor ke Reverb
+                                // CASCADE HIGHPASS FILTER (-24dB/oct)
                                 mstLiveNodes.revHPF = mstLiveAudioCtx.createBiquadFilter();
                                 mstLiveNodes.revHPF.type = 'highpass';
-                                mstLiveNodes.revHPF.frequency.value = 1600; // Naik ke 1.6kHz (Aman dari kick drum)
+                                mstLiveNodes.revHPF.frequency.value = 1600; 
                                 
                                 mstLiveNodes.revHPF2 = mstLiveAudioCtx.createBiquadFilter();
                                 mstLiveNodes.revHPF2.type = 'highpass';
@@ -10434,14 +10434,14 @@ window.startDspBypassAndUpload = async function() {
 
                                 mstLiveNodes.revLPF = mstLiveAudioCtx.createBiquadFilter();
                                 mstLiveNodes.revLPF.type = 'lowpass';
-                                mstLiveNodes.revLPF.frequency.value = 4000; // Beri ruang nafas untuk vokal
+                                mstLiveNodes.revLPF.frequency.value = 3000; // REVISI: Potong frekuensi tinggi reverb agar tidak metallic
                                 
                                 // PRE-DELAY: Mencegah Transient/Pukulan Instrumen menjadi bergema
                                 mstLiveNodes.revPreDelay = mstLiveAudioCtx.createDelay();
-                                mstLiveNodes.revPreDelay.delayTime.value = 0.045; // 45ms pre-delay
+                                mstLiveNodes.revPreDelay.delayTime.value = 0.005; // REVISI: Nyaris nol (5ms) agar snare/kick tidak dobel & echoey
                                 
                                 mstLiveNodes.wetGain = mstLiveAudioCtx.createGain();
-                                mstLiveNodes.wetGain.gain.value = 0.02; // Gain aman, karena frekuensi bawah sudah hilang
+                                mstLiveNodes.wetGain.gain.value = 0.02;
                                 
                                 mstLiveNodes.dryGain = mstLiveAudioCtx.createGain();
                                 mstLiveNodes.dryGain.gain.value = 1.0;
@@ -10758,8 +10758,8 @@ window.startDspBypassAndUpload = async function() {
 
                     const bassBoost = offlineCtx.createBiquadFilter();
                     bassBoost.type = 'lowshelf';
-                    bassBoost.frequency.value = 85;
-                    bassBoost.gain.value = isBassOn ? 5.5 : 0;
+                    bassBoost.frequency.value = 75; // REVISI
+                    bassBoost.gain.value = isBassOn ? 3.5 : 0; // REVISI
 
                     const vocalPresence = offlineCtx.createBiquadFilter();
                     vocalPresence.type = 'peaking';
@@ -10779,14 +10779,15 @@ window.startDspBypassAndUpload = async function() {
                     const makeUpNode = offlineCtx.createGain(); makeUpNode.gain.value = Math.pow(10, cGain / 20);
 
                     const limiter = offlineCtx.createDynamicsCompressor();
-                    limiter.threshold.value = limThresh; limiter.knee.value = 0.0; limiter.ratio.value = 20.0; limiter.attack.value = 0.001; limiter.release.value = 0.05;
+                    limiter.threshold.value = limThresh; limiter.knee.value = 0.0; limiter.ratio.value = 20.0; limiter.attack.value = 0.001; 
+                    limiter.release.value = 0.15; // REVISI
 
-                    // --- REVERB KHUSUS VOKAL (REVISI EXTREME: ISOLASI DARI BASS & KICK) ---
+                    // --- REVERB KHUSUS VOKAL (REVISI EXTREME: ANTI GEMA INSTRUMEN) ---
                     const revLen = offlineCtx.sampleRate * 0.5; 
                     const impulse = offlineCtx.createBuffer(2, revLen, offlineCtx.sampleRate);
                     for (let i = 0; i < 2; i++) {
                         const ch = impulse.getChannelData(i);
-                        for (let j = 0; j < revLen; j++) ch[j] = (Math.random() * 2 - 1) * Math.pow(1 - j / revLen, 5);
+                        for (let j = 0; j < revLen; j++) ch[j] = (Math.random() * 2 - 1) * Math.pow(1 - j / revLen, 3); // REVISI
                     }
                     const convolver = offlineCtx.createConvolver();
                     convolver.buffer = impulse;
@@ -10802,11 +10803,11 @@ window.startDspBypassAndUpload = async function() {
                     
                     const revLPF = offlineCtx.createBiquadFilter();
                     revLPF.type = 'lowpass';
-                    revLPF.frequency.value = 4000; 
+                    revLPF.frequency.value = 3000; // REVISI
 
                     // PRE-DELAY
                     const revPreDelay = offlineCtx.createDelay();
-                    revPreDelay.delayTime.value = 0.045;
+                    revPreDelay.delayTime.value = 0.005; // REVISI
                     
                     const wetGain = offlineCtx.createGain();
                     wetGain.gain.value = 0.02; 
