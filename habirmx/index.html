@@ -3015,37 +3015,47 @@
     <div id="spotifyPlaylistModal" class="krea-modal-overlay" style="z-index: 9999998; background: #121212;">
         <div style="width: 100%; height: 100vh; display: flex; flex-direction: column; background: linear-gradient(to bottom, #8a6132 0%, #121212 45%); color: #fff; overflow: hidden; position: relative; font-family: 'Plus Jakarta Sans', sans-serif;">
             
-            <!-- Top Bar (Back Button Aman & Terlihat) -->
-            <div style="padding: 15px 20px; display: flex; align-items: center; position: absolute; top: 0; left: 0; width: 100%; z-index: 999; background: linear-gradient(to bottom, rgba(0,0,0,0.5) 0%, transparent 100%);">
-                <button onclick="window.closePlaylistUI()" style="background: rgba(0,0,0,0.3); border: none; color: #fff; width: 40px; height: 40px; border-radius: 50%; font-size: 1.2rem; cursor: pointer; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(5px); box-shadow: 0 4px 10px rgba(0,0,0,0.3); transition: 0.2s;" onmouseover="this.style.background='rgba(0,0,0,0.6)'" onmouseout="this.style.background='rgba(0,0,0,0.3)'"><i class="fa-solid fa-chevron-left" style="margin-right: 2px;"></i></button>
+            <!-- HEADER FIXED (Tombol Back Anti-Hilang) -->
+            <div style="height: 65px; display: flex; align-items: center; padding: 0 20px; background: rgba(0,0,0,0.2); flex-shrink: 0; z-index: 50;">
+                <button onclick="window.closePlaylistUI()" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: #fff; width: 40px; height: 40px; border-radius: 50%; font-size: 1.2rem; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.2s;"><i class="fa-solid fa-arrow-left"></i></button>
+                <div style="flex: 1; text-align: center; font-weight: 800; font-size: 1.1rem; letter-spacing: 0.5px;">Playlist</div>
+                <div style="width: 40px;"></div>
             </div>
 
-            <!-- Spacer untuk Top Bar -->
-            <div style="height: 70px; width: 100%; flex-shrink: 0;"></div>
-
-            <!-- Cover Area -->
-            <div style="padding: 0 20px; display: flex; flex-direction: column; align-items: center; position: relative; z-index: 10;">
-                <img id="playlistCoverImg" src="logo.png" onerror="this.src='https://i.postimg.cc/Jh211FTG/46cc61ec-de7f-4c62-8245-946e22312d2b.jpg'" style="width: 240px; height: 240px; object-fit: cover; box-shadow: 0 15px 35px rgba(0,0,0,0.6); margin-bottom: 24px; background: #2b2b2b;">
-            </div>
-
-            <!-- Title & Actions Area -->
-            <div style="padding: 0 20px 16px; position: relative; z-index: 10;">
-                <h2 style="font-size: 1.8rem; font-weight: 900; margin: 0 0 4px 0; letter-spacing: -0.5px; text-align: left;">My Playlist</h2>
-                <p style="color: #b3b3b3; font-size: 0.85rem; margin: 0 0 16px 0; font-weight: 500; text-align: left;" id="playlistCountText">0 Lagu</p>
-                
-                <div style="display: flex; align-items: center; justify-content: space-between;">
-                    <div style="display: flex; gap: 20px; align-items: center; color: #b3b3b3; font-size: 1.4rem;">
-                        <i class="fa-solid fa-heart" style="color: #1DB954; cursor: pointer; transition: 0.2s;"></i>
-                        <i class="fa-solid fa-circle-arrow-down" style="cursor: pointer; transition: 0.2s;" onmouseover="this.style.color='#1DB954'" onmouseout="this.style.color='#b3b3b3'"></i>
-                        <i class="fa-solid fa-ellipsis" onclick="window.clearPlaylist()" title="Kosongkan Playlist" style="cursor: pointer; transition: 0.2s;" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='#b3b3b3'"></i>
-                    </div>
-                    <button onclick="window.playPlaylistTrack(0)" style="width: 56px; height: 56px; border-radius: 50%; background: #1DB954; color: #000; border: none; font-size: 1.5rem; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 8px 20px rgba(0,0,0,0.3); transition: transform 0.1s;" onmousedown="this.style.transform='scale(0.95)'" onmouseup="this.style.transform='scale(1)'"><i class="fa-solid fa-play" style="margin-left: 4px;"></i></button>
+            <!-- SCROLLABLE CONTENT -->
+            <div style="flex: 1; overflow-y: auto; padding: 20px; padding-bottom: 100px; display: flex; flex-direction: column;">
+                <!-- Cover Area -->
+                <div style="display: flex; flex-direction: column; align-items: center; margin-bottom: 24px;">
+                    <img id="playlistCoverImg" src="logo.png" onerror="this.src='https://i.postimg.cc/Jh211FTG/46cc61ec-de7f-4c62-8245-946e22312d2b.jpg'" style="width: 220px; height: 220px; object-fit: cover; box-shadow: 0 15px 35px rgba(0,0,0,0.6); background: #2b2b2b; border-radius: 12px;">
                 </div>
-            </div>
 
-            <!-- List Lagu -->
-            <div id="playlistListContainer" style="flex: 1; overflow-y: auto; padding: 0 20px 100px; position: relative; z-index: 10;">
-                <!-- Diisi via JS -->
+                <!-- Title & Actions Area -->
+                <div style="margin-bottom: 16px;">
+                    <h2 style="font-size: 1.8rem; font-weight: 900; margin: 0 0 4px 0; letter-spacing: -0.5px;">My Playlist</h2>
+                    <p style="color: #b3b3b3; font-size: 0.85rem; margin: 0 0 16px 0; font-weight: 500;" id="playlistCountText">0 Lagu</p>
+                    
+                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px;">
+                        <div style="display: flex; gap: 20px; align-items: center; color: #b3b3b3; font-size: 1.4rem;">
+                            <i class="fa-solid fa-heart" style="color: #1DB954; cursor: pointer;"></i>
+                            <i class="fa-solid fa-trash" onclick="window.clearPlaylist()" title="Kosongkan Playlist" style="cursor: pointer; transition: 0.2s;" onmouseover="this.style.color='#ef4444'" onmouseout="this.style.color='#b3b3b3'"></i>
+                        </div>
+                        <button onclick="window.playPlaylistTrack(0)" id="bigPlaylistPlayBtn" style="width: 56px; height: 56px; border-radius: 50%; background: #1DB954; color: #000; border: none; font-size: 1.5rem; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 8px 20px rgba(0,0,0,0.3);"><i class="fa-solid fa-play" style="margin-left: 4px;"></i></button>
+                    </div>
+
+                    <!-- PROGRESS BAR UI -->
+                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 20px;">
+                        <span id="plCurrTime" style="font-size: 0.7rem; color: #b3b3b3; font-family: monospace;">0:00</span>
+                        <div onclick="window.seekGlobalPlayer(event)" id="plProgressWrapper" style="flex: 1; height: 6px; background: rgba(255,255,255,0.2); border-radius: 10px; cursor: pointer; position: relative;">
+                            <div id="plProgressFill" style="height: 100%; width: 0%; background: #1DB954; border-radius: 10px; pointer-events: none;"></div>
+                        </div>
+                        <span id="plDurTime" style="font-size: 0.7rem; color: #b3b3b3; font-family: monospace;">0:00</span>
+                    </div>
+                </div>
+
+                <!-- List Lagu -->
+                <div id="playlistListContainer" style="display: flex; flex-direction: column; gap: 4px;">
+                    <!-- Diisi via JS -->
+                </div>
             </div>
         </div>
     </div>
@@ -3054,44 +3064,58 @@
     <div id="masteringGalleryModal" class="krea-modal-overlay" style="z-index: 9999998; background: #0f172a;">
         <div style="width: 100%; height: 100vh; display: flex; flex-direction: column; background: linear-gradient(to bottom, #0ea5e9 0%, #0f172a 45%); color: #fff; overflow: hidden; position: relative; font-family: 'Plus Jakarta Sans', sans-serif;">
             
-            <!-- Top Bar (Back Button Aman & Terlihat) -->
-            <div style="padding: 15px 20px; display: flex; align-items: center; position: absolute; top: 0; left: 0; width: 100%; z-index: 999; background: linear-gradient(to bottom, rgba(0,0,0,0.3) 0%, transparent 100%);">
-                <button onclick="window.closeMasteringGalleryUI()" style="background: rgba(0,0,0,0.3); border: none; color: #fff; width: 40px; height: 40px; border-radius: 50%; font-size: 1.2rem; cursor: pointer; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(5px); box-shadow: 0 4px 10px rgba(0,0,0,0.3); transition: 0.2s;" onmouseover="this.style.background='rgba(0,0,0,0.6)'" onmouseout="this.style.background='rgba(0,0,0,0.3)'"><i class="fa-solid fa-chevron-left" style="margin-right: 2px;"></i></button>
+            <!-- HEADER FIXED (Tombol Back Anti-Hilang) -->
+            <div style="height: 65px; display: flex; align-items: center; padding: 0 20px; background: rgba(0,0,0,0.2); flex-shrink: 0; z-index: 50;">
+                <button onclick="window.closeMasteringGalleryUI()" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: #fff; width: 40px; height: 40px; border-radius: 50%; font-size: 1.2rem; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.2s;"><i class="fa-solid fa-arrow-left"></i></button>
+                <div style="flex: 1; text-align: center; font-weight: 800; font-size: 1.1rem; letter-spacing: 0.5px;">Mastering Studio</div>
+                <div style="width: 40px;"></div>
             </div>
 
-            <!-- Spacer untuk Top Bar -->
-            <div style="height: 70px; width: 100%; flex-shrink: 0;"></div>
-
-            <!-- Cover Area -->
-            <div style="padding: 0 20px; display: flex; flex-direction: column; align-items: center; position: relative; z-index: 10;">
-                <div style="width: 200px; height: 200px; background: linear-gradient(135deg, #0284c7, #38bdf8); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 5rem; color: #fff; box-shadow: 0 15px 35px rgba(0,0,0,0.5); margin-bottom: 24px;">
-                    <i class="fa-solid fa-wand-magic-sparkles"></i>
-                </div>
-            </div>
-
-            <!-- Title & Actions Area -->
-            <div style="padding: 0 20px 16px; position: relative; z-index: 10;">
-                <h2 style="font-size: 1.8rem; font-weight: 900; margin: 0 0 4px 0; letter-spacing: -0.5px; text-align: left;">Mastering Studio</h2>
-                <p style="color: #94a3b8; font-size: 0.85rem; margin: 0 0 16px 0; font-weight: 500; text-align: left;" id="masteringCountText">0 Lagu Tersimpan</p>
-                
-                <div style="background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.3); padding: 10px 14px; border-radius: 12px; margin-bottom: 16px; display: flex; align-items: flex-start; gap: 10px;">
-                    <i class="fa-solid fa-triangle-exclamation" style="color: #ef4444; margin-top: 2px;"></i>
-                    <div style="font-size: 0.75rem; color: #fca5a5; line-height: 1.5; font-weight: 600;">
-                        Server API akan <b>menghapus file otomatis setelah 14 hari</b>. Harap segera <i class="fa-solid fa-download"></i> unduh lagu Anda ke perangkat!
+            <!-- SCROLLABLE CONTENT -->
+            <div style="flex: 1; overflow-y: auto; padding: 20px; padding-bottom: 100px; display: flex; flex-direction: column;">
+                <!-- Cover Area -->
+                <div style="display: flex; flex-direction: column; align-items: center; margin-bottom: 24px;">
+                    <div style="width: 200px; height: 200px; background: linear-gradient(135deg, #0284c7, #38bdf8); border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 5rem; color: #fff; box-shadow: 0 15px 35px rgba(0,0,0,0.5);">
+                        <i class="fa-solid fa-wand-magic-sparkles"></i>
                     </div>
                 </div>
 
-                <div style="display: flex; align-items: center; justify-content: space-between;">
-                    <div style="display: flex; gap: 20px; align-items: center; color: #94a3b8; font-size: 1.4rem;">
-                        <i class="fa-solid fa-circle-arrow-down" style="cursor: pointer; transition: 0.2s;" onmouseover="this.style.color='#38bdf8'" onmouseout="this.style.color='#94a3b8'"></i>
+                <!-- Title & Actions Area -->
+                <div style="margin-bottom: 16px;">
+                    <h2 style="font-size: 1.8rem; font-weight: 900; margin: 0 0 4px 0; letter-spacing: -0.5px;">Mastering Studio</h2>
+                    <p style="color: #94a3b8; font-size: 0.85rem; margin: 0 0 16px 0; font-weight: 500;" id="masteringCountText">0 Lagu Tersimpan</p>
+                    
+                    <!-- PERINGATAN BARU (LEBIH RAPI & JELAS) -->
+                    <div style="background: rgba(245, 158, 11, 0.15); border: 1px solid rgba(245, 158, 11, 0.3); padding: 12px 16px; border-radius: 12px; margin-bottom: 20px; display: flex; align-items: center; gap: 14px;">
+                        <div style="width: 32px; height: 32px; background: rgba(245, 158, 11, 0.2); color: #f59e0b; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; flex-shrink: 0;">
+                            <i class="fa-solid fa-triangle-exclamation"></i>
+                        </div>
+                        <div style="font-size: 0.75rem; color: #fcd34d; line-height: 1.4; font-weight: 600;">
+                            Lagu disimpan di memori HP Anda. <b>Jika Anda menghapus Cache Browser, lagu akan hilang.</b> Harap segera unduh!
+                        </div>
                     </div>
-                    <button onclick="window.playMasteringTrack(0)" id="bigMasteringPlayBtn" style="width: 56px; height: 56px; border-radius: 50%; background: #38bdf8; color: #0f172a; border: none; font-size: 1.5rem; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 8px 20px rgba(0,0,0,0.3); transition: transform 0.1s;" onmousedown="this.style.transform='scale(0.95)'" onmouseup="this.style.transform='scale(1)'"><i class="fa-solid fa-play" style="margin-left: 4px;"></i></button>
-                </div>
-            </div>
 
-            <!-- List Lagu -->
-            <div id="masteringListContainer" style="flex: 1; overflow-y: auto; padding: 0 20px 100px; position: relative; z-index: 10;">
-                <!-- Diisi via JS -->
+                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px;">
+                        <div style="display: flex; gap: 20px; align-items: center; color: #94a3b8; font-size: 1.4rem;">
+                            <!-- Ikon kosong agar tombol play tetap di kanan -->
+                        </div>
+                        <button onclick="window.playMasteringTrack(0)" id="bigMasteringPlayBtn" style="width: 56px; height: 56px; border-radius: 50%; background: #38bdf8; color: #0f172a; border: none; font-size: 1.5rem; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 8px 20px rgba(0,0,0,0.3);"><i class="fa-solid fa-play" style="margin-left: 4px;"></i></button>
+                    </div>
+
+                    <!-- PROGRESS BAR UI -->
+                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 20px;">
+                        <span id="mstCurrTime" style="font-size: 0.7rem; color: #94a3b8; font-family: monospace;">0:00</span>
+                        <div onclick="window.seekGlobalPlayer(event)" id="mstProgressWrapper" style="flex: 1; height: 6px; background: rgba(255,255,255,0.2); border-radius: 10px; cursor: pointer; position: relative;">
+                            <div id="mstProgressFill" style="height: 100%; width: 0%; background: #38bdf8; border-radius: 10px; pointer-events: none;"></div>
+                        </div>
+                        <span id="mstDurTime" style="font-size: 0.7rem; color: #94a3b8; font-family: monospace;">0:00</span>
+                    </div>
+                </div>
+
+                <!-- List Lagu -->
+                <div id="masteringListContainer" style="display: flex; flex-direction: column; gap: 4px;">
+                    <!-- Diisi via JS -->
+                </div>
             </div>
         </div>
     </div>
@@ -3327,8 +3351,8 @@
                             </div>
                         </div>
                         <div style="display: flex; align-items: center; gap: 16px; padding-right: 10px;">
-                            <button onclick="event.stopPropagation(); window.downloadFileWithCustomName('${item.url}', '${cleanTitle.replace(/'/g, "\\'")}')" style="background: none; border: none; color: #b3b3b3; cursor: pointer; font-size: 1.1rem; transition: 0.2s;" onmouseover="this.style.color='#1DB954'" onmouseout="this.style.color='#b3b3b3'" title="Unduh Lagu"><i class="fa-solid fa-circle-down"></i></button>
-                            <button onclick="event.stopPropagation(); window.globalPlaylistQueue.splice(${index}, 1); window.savePlaylistToFirebase(); window.renderPlaylistUI(); window.showIphoneToast('Dihapus', 'Lagu dihapus dari playlist', 'fa-trash');" style="background: none; border: none; color: #b3b3b3; cursor: pointer; font-size: 1.1rem; transition: 0.2s;" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='#b3b3b3'" title="Hapus dari Playlist"><i class="fa-solid fa-trash-can"></i></button>
+                            <button onclick="event.stopPropagation(); window.downloadFileWithCustomName('${item.url}', '${cleanTitle.replace(/'/g, "\\'")}')" style="background: none; border: none; color: #b3b3b3; cursor: pointer; font-size: 1.2rem; transition: 0.2s;" onmouseover="this.style.color='#1DB954'" onmouseout="this.style.color='#b3b3b3'" title="Unduh Lagu"><i class="fa-solid fa-download"></i></button>
+                            <button onclick="event.stopPropagation(); window.globalPlaylistQueue.splice(${index}, 1); window.savePlaylistToFirebase(); window.renderPlaylistUI(); window.showIphoneToast('Dihapus', 'Lagu dihapus dari playlist', 'fa-trash');" style="background: none; border: none; color: #b3b3b3; cursor: pointer; font-size: 1.2rem; transition: 0.2s;" onmouseover="this.style.color='#ef4444'" onmouseout="this.style.color='#b3b3b3'" title="Hapus dari Playlist"><i class="fa-solid fa-trash"></i></button>
                         </div>
                     </div>
                 `;
@@ -3394,7 +3418,7 @@
                             </div>
                         </div>
                         <div style="display: flex; align-items: center; gap: 16px; padding-right: 10px;">
-                            <button onclick="event.stopPropagation(); window.forceDownloadMastered('${item.masteredUrl}', '${item.masteredFileName || cleanTitle}', '${item.id}', ${item.isLocalMastered ? 'true' : 'false'})" style="background: none; border: none; color: #94a3b8; cursor: pointer; font-size: 1.1rem; transition: 0.2s;" onmouseover="this.style.color='#38bdf8'" onmouseout="this.style.color='#94a3b8'" title="Unduh Lagu"><i class="fa-solid fa-circle-down"></i></button>
+                            <button onclick="event.stopPropagation(); window.forceDownloadMastered('${item.masteredUrl}', '${item.masteredFileName || cleanTitle}', '${item.id}', ${item.isLocalMastered ? 'true' : 'false'})" style="background: none; border: none; color: #94a3b8; cursor: pointer; font-size: 1.2rem; transition: 0.2s;" onmouseover="this.style.color='#38bdf8'" onmouseout="this.style.color='#94a3b8'" title="Unduh Lagu"><i class="fa-solid fa-download"></i></button>
                         </div>
                     </div>
                 `;
@@ -3440,16 +3464,21 @@
                 try {
                     const blob = await window.localAudioDB.get(docId);
                     if (blob) {
+                        // Pastikan nama file berakhiran .mp3 jika belum ada
+                        let finalName = fileName;
+                        if (!finalName.toLowerCase().endsWith('.mp3')) finalName += '.mp3';
+
                         const localUrl = URL.createObjectURL(blob);
                         const a = document.createElement('a');
                         a.href = localUrl;
-                        a.download = fileName;
+                        a.download = finalName;
                         document.body.appendChild(a);
                         a.click();
                         document.body.removeChild(a);
                         setTimeout(() => URL.revokeObjectURL(localUrl), 5000);
+                        window.showIphoneToast("Sukses", "Lagu berhasil diunduh!", "fa-check");
                     } else {
-                        window.showIphoneToast("Error", "File audio lokal tidak ditemukan.", "fa-triangle-exclamation");
+                        window.showIphoneToast("Error", "File audio lokal tidak ditemukan. Lagu mungkin terhapus karena cache browser dibersihkan.", "fa-triangle-exclamation");
                     }
                 } catch (e) {
                     window.showIphoneToast("Error", "Gagal mengunduh file lokal.", "fa-triangle-exclamation");
@@ -4418,7 +4447,11 @@
             if(audioEl) {
                 // Sinkronisasi Tombol Play Besar di UI Playlist & Mastering
                 const syncBigButtons = () => {
-                    if (window.isPlaylistUIOpen) window.renderPlaylistUI();
+                    if (window.isPlaylistUIOpen) {
+                        window.renderPlaylistUI();
+                        const bigPlBtn = document.getElementById('bigPlaylistPlayBtn');
+                        if (bigPlBtn) bigPlBtn.innerHTML = audioEl.paused ? '<i class="fa-solid fa-play" style="margin-left: 4px;"></i>' : '<i class="fa-solid fa-pause"></i>';
+                    }
                     if (window.isMasteringUIOpen) {
                         window.renderMasteringGalleryUI();
                         const bigMstBtn = document.getElementById('bigMasteringPlayBtn');
@@ -4457,6 +4490,26 @@
                         
                         currEl.innerText = formattedCurr;
                         durEl.innerText = formattedDur;
+                        
+                        // Sinkronisasi Progress Bar di Modal Playlist
+                        if (window.isPlaylistUIOpen) {
+                            const plFill = document.getElementById('plProgressFill');
+                            if (plFill) plFill.style.width = `${percent}%`;
+                            const plCurr = document.getElementById('plCurrTime');
+                            if (plCurr) plCurr.innerText = formattedCurr;
+                            const plDur = document.getElementById('plDurTime');
+                            if (plDur) plDur.innerText = formattedDur;
+                        }
+
+                        // Sinkronisasi Progress Bar di Modal Mastering
+                        if (window.isMasteringUIOpen) {
+                            const mstFill = document.getElementById('mstProgressFill');
+                            if (mstFill) mstFill.style.width = `${percent}%`;
+                            const mstCurr = document.getElementById('mstCurrTime');
+                            if (mstCurr) mstCurr.innerText = formattedCurr;
+                            const mstDur = document.getElementById('mstDurTime');
+                            if (mstDur) mstDur.innerText = formattedDur;
+                        }
                         
                         // Update badge durasi di library jika belum ada
                         if (currentPlayingDocId) {
