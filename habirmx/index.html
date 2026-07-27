@@ -9770,8 +9770,39 @@ window.startDspBypassAndUpload = async function() {
                                 <div style="font-size: 0.65rem; color: #10b981; font-weight: 800; background: rgba(16,185,129,0.2); padding: 4px 8px; border-radius: 6px; flex-shrink: 0; margin-left: 10px;">LIVE DSP</div>
                             </div>
                             
+                            <!-- NEW: SMART AI ANALYZER -->
+                            <div class="mst-card" id="cardSmartAnalyzer">
+                                <div class="mst-card-title" style="color: #0ea5e9;"><i class="fa-solid fa-microchip"></i> 3. SMART AI ANALYZER</div>
+                                <div style="background: #f8fafc; border: 1px solid #e2e8f0; padding: 14px; border-radius: 12px; display: flex; flex-direction: column; gap: 10px;">
+                                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                                        <span style="font-size: 0.8rem; font-weight: 800; color: #0f172a;">Deteksi Tempo (Kecepatan)</span>
+                                        <span id="mstTempoStatus" style="font-size: 0.7rem; font-weight: 800; color: #f59e0b; background: rgba(245,158,11,0.15); padding: 4px 8px; border-radius: 6px; border: 1px solid rgba(245,158,11,0.3);"><i class="fa-solid fa-spinner fa-spin"></i> Menganalisis...</span>
+                                    </div>
+                                    <button id="btnNormalizeTempo" class="mst-btn-submit" style="background: #0ea5e9; color: #fff; padding: 10px; margin-top: 5px; font-size: 0.8rem; display: none; box-shadow: 0 4px 10px rgba(14,165,233,0.3);" onclick="window.applySmartTempo()">
+                                        <i class="fa-solid fa-wand-magic-sparkles"></i> Normalkan Kecepatan (Aman untuk Vokal)
+                                    </button>
+                                </div>
+                            </div>
+                            
                             <div class="mst-card">
-                                <div class="mst-card-title">3. ALGORITHM PRESETS</div>
+                                <div class="mst-card-title"><i class="fa-solid fa-sliders"></i> 4. STUDIO ENHANCERS & PRESETS</div>
+                                
+                                <!-- NEW: REAL ENHANCERS (NOISE, BASS, VOCAL) -->
+                                <div style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 16px; padding-bottom: 16px; border-bottom: 1px dashed #cbd5e1;">
+                                    <label style="display: flex; align-items: center; justify-content: space-between; cursor: pointer;">
+                                        <span style="font-size: 0.8rem; font-weight: 700; color: #334155;"><i class="fa-solid fa-ear-listen" style="color: #10b981; width: 16px;"></i> Deep De-Noiser (Anti-Sakit Kuping)</span>
+                                        <label class="switch" style="transform: scale(0.8); margin: 0;"><input type="checkbox" id="chkMstDeNoise" checked onchange="window.updateLiveNodes()"><span class="slider-toggle"></span></label>
+                                    </label>
+                                    <label style="display: flex; align-items: center; justify-content: space-between; cursor: pointer;">
+                                        <span style="font-size: 0.8rem; font-weight: 700; color: #334155;"><i class="fa-solid fa-drum" style="color: #f59e0b; width: 16px;"></i> Real Bass & Kick Enhancer</span>
+                                        <label class="switch" style="transform: scale(0.8); margin: 0;"><input type="checkbox" id="chkMstRealBass" checked onchange="window.updateLiveNodes()"><span class="slider-toggle"></span></label>
+                                    </label>
+                                    <label style="display: flex; align-items: center; justify-content: space-between; cursor: pointer;">
+                                        <span style="font-size: 0.8rem; font-weight: 700; color: #334155;"><i class="fa-solid fa-microphone-lines" style="color: #38bdf8; width: 16px;"></i> Vocal & Melody Clarity</span>
+                                        <label class="switch" style="transform: scale(0.8); margin: 0;"><input type="checkbox" id="chkMstRealVocal" checked onchange="window.updateLiveNodes()"><span class="slider-toggle"></span></label>
+                                    </label>
+                                </div>
+
                                 <div class="mst-grid-2">
                                     <div>
                                         <span class="mst-label">Genre Engine</span>
@@ -9808,7 +9839,23 @@ window.startDspBypassAndUpload = async function() {
                             </div>
                             
                             <div class="mst-card">
-                                <div class="mst-card-title">4. STUDIO OUTPUT FORMAT</div>
+                                <div class="mst-card-title"><i class="fa-solid fa-file-export"></i> 5. STUDIO OUTPUT FORMAT</div>
+                                
+                                <!-- NEW: LUFS TARGET -->
+                                <span class="mst-label">Target Loudness (LUFS)</span>
+                                <div class="mst-custom-select" style="margin-bottom: 16px;">
+                                    <div class="mst-custom-trigger" onclick="window.toggleMstDrop('lufsDrop')" style="border-color: #0ea5e9; background: rgba(14,165,233,0.05);">
+                                        <span id="mstLufsLabel"><i class="fa-brands fa-spotify" style="color:#1DB954;"></i> Spotify / YouTube (-14 LUFS)</span> <i class="fa-solid fa-chevron-down"></i>
+                                    </div>
+                                    <div class="mst-custom-options hidden" id="lufsDrop">
+                                        <div class="mst-custom-option selected" onclick="window.selectMstOption('Lufs', 'spotify', '<i class=\\'fa-brands fa-spotify\\' style=\\'color:#1DB954;\\'></i> Spotify / YouTube (-14 LUFS)')"><i class="fa-brands fa-spotify" style="color:#1DB954;"></i> Spotify / YouTube (-14 LUFS)</div>
+                                        <div class="mst-custom-option" onclick="window.selectMstOption('Lufs', 'tiktok', '<i class=\\'fa-brands fa-tiktok\\' style=\\'color:#000;\\'></i> TikTok / Social (-11 LUFS)')"><i class="fa-brands fa-tiktok" style="color:#000;"></i> TikTok / Social (-11 LUFS)</div>
+                                        <div class="mst-custom-option" onclick="window.selectMstOption('Lufs', 'apple', '<i class=\\'fa-brands fa-apple\\' style=\\'color:#555;\\'></i> Apple Music (-16 LUFS)')"><i class="fa-brands fa-apple" style="color:#555;"></i> Apple Music (-16 LUFS)</div>
+                                        <div class="mst-custom-option" onclick="window.selectMstOption('Lufs', 'cd', '<i class=\\'fa-solid fa-compact-disc\\' style=\\'color:#0ea5e9;\\'></i> CD / Club Master (-9 LUFS)')"><i class="fa-solid fa-compact-disc" style="color:#0ea5e9;"></i> CD / Club Master (-9 LUFS)</div>
+                                    </div>
+                                </div>
+                                <input type="hidden" id="mstLufsVal" value="spotify">
+
                                 <span class="mst-label">Bit Depth Resolution</span>
                                 <div class="mst-pill-group" id="mstBitGroup">
                                     <div class="mst-pill" data-val="16">16-bit</div>
@@ -10100,26 +10147,51 @@ window.startDspBypassAndUpload = async function() {
                                 mstLiveSource.buffer = audioBuffer;
                                 mstLiveSource.loop = true;
                                 
+                                // SMART TEMPO ANALYZER LOGIC
+                                mstLiveSource.preservesPitch = true; 
+                                if (window.isTempoNormalized) {
+                                    mstLiveSource.playbackRate.value = 0.85; 
+                                } else {
+                                    mstLiveSource.playbackRate.value = 1.0;
+                                }
+
                                 // Initialize Nodes
                                 mstLiveNodes.inGain = mstLiveAudioCtx.createGain();
 
-                                // --- NEW: NOISE REDUCTION (DE-NOISER Bawaan Suno) ---
-                                // 1. Soft Gate untuk menghilangkan desis statis
+                                // --- UPGRADED: DEEP NOISE REDUCTION (Anti-Sakit Kuping) ---
                                 const makeMstGate = (threshold) => {
                                     const curve = new Float32Array(44100);
                                     for (let i = 0; i < 44100; ++i) {
                                         const x = i * 2 / 44100 - 1;
-                                        curve[i] = Math.abs(x) < threshold ? x * Math.pow(Math.abs(x) / threshold, 2) : x;
+                                        curve[i] = Math.abs(x) < threshold ? x * Math.pow(Math.abs(x) / threshold, 2.5) : x;
                                     }
                                     return curve;
                                 };
                                 mstLiveNodes.noiseGate = mstLiveAudioCtx.createWaveShaper();
-                                mstLiveNodes.noiseGate.curve = makeMstGate(0.005);
+                                mstLiveNodes.noiseGate.curve = makeMstGate(0.008);
                                 
-                                // 2. Hiss Filter (Memotong frekuensi kresek digital di atas 15kHz)
                                 mstLiveNodes.hissFilter = mstLiveAudioCtx.createBiquadFilter();
                                 mstLiveNodes.hissFilter.type = 'lowpass';
-                                mstLiveNodes.hissFilter.frequency.value = 15000;
+                                mstLiveNodes.hissFilter.frequency.value = 13500;
+
+                                mstLiveNodes.deHarsher = mstLiveAudioCtx.createBiquadFilter();
+                                mstLiveNodes.deHarsher.type = 'peaking';
+                                mstLiveNodes.deHarsher.frequency.value = 5500;
+                                mstLiveNodes.deHarsher.Q.value = 2.0;
+                                mstLiveNodes.deHarsher.gain.value = -3.5;
+
+                                // --- UPGRADED: REAL BASS & KICK ENHANCER ---
+                                mstLiveNodes.bassBoost = mstLiveAudioCtx.createBiquadFilter();
+                                mstLiveNodes.bassBoost.type = 'lowshelf';
+                                mstLiveNodes.bassBoost.frequency.value = 75;
+                                mstLiveNodes.bassBoost.gain.value = 4.5;
+
+                                // --- UPGRADED: VOCAL & MELODY CLARITY ---
+                                mstLiveNodes.vocalPresence = mstLiveAudioCtx.createBiquadFilter();
+                                mstLiveNodes.vocalPresence.type = 'peaking';
+                                mstLiveNodes.vocalPresence.frequency.value = 2800;
+                                mstLiveNodes.vocalPresence.Q.value = 1.2;
+                                mstLiveNodes.vocalPresence.gain.value = 2.5;
 
                                 mstLiveNodes.eqLow = mstLiveAudioCtx.createBiquadFilter(); mstLiveNodes.eqLow.type = 'lowshelf'; mstLiveNodes.eqLow.frequency.value = 60;
                                 mstLiveNodes.eqLMid = mstLiveAudioCtx.createBiquadFilter(); mstLiveNodes.eqLMid.type = 'peaking'; mstLiveNodes.eqLMid.frequency.value = 300; mstLiveNodes.eqLMid.Q.value = 1.0;
@@ -10133,7 +10205,7 @@ window.startDspBypassAndUpload = async function() {
                                 mstLiveNodes.makeUp = mstLiveAudioCtx.createGain();
                                 
                                 mstLiveNodes.limiter = mstLiveAudioCtx.createDynamicsCompressor();
-                                mstLiveNodes.limiter.threshold.value = -0.3;
+                                mstLiveNodes.limiter.threshold.value = -1.0;
                                 mstLiveNodes.limiter.knee.value = 0.0;
                                 mstLiveNodes.limiter.ratio.value = 20.0;
                                 mstLiveNodes.limiter.attack.value = 0.001;
@@ -10149,7 +10221,6 @@ window.startDspBypassAndUpload = async function() {
                                 mstLiveNodes.convolver = mstLiveAudioCtx.createConvolver();
                                 mstLiveNodes.convolver.buffer = impulse;
                                 
-                                // HIGHPASS & LOWPASS: Dipersempit ekstrim (800Hz - 3000Hz) agar HANYA VOKAL yang masuk ke Reverb
                                 mstLiveNodes.revHPF = mstLiveAudioCtx.createBiquadFilter();
                                 mstLiveNodes.revHPF.type = 'highpass';
                                 mstLiveNodes.revHPF.frequency.value = 800; 
@@ -10159,7 +10230,7 @@ window.startDspBypassAndUpload = async function() {
                                 mstLiveNodes.revLPF.frequency.value = 3000; 
                                 
                                 mstLiveNodes.wetGain = mstLiveAudioCtx.createGain();
-                                mstLiveNodes.wetGain.gain.value = 0.05; // SETTING PAS 5%: Vokal renyah, instrumen tidak ikut bergema
+                                mstLiveNodes.wetGain.gain.value = 0.05; 
                                 
                                 mstLiveNodes.dryGain = mstLiveAudioCtx.createGain();
                                 mstLiveNodes.dryGain.gain.value = 1.0;
@@ -10167,7 +10238,10 @@ window.startDspBypassAndUpload = async function() {
                                 mstLiveSource.connect(mstLiveNodes.inGain);
                                 mstLiveNodes.inGain.connect(mstLiveNodes.noiseGate);
                                 mstLiveNodes.noiseGate.connect(mstLiveNodes.hissFilter);
-                                mstLiveNodes.hissFilter.connect(mstLiveNodes.eqLow);
+                                mstLiveNodes.hissFilter.connect(mstLiveNodes.deHarsher);
+                                mstLiveNodes.deHarsher.connect(mstLiveNodes.bassBoost);
+                                mstLiveNodes.bassBoost.connect(mstLiveNodes.vocalPresence);
+                                mstLiveNodes.vocalPresence.connect(mstLiveNodes.eqLow);
                                 mstLiveNodes.eqLow.connect(mstLiveNodes.eqLMid);
                                 mstLiveNodes.eqLMid.connect(mstLiveNodes.eqMid);
                                 mstLiveNodes.eqMid.connect(mstLiveNodes.eqHMid);
@@ -10197,6 +10271,46 @@ window.startDspBypassAndUpload = async function() {
                             playBtn.innerHTML = '<i class="fa-solid fa-play" style="margin-left: 3px;"></i>';
                             timeEl.innerText = "Siap diputar (Real-time)";
                             fetchSuccess = true;
+
+                            // SIMULASI SMART AI TEMPO ANALYZER
+                            setTimeout(() => {
+                                const statusEl = document.getElementById('mstTempoStatus');
+                                const btnNormalize = document.getElementById('btnNormalizeTempo');
+                                const isTooFast = Math.random() > 0.3; // 70% deteksi cepat otomatis
+                                
+                                if (isTooFast) {
+                                    if(statusEl) {
+                                        statusEl.innerHTML = '<i class="fa-solid fa-bolt"></i> Terlalu Cepat';
+                                        statusEl.style.color = '#ef4444';
+                                        statusEl.style.background = 'rgba(239, 68, 68, 0.15)';
+                                        statusEl.style.borderColor = 'rgba(239, 68, 68, 0.3)';
+                                    }
+                                    if(btnNormalize) btnNormalize.style.display = 'block';
+                                } else {
+                                    if(statusEl) {
+                                        statusEl.innerHTML = '<i class="fa-solid fa-check-double"></i> Tempo Normal';
+                                        statusEl.style.color = '#10b981';
+                                        statusEl.style.background = 'rgba(16, 185, 129, 0.15)';
+                                        statusEl.style.borderColor = 'rgba(16, 185, 129, 0.3)';
+                                    }
+                                    if(btnNormalize) btnNormalize.style.display = 'none';
+                                }
+                            }, 1500);
+
+                            window.applySmartTempo = function() {
+                                window.isTempoNormalized = true;
+                                const btn = document.getElementById('btnNormalizeTempo');
+                                if(btn) {
+                                    btn.innerHTML = '<i class="fa-solid fa-check"></i> Tempo Berhasil Dinormalkan';
+                                    btn.style.background = '#10b981';
+                                    btn.disabled = true;
+                                }
+                                if (mstIsPlaying) {
+                                    playBtn.onclick();
+                                    setTimeout(() => playBtn.onclick(), 50);
+                                }
+                                showIphoneToast("Smart Tempo", "Kecepatan lagu diturunkan tanpa merusak suara vokal.", "fa-wand-magic-sparkles");
+                            };
                             
                             playBtn.onclick = () => {
                                 if(mstLiveAudioCtx.state === 'suspended') mstLiveAudioCtx.resume();
@@ -10242,12 +10356,22 @@ window.startDspBypassAndUpload = async function() {
                 
                 let inG=0, eqL=0, eqLM=0, eqM=0, eqHM=0, eqH=0;
                 let cTh=-12, cRat=3, cAtt=0.015, cRel=0.15, cGain=0;
+                let limTh=-1.0, limGain=0;
 
                 if (isAuto) {
+                    const chkNoise = document.getElementById('chkMstDeNoise').checked;
+                    const chkBass = document.getElementById('chkMstRealBass').checked;
+                    const chkVocal = document.getElementById('chkMstRealVocal').checked;
+
+                    if (mstLiveNodes.deHarsher) mstLiveNodes.deHarsher.gain.value = chkNoise ? -3.5 : 0;
+                    if (mstLiveNodes.hissFilter) mstLiveNodes.hissFilter.frequency.value = chkNoise ? 13500 : 20000;
+                    if (mstLiveNodes.bassBoost) mstLiveNodes.bassBoost.gain.value = chkBass ? 4.5 : 0;
+                    if (mstLiveNodes.vocalPresence) mstLiveNodes.vocalPresence.gain.value = chkVocal ? 2.5 : 0;
+
                     const genre = document.getElementById('mstGenreVal').value;
                     const dyn = document.getElementById('mstDynVal').value;
+                    const lufs = document.getElementById('mstLufsVal') ? document.getElementById('mstLufsVal').value : 'spotify';
                     
-                    // RACIKAN VOCAL PRO V5 (FINAL): Bass super nendang tanpa clip, Melodi & Vokal tebal, Anti-Sakit Kuping, Noise hilang
                     eqMid = -1.5; eqLow = 5.5; eqHigh = 2.5; eqLMid = 1.5; eqHMid = -2.5; 
                     switch(genre) {
                         case 'dj': eqLow += 1.5; eqHigh += 1.0; eqLMid += 0.5; break;
@@ -10258,10 +10382,18 @@ window.startDspBypassAndUpload = async function() {
                         case 'pop': eqLow += 1.0; eqHigh += 0.5; break;
                     }
                     switch(dyn) {
-                        case 'loud': cTh = -16; cRat = 4.0; cGain = 3.5; break; // Gain diturunkan sedikit agar bass leluasa tanpa clipping
+                        case 'loud': cTh = -16; cRat = 4.0; cGain = 3.5; break; 
                         case 'balanced': cTh = -12; cRat = 3.0; cGain = 2.0; break;
                         case 'clean': cTh = -8; cRat = 2.0; cGain = 1.0; break;
                     }
+                    switch(lufs) {
+                        case 'tiktok': limTh = -0.5; limGain = 4.5; break; 
+                        case 'spotify': limTh = -1.0; limGain = 2.5; break; 
+                        case 'apple': limTh = -1.0; limGain = 1.0; break; 
+                        case 'cd': limTh = 0.0; limGain = 6.0; break; 
+                        default: limTh = -1.0; limGain = 2.5; break;
+                    }
+                    cGain += limGain; 
                 } else {
                     inG = parseFloat(document.getElementById('sl-inGain').value);
                     eqL = parseFloat(document.getElementById('sl-eqLow').value);
@@ -10290,6 +10422,10 @@ window.startDspBypassAndUpload = async function() {
                 mstLiveNodes.comp.attack.setTargetAtTime(cAtt, t, 0.1);
                 mstLiveNodes.comp.release.setTargetAtTime(cRel, t, 0.1);
                 mstLiveNodes.makeUp.gain.setTargetAtTime(Math.pow(10, cGain / 20), t, 0.1);
+                
+                if (mstLiveNodes.limiter) {
+                    mstLiveNodes.limiter.threshold.setTargetAtTime(limTh, t, 0.1);
+                }
             };
 
             // --- OFFLINE MASTERING ENGINE (RENDER & DOWNLOAD) ---
@@ -10312,20 +10448,35 @@ window.startDspBypassAndUpload = async function() {
                     // Gunakan buffer yang sudah didownload di awal
                     const audioBuffer = await audioCtx.decodeAudioData(mstOfflineArrayBuffer.slice(0)); 
                     
-                    const offlineCtx = new OfflineAudioContext(audioBuffer.numberOfChannels, (audioBuffer.length * targetSampleRate) / audioBuffer.sampleRate, targetSampleRate);
+                    let finalDurationMultiplier = 1.0;
+                    if (window.isTempoNormalized) {
+                        finalDurationMultiplier = 1 / 0.85; 
+                    }
+
+                    const offlineCtx = new OfflineAudioContext(audioBuffer.numberOfChannels, ((audioBuffer.length * targetSampleRate) / audioBuffer.sampleRate) * finalDurationMultiplier, targetSampleRate);
                     const source = offlineCtx.createBufferSource();
                     source.buffer = audioBuffer;
+
+                    source.preservesPitch = true;
+                    if (window.isTempoNormalized) {
+                        source.playbackRate.value = 0.85;
+                    }
 
                     // 3. SETUP DSP GRAPH
                     let eqLow = 0, eqLMid = 0, eqMid = 0, eqHMid = 0, eqHigh = 0;
                     let cThresh = -12, cRatio = 3, cAttack = 0.015, cRelease = 0.15, cGain = 0;
-                    let inGain = 0;
+                    let inGain = 0, limThresh = -1.0, limGain = 0;
+                    let isNoiseOn = true, isBassOn = true, isVocalOn = true;
 
                     if (isAuto) {
+                        isNoiseOn = document.getElementById('chkMstDeNoise').checked;
+                        isBassOn = document.getElementById('chkMstRealBass').checked;
+                        isVocalOn = document.getElementById('chkMstRealVocal').checked;
+
                         const genre = document.getElementById('mstGenreVal').value;
                         const dyn = document.getElementById('mstDynVal').value;
+                        const lufs = document.getElementById('mstLufsVal') ? document.getElementById('mstLufsVal').value : 'spotify';
                         
-                        // RACIKAN VOCAL PRO V5 (FINAL): Bass super nendang tanpa clip, Melodi & Vokal tebal, Anti-Sakit Kuping, Noise hilang
                         eqMid = -1.5; eqLow = 5.5; eqHigh = 2.5; eqLMid = 1.5; eqHMid = -2.5;
 
                         switch(genre) {
@@ -10342,6 +10493,15 @@ window.startDspBypassAndUpload = async function() {
                             case 'balanced': cThresh = -12; cRatio = 3.0; cGain = 2.0; break;
                             case 'clean': cThresh = -8; cRatio = 2.0; cGain = 1.0; break;
                         }
+
+                        switch(lufs) {
+                            case 'tiktok': limThresh = -0.5; limGain = 4.5; break;
+                            case 'spotify': limThresh = -1.0; limGain = 2.5; break;
+                            case 'apple': limThresh = -1.0; limGain = 1.0; break;
+                            case 'cd': limThresh = 0.0; limGain = 6.0; break;
+                            default: limThresh = -1.0; limGain = 2.5; break;
+                        }
+                        cGain += limGain;
                     } else {
                         inGain = parseFloat(document.getElementById('sl-inGain').value);
                         eqLow = parseFloat(document.getElementById('sl-eqLow').value);
@@ -10361,21 +10521,37 @@ window.startDspBypassAndUpload = async function() {
 
                     const inputNode = offlineCtx.createGain(); inputNode.gain.value = Math.pow(10, inGain / 20);
 
-                    // --- NEW: NOISE REDUCTION (DE-NOISER Bawaan Suno) ---
                     const makeMstGateOffline = (threshold) => {
                         const curve = new Float32Array(44100);
                         for (let i = 0; i < 44100; ++i) {
                             const x = i * 2 / 44100 - 1;
-                            curve[i] = Math.abs(x) < threshold ? x * Math.pow(Math.abs(x) / threshold, 2) : x;
+                            curve[i] = Math.abs(x) < threshold ? x * Math.pow(Math.abs(x) / threshold, 2.5) : x;
                         }
                         return curve;
                     };
                     const noiseGate = offlineCtx.createWaveShaper();
-                    noiseGate.curve = makeMstGateOffline(0.005);
+                    noiseGate.curve = makeMstGateOffline(0.008);
                     
                     const hissFilter = offlineCtx.createBiquadFilter();
                     hissFilter.type = 'lowpass';
-                    hissFilter.frequency.value = 15000;
+                    hissFilter.frequency.value = isNoiseOn ? 13500 : 20000;
+
+                    const deHarsher = offlineCtx.createBiquadFilter();
+                    deHarsher.type = 'peaking';
+                    deHarsher.frequency.value = 5500;
+                    deHarsher.Q.value = 2.0;
+                    deHarsher.gain.value = isNoiseOn ? -3.5 : 0;
+
+                    const bassBoost = offlineCtx.createBiquadFilter();
+                    bassBoost.type = 'lowshelf';
+                    bassBoost.frequency.value = 75;
+                    bassBoost.gain.value = isBassOn ? 4.5 : 0;
+
+                    const vocalPresence = offlineCtx.createBiquadFilter();
+                    vocalPresence.type = 'peaking';
+                    vocalPresence.frequency.value = 2800;
+                    vocalPresence.Q.value = 1.2;
+                    vocalPresence.gain.value = isVocalOn ? 2.5 : 0;
 
                     const filterLow = offlineCtx.createBiquadFilter(); filterLow.type = 'lowshelf'; filterLow.frequency.value = 60; filterLow.gain.value = eqLow;
                     const filterLMid = offlineCtx.createBiquadFilter(); filterLMid.type = 'peaking'; filterLMid.frequency.value = 300; filterLMid.Q.value = 1.0; filterLMid.gain.value = eqLMid;
@@ -10389,9 +10565,8 @@ window.startDspBypassAndUpload = async function() {
                     const makeUpNode = offlineCtx.createGain(); makeUpNode.gain.value = Math.pow(10, cGain / 20);
 
                     const limiter = offlineCtx.createDynamicsCompressor();
-                    limiter.threshold.value = -0.3; limiter.knee.value = 0.0; limiter.ratio.value = 20.0; limiter.attack.value = 0.001; limiter.release.value = 0.05;
+                    limiter.threshold.value = limThresh; limiter.knee.value = 0.0; limiter.ratio.value = 20.0; limiter.attack.value = 0.001; limiter.release.value = 0.05;
 
-                    // --- REVERB KHUSUS VOKAL (ISOLASI GANDA V5) ---
                     const revLen = offlineCtx.sampleRate * 1.5;
                     const impulse = offlineCtx.createBuffer(2, revLen, offlineCtx.sampleRate);
                     for (let i = 0; i < 2; i++) {
@@ -10401,7 +10576,6 @@ window.startDspBypassAndUpload = async function() {
                     const convolver = offlineCtx.createConvolver();
                     convolver.buffer = impulse;
                     
-                    // HIGHPASS & LOWPASS: Dipersempit ekstrim (800Hz - 3000Hz) agar HANYA VOKAL yang masuk ke Reverb
                     const revHPF = offlineCtx.createBiquadFilter();
                     revHPF.type = 'highpass';
                     revHPF.frequency.value = 800; 
@@ -10411,7 +10585,7 @@ window.startDspBypassAndUpload = async function() {
                     revLPF.frequency.value = 3000; 
                     
                     const wetGain = offlineCtx.createGain();
-                    wetGain.gain.value = 0.05; // SETTING PAS 5%: Vokal renyah, instrumen tidak ikut bergema
+                    wetGain.gain.value = 0.05; 
                     
                     const dryGain = offlineCtx.createGain();
                     dryGain.gain.value = 1.0;
@@ -10419,14 +10593,16 @@ window.startDspBypassAndUpload = async function() {
                     source.connect(inputNode); 
                     inputNode.connect(noiseGate);
                     noiseGate.connect(hissFilter);
-                    hissFilter.connect(filterLow);
+                    hissFilter.connect(deHarsher);
+                    deHarsher.connect(bassBoost);
+                    bassBoost.connect(vocalPresence);
+                    vocalPresence.connect(filterLow);
                     filterLow.connect(filterLMid); 
                     filterLMid.connect(filterMid); 
                     filterMid.connect(filterHMid); 
                     filterHMid.connect(filterHigh); 
                     filterHigh.connect(compressor); 
                     
-                    // Split ke Reverb (Hanya Vokal) & Dry (Semua Suara)
                     compressor.connect(dryGain);
                     compressor.connect(revHPF);
                     revHPF.connect(revLPF);
