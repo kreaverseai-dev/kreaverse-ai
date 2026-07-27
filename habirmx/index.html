@@ -2625,7 +2625,9 @@
                     </div>
                 </div>
                 <!-- Tombol Normal -->
-                <div style="display: flex; gap: 8px;" id="libNormalActions">
+                <div style="display: flex; gap: 8px; flex-wrap: wrap;" id="libNormalActions">
+                    <button onclick="window.openPlaylistUI()" style="font-size: 0.75rem; font-weight: 800; color: #1DB954; background: rgba(29,185,84,0.1); padding: 8px 14px; border-radius: 10px; border: none; cursor: pointer; transition: 0.2s;"><i class="fa-solid fa-list"></i> Playlist</button>
+                    <button onclick="window.openMasteringGalleryUI()" style="font-size: 0.75rem; font-weight: 800; color: #0ea5e9; background: rgba(14,165,233,0.1); padding: 8px 14px; border-radius: 10px; border: none; cursor: pointer; transition: 0.2s;"><i class="fa-solid fa-wand-magic-sparkles"></i> Mastering</button>
                     <button onclick="window.toggleSelectionMode(true)" style="font-size: 0.75rem; font-weight: 800; color: #ef4444; background: rgba(239,68,68,0.1); padding: 8px 14px; border-radius: 10px; border: none; cursor: pointer; transition: 0.2s;"><i class="fa-solid fa-list-check"></i> Pilih Item</button>
                     <a href="/berkas/" style="font-size: 0.75rem; font-weight: 800; color: var(--accent-color); text-decoration: none; background: rgba(0,122,255,0.1); padding: 8px 14px; border-radius: 10px; transition: 0.2s;">Berkas <i class="fa-solid fa-arrow-right"></i></a>
                 </div>
@@ -2636,9 +2638,9 @@
                     </label>
                     <div style="width:1px; height:16px; background:#fca5a5; margin:0 4px;"></div>
                     
-                    <button onclick="window.addSelectedToPlaylist()" id="btnAddPlaylist" style="font-size: 0.75rem; font-weight: 800; color: #fff; background: #1DB954; padding: 6px 12px; border-radius: 8px; border: none; cursor: pointer; transition: 0.2s; box-shadow: 0 4px 10px rgba(29, 185, 84, 0.3);" disabled><i class="fa-solid fa-list"></i> Playlist</button>
+                    <button onclick="window.addSelectedToPlaylist()" id="btnAddPlaylist" style="font-size: 0.75rem; font-weight: 800; color: #fff; background: #1DB954; padding: 6px 12px; border-radius: 8px; border: none; cursor: pointer; transition: 0.2s; box-shadow: 0 4px 10px rgba(29, 185, 84, 0.3);" disabled><i class="fa-solid fa-list"></i> Tambah Playlist</button>
                     
-                    <button onclick="window.masterSelectedItems()" id="btnMasterSelected" style="font-size: 0.75rem; font-weight: 800; color: #0f172a; background: #38bdf8; padding: 6px 12px; border-radius: 8px; border: none; cursor: pointer; transition: 0.2s; box-shadow: 0 4px 10px rgba(56, 189, 248, 0.3);" disabled><i class="fa-solid fa-wand-magic-sparkles"></i> Mastering</button>
+                    <button onclick="window.masterSelectedItems()" id="btnMasterSelected" style="font-size: 0.75rem; font-weight: 800; color: #0f172a; background: #38bdf8; padding: 6px 12px; border-radius: 8px; border: none; cursor: pointer; transition: 0.2s; box-shadow: 0 4px 10px rgba(56, 189, 248, 0.3);" disabled><i class="fa-solid fa-wand-magic-sparkles"></i> Auto Mastering</button>
                     
                     <button onclick="window.deleteSelectedItems()" id="btnDeleteSelected" style="font-size: 0.75rem; font-weight: 800; color: #fff; background: #ef4444; padding: 6px 12px; border-radius: 8px; border: none; cursor: pointer; transition: 0.2s;" disabled><i class="fa-solid fa-trash"></i> Hapus</button>
                     
@@ -3845,15 +3847,20 @@
                 const count = selectedItemIds.length;
                 const isDisabled = count === 0;
                 
-                btnDelete.innerHTML = `<i class="fa-solid fa-trash"></i> Hapus (${count})`;
+                // Format angka dengan warna beda tanpa kurung (hanya muncul jika > 0)
+                const numHtmlPlaylist = count > 0 ? `<span style="color: #bbf7d0; font-weight: 900; margin-left: 4px;">${count}</span>` : '';
+                const numHtmlMaster = count > 0 ? `<span style="color: #e0f2fe; font-weight: 900; margin-left: 4px;">${count}</span>` : '';
+                const numHtmlDelete = count > 0 ? `<span style="color: #fecaca; font-weight: 900; margin-left: 4px;">${count}</span>` : '';
+                
+                btnDelete.innerHTML = `<i class="fa-solid fa-trash"></i> Hapus ${numHtmlDelete}`;
                 btnDelete.disabled = isDisabled;
                 
                 if(btnAddPlaylist) {
-                    btnAddPlaylist.innerHTML = `<i class="fa-solid fa-list"></i> Playlist (${count})`;
+                    btnAddPlaylist.innerHTML = `<i class="fa-solid fa-list"></i> Tambah Playlist ${numHtmlPlaylist}`;
                     btnAddPlaylist.disabled = isDisabled;
                 }
                 if(btnMasterSelected) {
-                    btnMasterSelected.innerHTML = `<i class="fa-solid fa-wand-magic-sparkles"></i> Mastering (${count})`;
+                    btnMasterSelected.innerHTML = `<i class="fa-solid fa-wand-magic-sparkles"></i> Auto Mastering ${numHtmlMaster}`;
                     btnMasterSelected.disabled = isDisabled;
                 }
                 
