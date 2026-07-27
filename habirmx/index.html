@@ -1476,17 +1476,19 @@
                         <span style="font-weight: 800; font-size: 0.8rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px;">Pilihan Model AI :</span>
                     </label>
                     
-                    <!-- Suno Style Dropdown Trigger (Pill Shape & Light Theme) -->
-                    <div class="custom-select-trigger" onclick="window.toggleCustomSelect('sunoModelDropdown')" style="background: #ffffff; color: var(--text-primary); border: 1px solid var(--border-color); border-radius: 99px; padding: 8px 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.02); display: inline-flex; align-items: center; gap: 12px; width: max-content; cursor: pointer; transition: 0.2s; font-size: 0.85rem; height: 38px;">
-                        <span id="activeSunoModelName" style="font-weight: 700; display: flex; align-items: center; gap: 6px;">
-                            Memuat Model...
-                        </span>
-                        <i class="fa-solid fa-chevron-down" style="color: var(--text-light); font-size: 0.75rem;"></i>
-                    </div>
+                    <div class="custom-select-container">
+                        <!-- Suno Style Dropdown Trigger (Pill Shape & Light Theme) -->
+                        <div class="custom-select-trigger" onclick="window.toggleCustomSelect('sunoModelDropdown')" style="background: #ffffff; color: var(--text-primary); border: 1px solid var(--border-color); border-radius: 99px; padding: 8px 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.02); display: inline-flex; align-items: center; gap: 12px; width: max-content; cursor: pointer; transition: 0.2s; font-size: 0.85rem; height: 38px;">
+                            <span id="activeSunoModelName" style="font-weight: 700; display: flex; align-items: center; gap: 6px;">
+                                Memuat Model...
+                            </span>
+                            <i class="fa-solid fa-chevron-down" style="color: var(--text-light); font-size: 0.75rem;"></i>
+                        </div>
 
-                    <!-- Dropdown Options (Light Theme) -->
-                    <div class="custom-select-options hidden" id="sunoModelDropdown" style="background: #ffffff; border: 1px solid var(--border-color); padding: 6px; border-radius: 16px; top: calc(100% + 8px); left: 0; z-index: 9999; max-height: 350px; overflow-y: auto; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 100%; min-width: 280px; position: absolute;">
-                        <!-- Diisi otomatis oleh JS -->
+                        <!-- Dropdown Options (Light Theme) -->
+                        <div class="custom-select-options hidden" id="sunoModelDropdown" style="background: #ffffff; border: 1px solid var(--border-color); padding: 6px; border-radius: 16px; top: calc(100% + 8px); left: 0; z-index: 9999; max-height: 350px; overflow-y: auto; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 100%; min-width: 280px; position: absolute;">
+                            <!-- Diisi otomatis oleh JS -->
+                        </div>
                     </div>
                     
                     <!-- Hidden inputs untuk sistem backend -->
@@ -10109,7 +10111,10 @@ window.startDspBypassAndUpload = async function() {
                     const activeFormatPill = document.querySelector('#mstFormatGroup .mst-pill.active');
                     const targetFormat = activeFormatPill ? activeFormatPill.getAttribute('data-val') : 'mp3';
                     
-                    const safeTitle = cleanTitle.replace(/[^a-zA-Z0-9\s]/g, "_");
+                    const docDataMst = window.globalLibraryDocs.find(d => d.id === docId);
+                    const tempCleanTitle = docDataMst ? (docDataMst.title || "Untitled").replace(/\s*\(Part\s*\d+\)/gi, '').replace(/\s*-\s*Versi\s*\d+/gi, '').trim() : "Mastered Audio";
+                    
+                    const safeTitle = tempCleanTitle.replace(/[^a-zA-Z0-9\s]/g, "_");
                     const finalFileName = `Mastered_${safeTitle}.${targetFormat}`;
                     
                     let finalBlob = null;
