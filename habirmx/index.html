@@ -3391,7 +3391,11 @@
         window.renderMasteringGalleryUI = function() {
             const container = document.getElementById('masteringListContainer');
             // Tarik data langsung dari Firebase (yang sudah difilter isMastered)
-            const queue = window.globalLibraryDocs.filter(d => d.isMastered === true) || [];
+            let queue = window.globalLibraryDocs.filter(d => d.isMastered === true) || [];
+            
+            // Urutkan berdasarkan waktu mastering terbaru
+            queue.sort((a, b) => (b.masteredAt || b.timestamp || 0) - (a.masteredAt || a.timestamp || 0));
+            window.masteredGalleryQueue = queue; // Simpan ke global queue untuk autoplay
             
             document.getElementById('masteringCountText').innerText = `${queue.length} Lagu Tersimpan`;
 
@@ -3407,16 +3411,25 @@
                 const titleColor = isPlaying ? '#38bdf8' : '#ffffff';
                 const safeThumb = item.imageUrl || "https://i.postimg.cc/Jh211FTG/46cc61ec-de7f-4c62-8245-946e22312d2b.jpg";
 
+                // Format Jam Hari Tahun
+                const dateObj = new Date(item.masteredAt || item.timestamp || Date.now());
+                const days = ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'];
+                const months = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+                let h = dateObj.getHours().toString().padStart(2, '0');
+                let m = dateObj.getMinutes().toString().padStart(2, '0');
+                const timeStr = `${days[dateObj.getDay()]}, ${dateObj.getDate()} ${months[dateObj.getMonth()]} ${dateObj.getFullYear()} • ${h}:${m}`;
+
                 html += `
                     <div style="display: flex; align-items: center; justify-content: space-between; padding: 10px 0; cursor: pointer; transition: background 0.2s; border-radius: 8px;" onclick="window.playMasteringTrack(${index})" onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='transparent'">
                         <div style="display: flex; align-items: center; gap: 14px; flex: 1; min-width: 0; padding-left: 6px;">
                             <img src="${safeThumb}" style="width: 50px; height: 50px; border-radius: 4px; object-fit: cover; flex-shrink: 0;">
                             <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; justify-content: center;">
                                 <div style="color: ${titleColor}; font-weight: 700; font-size: 1rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 4px;">${cleanTitle}</div>
-                                <div style="display: flex; gap: 6px;">
+                                <div style="display: flex; gap: 6px; margin-bottom: 4px;">
                                     <span style="background: rgba(56, 189, 248, 0.15); color: #38bdf8; padding: 2px 6px; border-radius: 4px; font-size: 0.6rem; font-weight: 800;">${item.masteredFormat || 'MP3'}</span>
                                     <span style="background: rgba(255,255,255,0.1); color: #cbd5e1; padding: 2px 6px; border-radius: 4px; font-size: 0.6rem; font-weight: 700;">${item.masteredSpecs || '24-bit'}</span>
                                 </div>
+                                <div style="font-size: 0.65rem; color: #64748b; font-weight: 600;"><i class="fa-regular fa-clock"></i> ${timeStr}</div>
                             </div>
                         </div>
                         <div style="display: flex; align-items: center; gap: 16px; padding-right: 10px;">
@@ -3429,7 +3442,7 @@
         };
 
         window.playMasteringTrack = async function(index) {
-            const queue = window.globalLibraryDocs.filter(d => d.isMastered === true) || [];
+            const queue = window.masteredGalleryQueue || [];
             if (queue.length === 0) return;
             if (index >= queue.length) index = 0;
             
