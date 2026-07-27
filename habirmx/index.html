@@ -3049,22 +3049,42 @@
 
     <!-- UI GALERI MASTERING -->
     <div id="masteringGalleryModal" class="krea-modal-overlay" style="z-index: 9999998; background: #0f172a;">
-        <div style="width: 100%; height: 100vh; display: flex; flex-direction: column; background: linear-gradient(to bottom, #1e293b 0%, #0f172a 40%); color: #fff; overflow: hidden; position: relative;">
+        <div style="width: 100%; height: 100vh; display: flex; flex-direction: column; background: linear-gradient(to bottom, #0ea5e9 0%, #0f172a 45%); color: #fff; overflow: hidden; position: relative; font-family: 'Plus Jakarta Sans', sans-serif;">
             
-            <div style="padding: 30px 20px 20px; display: flex; flex-direction: column; align-items: center; position: relative;">
-                <button onclick="window.closeMasteringGalleryUI()" style="position: absolute; top: 20px; left: 20px; background: rgba(0,0,0,0.5); border: none; color: #fff; width: 36px; height: 36px; border-radius: 50%; cursor: pointer; font-size: 1.2rem; display: flex; align-items: center; justify-content: center;"><i class="fa-solid fa-chevron-down"></i></button>
-                <div style="width: 120px; height: 120px; background: linear-gradient(135deg, #0ea5e9, #38bdf8); border-radius: 24px; display: flex; align-items: center; justify-content: center; font-size: 3.5rem; color: #fff; box-shadow: 0 15px 35px rgba(14, 165, 233, 0.4); margin-bottom: 20px; transform: rotate(-5deg);">
+            <!-- Top Bar -->
+            <div style="padding: 20px; display: flex; align-items: center; position: relative; z-index: 10;">
+                <button onclick="window.closeMasteringGalleryUI()" style="background: none; border: none; color: #fff; font-size: 1.4rem; cursor: pointer; padding: 5px;"><i class="fa-solid fa-chevron-left"></i></button>
+            </div>
+
+            <!-- Cover Area -->
+            <div style="padding: 0 20px; display: flex; flex-direction: column; align-items: center; position: relative; z-index: 10;">
+                <div style="width: 200px; height: 200px; background: linear-gradient(135deg, #0284c7, #38bdf8); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 5rem; color: #fff; box-shadow: 0 15px 35px rgba(0,0,0,0.5); margin-bottom: 24px;">
                     <i class="fa-solid fa-wand-magic-sparkles"></i>
                 </div>
-                <h2 style="font-size: 1.6rem; font-weight: 900; margin: 0; font-family: 'Plus Jakarta Sans', sans-serif;">Studio Mastering</h2>
-                <p style="color: #94a3b8; font-size: 0.85rem; margin-top: 4px; text-align: center;">Koleksi audio Lossless/HQ sesi ini.<br>File akan hilang jika halaman di-refresh.</p>
             </div>
 
-            <div style="padding: 0 20px 20px; display: flex; align-items: center; justify-content: space-between;">
-                <button onclick="window.playMasteringTrack(0)" style="width: 50px; height: 50px; border-radius: 50%; background: #38bdf8; color: #0f172a; border: none; font-size: 1.3rem; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 8px 20px rgba(56, 189, 248, 0.3);"><i class="fa-solid fa-play" style="margin-left: 4px;"></i></button>
+            <!-- Title & Actions Area -->
+            <div style="padding: 0 20px 16px; position: relative; z-index: 10;">
+                <h2 style="font-size: 1.8rem; font-weight: 900; margin: 0 0 4px 0; letter-spacing: -0.5px; text-align: left;">Mastering Studio</h2>
+                <p style="color: #94a3b8; font-size: 0.85rem; margin: 0 0 16px 0; font-weight: 500; text-align: left;" id="masteringCountText">0 Lagu Tersimpan</p>
+                
+                <div style="background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.3); padding: 10px 14px; border-radius: 12px; margin-bottom: 16px; display: flex; align-items: flex-start; gap: 10px;">
+                    <i class="fa-solid fa-triangle-exclamation" style="color: #ef4444; margin-top: 2px;"></i>
+                    <div style="font-size: 0.75rem; color: #fca5a5; line-height: 1.5; font-weight: 600;">
+                        Server API akan <b>menghapus file otomatis setelah 14 hari</b>. Harap segera <i class="fa-solid fa-download"></i> unduh lagu Anda ke perangkat!
+                    </div>
+                </div>
+
+                <div style="display: flex; align-items: center; justify-content: space-between;">
+                    <div style="display: flex; gap: 20px; align-items: center; color: #94a3b8; font-size: 1.4rem;">
+                        <i class="fa-solid fa-circle-arrow-down" style="cursor: pointer; transition: 0.2s;" onmouseover="this.style.color='#38bdf8'" onmouseout="this.style.color='#94a3b8'"></i>
+                    </div>
+                    <button onclick="window.playMasteringTrack(0)" id="bigMasteringPlayBtn" style="width: 56px; height: 56px; border-radius: 50%; background: #38bdf8; color: #0f172a; border: none; font-size: 1.5rem; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 8px 20px rgba(0,0,0,0.3); transition: transform 0.1s;" onmousedown="this.style.transform='scale(0.95)'" onmouseup="this.style.transform='scale(1)'"><i class="fa-solid fa-play" style="margin-left: 4px;"></i></button>
+                </div>
             </div>
 
-            <div id="masteringListContainer" style="flex: 1; overflow-y: auto; padding: 0 20px 100px;">
+            <!-- List Lagu -->
+            <div id="masteringListContainer" style="flex: 1; overflow-y: auto; padding: 0 20px 100px; position: relative; z-index: 10;">
                 <!-- Diisi via JS -->
             </div>
         </div>
@@ -3280,31 +3300,38 @@
 
         window.renderMasteringGalleryUI = function() {
             const container = document.getElementById('masteringListContainer');
-            const queue = window.masteredGalleryQueue || [];
+            // Tarik data langsung dari Firebase (yang sudah difilter isMastered)
+            const queue = window.globalLibraryDocs.filter(d => d.isMastered === true) || [];
+            
+            document.getElementById('masteringCountText').innerText = `${queue.length} Lagu Tersimpan`;
 
             if (queue.length === 0) {
-                container.innerHTML = '<div style="text-align:center; color:#94a3b8; margin-top:40px;">Belum ada audio yang di-mastering sesi ini.</div>';
+                container.innerHTML = '<div style="text-align:center; color:#94a3b8; margin-top:40px; font-weight: 500; font-size: 0.95rem;">Belum ada audio yang di-mastering.</div>';
                 return;
             }
 
             let html = '';
             queue.forEach((item, index) => {
+                const cleanTitle = (item.title || "Untitled").replace(/\s*\(Part\s*\d+\)/gi, '').replace(/\s*-\s*Versi\s*\d+/gi, '').trim();
                 const isPlaying = (index === window.currentMasteringIndex && document.getElementById('globalMiniPlayer').classList.contains('show') && !document.getElementById('globalAudioEl').paused);
                 const titleColor = isPlaying ? '#38bdf8' : '#ffffff';
+                const safeThumb = item.imageUrl || "https://i.postimg.cc/Jh211FTG/46cc61ec-de7f-4c62-8245-946e22312d2b.jpg";
 
                 html += `
-                    <div style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 12px; margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; transition: 0.2s;" onclick="window.playMasteringTrack(${index})">
-                        <div style="display: flex; align-items: center; gap: 14px; flex: 1; min-width: 0;">
-                            <img src="${item.imageUrl}" style="width: 50px; height: 50px; border-radius: 8px; object-fit: cover; flex-shrink: 0; box-shadow: 0 4px 10px rgba(0,0,0,0.3);">
-                            <div style="flex: 1; min-width: 0;">
-                                <div style="color: ${titleColor}; font-weight: 700; font-size: 0.95rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 4px;">${item.title}</div>
+                    <div style="display: flex; align-items: center; justify-content: space-between; padding: 10px 0; cursor: pointer; transition: background 0.2s; border-radius: 8px;" onclick="window.playMasteringTrack(${index})" onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='transparent'">
+                        <div style="display: flex; align-items: center; gap: 14px; flex: 1; min-width: 0; padding-left: 6px;">
+                            <img src="${safeThumb}" style="width: 50px; height: 50px; border-radius: 4px; object-fit: cover; flex-shrink: 0;">
+                            <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; justify-content: center;">
+                                <div style="color: ${titleColor}; font-weight: 700; font-size: 1rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 4px;">${cleanTitle}</div>
                                 <div style="display: flex; gap: 6px;">
-                                    <span style="background: rgba(56, 189, 248, 0.15); color: #38bdf8; padding: 2px 6px; border-radius: 4px; font-size: 0.6rem; font-weight: 800;">${item.format}</span>
-                                    <span style="background: rgba(255,255,255,0.1); color: #cbd5e1; padding: 2px 6px; border-radius: 4px; font-size: 0.6rem; font-weight: 700;">${item.specs}</span>
+                                    <span style="background: rgba(56, 189, 248, 0.15); color: #38bdf8; padding: 2px 6px; border-radius: 4px; font-size: 0.6rem; font-weight: 800;">${item.masteredFormat || 'MP3'}</span>
+                                    <span style="background: rgba(255,255,255,0.1); color: #cbd5e1; padding: 2px 6px; border-radius: 4px; font-size: 0.6rem; font-weight: 700;">${item.masteredSpecs || '24-bit'}</span>
                                 </div>
                             </div>
                         </div>
-                        <button onclick="event.stopPropagation(); window.forceDownloadMastered('${item.url}', '${item.fileName}')" style="background: #38bdf8; color: #0f172a; border: none; width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 4px 10px rgba(56, 189, 248, 0.2);"><i class="fa-solid fa-download"></i></button>
+                        <div style="display: flex; align-items: center; gap: 16px; padding-right: 10px;">
+                            <button onclick="event.stopPropagation(); window.forceDownloadMastered('${item.masteredUrl}', '${item.masteredFileName || cleanTitle}')" style="background: none; border: none; color: #94a3b8; cursor: pointer; font-size: 1.1rem; transition: 0.2s;" onmouseover="this.style.color='#38bdf8'" onmouseout="this.style.color='#94a3b8'" title="Unduh Lagu"><i class="fa-solid fa-circle-down"></i></button>
+                        </div>
                     </div>
                 `;
             });
@@ -3312,14 +3339,17 @@
         };
 
         window.playMasteringTrack = function(index) {
-            if (!window.masteredGalleryQueue || window.masteredGalleryQueue.length === 0) return;
-            if (index >= window.masteredGalleryQueue.length) index = 0;
+            const queue = window.globalLibraryDocs.filter(d => d.isMastered === true) || [];
+            if (queue.length === 0) return;
+            if (index >= queue.length) index = 0;
             
             window.currentMasteringIndex = index;
-            const track = window.masteredGalleryQueue[index];
+            const track = queue[index];
+            const cleanTitle = (track.title || "Untitled").replace(/\s*\(Part\s*\d+\)/gi, '').replace(/\s*-\s*Versi\s*\d+/gi, '').trim();
+            const safeThumb = track.imageUrl || "https://i.postimg.cc/Jh211FTG/46cc61ec-de7f-4c62-8245-946e22312d2b.jpg";
             
             window.isPlaylistUIOpen = false; // Matikan flag playlist
-            window.playGlobalAudio(track.url, track.title, track.imageUrl, track.id);
+            window.playGlobalAudio(track.masteredUrl, cleanTitle, safeThumb, track.id);
             window.renderMasteringGalleryUI(); // Update warna biru
         };
 
@@ -4275,6 +4305,33 @@
         document.addEventListener('DOMContentLoaded', () => {
             const audioEl = document.getElementById('globalAudioEl');
             if(audioEl) {
+                // Sinkronisasi Tombol Play Besar di UI Playlist & Mastering
+                const syncBigButtons = () => {
+                    if (window.isPlaylistUIOpen) window.renderPlaylistUI();
+                    if (window.isMasteringUIOpen) {
+                        window.renderMasteringGalleryUI();
+                        const bigMstBtn = document.getElementById('bigMasteringPlayBtn');
+                        if (bigMstBtn) bigMstBtn.innerHTML = audioEl.paused ? '<i class="fa-solid fa-play" style="margin-left: 4px;"></i>' : '<i class="fa-solid fa-pause"></i>';
+                    }
+                };
+                
+                audioEl.addEventListener('play', syncBigButtons);
+                audioEl.addEventListener('pause', syncBigButtons);
+
+                // Auto-Delete Lagu Kadaluarsa (14 Hari Limit Server)
+                audioEl.addEventListener('error', async () => {
+                    if (currentPlayingDocId) {
+                        window.showIphoneToast("File Kadaluarsa", "Lagu ini telah melewati batas 14 hari dan dihapus oleh server. Menghapus dari database...", "fa-trash");
+                        try {
+                            // Hapus dokumen dari Firestore
+                            await deleteDoc(doc(db, "render_gallery", currentPlayingDocId));
+                            window.closeGlobalPlayer();
+                            if (window.isPlaylistUIOpen) window.renderPlaylistUI();
+                            if (window.isMasteringUIOpen) window.renderMasteringGalleryUI();
+                        } catch(e) { console.error("Gagal hapus lagu kadaluarsa:", e); }
+                    }
+                });
+
                 audioEl.addEventListener('timeupdate', () => {
                     const fill = document.getElementById('gmpProgressFill');
                     const currEl = document.getElementById('gmpCurrTime');
@@ -4306,6 +4363,7 @@
                     document.getElementById('gmpPlayBtn').querySelector('i').className = 'fa-solid fa-play';
                     document.getElementById('gmpProgressFill').style.width = '0%';
                     document.getElementById('gmpCurrTime').innerText = '0:00';
+                    syncBigButtons();
                     
                     // LOGIKA AUTOPLAY PLAYLIST & MASTERING (SPOTIFY STYLE)
                     let nextTrack = null;
@@ -10170,38 +10228,35 @@ window.startDspBypassAndUpload = async function() {
                         });
                     }
 
-                    updateTopProgress(95, "Menyimpan ke Galeri Mastering...");
+                    updateTopProgress(90, "Mengunggah ke Server Kreaverse...");
 
-                    const downloadUrl = URL.createObjectURL(finalBlob);
-                    
-                    // Simpan ke Array Global Galeri Mastering
-                    if (!window.masteredGalleryQueue) window.masteredGalleryQueue = [];
+                    // 1. Unggah ke Cloudinary agar permanen
+                    await uploadBlobToCloudinary(finalBlob, finalFileName, true, "0:00");
+                    const permanentUrl = selectedAudioUrl; // Fungsi di atas mengatur variabel global ini
                     
                     const docData = window.globalLibraryDocs.find(d => d.id === docId);
                     const cleanTitle = docData ? (docData.title || "Untitled").replace(/\s*\(Part\s*\d+\)/gi, '').replace(/\s*-\s*Versi\s*\d+/gi, '').trim() : "Mastered Audio";
-                    const safeThumb = docData ? (docData.imageUrl || "https://i.postimg.cc/Jh211FTG/46cc61ec-de7f-4c62-8245-946e22312d2b.jpg") : "https://i.postimg.cc/Jh211FTG/46cc61ec-de7f-4c62-8245-946e22312d2b.jpg";
                     
                     const activeSamplePill2 = document.querySelector('#mstSampleGroup .mst-pill.active');
                     const sampleRateText = activeSamplePill2 ? activeSamplePill2.innerText : '44.1 kHz';
                     const activeBitPill = document.querySelector('#mstBitGroup .mst-pill.active');
                     const bitDepthText = activeBitPill ? activeBitPill.innerText : '24-bit';
 
-                    window.masteredGalleryQueue.push({
-                        id: docId || Date.now().toString(),
-                        title: cleanTitle,
-                        url: downloadUrl,
-                        imageUrl: safeThumb,
-                        format: targetFormat.toUpperCase(),
-                        specs: `${bitDepthText} | ${sampleRateText}`,
-                        fileName: finalFileName
-                    });
+                    updateTopProgress(95, "Menyimpan ke Database Firebase...");
                     
+                    // 2. Simpan ke Firestore
                     try {
                         await updateDoc(doc(db, "render_gallery", docId), {
                             isMastered: true,
-                            masteringProfile: isAuto ? document.getElementById('mstGenreVal').value : 'manual'
+                            masteringProfile: isAuto ? document.getElementById('mstGenreVal').value : 'manual',
+                            masteredUrl: permanentUrl,
+                            masteredFormat: targetFormat.toUpperCase(),
+                            masteredSpecs: `${bitDepthText} | ${sampleRateText}`,
+                            masteredFileName: finalFileName
                         });
-                    } catch(e) {}
+                    } catch(e) {
+                        console.error("Gagal simpan Firebase:", e);
+                    }
 
                     updateTopProgress(100, "Selesai!");
                     setTimeout(() => { 
