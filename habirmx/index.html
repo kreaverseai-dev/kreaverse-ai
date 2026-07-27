@@ -8768,6 +8768,21 @@ window.startDspBypassAndUpload = async function() {
         window.triggerMagicWand = async function(type) {
             if (!isLoggedIn || !currentUser) {
                 showIphoneToast("Akses Ditolak", "Silakan login terlebih dahulu untuk menggunakan AI.", "fa-lock");
+                setTimeout(() => { window.location.href = "/login/index.html"; }, 2000);
+                return;
+            }
+
+            const llmProviderId = document.getElementById('llmSelect') ? document.getElementById('llmSelect').value : 'auto_pool';
+            const llmModelId = document.getElementById('llmModelSelect') ? document.getElementById('llmModelSelect').value : 'auto_pool';
+            if (!llmProviderId) {
+                showIphoneToast("Error", "Silakan pilih Model Chat AI terlebih dahulu!", "fa-triangle-exclamation");
+                return;
+            }
+
+            const currentMode = document.getElementById('modeGenerateBtn') && document.getElementById('modeGenerateBtn').classList.contains('active') ? 'generate' : 'cover';
+            
+            if (currentMode === 'cover' && !selectedAudioUrl && !rawAudioFile) {
+                showIphoneToast("Akses Ditolak", "Silakan unggah audio referensi terlebih dahulu sebelum menggunakan AI di mode Cover.", "fa-lock");
                 return;
             }
 
@@ -8775,32 +8790,175 @@ window.startDspBypassAndUpload = async function() {
             const inputEl = document.getElementById(inputId);
             const originalText = inputEl.value.trim();
 
-            if (!originalText) {
-                showIphoneToast("Error", `Silakan isi ${type === 'style' ? 'Style of Music' : 'Lyrics'} terlebih dahulu sebelum menggunakan AI.`, "fa-triangle-exclamation");
-                return;
-            }
-
             const btn = event.currentTarget;
             const originalBtnHtml = btn.innerHTML;
             btn.disabled = true;
             btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> AI...';
             inputEl.disabled = true;
 
-            showIphoneToast("Magic Wand", "AI sedang merombak teks Anda...", "fa-wand-magic-sparkles");
+            // INSTRUKSI KETAT UNTUK LIRIK (DIGUNAKAN DI JALUR 1 & JALUR 2)
+            const lyricsPromptInstruction = "TUGAS: Susun ulang lirik mentah ini menjadi format lirik lagu profesional untuk Suno AI/Udio.\n\nATURAN MUTLAK:\n1. Gunakan struktur baku HANYA dengan kurung siku: [Intro], [Verse 1], [Pre-Chorus], [Chorus], [Interlude], [Bridge], [Outro].\n2. Masukkan arahan instrumen ATAU suara latar ke dalam kurung siku (bukan kurung biasa) agar tidak dienkripsi sistem, contoh: [Instrumental Intro], [Guitar Solo], [Backing Vocals: ...], [Fade Out].\n3. WAJIB tambahkan meta-tag anti-halusinasi ini di baris paling atas lirik: [Exact Original Melody], [Consistent Rhythm], [No Improvisation].\n4. HAPUS semua teks yang tidak relevan (seperti 'Upload By', nama uploader, 'Terima Kasih', dll).\n5. JANGAN menerjemahkan lirik. Hapus huruf Mandarin/Jepang/Korea jika itu halusinasi instrumen.\n6. Langsung berikan hasil liriknya tanpa kata pengantar.\n\nLIRIK MENTAH:\n";
+
+            // JALUR 1: JIKA KOLOM LIRIK KOSONG (OTOMATIS TRANSKRIPSI WHISPER + STRUKTUR LLM)
+            if (type === 'lyrics' && !originalText) {
+                if (!rawAudioFile && !selectedAudioUrl) {
+                    inputEl.disabled = false;
+                    btn.disabled = false;
+                    btn.innerHTML = originalBtnHtml;
+                    showIphoneToast("Error", "Silakan unggah audio referensi terlebih dahulu untuk transkripsi otomatis!", "fa-triangle-exclamation");
+                    return;
+                }
+
+                showIphoneToast("ASR Whisper Aktif", "AI sedang mendengarkan & menyalin suara lagu...", "fa-microphone-lines");
+
+                try {
+                    let audioBlob = rawAudioFile;
+                    if (!audioBlob && selectedAudioUrl) {
+                        const fetchRes = await fetch(selectedAudioUrl);
+                        audioBlob = await fetchRes.blob();
+                    }
+
+                    let groqKey = "";
+                    try {
+                        const collections = ["api_keys", "keys", "database_keys", "api_providers"];
+                        for (let col of collections) {
+                            const snap = await getDocs(collection(db, col));
+                            snap.forEach(docSnap => {
+                                const d = docSnap.data();
+                                const name = (d.provider || d.name || d.id || "").toLowerCase();
+                                if (name.includes("groq") || name.includes("whisper")) {
+                                    if (d.apiKey) groqKey = d.apiKey;
+                                    else if (d.key) groqKey = d.key;
+                                }
+                            });
+                            if (groqKey) break;
+                        }
+                    } catch(e) {
+                        console.warn("Firestore fetch key fallback:", e);
+                    }
+
+                    if (!groqKey) {
+                        throw new Error("Kunci API Groq Whisper tidak ditemukan di database. Pastikan sudah didaftarkan di tab Audio!");
+                    }
+
+                    const formData = new FormData();
+                    formData.append("file", audioBlob, "audio.mp3");
+                    formData.append("model", "whisper-large-v3");
+                    formData.append("temperature", "0.0"); 
+                    formData.append("prompt", "This is a song with music and vocals. Transcribe the lyrics accurately in its original language. Ignore instrumental breaks, drums, and melodies. Do not hallucinate words.");
+
+                    const whisperResponse = await fetch("https://api.groq.com/openai/v1/audio/transcriptions", {
+                        method: "POST",
+                        headers: { "Authorization": `Bearer ${groqKey}` },
+                        body: formData
+                    });
+                    
+                    const whisperData = await whisperResponse.json();
+                    if (!whisperResponse.ok) throw new Error(whisperData.error?.message || "Gagal transkripsi audio.");
+
+                    const rawText = whisperData.text;
+
+                    showIphoneToast("Merapikan lirik", "Menyusun struktur lagu (Intro, Verse, Chorus)...", "fa-wand-magic-sparkles");
+                    
+                    const vocalGenderVal = document.getElementById('vocalGenderSelect') ? document.getElementById('vocalGenderSelect').value : 'not_specified';
+                    
+                    const response = await fetch('/api/habirmx', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            action: 'magic_wand',
+                            providerId: llmProviderId,
+                            modelId: llmModelId,
+                            llmType: 'lyrics',
+                            inputText: lyricsPromptInstruction + rawText,
+                            vocalGender: vocalGenderVal,
+                            currentMode: currentMode
+                        })
+                    });
+
+                    const data = await response.json();
+                    if (!response.ok) throw new Error(data.error || "Gagal merapikan lirik.");
+
+                    let finalResult = data.result.trim();
+                    inputEl.value = "";
+                    let i = 0;
+                    const chunkSize = 15; 
+                    
+                    function typeWriter() {
+                        if (i < finalResult.length) {
+                            inputEl.value += finalResult.substring(i, i + chunkSize);
+                            i += chunkSize;
+                            setTimeout(typeWriter, 1); 
+                        } else {
+                            inputEl.disabled = false;
+                            btn.disabled = false;
+                            btn.innerHTML = originalBtnHtml;
+                            updateCounter(inputId, 'lyricsCounter', 5000);
+                            showIphoneToast("Selesai", "Lirik otomatis berhasil disusun oleh AI!", "fa-circle-check");
+                        }
+                    }
+                    typeWriter();
+
+                } catch (err) {
+                    inputEl.disabled = false;
+                    btn.disabled = false;
+                    btn.innerHTML = originalBtnHtml;
+                    showIphoneToast("ASR Gagal", err.message, "fa-circle-xmark");
+                }
+                return;
+            }
+
+            // JALUR 2: JIKA KOLOM SUDAH TERISI / UNTUK GAYA MUSIK (LAMA)
+            if (!originalText) {
+                inputEl.disabled = false;
+                btn.disabled = false;
+                btn.innerHTML = originalBtnHtml;
+                showIphoneToast("Error", `Silakan isi ${type === 'style' ? 'Style of Music' : 'Lyrics'} terlebih dahulu sebelum menggunakan AI.`, "fa-triangle-exclamation");
+                return;
+            }
+
+            showIphoneToast("Magic Wand Hack", "AI sedang merombak teks Anda...", "fa-wand-magic-sparkles");
 
             try {
-                const vocalGenderVal = document.getElementById('vocalGenderSelect').value;
-                const currentMode = document.getElementById('modeGenerateBtn').classList.contains('active') ? 'generate' : 'cover';
+                let finalAudioUrl = selectedAudioUrl;
+                if (currentMode === 'cover' && type === 'lyrics' && !finalAudioUrl && rawAudioFile) {
+                    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Upload Audio...';
+                    let finalDurStr = "0:00";
+                    const origPlayer = document.getElementById('originalAudioPlayer');
+                    if (origPlayer && isFinite(origPlayer.duration) && origPlayer.duration > 0) {
+                        finalDurStr = formatTime(origPlayer.duration);
+                    }
+                    await uploadBlobToCloudinary(rawAudioFile, rawAudioFile.name, false, finalDurStr);
+                    finalAudioUrl = selectedAudioUrl;
+                    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> AI...';
+                }
+
+                const vocalGenderVal = document.getElementById('vocalGenderSelect') ? document.getElementById('vocalGenderSelect').value : 'not_specified';
+
+                // --- INJEKSI INSTRUKSI KETAT UNTUK STYLE & LIRIK ---
+                let textToSend = originalText;
+                if (type === 'style') {
+                    if (currentMode === 'cover') {
+                        textToSend = "TUGAS: Kembangkan deskripsi genre musik ini menjadi prompt AI Music (Suno/Udio). \n\nATURAN MUTLAK:\n1. Wajib gunakan meta-tags ini di awal teks: [Exact Cover, Identical Melody Progression, 1:1 Vocal Cadence, Mirror Source Audio, No Improvisation, Strict BPM, Consistent Rhythm].\n2. Tekankan dengan keras bahwa struktur melodi dari awal hingga akhir (intro, verse, chorus, outro) TIDAK BOLEH BERUBAH, dilarang berhalusinasi, dan dilarang membuat nada/solo baru di tengah lagu.\n3. Panjang teks hasil akhir WAJIB di antara 950 hingga 980 karakter.\n4. Jangan gunakan kata pengantar, langsung berikan prompt-nya.\n\nGENRE DASAR:\n" + originalText;
+                    } else {
+                        textToSend = "TUGAS: Kembangkan deskripsi genre musik ini menjadi prompt AI Music (Suno/Udio) yang detail dan profesional.\n\nATURAN MUTLAK:\n1. Gunakan meta-tags instrumen dan nuansa yang kuat.\n2. Panjang teks hasil akhir WAJIB di antara 950 hingga 980 karakter.\n3. Jangan gunakan kata pengantar, langsung berikan prompt-nya.\n\nGENRE DASAR:\n" + originalText;
+                    }
+                } else if (type === 'lyrics') {
+                    textToSend = lyricsPromptInstruction + originalText;
+                }
 
                 const response = await fetch('/api/habirmx', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         action: 'magic_wand',
+                        providerId: llmProviderId,
+                        modelId: llmModelId,
                         llmType: type,
-                        inputText: originalText,
+                        inputText: textToSend,
                         vocalGender: vocalGenderVal,
-                        currentMode: currentMode
+                        currentMode: currentMode,
+                        audioUrl: finalAudioUrl 
                     })
                 });
 
@@ -11709,6 +11867,16 @@ window.startDspBypassAndUpload = async function() {
 
                 const vocalGenderVal = document.getElementById('vocalGenderSelect').value;
 
+                // --- INJEKSI INSTRUKSI KETAT UNTUK STYLE (ANTI-HALUSINASI MELODI & LIMIT 950-980 KARAKTER) ---
+                let textToSend = originalText;
+                if (type === 'style') {
+                    if (currentMode === 'cover') {
+                        textToSend = "TUGAS: Kembangkan deskripsi genre musik ini menjadi prompt AI Music (Suno/Udio). \n\nATURAN MUTLAK:\n1. Wajib gunakan meta-tags ini di awal teks: [Exact Cover, Identical Melody Progression, 1:1 Vocal Cadence, Mirror Source Audio, No Improvisation, Strict BPM, Consistent Rhythm].\n2. Tekankan dengan keras bahwa struktur melodi dari awal hingga akhir (intro, verse, chorus, outro) TIDAK BOLEH BERUBAH, dilarang berhalusinasi, dan dilarang membuat nada/solo baru di tengah lagu.\n3. Panjang teks hasil akhir WAJIB di antara 950 hingga 980 karakter.\n4. Jangan gunakan kata pengantar, langsung berikan prompt-nya.\n\nGENRE DASAR:\n" + originalText;
+                    } else {
+                        textToSend = "TUGAS: Kembangkan deskripsi genre musik ini menjadi prompt AI Music (Suno/Udio) yang detail dan profesional.\n\nATURAN MUTLAK:\n1. Gunakan meta-tags instrumen dan nuansa yang kuat.\n2. Panjang teks hasil akhir WAJIB di antara 950 hingga 980 karakter.\n3. Jangan gunakan kata pengantar, langsung berikan prompt-nya.\n\nGENRE DASAR:\n" + originalText;
+                    }
+                }
+
                 const response = await fetch('/api/habirmx', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -11717,7 +11885,7 @@ window.startDspBypassAndUpload = async function() {
                         providerId: llmProviderId,
                         modelId: llmModelId,
                         llmType: type,
-                        inputText: originalText,
+                        inputText: textToSend,
                         vocalGender: vocalGenderVal,
                         currentMode: currentMode,
                         audioUrl: finalAudioUrl // Kirim URL audio ke backend
