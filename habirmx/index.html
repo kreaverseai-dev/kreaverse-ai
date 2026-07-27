@@ -3095,11 +3095,24 @@
                         </div>
                     </div>
 
-                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px;">
-                        <div style="display: flex; gap: 20px; align-items: center; color: #94a3b8; font-size: 1.4rem;">
-                            <!-- Ikon kosong agar tombol play tetap di kanan -->
+                    <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 15px;">
+                        <div style="flex: 1; min-width: 0; padding-right: 10px;">
+                            <div id="mstPlayingTitle" style="font-size: 1.1rem; font-weight: 900; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 8px;">Pilih lagu untuk diputar</div>
+                            <!-- LED Monitor Clip -->
+                            <div id="mstLevelMonitor" style="display: flex; gap: 4px; align-items: flex-end; height: 24px; padding-bottom: 4px;">
+                                <div class="led-bar" data-color="#10b981" style="width: 6px; height: 30%; background: #10b981; border-radius: 2px; opacity: 0.2; transition: 0.1s;"></div>
+                                <div class="led-bar" data-color="#10b981" style="width: 6px; height: 40%; background: #10b981; border-radius: 2px; opacity: 0.2; transition: 0.1s;"></div>
+                                <div class="led-bar" data-color="#10b981" style="width: 6px; height: 50%; background: #10b981; border-radius: 2px; opacity: 0.2; transition: 0.1s;"></div>
+                                <div class="led-bar" data-color="#f59e0b" style="width: 6px; height: 65%; background: #f59e0b; border-radius: 2px; opacity: 0.2; transition: 0.1s;"></div>
+                                <div class="led-bar" data-color="#f59e0b" style="width: 6px; height: 80%; background: #f59e0b; border-radius: 2px; opacity: 0.2; transition: 0.1s;"></div>
+                                <div class="led-bar" data-color="#ef4444" style="width: 6px; height: 100%; background: #ef4444; border-radius: 2px; opacity: 0.2; transition: 0.1s;"></div>
+                                <span style="font-size: 0.6rem; color: #ef4444; font-weight: 900; margin-left: 4px; line-height: 1;">CLIP</span>
+                            </div>
                         </div>
-                        <button onclick="window.playMasteringTrack(0)" id="bigMasteringPlayBtn" style="width: 56px; height: 56px; border-radius: 50%; background: #38bdf8; color: #0f172a; border: none; font-size: 1.5rem; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 8px 20px rgba(0,0,0,0.3);"><i class="fa-solid fa-play" style="margin-left: 4px;"></i></button>
+                        <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 10px;">
+                            <button onclick="window.deleteAllMasteredTracks()" style="background: rgba(239,68,68,0.15); color: #ef4444; border: 1px solid rgba(239,68,68,0.3); padding: 6px 12px; border-radius: 8px; font-size: 0.75rem; font-weight: 800; cursor: pointer; transition: 0.2s; white-space: nowrap;"><i class="fa-solid fa-trash-can"></i> Hapus Semua</button>
+                            <button onclick="window.playMasteringTrack(window.currentMasteringIndex || 0)" id="bigMasteringPlayBtn" style="width: 50px; height: 50px; border-radius: 50%; background: #38bdf8; color: #0f172a; border: none; font-size: 1.3rem; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 8px 20px rgba(0,0,0,0.3);"><i class="fa-solid fa-play" style="margin-left: 4px;"></i></button>
+                        </div>
                     </div>
 
                     <!-- PROGRESS BAR UI -->
@@ -3144,11 +3157,42 @@
                 return new Promise((resolve, reject) => {
                     const tx = db.transaction(this.storeName, 'readwrite');
                     const store = tx.objectStore(this.storeName);
-                    store.put(blob, id);
-                    tx.oncomplete = () => resolve();
-                    tx.onerror = () => reject(tx.error);
+                    try {
+                        const request = store.put(blob, id);
+                        request.onsuccess = () => resolve();
+                        request.onerror = (e) => {
+                            if (e.target.error && (e.target.error.name === 'QuotaExceededError' || e.target.error.name === 'UnknownError')) {
+                                reject(new Error("Memori Penuh"));
+                            } else {
+                                reject(e.target.error);
+                            }
+                        };
+                    } catch(e) {
+                        if (e.name === 'QuotaExceededError') reject(new Error("Memori Penuh"));
+                        else reject(e);
+                    }
                 });
             },
+            
+        // --- FUNGSI HAPUS SEMUA MASTERING ---
+        window.deleteAllMasteredTracks = function() {
+            window.kreaConfirm("Hapus Semua", "Yakin ingin menghapus SEMUA lagu mastering dari perangkat dan server?", async () => {
+                showIphoneToast("Memproses", "Sedang menghapus data...", "fa-spinner fa-spin");
+                try {
+                    const masteredDocs = window.globalLibraryDocs.filter(d => d.isMastered === true);
+                    for (let docData of masteredDocs) {
+                        await deleteDoc(doc(db, "render_gallery", docData.id));
+                        if (window.localAudioDB && docData.isLocalMastered) {
+                            await window.localAudioDB.delete(docData.id).catch(e=>e);
+                        }
+                    }
+                    showIphoneToast("Sukses", "Semua lagu mastering berhasil dihapus.", "fa-trash");
+                    window.renderMasteringGalleryUI();
+                } catch(e) {
+                    showIphoneToast("Error", "Gagal menghapus data.", "fa-triangle-exclamation");
+                }
+            });
+        };
             get: async function(id) {
                 const db = await this.init();
                 return new Promise((resolve, reject) => {
@@ -3410,6 +3454,8 @@
                 const isPlaying = (index === window.currentMasteringIndex && document.getElementById('globalMiniPlayer').classList.contains('show') && !document.getElementById('globalAudioEl').paused);
                 const titleColor = isPlaying ? '#38bdf8' : '#ffffff';
                 const safeThumb = item.imageUrl || "https://i.postimg.cc/Jh211FTG/46cc61ec-de7f-4c62-8245-946e22312d2b.jpg";
+                
+                let playingOverlay = isPlaying ? `<div style="position:absolute; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); display:flex; align-items:center; justify-content:center; border-radius:4px;"><img src="https://i.gifer.com/origin/b4/b4d657e7ef262b88eb5f7ac021edda87.gif" style="width:20px; height:20px; opacity:0.9;"></div>` : '';
 
                 // Format Jam Hari Tahun
                 const dateObj = new Date(item.masteredAt || item.timestamp || Date.now());
@@ -3422,7 +3468,10 @@
                 html += `
                     <div style="display: flex; align-items: center; justify-content: space-between; padding: 10px 0; cursor: pointer; transition: background 0.2s; border-radius: 8px;" onclick="window.playMasteringTrack(${index})" onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='transparent'">
                         <div style="display: flex; align-items: center; gap: 14px; flex: 1; min-width: 0; padding-left: 6px;">
-                            <img src="${safeThumb}" style="width: 50px; height: 50px; border-radius: 4px; object-fit: cover; flex-shrink: 0;">
+                            <div style="position: relative; width: 50px; height: 50px; flex-shrink: 0;">
+                                <img src="${safeThumb}" style="width: 100%; height: 100%; border-radius: 4px; object-fit: cover;">
+                                ${playingOverlay}
+                            </div>
                             <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; justify-content: center;">
                                 <div style="color: ${titleColor}; font-weight: 700; font-size: 1rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 4px;">${cleanTitle}</div>
                                 <div style="display: flex; gap: 6px; margin-bottom: 4px;">
@@ -4561,6 +4610,59 @@
             const audioEl = document.getElementById('globalAudioEl');
             if(audioEl) {
                 // Sinkronisasi Tombol Play Besar di UI Playlist & Mastering
+                let globalAnalyser = null;
+        let monitorAnimFrame = null;
+
+        function startLevelMonitor() {
+            const audioEl = document.getElementById('globalAudioEl');
+            const monitorContainer = document.getElementById('mstLevelMonitor');
+            if (!audioEl || !monitorContainer) return;
+
+            if (!globalAnalyser) {
+                try {
+                    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                    globalAnalyser = ctx.createAnalyser();
+                    globalAnalyser.fftSize = 256;
+                    // Mencegah error CORS dengan crossOrigin
+                    audioEl.crossOrigin = "anonymous";
+                    const src = ctx.createMediaElementSource(audioEl);
+                    src.connect(globalAnalyser);
+                    globalAnalyser.connect(ctx.destination);
+                } catch(e) { return; }
+            }
+
+            const dataArray = new Uint8Array(globalAnalyser.frequencyBinCount);
+            const leds = monitorContainer.querySelectorAll('.led-bar');
+
+            function draw() {
+                monitorAnimFrame = requestAnimationFrame(draw);
+                if (!window.isMasteringUIOpen || audioEl.paused) {
+                    leds.forEach(led => { led.style.opacity = '0.2'; led.style.boxShadow = 'none'; });
+                    return;
+                }
+
+                globalAnalyser.getByteFrequencyData(dataArray);
+                let sum = 0;
+                for(let i=0; i<dataArray.length; i++) sum += dataArray[i];
+                const avg = sum / dataArray.length;
+                
+                const percent = Math.min(100, (avg / 80) * 100); 
+                const activeLeds = Math.floor((percent / 100) * leds.length);
+                
+                leds.forEach((led, index) => {
+                    if (index < activeLeds) {
+                        led.style.opacity = '1';
+                        led.style.boxShadow = `0 0 8px ${led.dataset.color}`;
+                    } else {
+                        led.style.opacity = '0.2';
+                        led.style.boxShadow = 'none';
+                    }
+                });
+            }
+            cancelAnimationFrame(monitorAnimFrame);
+            draw();
+        }
+
                 const syncBigButtons = () => {
                     if (window.isPlaylistUIOpen) {
                         window.renderPlaylistUI();
@@ -4571,6 +4673,15 @@
                         window.renderMasteringGalleryUI();
                         const bigMstBtn = document.getElementById('bigMasteringPlayBtn');
                         if (bigMstBtn) bigMstBtn.innerHTML = audioEl.paused ? '<i class="fa-solid fa-play" style="margin-left: 4px;"></i>' : '<i class="fa-solid fa-pause"></i>';
+                        
+                        // Update Judul Lagu di Layar
+                        if (window.masteredGalleryQueue && window.masteredGalleryQueue[window.currentMasteringIndex]) {
+                            const track = window.masteredGalleryQueue[window.currentMasteringIndex];
+                            const cleanTitle = (track.title || "Untitled").replace(/\s*\(Part\s*\d+\)/gi, '').replace(/\s*-\s*Versi\s*\d+/gi, '').trim();
+                            const titleEl = document.getElementById('mstPlayingTitle');
+                            if(titleEl) titleEl.innerText = cleanTitle;
+                        }
+                        startLevelMonitor(); // Panggil monitor animasi LED
                     }
                 };
                 
@@ -6728,97 +6839,14 @@ async function processKreaverseAudio(file, isPreview = false, progressCallback) 
                         }
                     }
                 }
-                audioBuffer.copyToChannel(channelData, c);
-            }
-            
-            window.renderMasteringGalleryUI = function() {
-            const container = document.getElementById('masteringListContainer');
-            // Tarik data langsung dari Firebase (yang sudah difilter isMastered)
-            let queue = window.globalLibraryDocs.filter(d => d.isMastered === true) || [];
-            
-            // Urutkan berdasarkan waktu mastering terbaru
-            queue.sort((a, b) => (b.masteredAt || b.timestamp || 0) - (a.masteredAt || a.timestamp || 0));
-            window.masteredGalleryQueue = queue; // Simpan ke global queue untuk autoplay
-            
-            document.getElementById('masteringCountText').innerText = `${queue.length} Lagu Tersimpan`;
+                const finalDuration = trimDuration / speedVal;
+const finalFrameCount = Math.floor(finalDuration * originalBuffer.sampleRate);
 
-            if (queue.length === 0) {
-                container.innerHTML = '<div style="text-align:center; color:#94a3b8; margin-top:40px; font-weight: 500; font-size: 0.95rem;">Belum ada audio yang di-mastering.</div>';
-                return;
-            }
-
-            let html = '';
-            queue.forEach((item, index) => {
-                const cleanTitle = (item.title || "Untitled").replace(/\s*\(Part\s*\d+\)/gi, '').replace(/\s*-\s*Versi\s*\d+/gi, '').trim();
-                const isPlaying = (index === window.currentMasteringIndex && document.getElementById('globalMiniPlayer').classList.contains('show') && !document.getElementById('globalAudioEl').paused);
-                const titleColor = isPlaying ? '#38bdf8' : '#ffffff';
-                const safeThumb = item.imageUrl || "https://i.postimg.cc/Jh211FTG/46cc61ec-de7f-4c62-8245-946e22312d2b.jpg";
-
-                // Format Jam Hari Tahun
-                const dateObj = new Date(item.masteredAt || item.timestamp || Date.now());
-                const days = ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'];
-                const months = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
-                let h = dateObj.getHours().toString().padStart(2, '0');
-                let m = dateObj.getMinutes().toString().padStart(2, '0');
-                const timeStr = `${days[dateObj.getDay()]}, ${dateObj.getDate()} ${months[dateObj.getMonth()]} ${dateObj.getFullYear()} • ${h}:${m}`;
-
-                html += `
-                    <div style="display: flex; align-items: center; justify-content: space-between; padding: 10px 0; cursor: pointer; transition: background 0.2s; border-radius: 8px;" onclick="window.playMasteringTrack(${index})" onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='transparent'">
-                        <div style="display: flex; align-items: center; gap: 14px; flex: 1; min-width: 0; padding-left: 6px;">
-                            <img src="${safeThumb}" style="width: 50px; height: 50px; border-radius: 4px; object-fit: cover; flex-shrink: 0;">
-                            <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; justify-content: center;">
-                                <div style="color: ${titleColor}; font-weight: 700; font-size: 1rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 4px;">${cleanTitle}</div>
-                                <div style="display: flex; gap: 6px; margin-bottom: 4px;">
-                                    <span style="background: rgba(56, 189, 248, 0.15); color: #38bdf8; padding: 2px 6px; border-radius: 4px; font-size: 0.6rem; font-weight: 800;">${item.masteredFormat || 'MP3'}</span>
-                                    <span style="background: rgba(255,255,255,0.1); color: #cbd5e1; padding: 2px 6px; border-radius: 4px; font-size: 0.6rem; font-weight: 700;">${item.masteredSpecs || '24-bit'}</span>
-                                </div>
-                                <div style="font-size: 0.65rem; color: #64748b; font-weight: 600;"><i class="fa-regular fa-clock"></i> ${timeStr}</div>
-                            </div>
-                        </div>
-                        <div style="display: flex; align-items: center; gap: 16px; padding-right: 10px;">
-                            <button onclick="event.stopPropagation(); window.forceDownloadMastered('${item.masteredUrl}', '${item.masteredFileName || cleanTitle}', '${item.id}', ${item.isLocalMastered ? 'true' : 'false'})" style="background: none; border: none; color: #94a3b8; cursor: pointer; font-size: 1.2rem; transition: 0.2s;" onmouseover="this.style.color='#38bdf8'" onmouseout="this.style.color='#94a3b8'" title="Unduh Lagu"><i class="fa-solid fa-download"></i></button>
-                        </div>
-                    </div>
-                `;
-            });
-            container.innerHTML = html;
-        };
-
-        window.playMasteringTrack = async function(index) {
-            const queue = window.masteredGalleryQueue || [];
-            if (queue.length === 0) return;
-            if (index >= queue.length) index = 0;
-            
-            window.currentMasteringIndex = index;
-            const track = queue[index];
-            const cleanTitle = (track.title || "Untitled").replace(/\s*\(Part\s*\d+\)/gi, '').replace(/\s*-\s*Versi\s*\d+/gi, '').trim();
-            const safeThumb = track.imageUrl || "https://i.postimg.cc/Jh211FTG/46cc61ec-de7f-4c62-8245-946e22312d2b.jpg";
-            
-            window.isPlaylistUIOpen = false; // Matikan flag playlist
-            
-            if (track.isLocalMastered) {
-                try {
-                    const blob = await window.localAudioDB.get(track.id);
-                    if (blob) {
-                        const localUrl = URL.createObjectURL(blob);
-                        window.playGlobalAudio(localUrl, cleanTitle, safeThumb, track.id);
-                        window.renderMasteringGalleryUI();
-                    } else {
-                        window.showIphoneToast("Error", "File audio lokal tidak ditemukan. Mungkin telah terhapus dari cache browser.", "fa-triangle-exclamation");
-                    }
-                } catch (e) {
-                    console.error(e);
-                    window.showIphoneToast("Error", "Gagal memutar file audio lokal.", "fa-triangle-exclamation");
-                }
-            } else {
-                window.playGlobalAudio(track.masteredUrl, cleanTitle, safeThumb, track.id);
-                window.renderMasteringGalleryUI(); 
-            }
-        };
-            const randomDetuneOffset = (Math.random() * 10) - 5; 
-            const finalDetune = activeTab === 'v1' ? pitchVal : (pitchVal * 100);
-            source.detune.value = finalDetune + randomDetuneOffset;
-            source.playbackRate.value = speedVal;
+const offlineCtx = new OfflineAudioContext(
+    originalBuffer.numberOfChannels,
+    finalFrameCount, // <--- KANVAS KINI DIPOTONG PAS SESUAI DURASI BARU
+    originalBuffer.sampleRate
+);
     
     // 🔥 SANGAT KRUSIAL: Matikan preservesPitch. Jika speed berubah, pitch HARUS ikut berubah secara natural.
     // Algoritma Content-ID sangat bergantung pada kestabilan Pitch.
@@ -10899,34 +10927,51 @@ window.startDspBypassAndUpload = async function() {
                         });
                     }
 
-                    updateTopProgress(90, "Menyimpan Audio ke Penyimpanan Lokal...");
-
-                    // 1. Simpan ke IndexedDB lokal (GRATIS, TANPA CLOUDINARY)
-                    await window.localAudioDB.save(docId, finalBlob);
+                    updateTopProgress(90, "Menyimpan ke Database Firebase...");
                     
-                    const docData = window.globalLibraryDocs.find(d => d.id === docId);
-                    const cleanTitle = docData ? (docData.title || "Untitled").replace(/\s*\(Part\s*\d+\)/gi, '').replace(/\s*-\s*Versi\s*\d+/gi, '').trim() : "Mastered Audio";
+                    const originalDocData = window.globalLibraryDocs.find(d => d.id === docId);
+                    const cleanTitle = originalDocData ? (originalDocData.title || "Untitled").replace(/\s*\(Part\s*\d+\)/gi, '').replace(/\s*-\s*Versi\s*\d+/gi, '').trim() : "Mastered Audio";
                     
                     const activeSamplePill2 = document.querySelector('#mstSampleGroup .mst-pill.active');
                     const sampleRateText = activeSamplePill2 ? activeSamplePill2.innerText : '44.1 kHz';
                     const activeBitPill = document.querySelector('#mstBitGroup .mst-pill.active');
                     const bitDepthText = activeBitPill ? activeBitPill.innerText : '24-bit';
 
-                    updateTopProgress(95, "Menyimpan ke Database Firebase...");
-                    
-                    // 2. Simpan ke Firestore (Tandai isLocalMastered: true)
+                    let newDocRef;
                     try {
-                        await updateDoc(doc(db, "render_gallery", docId), {
-                            isMastered: true,
-                            masteringProfile: isAuto ? document.getElementById('mstGenreVal').value : 'manual',
-                            isLocalMastered: true,
-                            masteredFormat: targetFormat.toUpperCase(),
-                            masteredSpecs: `${bitDepthText} | ${sampleRateText}`,
-                            masteredFileName: finalFileName,
-                            masteredAt: Date.now()
-                        });
+                        let newData = { ...originalDocData };
+                        delete newData.id; // Hapus ID lama agar Firebase membuat entitas lagu baru
+                        
+                        newData.isMastered = true;
+                        newData.masteringProfile = isAuto ? document.getElementById('mstGenreVal').value : 'manual';
+                        newData.isLocalMastered = true;
+                        newData.masteredFormat = targetFormat.toUpperCase();
+                        newData.masteredSpecs = `${bitDepthText} | ${sampleRateText}`;
+                        newData.masteredFileName = finalFileName;
+                        newData.masteredAt = Date.now();
+                        newData.timestamp = Date.now(); // Agar muncul paling atas
+                        
+                        // Buat dokumen BARU di Firebase agar lagu yang sama bisa dimastering berkali-kali
+                        newDocRef = await addDoc(collection(db, "render_gallery"), newData);
                     } catch(e) {
                         console.error("Gagal simpan Firebase:", e);
+                        throw new Error("Gagal menyimpan ke server.");
+                    }
+
+                    updateTopProgress(95, "Menyimpan Audio ke Penyimpanan Lokal...");
+
+                    // 1. Simpan ke IndexedDB lokal menggunakan ID BARU
+                    try {
+                        await window.localAudioDB.save(newDocRef.id, finalBlob);
+                    } catch (dbError) {
+                        if (dbError.message === "Memori Penuh") {
+                            showIphoneToast("Memori Penuh", "Gagal menyimpan ke HP. Memori penuh. Silakan hapus lagu lama.", "fa-triangle-exclamation");
+                            // Hapus doc firebase jika gagal simpan lokal
+                            await deleteDoc(doc(db, "render_gallery", newDocRef.id));
+                            throw new Error("Memori Perangkat Penuh");
+                        } else {
+                            throw dbError;
+                        }
                     }
 
                     updateTopProgress(100, "Selesai!");
