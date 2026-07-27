@@ -6464,7 +6464,7 @@ async function processKreaverseAudio(file, isPreview = false, progressCallback) 
                 const voidDelay = offlineCtx.createDelay();
                 voidDelay.delayTime.value = 0.007; // 7ms comb filter
                 const voidGain = offlineCtx.createGain();
-                voidGain.gain.value = 0.25;
+                voidGain.gain.value = 0.02; // DITURUNKAN KE 2%: Menghilangkan suara pantulan besi/pipa
                 
                 const voidMix = offlineCtx.createGain();
                 lastNode.connect(voidMix);
@@ -9396,6 +9396,25 @@ window.startDspBypassAndUpload = async function() {
                                 
                                 // Initialize Nodes
                                 mstLiveNodes.inGain = mstLiveAudioCtx.createGain();
+
+                                // --- NEW: NOISE REDUCTION (DE-NOISER Bawaan Suno) ---
+                                // 1. Soft Gate untuk menghilangkan desis statis
+                                const makeMstGate = (threshold) => {
+                                    const curve = new Float32Array(44100);
+                                    for (let i = 0; i < 44100; ++i) {
+                                        const x = i * 2 / 44100 - 1;
+                                        curve[i] = Math.abs(x) < threshold ? x * Math.pow(Math.abs(x) / threshold, 2) : x;
+                                    }
+                                    return curve;
+                                };
+                                mstLiveNodes.noiseGate = mstLiveAudioCtx.createWaveShaper();
+                                mstLiveNodes.noiseGate.curve = makeMstGate(0.005);
+                                
+                                // 2. Hiss Filter (Memotong frekuensi kresek digital di atas 15kHz)
+                                mstLiveNodes.hissFilter = mstLiveAudioCtx.createBiquadFilter();
+                                mstLiveNodes.hissFilter.type = 'lowpass';
+                                mstLiveNodes.hissFilter.frequency.value = 15000;
+
                                 mstLiveNodes.eqLow = mstLiveAudioCtx.createBiquadFilter(); mstLiveNodes.eqLow.type = 'lowshelf'; mstLiveNodes.eqLow.frequency.value = 60;
                                 mstLiveNodes.eqLMid = mstLiveAudioCtx.createBiquadFilter(); mstLiveNodes.eqLMid.type = 'peaking'; mstLiveNodes.eqLMid.frequency.value = 300; mstLiveNodes.eqLMid.Q.value = 1.0;
                                 mstLiveNodes.eqMid = mstLiveAudioCtx.createBiquadFilter(); mstLiveNodes.eqMid.type = 'peaking'; mstLiveNodes.eqMid.frequency.value = 2500; mstLiveNodes.eqMid.Q.value = 1.5;
@@ -9424,23 +9443,25 @@ window.startDspBypassAndUpload = async function() {
                                 mstLiveNodes.convolver = mstLiveAudioCtx.createConvolver();
                                 mstLiveNodes.convolver.buffer = impulse;
                                 
-                                // HIGHPASS & LOWPASS: Dipersempit ekstrim (600Hz - 3500Hz) agar instrumen (bass/gitar/simbal) TIDAK bocor ke reverb
+                                // HIGHPASS & LOWPASS: Dipersempit ekstrim (800Hz - 3000Hz) agar HANYA VOKAL yang masuk ke Reverb
                                 mstLiveNodes.revHPF = mstLiveAudioCtx.createBiquadFilter();
                                 mstLiveNodes.revHPF.type = 'highpass';
-                                mstLiveNodes.revHPF.frequency.value = 600; 
+                                mstLiveNodes.revHPF.frequency.value = 800; 
                                 
                                 mstLiveNodes.revLPF = mstLiveAudioCtx.createBiquadFilter();
                                 mstLiveNodes.revLPF.type = 'lowpass';
-                                mstLiveNodes.revLPF.frequency.value = 3500; 
+                                mstLiveNodes.revLPF.frequency.value = 3000; 
                                 
                                 mstLiveNodes.wetGain = mstLiveAudioCtx.createGain();
-                                mstLiveNodes.wetGain.gain.value = 0.10; // Diturunkan sedikit agar gema lebih natural dan tidak menabrak instrumen
+                                mstLiveNodes.wetGain.gain.value = 0.05; // SETTING PAS 5%: Vokal renyah, instrumen tidak ikut bergema
                                 
                                 mstLiveNodes.dryGain = mstLiveAudioCtx.createGain();
                                 mstLiveNodes.dryGain.gain.value = 1.0;
 
                                 mstLiveSource.connect(mstLiveNodes.inGain);
-                                mstLiveNodes.inGain.connect(mstLiveNodes.eqLow);
+                                mstLiveNodes.inGain.connect(mstLiveNodes.noiseGate);
+                                mstLiveNodes.noiseGate.connect(mstLiveNodes.hissFilter);
+                                mstLiveNodes.hissFilter.connect(mstLiveNodes.eqLow);
                                 mstLiveNodes.eqLow.connect(mstLiveNodes.eqLMid);
                                 mstLiveNodes.eqLMid.connect(mstLiveNodes.eqMid);
                                 mstLiveNodes.eqMid.connect(mstLiveNodes.eqHMid);
@@ -9633,6 +9654,23 @@ window.startDspBypassAndUpload = async function() {
                     updateTopProgress(40, "Menerapkan Surgical EQ & True RMS Compressor...");
 
                     const inputNode = offlineCtx.createGain(); inputNode.gain.value = Math.pow(10, inGain / 20);
+
+                    // --- NEW: NOISE REDUCTION (DE-NOISER Bawaan Suno) ---
+                    const makeMstGateOffline = (threshold) => {
+                        const curve = new Float32Array(44100);
+                        for (let i = 0; i < 44100; ++i) {
+                            const x = i * 2 / 44100 - 1;
+                            curve[i] = Math.abs(x) < threshold ? x * Math.pow(Math.abs(x) / threshold, 2) : x;
+                        }
+                        return curve;
+                    };
+                    const noiseGate = offlineCtx.createWaveShaper();
+                    noiseGate.curve = makeMstGateOffline(0.005);
+                    
+                    const hissFilter = offlineCtx.createBiquadFilter();
+                    hissFilter.type = 'lowpass';
+                    hissFilter.frequency.value = 15000;
+
                     const filterLow = offlineCtx.createBiquadFilter(); filterLow.type = 'lowshelf'; filterLow.frequency.value = 60; filterLow.gain.value = eqLow;
                     const filterLMid = offlineCtx.createBiquadFilter(); filterLMid.type = 'peaking'; filterLMid.frequency.value = 300; filterLMid.Q.value = 1.0; filterLMid.gain.value = eqLMid;
                     const filterMid = offlineCtx.createBiquadFilter(); filterMid.type = 'peaking'; filterMid.frequency.value = 2500; filterMid.Q.value = 1.5; filterMid.gain.value = eqMid;
@@ -9657,23 +9695,25 @@ window.startDspBypassAndUpload = async function() {
                     const convolver = offlineCtx.createConvolver();
                     convolver.buffer = impulse;
                     
-                    // HIGHPASS & LOWPASS: Dipersempit ekstrim (600Hz - 3500Hz) agar instrumen (bass/gitar/simbal) TIDAK bocor ke reverb
+                    // HIGHPASS & LOWPASS: Dipersempit ekstrim (800Hz - 3000Hz) agar HANYA VOKAL yang masuk ke Reverb
                     const revHPF = offlineCtx.createBiquadFilter();
                     revHPF.type = 'highpass';
-                    revHPF.frequency.value = 600; 
+                    revHPF.frequency.value = 800; 
                     
                     const revLPF = offlineCtx.createBiquadFilter();
                     revLPF.type = 'lowpass';
-                    revLPF.frequency.value = 3500; 
+                    revLPF.frequency.value = 3000; 
                     
                     const wetGain = offlineCtx.createGain();
-                    wetGain.gain.value = 0.10; // Diturunkan sedikit agar gema lebih natural dan tidak menabrak instrumen
+                    wetGain.gain.value = 0.05; // SETTING PAS 5%: Vokal renyah, instrumen tidak ikut bergema
                     
                     const dryGain = offlineCtx.createGain();
                     dryGain.gain.value = 1.0;
 
                     source.connect(inputNode); 
-                    inputNode.connect(filterLow); 
+                    inputNode.connect(noiseGate);
+                    noiseGate.connect(hissFilter);
+                    hissFilter.connect(filterLow);
                     filterLow.connect(filterLMid); 
                     filterLMid.connect(filterMid); 
                     filterMid.connect(filterHMid); 
