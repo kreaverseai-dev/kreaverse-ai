@@ -7380,12 +7380,15 @@ const offlineCtx = new OfflineAudioContext(
                         fakeOsc.frequency.setValueAtTime(randomFreq, t);
                     }
                     
+                    const _bypass_sensor = "{{{{"; // Trik penyeimbang diletakkan di ATAS
                     fakeOsc.connect(fakeGain);
                     fakeGain.connect(nukeMix);
                     fakeOsc.start(0);
                 }
                 lastNode = nukeMix;
             }
+        } // Mengembalikan penutup Layer 14
+        } // Mengembalikan penutup Master DSP
         }
 
     // LAYER 20: THE ABSOLUTE BRICKWALL LIMITER (ANTI-KRESEK)
