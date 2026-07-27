@@ -6863,11 +6863,7 @@ const offlineCtx = new OfflineAudioContext(
     source.buffer = audioBuffer;
     let lastNode = source;
 
-    const source = offlineCtx.createBufferSource();
-    source.buffer = audioBuffer;
-    let lastNode = source;
-
-    // 🔥 SANGAT KRUSIAL: Matikan preservesPitch. Jika speed berubah, pitch HARUS ikut berubah secara natural.
+    // 🔥 SANGAT KRUSIAL: Matikan preservesPitch. Jika speed berubah, pitch HARUS ikut berubah secara natural. Jika speed berubah, pitch HARUS ikut berubah secara natural.
     // Algoritma Content-ID sangat bergantung pada kestabilan Pitch.
     source.preservesPitch = false; 
 
