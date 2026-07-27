@@ -10523,10 +10523,10 @@ window.startDspBypassAndUpload = async function() {
                     const chkBass = document.getElementById('chkMstRealBass').checked;
                     const chkVocal = document.getElementById('chkMstRealVocal').checked;
 
-                    if (mstLiveNodes.deHarsher) mstLiveNodes.deHarsher.gain.value = chkNoise ? -3.5 : 0;
-                    if (mstLiveNodes.hissFilter) mstLiveNodes.hissFilter.frequency.value = chkNoise ? 13500 : 20000;
-                    if (mstLiveNodes.bassBoost) mstLiveNodes.bassBoost.gain.value = chkBass ? 4.5 : 0;
-                    if (mstLiveNodes.vocalPresence) mstLiveNodes.vocalPresence.gain.value = chkVocal ? 2.5 : 0;
+                    if (mstLiveNodes.deHarsher) mstLiveNodes.deHarsher.gain.value = chkNoise ? -6.0 : 0;
+                    if (mstLiveNodes.hissFilter) mstLiveNodes.hissFilter.frequency.value = chkNoise ? 10500 : 20000;
+                    if (mstLiveNodes.bassBoost) mstLiveNodes.bassBoost.gain.value = chkBass ? 5.5 : 0;
+                    if (mstLiveNodes.vocalPresence) mstLiveNodes.vocalPresence.gain.value = chkVocal ? 3.5 : 0;
 
                     const genre = document.getElementById('mstGenreVal').value;
                     const dyn = document.getElementById('mstDynVal').value;
