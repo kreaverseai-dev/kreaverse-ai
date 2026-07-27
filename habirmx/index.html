@@ -3280,7 +3280,8 @@
                                 isLocalMastered: true,
                                 masteredFormat: 'MP3',
                                 masteredSpecs: '24-bit | 44.1 kHz',
-                                masteredFileName: finalFileName
+                                masteredFileName: finalFileName,
+                                masteredAt: Date.now()
                             });
                         } catch(e) {}
                         
@@ -4631,43 +4632,39 @@
                     syncBigButtons();
                     
                     // LOGIKA AUTOPLAY PLAYLIST & MASTERING (SPOTIFY STYLE)
-                    let nextTrack = null;
-                    let isFromPlaylist = false;
-                    let isFromMastering = false;
-
                     // Cek apakah sedang memutar dari UI Playlist
                     if (window.isPlaylistUIOpen && window.globalPlaylistQueue && window.currentPlaylistIndex !== undefined) {
                         if (window.currentPlaylistIndex < window.globalPlaylistQueue.length - 1) {
-                            window.currentPlaylistIndex++;
-                            nextTrack = window.globalPlaylistQueue[window.currentPlaylistIndex];
-                            isFromPlaylist = true;
+                            const nextIndex = window.currentPlaylistIndex + 1;
+                            const nextTrack = window.globalPlaylistQueue[nextIndex];
+                            const cleanTitle = (nextTrack.title || "Untitled").replace(/\s*\(Part\s*\d+\)/gi, '').replace(/\s*-\s*Versi\s*\d+/gi, '').trim();
+                            window.showIphoneToast("Memutar Selanjutnya", cleanTitle, "fa-play");
+                            setTimeout(() => { window.playPlaylistTrack(nextIndex); }, 1000);
+                            return;
                         }
                     } 
                     // Cek apakah sedang memutar dari UI Mastering
                     else if (window.isMasteringUIOpen && window.masteredGalleryQueue && window.currentMasteringIndex !== undefined) {
                         if (window.currentMasteringIndex < window.masteredGalleryQueue.length - 1) {
-                            window.currentMasteringIndex++;
-                            nextTrack = window.masteredGalleryQueue[window.currentMasteringIndex];
-                            isFromMastering = true;
+                            const nextIndex = window.currentMasteringIndex + 1;
+                            const nextTrack = window.masteredGalleryQueue[nextIndex];
+                            const cleanTitle = (nextTrack.title || "Untitled").replace(/\s*\(Part\s*\d+\)/gi, '').replace(/\s*-\s*Versi\s*\d+/gi, '').trim();
+                            window.showIphoneToast("Memutar Selanjutnya", cleanTitle, "fa-play");
+                            setTimeout(() => { window.playMasteringTrack(nextIndex); }, 1000);
+                            return;
                         }
                     }
                     // Fallback (Sistem antrean lama jika UI tertutup)
                     else if (window.globalPlaylistQueue && window.globalPlaylistQueue.length > 0 && !window.isPlaylistUIOpen) {
-                        nextTrack = window.globalPlaylistQueue.shift();
-                    }
-
-                    if (nextTrack) {
-                        const cleanTitle = (nextTrack.title || "Untitled").replace(/\s*\(Part\s*\d+\)/gi, '').replace(/\s*-\s*Versi\s*\d+/gi, '').trim();
-                        const safeThumb = nextTrack.imageUrl || "https://i.postimg.cc/Jh211FTG/46cc61ec-de7f-4c62-8245-946e22312d2b.jpg";
-                        
-                        window.showIphoneToast("Memutar Selanjutnya", cleanTitle, "fa-play");
-                        
-                        setTimeout(() => {
-                            window.playGlobalAudio(nextTrack.url, cleanTitle, safeThumb, nextTrack.id);
-                            // Update highlight UI
-                            if (isFromPlaylist) window.renderPlaylistUI();
-                            if (isFromMastering) window.renderMasteringGalleryUI();
-                        }, 1000);
+                        const nextTrack = window.globalPlaylistQueue.shift();
+                        if (nextTrack) {
+                            const cleanTitle = (nextTrack.title || "Untitled").replace(/\s*\(Part\s*\d+\)/gi, '').replace(/\s*-\s*Versi\s*\d+/gi, '').trim();
+                            const safeThumb = nextTrack.imageUrl || "https://i.postimg.cc/Jh211FTG/46cc61ec-de7f-4c62-8245-946e22312d2b.jpg";
+                            window.showIphoneToast("Memutar Selanjutnya", cleanTitle, "fa-play");
+                            setTimeout(() => {
+                                window.playGlobalAudio(nextTrack.url, cleanTitle, safeThumb, nextTrack.id);
+                            }, 1000);
+                        }
                     }
                 });
             }
@@ -10349,27 +10346,35 @@ window.startDspBypassAndUpload = async function() {
                                 mstLiveNodes.limiter.attack.value = 0.001;
                                 mstLiveNodes.limiter.release.value = 0.05;
 
-                                // --- REVERB KHUSUS VOKAL (REVISI: PUNCHY & DRY) ---
-                                // Memendekkan ekor reverb dan menekan mix gain agar tidak berlumpur (muddy) / bergema parah
-                                const revLen = mstLiveAudioCtx.sampleRate * 0.6; // Dari 1.5s menjadi 0.6s (Hanya ambience/room)
+                                // --- REVERB KHUSUS VOKAL (REVISI EXTREME: ISOLASI DARI BASS & KICK) ---
+                                const revLen = mstLiveAudioCtx.sampleRate * 0.5; // Ekor lebih pendek lagi
                                 const impulse = mstLiveAudioCtx.createBuffer(2, revLen, mstLiveAudioCtx.sampleRate);
                                 for (let i = 0; i < 2; i++) {
                                     const ch = impulse.getChannelData(i);
-                                    for (let j = 0; j < revLen; j++) ch[j] = (Math.random() * 2 - 1) * Math.pow(1 - j / revLen, 6); // Decay lebih cepat
+                                    for (let j = 0; j < revLen; j++) ch[j] = (Math.random() * 2 - 1) * Math.pow(1 - j / revLen, 5); 
                                 }
                                 mstLiveNodes.convolver = mstLiveAudioCtx.createConvolver();
                                 mstLiveNodes.convolver.buffer = impulse;
                                 
+                                // CASCADE HIGHPASS FILTER (-24dB/oct) agar Harmonic Bass/Kick TIDAK bocor ke Reverb
                                 mstLiveNodes.revHPF = mstLiveAudioCtx.createBiquadFilter();
                                 mstLiveNodes.revHPF.type = 'highpass';
-                                mstLiveNodes.revHPF.frequency.value = 1000; // Reverb low di-cut habis agar bass tetap punchy
+                                mstLiveNodes.revHPF.frequency.value = 1600; // Naik ke 1.6kHz (Aman dari kick drum)
                                 
+                                mstLiveNodes.revHPF2 = mstLiveAudioCtx.createBiquadFilter();
+                                mstLiveNodes.revHPF2.type = 'highpass';
+                                mstLiveNodes.revHPF2.frequency.value = 1600; 
+
                                 mstLiveNodes.revLPF = mstLiveAudioCtx.createBiquadFilter();
                                 mstLiveNodes.revLPF.type = 'lowpass';
-                                mstLiveNodes.revLPF.frequency.value = 2500; // Reverb cempreng di-cut
+                                mstLiveNodes.revLPF.frequency.value = 4000; // Beri ruang nafas untuk vokal
+                                
+                                // PRE-DELAY: Mencegah Transient/Pukulan Instrumen menjadi bergema
+                                mstLiveNodes.revPreDelay = mstLiveAudioCtx.createDelay();
+                                mstLiveNodes.revPreDelay.delayTime.value = 0.045; // 45ms pre-delay
                                 
                                 mstLiveNodes.wetGain = mstLiveAudioCtx.createGain();
-                                mstLiveNodes.wetGain.gain.value = 0.015; // DITURUNKAN DRASTIS DARI 0.05 KE 0.015
+                                mstLiveNodes.wetGain.gain.value = 0.02; // Gain aman, karena frekuensi bawah sudah hilang
                                 
                                 mstLiveNodes.dryGain = mstLiveAudioCtx.createGain();
                                 mstLiveNodes.dryGain.gain.value = 1.0;
@@ -10390,8 +10395,10 @@ window.startDspBypassAndUpload = async function() {
                                 // Split ke Reverb (Hanya Vokal) & Dry (Semua Suara)
                                 mstLiveNodes.comp.connect(mstLiveNodes.dryGain);
                                 mstLiveNodes.comp.connect(mstLiveNodes.revHPF);
-                                mstLiveNodes.revHPF.connect(mstLiveNodes.revLPF);
-                                mstLiveNodes.revLPF.connect(mstLiveNodes.convolver);
+                                mstLiveNodes.revHPF.connect(mstLiveNodes.revHPF2); // Filter 1 ke Filter 2
+                                mstLiveNodes.revHPF2.connect(mstLiveNodes.revLPF); // Filter 2 ke Lowpass
+                                mstLiveNodes.revLPF.connect(mstLiveNodes.revPreDelay); // Masuk Delay dulu
+                                mstLiveNodes.revPreDelay.connect(mstLiveNodes.convolver); // Baru di-reverb
                                 mstLiveNodes.convolver.connect(mstLiveNodes.wetGain);
                                 
                                 mstLiveNodes.dryGain.connect(mstLiveNodes.makeUp);
@@ -10707,25 +10714,35 @@ window.startDspBypassAndUpload = async function() {
                     const limiter = offlineCtx.createDynamicsCompressor();
                     limiter.threshold.value = limThresh; limiter.knee.value = 0.0; limiter.ratio.value = 20.0; limiter.attack.value = 0.001; limiter.release.value = 0.05;
 
-                    const revLen = offlineCtx.sampleRate * 0.6; // REVISI: Pendekkan ekor agar punchy
+                    // --- REVERB KHUSUS VOKAL (REVISI EXTREME: ISOLASI DARI BASS & KICK) ---
+                    const revLen = offlineCtx.sampleRate * 0.5; 
                     const impulse = offlineCtx.createBuffer(2, revLen, offlineCtx.sampleRate);
                     for (let i = 0; i < 2; i++) {
                         const ch = impulse.getChannelData(i);
-                        for (let j = 0; j < revLen; j++) ch[j] = (Math.random() * 2 - 1) * Math.pow(1 - j / revLen, 6);
+                        for (let j = 0; j < revLen; j++) ch[j] = (Math.random() * 2 - 1) * Math.pow(1 - j / revLen, 5);
                     }
                     const convolver = offlineCtx.createConvolver();
                     convolver.buffer = impulse;
                     
+                    // CASCADE HIGHPASS FILTER (-24dB/oct)
                     const revHPF = offlineCtx.createBiquadFilter();
                     revHPF.type = 'highpass';
-                    revHPF.frequency.value = 1000; 
+                    revHPF.frequency.value = 1600; 
+                    
+                    const revHPF2 = offlineCtx.createBiquadFilter();
+                    revHPF2.type = 'highpass';
+                    revHPF2.frequency.value = 1600; 
                     
                     const revLPF = offlineCtx.createBiquadFilter();
                     revLPF.type = 'lowpass';
-                    revLPF.frequency.value = 2500; 
+                    revLPF.frequency.value = 4000; 
+
+                    // PRE-DELAY
+                    const revPreDelay = offlineCtx.createDelay();
+                    revPreDelay.delayTime.value = 0.045;
                     
                     const wetGain = offlineCtx.createGain();
-                    wetGain.gain.value = 0.015; // REVISI: Sangat dry & punchy
+                    wetGain.gain.value = 0.02; 
                     
                     const dryGain = offlineCtx.createGain();
                     dryGain.gain.value = 1.0;
@@ -10743,10 +10760,13 @@ window.startDspBypassAndUpload = async function() {
                     filterHMid.connect(filterHigh); 
                     filterHigh.connect(compressor); 
                     
+                    // Split ke Reverb (Hanya Vokal) & Dry (Semua Suara)
                     compressor.connect(dryGain);
                     compressor.connect(revHPF);
-                    revHPF.connect(revLPF);
-                    revLPF.connect(convolver);
+                    revHPF.connect(revHPF2);
+                    revHPF2.connect(revLPF);
+                    revLPF.connect(revPreDelay);
+                    revPreDelay.connect(convolver);
                     convolver.connect(wetGain);
                     
                     dryGain.connect(makeUpNode);
@@ -10834,7 +10854,8 @@ window.startDspBypassAndUpload = async function() {
                             isLocalMastered: true,
                             masteredFormat: targetFormat.toUpperCase(),
                             masteredSpecs: `${bitDepthText} | ${sampleRateText}`,
-                            masteredFileName: finalFileName
+                            masteredFileName: finalFileName,
+                            masteredAt: Date.now()
                         });
                     } catch(e) {
                         console.error("Gagal simpan Firebase:", e);
