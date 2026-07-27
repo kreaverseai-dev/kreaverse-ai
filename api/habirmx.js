@@ -764,16 +764,30 @@ ATURAN MUTLAK (HUKUMAN BERAT JIKA DILANGGAR):
                         }
 
                         if (currentProvider.execMode === 'sync') {
-                            let audioUrlVal = getValueByPath(resData, currentProvider.statusVideoUrlPath || "audioUrl") || findAudioUrlRecursively(resData);
-                            if (!audioUrlVal) throw new Error("URL Audio tidak ditemukan pada respons Synchronous API.");
-
                             let tracks = [];
-                            let extractedArray = getValueByPath(resData, currentProvider.statusVideoUrlPath?.split('.').slice(0, -1).join('.'));
-                            if (Array.isArray(extractedArray)) {
-                                tracks = extractedArray.map(item => ({ audioUrl: item.audio_url || item.audioUrl || item.url || audioUrlVal, imageUrl: item.image_url || item.imageUrl || "https://i.postimg.cc/Jh211FTG/46cc61ec-de7f-4c62-8245-946e22312d2b.jpg" })).filter(t => t.audioUrl);
-                            } else {
+                            let audioUrlVal = getValueByPath(resData, currentProvider.statusVideoUrlPath || "audioUrl") || findAudioUrlRecursively(resData);
+
+                            let searchTargets = [];
+                            if (Array.isArray(resData.data)) searchTargets = resData.data;
+                            else if (Array.isArray(resData.result)) searchTargets = resData.result;
+                            else if (Array.isArray(resData.tracks)) searchTargets = resData.tracks;
+                            else if (Array.isArray(resData)) searchTargets = resData;
+
+                            if (searchTargets.length > 0) {
+                                searchTargets.forEach(item => {
+                                    let url = findAudioUrlRecursively(item);
+                                    if (url) {
+                                        let img = item.image_url || item.imageUrl || item.cover_url || "https://i.postimg.cc/Jh211FTG/46cc61ec-de7f-4c62-8245-946e22312d2b.jpg";
+                                        tracks.push({ audioUrl: url, imageUrl: img });
+                                    }
+                                });
+                            }
+
+                            if (tracks.length === 0 && audioUrlVal) {
                                 tracks.push({ audioUrl: audioUrlVal, imageUrl: "https://i.postimg.cc/Jh211FTG/46cc61ec-de7f-4c62-8245-946e22312d2b.jpg" });
                             }
+
+                            if (tracks.length === 0) throw new Error("URL Audio tidak ditemukan pada respons Synchronous API.");
 
                             taskResponse = { status: "completed", provider: currentProvider.value, tracks: tracks, raw: resData };
                             successfulProvider = currentProvider; keyFoundAndUsed = true; break;
@@ -991,32 +1005,30 @@ ATURAN MUTLAK (HUKUMAN BERAT JIKA DILANGGAR):
                     tracks.push({ audioId: resData.id || resData.audio_id || resData.audioId || taskId, audioUrl: audioUrlVal, imageUrl: "https://i.postimg.cc/Jh211FTG/46cc61ec-de7f-4c62-8245-946e22312d2b.jpg" });
                 }
 
-                if (!audioUrlVal || tracks.length === 0) {
-                    // Cari semua kemungkinan track jika data adalah array
-                    let searchTargets = [];
-                    if (Array.isArray(resData.data)) searchTargets = resData.data;
-                    else if (Array.isArray(resData.result)) searchTargets = resData.result;
-                    else if (Array.isArray(resData.tracks)) searchTargets = resData.tracks;
-                    else if (Array.isArray(resData)) searchTargets = resData;
+                // REVISI BACKEND: Selalu paksa mencari ke dalam array agar Track 2 tidak terlewat
+                let searchTargets = [];
+                if (Array.isArray(resData.data)) searchTargets = resData.data;
+                else if (Array.isArray(resData.result)) searchTargets = resData.result;
+                else if (Array.isArray(resData.tracks)) searchTargets = resData.tracks;
+                else if (Array.isArray(resData)) searchTargets = resData;
 
-                    if (searchTargets.length > 0) {
-                        searchTargets.forEach(item => {
-                            let url = findAudioUrlRecursively(item);
-                            if (url) {
-                                let img = item.image_url || item.imageUrl || item.cover_url || "https://i.postimg.cc/Jh211FTG/46cc61ec-de7f-4c62-8245-946e22312d2b.jpg";
-                                tracks.push({ audioId: item.id || item.audio_id || item.audioId || taskId, audioUrl: url, imageUrl: img });
-                            }
-                        });
-                    }
-
-                    // Jika gagal ekstrak array, cari 1 URL secara rekursif global
-                    if (tracks.length === 0) {
-                        audioUrlVal = findAudioUrlRecursively(resData);
-                        if (audioUrlVal) tracks.push({ audioId: resData.id || resData.audio_id || resData.audioId || taskId, audioUrl: audioUrlVal, imageUrl: "https://i.postimg.cc/Jh211FTG/46cc61ec-de7f-4c62-8245-946e22312d2b.jpg" });
-                    }
-                    
-                    if (tracks.length > 0) audioUrlVal = tracks[0].audioUrl;
+                if (searchTargets.length > 0) {
+                    searchTargets.forEach(item => {
+                        let url = findAudioUrlRecursively(item);
+                        if (url) {
+                            let img = item.image_url || item.imageUrl || item.cover_url || "https://i.postimg.cc/Jh211FTG/46cc61ec-de7f-4c62-8245-946e22312d2b.jpg";
+                            tracks.push({ audioId: item.id || item.audio_id || item.audioId || taskId, audioUrl: url, imageUrl: img });
+                        }
+                    });
                 }
+
+                // Jika gagal ekstrak array dan tracks masih kosong, cari 1 URL secara rekursif global
+                if (tracks.length === 0) {
+                    audioUrlVal = findAudioUrlRecursively(resData) || audioUrlVal;
+                    if (audioUrlVal) tracks.push({ audioId: resData.id || resData.audio_id || resData.audioId || taskId, audioUrl: audioUrlVal, imageUrl: "https://i.postimg.cc/Jh211FTG/46cc61ec-de7f-4c62-8245-946e22312d2b.jpg" });
+                }
+                
+                if (tracks.length > 0) audioUrlVal = tracks[0].audioUrl;
                 if (!audioUrlVal) { isCompleted = false; isProcessing = true; }
 
                 // Mencegah duplikasi track dari respons API
