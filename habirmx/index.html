@@ -1045,14 +1045,14 @@
         
         .sidebar-menu {
             position: fixed; top: 0; left: 0; width: 280px; height: 100vh;
-            background: #ffffff; z-index: 100001; box-shadow: 20px 0 40px rgba(0,0,0,0.1);
+            background: #ffffff; z-index: 100001; box-shadow: none;
             display: flex; flex-direction: column; 
             overflow-y: auto; border-right: 1px solid var(--border-color);
             transform: translate3d(-100%, 0, 0); /* Memaksa GPU HP yang bekerja */
-            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s ease;
             will-change: transform; /* Memberi tahu browser untuk bersiap melakukan animasi mulus */
         }
-        .sidebar-menu.show { transform: translate3d(0, 0, 0); }
+        .sidebar-menu.show { transform: translate3d(0, 0, 0); box-shadow: 20px 0 40px rgba(0,0,0,0.1); }
         
         .sidebar-header {
             display: flex; justify-content: space-between; align-items: center;
@@ -1382,7 +1382,7 @@
 <body>
 
     <!-- TOP PROGRESS NOTIFICATION (KREAVERSE UPLOAD SYSTEM - COMPACT) -->
-    <div id="topProgressOverlay" style="position: fixed; top: 0; left: 0; width: 100%; background: rgba(15, 23, 42, 0.98); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); z-index: 9999999999; padding: 10px 16px 12px; color: #fff; transform: translateY(-100%); transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.15); border-bottom: 1px solid rgba(255,255,255,0.1); box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
+    <div id="topProgressOverlay" style="position: fixed; top: 0; left: 0; width: 100%; background: rgba(15, 23, 42, 0.98); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); z-index: 9999999999; padding: 10px 16px 12px; color: #fff; transform: translateY(-100%); transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.15); border-bottom: 1px solid rgba(255,255,255,0.1); pointer-events: none;">
         <div style="max-width: 900px; margin: 0 auto;">
             <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 8px;">
                 <div style="display: flex; flex-direction: column; gap: 2px;">
@@ -3315,6 +3315,7 @@
             document.body.removeChild(a);
             window.showIphoneToast("Mengunduh", "File mastering sedang diunduh.", "fa-cloud-arrow-down");
         };
+    </script>
 
     <!-- MODAL EDIT JUDUL LAGU -->
     <div id="editTitleModalOverlay" class="krea-modal-overlay" style="z-index: 9999999;">
@@ -4769,7 +4770,7 @@
         // LOGIKA DYNAMIC TOGGLE & SELECTION CUSTOM DROPDOWN UI
         // ============================================================
         window.toggleCustomSelect = function(dropdownId) {
-            const dropdowns = ['providerDropdown', 'modelDropdown', 'vocalGenderDropdown', 'llmDropdown', 'voiceGenderDropdown'];
+            const dropdowns = ['providerDropdown', 'modelDropdown', 'sunoModelDropdown', 'vocalGenderDropdown', 'llmDropdown', 'voiceGenderDropdown'];
             dropdowns.forEach(id => {
                 if (id !== dropdownId) {
                     const el = document.getElementById(id);
@@ -4782,7 +4783,7 @@
 
         document.addEventListener('click', (e) => {
             if (!e.target.closest('.custom-select-container')) {
-                const dropdowns = ['providerDropdown', 'modelDropdown', 'vocalGenderDropdown', 'llmDropdown', 'voiceGenderDropdown'];
+                const dropdowns = ['providerDropdown', 'modelDropdown', 'sunoModelDropdown', 'vocalGenderDropdown', 'llmDropdown', 'voiceGenderDropdown'];
                 dropdowns.forEach(id => {
                     const el = document.getElementById(id);
                     if (el) el.classList.add('hidden');
@@ -5662,6 +5663,8 @@
                 });
             } catch (e) {
                 if (providerSelectedLabel) providerSelectedLabel.innerText = "Gagal memuat provider";
+                const activeSunoModelName = document.getElementById('activeSunoModelName');
+                if (activeSunoModelName) activeSunoModelName.innerHTML = `<span style="color: #ef4444;">Gagal memuat model</span>`;
             }
         }
 
