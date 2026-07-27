@@ -2630,13 +2630,19 @@
                     <a href="/berkas/" style="font-size: 0.75rem; font-weight: 800; color: var(--accent-color); text-decoration: none; background: rgba(0,122,255,0.1); padding: 8px 14px; border-radius: 10px; transition: 0.2s;">Berkas <i class="fa-solid fa-arrow-right"></i></a>
                 </div>
                 <!-- Menu Seleksi (Hidden by default) -->
-                <div style="display: none; gap: 8px; align-items: center; background: #ffffff; padding: 8px 14px; border-radius: 12px; border: 1px solid #fecaca; box-shadow: 0 10px 25px -5px rgba(239,68,68,0.1);" id="libSelectionActions">
+                <div style="display: none; gap: 8px; align-items: center; flex-wrap: wrap; background: #ffffff; padding: 8px 14px; border-radius: 12px; border: 1px solid #fecaca; box-shadow: 0 10px 25px -5px rgba(239,68,68,0.1);" id="libSelectionActions">
                     <label style="display:flex; align-items:center; gap:6px; font-size:0.75rem; font-weight:800; color:#991b1b; cursor:pointer; margin:0;">
                         <input type="checkbox" id="selectAllCheckbox" onchange="window.toggleSelectAll(this.checked)" style="accent-color:#ef4444; width:18px; height:18px;"> Semua
                     </label>
                     <div style="width:1px; height:16px; background:#fca5a5; margin:0 4px;"></div>
-                    <button onclick="window.deleteSelectedItems()" id="btnDeleteSelected" style="font-size: 0.75rem; font-weight: 800; color: #fff; background: #ef4444; padding: 6px 14px; border-radius: 8px; border: none; cursor: pointer; transition: 0.2s;" disabled>Hapus (0)</button>
-                    <button onclick="window.toggleSelectionMode(false)" style="font-size: 0.75rem; font-weight: 800; color: var(--text-secondary); background: #f1f5f9; padding: 6px 14px; border-radius: 8px; border: none; cursor: pointer; transition: 0.2s;">Batal</button>
+                    
+                    <button onclick="window.addSelectedToPlaylist()" id="btnAddPlaylist" style="font-size: 0.75rem; font-weight: 800; color: #fff; background: #1DB954; padding: 6px 12px; border-radius: 8px; border: none; cursor: pointer; transition: 0.2s; box-shadow: 0 4px 10px rgba(29, 185, 84, 0.3);" disabled><i class="fa-solid fa-list"></i> Playlist</button>
+                    
+                    <button onclick="window.masterSelectedItems()" id="btnMasterSelected" style="font-size: 0.75rem; font-weight: 800; color: #0f172a; background: #38bdf8; padding: 6px 12px; border-radius: 8px; border: none; cursor: pointer; transition: 0.2s; box-shadow: 0 4px 10px rgba(56, 189, 248, 0.3);" disabled><i class="fa-solid fa-wand-magic-sparkles"></i> Mastering</button>
+                    
+                    <button onclick="window.deleteSelectedItems()" id="btnDeleteSelected" style="font-size: 0.75rem; font-weight: 800; color: #fff; background: #ef4444; padding: 6px 12px; border-radius: 8px; border: none; cursor: pointer; transition: 0.2s;" disabled><i class="fa-solid fa-trash"></i> Hapus</button>
+                    
+                    <button onclick="window.toggleSelectionMode(false)" style="font-size: 0.75rem; font-weight: 800; color: var(--text-secondary); background: #f1f5f9; padding: 6px 12px; border-radius: 8px; border: none; cursor: pointer; transition: 0.2s;">Batal</button>
                 </div>
             </div>
             <div id="activeProgressGrid" style="display: flex; flex-direction: column; gap: 16px; margin-bottom: 20px;"></div>
@@ -3000,6 +3006,315 @@
             </div>
         </div>
     </div>
+
+    <!-- UI PLAYLIST ALA SPOTIFY -->
+    <div id="spotifyPlaylistModal" class="krea-modal-overlay" style="z-index: 9999998; background: #121212;">
+        <div style="width: 100%; height: 100vh; display: flex; flex-direction: column; background: linear-gradient(to bottom, #2b2b2b 0%, #121212 40%); color: #fff; overflow: hidden; position: relative;">
+            
+            <!-- Header & Cover -->
+            <div style="padding: 30px 20px 20px; display: flex; flex-direction: column; align-items: center; position: relative;">
+                <button onclick="window.closePlaylistUI()" style="position: absolute; top: 20px; left: 20px; background: rgba(0,0,0,0.5); border: none; color: #fff; width: 36px; height: 36px; border-radius: 50%; cursor: pointer; font-size: 1.2rem; display: flex; align-items: center; justify-content: center;"><i class="fa-solid fa-chevron-down"></i></button>
+                <img id="playlistCoverImg" src="https://i.postimg.cc/Jh211FTG/46cc61ec-de7f-4c62-8245-946e22312d2b.jpg" style="width: 180px; height: 180px; object-fit: cover; box-shadow: 0 15px 35px rgba(0,0,0,0.5); margin-bottom: 20px; border-radius: 4px;">
+                <h2 style="font-size: 1.8rem; font-weight: 900; margin: 0; font-family: 'Plus Jakarta Sans', sans-serif;">My Playlist</h2>
+                <p style="color: #b3b3b3; font-size: 0.85rem; margin-top: 4px;" id="playlistCountText">0 Lagu</p>
+            </div>
+
+            <!-- Play Button Row -->
+            <div style="padding: 0 20px 20px; display: flex; align-items: center; justify-content: space-between;">
+                <div style="display: flex; gap: 16px; align-items: center;">
+                    <button onclick="window.playPlaylistTrack(0)" style="width: 56px; height: 56px; border-radius: 50%; background: #1DB954; color: #000; border: none; font-size: 1.5rem; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 8px 20px rgba(29, 185, 84, 0.3); transition: transform 0.1s;" onactive="this.style.transform='scale(0.95)'"><i class="fa-solid fa-play" style="margin-left: 4px;"></i></button>
+                    <button onclick="window.clearPlaylist()" style="background: none; border: 1px solid #b3b3b3; color: #b3b3b3; padding: 6px 12px; border-radius: 99px; font-size: 0.75rem; font-weight: 700; cursor: pointer;">Kosongkan</button>
+                </div>
+            </div>
+
+            <!-- List Lagu -->
+            <div id="playlistListContainer" style="flex: 1; overflow-y: auto; padding: 0 20px 100px;">
+                <!-- Diisi via JS -->
+            </div>
+        </div>
+    </div>
+
+    <!-- UI GALERI MASTERING -->
+    <div id="masteringGalleryModal" class="krea-modal-overlay" style="z-index: 9999998; background: #0f172a;">
+        <div style="width: 100%; height: 100vh; display: flex; flex-direction: column; background: linear-gradient(to bottom, #1e293b 0%, #0f172a 40%); color: #fff; overflow: hidden; position: relative;">
+            
+            <div style="padding: 30px 20px 20px; display: flex; flex-direction: column; align-items: center; position: relative;">
+                <button onclick="window.closeMasteringGalleryUI()" style="position: absolute; top: 20px; left: 20px; background: rgba(0,0,0,0.5); border: none; color: #fff; width: 36px; height: 36px; border-radius: 50%; cursor: pointer; font-size: 1.2rem; display: flex; align-items: center; justify-content: center;"><i class="fa-solid fa-chevron-down"></i></button>
+                <div style="width: 120px; height: 120px; background: linear-gradient(135deg, #0ea5e9, #38bdf8); border-radius: 24px; display: flex; align-items: center; justify-content: center; font-size: 3.5rem; color: #fff; box-shadow: 0 15px 35px rgba(14, 165, 233, 0.4); margin-bottom: 20px; transform: rotate(-5deg);">
+                    <i class="fa-solid fa-wand-magic-sparkles"></i>
+                </div>
+                <h2 style="font-size: 1.6rem; font-weight: 900; margin: 0; font-family: 'Plus Jakarta Sans', sans-serif;">Studio Mastering</h2>
+                <p style="color: #94a3b8; font-size: 0.85rem; margin-top: 4px; text-align: center;">Koleksi audio Lossless/HQ sesi ini.<br>File akan hilang jika halaman di-refresh.</p>
+            </div>
+
+            <div style="padding: 0 20px 20px; display: flex; align-items: center; justify-content: space-between;">
+                <button onclick="window.playMasteringTrack(0)" style="width: 50px; height: 50px; border-radius: 50%; background: #38bdf8; color: #0f172a; border: none; font-size: 1.3rem; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 8px 20px rgba(56, 189, 248, 0.3);"><i class="fa-solid fa-play" style="margin-left: 4px;"></i></button>
+            </div>
+
+            <div id="masteringListContainer" style="flex: 1; overflow-y: auto; padding: 0 20px 100px;">
+                <!-- Diisi via JS -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // INISIALISASI VARIABEL GLOBAL
+        window.globalPlaylistQueue = window.globalPlaylistQueue || [];
+        window.masteredGalleryQueue = window.masteredGalleryQueue || [];
+        window.currentPlaylistIndex = 0;
+        window.currentMasteringIndex = 0;
+        window.isPlaylistUIOpen = false;
+        window.isMasteringUIOpen = false;
+
+        // FUNGSI MULTI-SELECT ADD TO PLAYLIST
+        window.addSelectedToPlaylist = function() {
+            if (selectedItemIds.length === 0) return;
+            
+            let addedCount = 0;
+            selectedItemIds.forEach(id => {
+                const docData = window.globalLibraryDocs.find(d => d.id === id);
+                if (docData) {
+                    // Cek agar tidak dobel
+                    const exists = window.globalPlaylistQueue.some(item => item.id === docData.id);
+                    if (!exists) {
+                        window.globalPlaylistQueue.push(docData);
+                        addedCount++;
+                    }
+                }
+            });
+            
+            window.toggleSelectionMode(false);
+            window.showIphoneToast("Playlist Diperbarui", `${addedCount} lagu ditambahkan ke Playlist.`, "fa-list");
+            window.openPlaylistUI();
+        };
+
+        // FUNGSI BATCH MASTERING (AUTO)
+        window.masterSelectedItems = async function() {
+            if (selectedItemIds.length === 0) return;
+            
+            window.toggleSelectionMode(false);
+            showTopProgress("Batch Mastering...", "#06b6d4");
+            
+            let successCount = 0;
+            
+            // Proses satu per satu agar browser tidak crash (Memory limit)
+            for (let i = 0; i < selectedItemIds.length; i++) {
+                const id = selectedItemIds[i];
+                const docData = window.globalLibraryDocs.find(d => d.id === id);
+                
+                if (docData && docData.url) {
+                    updateTopProgress(Math.round((i / selectedItemIds.length) * 100), `Memproses lagu ${i+1} dari ${selectedItemIds.length}...`);
+                    
+                    try {
+                        // 1. Download audio
+                        const res = await fetch(docData.url);
+                        const arrayBuffer = await res.arrayBuffer();
+                        
+                        // 2. Setup Offline Context
+                        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                        const audioBuffer = await audioCtx.decodeAudioData(arrayBuffer);
+                        const offlineCtx = new OfflineAudioContext(audioBuffer.numberOfChannels, audioBuffer.length, audioBuffer.sampleRate);
+                        const source = offlineCtx.createBufferSource();
+                        source.buffer = audioBuffer;
+                        
+                        // 3. Terapkan Auto Mastering (Balanced/Pop)
+                        const filterLow = offlineCtx.createBiquadFilter(); filterLow.type = 'lowshelf'; filterLow.frequency.value = 60; filterLow.gain.value = 1.0;
+                        const filterHigh = offlineCtx.createBiquadFilter(); filterHigh.type = 'highshelf'; filterHigh.frequency.value = 10000; filterHigh.gain.value = 0.5;
+                        
+                        const compressor = offlineCtx.createDynamicsCompressor();
+                        compressor.threshold.value = -12; compressor.ratio.value = 3.0;
+                        
+                        const makeUpNode = offlineCtx.createGain(); makeUpNode.gain.value = Math.pow(10, 2.0 / 20);
+                        
+                        const limiter = offlineCtx.createDynamicsCompressor();
+                        limiter.threshold.value = -0.3; limiter.ratio.value = 20.0; limiter.attack.value = 0.001;
+                        
+                        source.connect(filterLow);
+                        filterLow.connect(filterHigh);
+                        filterHigh.connect(compressor);
+                        compressor.connect(makeUpNode);
+                        makeUpNode.connect(limiter);
+                        limiter.connect(offlineCtx.destination);
+                        
+                        source.start(0);
+                        const renderedBuffer = await offlineCtx.startRendering();
+                        
+                        // 4. Encode ke MP3 (Gunakan fungsi yang sudah ada)
+                        const finalBlob = await encodeAudioBufferToMp3(renderedBuffer, () => {});
+                        const downloadUrl = URL.createObjectURL(finalBlob);
+                        
+                        // 5. Simpan ke Galeri
+                        const cleanTitle = (docData.title || "Untitled").replace(/\s*\(Part\s*\d+\)/gi, '').replace(/\s*-\s*Versi\s*\d+/gi, '').trim();
+                        const safeThumb = docData.imageUrl || "https://i.postimg.cc/Jh211FTG/46cc61ec-de7f-4c62-8245-946e22312d2b.jpg";
+                        
+                        if (!window.masteredGalleryQueue) window.masteredGalleryQueue = [];
+                        window.masteredGalleryQueue.push({
+                            id: docData.id || Date.now().toString(),
+                            title: cleanTitle,
+                            url: downloadUrl,
+                            imageUrl: safeThumb,
+                            format: "MP3",
+                            specs: "24-bit | 44.1 kHz",
+                            fileName: `Mastered_${cleanTitle.replace(/[^a-zA-Z0-9\s]/g, "_")}.mp3`
+                        });
+                        
+                        // 6. Update Firestore
+                        try {
+                            await updateDoc(doc(db, "render_gallery", docData.id), { isMastered: true, masteringProfile: 'auto_batch' });
+                        } catch(e) {}
+                        
+                        successCount++;
+                    } catch (err) {
+                        console.error("Gagal batch master:", err);
+                    }
+                }
+            }
+            
+            updateTopProgress(100, "Selesai!");
+            setTimeout(() => { 
+                hideTopProgress(); 
+                window.openMasteringGalleryUI(); 
+            }, 1500);
+            window.showIphoneToast("Batch Selesai", `${successCount} lagu berhasil di-mastering.`, "fa-wand-magic-sparkles");
+        };
+
+        // FUNGSI UI PLAYLIST
+        window.openPlaylistUI = function() {
+            window.isPlaylistUIOpen = true;
+            document.getElementById('spotifyPlaylistModal').classList.add('show');
+            window.renderPlaylistUI();
+        };
+
+        window.closePlaylistUI = function() {
+            window.isPlaylistUIOpen = false;
+            document.getElementById('spotifyPlaylistModal').classList.remove('show');
+        };
+
+        window.clearPlaylist = function() {
+            window.globalPlaylistQueue = [];
+            window.renderPlaylistUI();
+            window.showIphoneToast("Dikosongkan", "Playlist berhasil dikosongkan.", "fa-trash");
+        };
+
+        window.renderPlaylistUI = function() {
+            const container = document.getElementById('playlistListContainer');
+            const queue = window.globalPlaylistQueue || [];
+            
+            document.getElementById('playlistCountText').innerText = `${queue.length} Lagu`;
+            
+            if (queue.length > 0 && queue[0].imageUrl) {
+                document.getElementById('playlistCoverImg').src = queue[0].imageUrl;
+            }
+
+            if (queue.length === 0) {
+                container.innerHTML = '<div style="text-align:center; color:#b3b3b3; margin-top:40px;">Playlist kosong. Pilih lagu dari Library.</div>';
+                return;
+            }
+
+            let html = '';
+            queue.forEach((item, index) => {
+                const cleanTitle = (item.title || "Untitled").replace(/\s*\(Part\s*\d+\)/gi, '').replace(/\s*-\s*Versi\s*\d+/gi, '').trim();
+                const isPlaying = (index === window.currentPlaylistIndex && document.getElementById('globalMiniPlayer').classList.contains('show') && !document.getElementById('globalAudioEl').paused);
+                const titleColor = isPlaying ? '#1DB954' : '#ffffff';
+                const numHtml = isPlaying ? '<i class="fa-solid fa-chart-simple fa-fade" style="color:#1DB954;"></i>' : `<span style="color:#b3b3b3; font-size:0.9rem;">${index + 1}</span>`;
+
+                html += `
+                    <div style="display: flex; align-items: center; justify-content: space-between; padding: 10px 0; cursor: pointer; transition: 0.2s;" onclick="window.playPlaylistTrack(${index})">
+                        <div style="display: flex; align-items: center; gap: 14px; flex: 1; min-width: 0;">
+                            <div style="width: 20px; text-align: center;">${numHtml}</div>
+                            <img src="${item.imageUrl}" style="width: 45px; height: 45px; border-radius: 4px; object-fit: cover; flex-shrink: 0;">
+                            <div style="flex: 1; min-width: 0;">
+                                <div style="color: ${titleColor}; font-weight: 600; font-size: 0.95rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 2px;">${cleanTitle}</div>
+                                <div style="color: #b3b3b3; font-size: 0.75rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Kreaverse AI • ${item.duration || '--:--'}</div>
+                            </div>
+                        </div>
+                        <button onclick="event.stopPropagation(); window.downloadFileWithCustomName('${item.url}', '${cleanTitle.replace(/'/g, "\\'")}')" style="background: none; border: none; color: #b3b3b3; padding: 10px; cursor: pointer; font-size: 1.1rem;"><i class="fa-solid fa-circle-down"></i></button>
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
+        };
+
+        window.playPlaylistTrack = function(index) {
+            if (!window.globalPlaylistQueue || window.globalPlaylistQueue.length === 0) return;
+            if (index >= window.globalPlaylistQueue.length) index = 0;
+            
+            window.currentPlaylistIndex = index;
+            const track = window.globalPlaylistQueue[index];
+            const cleanTitle = (track.title || "Untitled").replace(/\s*\(Part\s*\d+\)/gi, '').replace(/\s*-\s*Versi\s*\d+/gi, '').trim();
+            const safeThumb = track.imageUrl || "https://i.postimg.cc/Jh211FTG/46cc61ec-de7f-4c62-8245-946e22312d2b.jpg";
+            
+            window.isMasteringUIOpen = false; // Matikan flag mastering
+            window.playGlobalAudio(track.url, cleanTitle, safeThumb, track.id);
+            window.renderPlaylistUI(); // Update warna hijau
+        };
+
+        // FUNGSI UI GALERI MASTERING
+        window.openMasteringGalleryUI = function() {
+            window.isMasteringUIOpen = true;
+            document.getElementById('masteringGalleryModal').classList.add('show');
+            window.renderMasteringGalleryUI();
+        };
+
+        window.closeMasteringGalleryUI = function() {
+            window.isMasteringUIOpen = false;
+            document.getElementById('masteringGalleryModal').classList.remove('show');
+        };
+
+        window.renderMasteringGalleryUI = function() {
+            const container = document.getElementById('masteringListContainer');
+            const queue = window.masteredGalleryQueue || [];
+
+            if (queue.length === 0) {
+                container.innerHTML = '<div style="text-align:center; color:#94a3b8; margin-top:40px;">Belum ada audio yang di-mastering sesi ini.</div>';
+                return;
+            }
+
+            let html = '';
+            queue.forEach((item, index) => {
+                const isPlaying = (index === window.currentMasteringIndex && document.getElementById('globalMiniPlayer').classList.contains('show') && !document.getElementById('globalAudioEl').paused);
+                const titleColor = isPlaying ? '#38bdf8' : '#ffffff';
+
+                html += `
+                    <div style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 12px; margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; transition: 0.2s;" onclick="window.playMasteringTrack(${index})">
+                        <div style="display: flex; align-items: center; gap: 14px; flex: 1; min-width: 0;">
+                            <img src="${item.imageUrl}" style="width: 50px; height: 50px; border-radius: 8px; object-fit: cover; flex-shrink: 0; box-shadow: 0 4px 10px rgba(0,0,0,0.3);">
+                            <div style="flex: 1; min-width: 0;">
+                                <div style="color: ${titleColor}; font-weight: 700; font-size: 0.95rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 4px;">${item.title}</div>
+                                <div style="display: flex; gap: 6px;">
+                                    <span style="background: rgba(56, 189, 248, 0.15); color: #38bdf8; padding: 2px 6px; border-radius: 4px; font-size: 0.6rem; font-weight: 800;">${item.format}</span>
+                                    <span style="background: rgba(255,255,255,0.1); color: #cbd5e1; padding: 2px 6px; border-radius: 4px; font-size: 0.6rem; font-weight: 700;">${item.specs}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <button onclick="event.stopPropagation(); window.forceDownloadMastered('${item.url}', '${item.fileName}')" style="background: #38bdf8; color: #0f172a; border: none; width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 4px 10px rgba(56, 189, 248, 0.2);"><i class="fa-solid fa-download"></i></button>
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
+        };
+
+        window.playMasteringTrack = function(index) {
+            if (!window.masteredGalleryQueue || window.masteredGalleryQueue.length === 0) return;
+            if (index >= window.masteredGalleryQueue.length) index = 0;
+            
+            window.currentMasteringIndex = index;
+            const track = window.masteredGalleryQueue[index];
+            
+            window.isPlaylistUIOpen = false; // Matikan flag playlist
+            window.playGlobalAudio(track.url, track.title, track.imageUrl, track.id);
+            window.renderMasteringGalleryUI(); // Update warna biru
+        };
+
+        window.forceDownloadMastered = function(url, fileName) {
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = fileName;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.showIphoneToast("Mengunduh", "File mastering sedang diunduh.", "fa-cloud-arrow-down");
+        };
 
     <!-- MODAL EDIT JUDUL LAGU -->
     <div id="editTitleModalOverlay" class="krea-modal-overlay" style="z-index: 9999999;">
@@ -3518,13 +3833,28 @@
             const normalActions = document.getElementById('libNormalActions');
             const selectionActions = document.getElementById('libSelectionActions');
             const btnDelete = document.getElementById('btnDeleteSelected');
+            const btnAddPlaylist = document.getElementById('btnAddPlaylist');
+            const btnMasterSelected = document.getElementById('btnMasterSelected');
             const chkAll = document.getElementById('selectAllCheckbox');
             
             if (window.isSelectionMode) {
                 normalActions.style.display = 'none';
                 selectionActions.style.display = 'flex';
-                btnDelete.innerText = `Hapus (${selectedItemIds.length})`;
-                btnDelete.disabled = selectedItemIds.length === 0;
+                
+                const count = selectedItemIds.length;
+                const isDisabled = count === 0;
+                
+                btnDelete.innerHTML = `<i class="fa-solid fa-trash"></i> Hapus (${count})`;
+                btnDelete.disabled = isDisabled;
+                
+                if(btnAddPlaylist) {
+                    btnAddPlaylist.innerHTML = `<i class="fa-solid fa-list"></i> Playlist (${count})`;
+                    btnAddPlaylist.disabled = isDisabled;
+                }
+                if(btnMasterSelected) {
+                    btnMasterSelected.innerHTML = `<i class="fa-solid fa-wand-magic-sparkles"></i> Mastering (${count})`;
+                    btnMasterSelected.disabled = isDisabled;
+                }
                 
                 // Cek apakah semua item yang sedang tampil sudah tercentang
                 const filteredDocs = window.globalLibraryDocs.filter(d => {
@@ -3954,17 +4284,43 @@
                     document.getElementById('gmpProgressFill').style.width = '0%';
                     document.getElementById('gmpCurrTime').innerText = '0:00';
                     
-                    // LOGIKA AUTOPLAY PLAYLIST (SPOTIFY STYLE)
-                    if (window.globalPlaylistQueue && window.globalPlaylistQueue.length > 0) {
-                        const nextTrack = window.globalPlaylistQueue.shift(); // Ambil & hapus lagu pertama di antrean
+                    // LOGIKA AUTOPLAY PLAYLIST & MASTERING (SPOTIFY STYLE)
+                    let nextTrack = null;
+                    let isFromPlaylist = false;
+                    let isFromMastering = false;
+
+                    // Cek apakah sedang memutar dari UI Playlist
+                    if (window.isPlaylistUIOpen && window.globalPlaylistQueue && window.currentPlaylistIndex !== undefined) {
+                        if (window.currentPlaylistIndex < window.globalPlaylistQueue.length - 1) {
+                            window.currentPlaylistIndex++;
+                            nextTrack = window.globalPlaylistQueue[window.currentPlaylistIndex];
+                            isFromPlaylist = true;
+                        }
+                    } 
+                    // Cek apakah sedang memutar dari UI Mastering
+                    else if (window.isMasteringUIOpen && window.masteredGalleryQueue && window.currentMasteringIndex !== undefined) {
+                        if (window.currentMasteringIndex < window.masteredGalleryQueue.length - 1) {
+                            window.currentMasteringIndex++;
+                            nextTrack = window.masteredGalleryQueue[window.currentMasteringIndex];
+                            isFromMastering = true;
+                        }
+                    }
+                    // Fallback (Sistem antrean lama jika UI tertutup)
+                    else if (window.globalPlaylistQueue && window.globalPlaylistQueue.length > 0 && !window.isPlaylistUIOpen) {
+                        nextTrack = window.globalPlaylistQueue.shift();
+                    }
+
+                    if (nextTrack) {
                         const cleanTitle = (nextTrack.title || "Untitled").replace(/\s*\(Part\s*\d+\)/gi, '').replace(/\s*-\s*Versi\s*\d+/gi, '').trim();
                         const safeThumb = nextTrack.imageUrl || "https://i.postimg.cc/Jh211FTG/46cc61ec-de7f-4c62-8245-946e22312d2b.jpg";
                         
-                        window.showIphoneToast("Memutar Playlist", `Selanjutnya: ${cleanTitle}`, "fa-play");
+                        window.showIphoneToast("Memutar Selanjutnya", cleanTitle, "fa-play");
                         
-                        // Jeda 1 detik agar natural, lalu putar lagu selanjutnya
                         setTimeout(() => {
                             window.playGlobalAudio(nextTrack.url, cleanTitle, safeThumb, nextTrack.id);
+                            // Update highlight UI
+                            if (isFromPlaylist) window.renderPlaylistUI();
+                            if (isFromMastering) window.renderMasteringGalleryUI();
                         }, 1000);
                     }
                 });
@@ -9786,15 +10142,31 @@ window.startDspBypassAndUpload = async function() {
                         });
                     }
 
-                    updateTopProgress(95, "Mengunduh File...");
+                    updateTopProgress(95, "Menyimpan ke Galeri Mastering...");
 
                     const downloadUrl = URL.createObjectURL(finalBlob);
-                    const a = document.createElement('a');
-                    a.href = downloadUrl;
-                    a.download = finalFileName;
-                    document.body.appendChild(a);
-                    a.click();
-                    document.body.removeChild(a);
+                    
+                    // Simpan ke Array Global Galeri Mastering
+                    if (!window.masteredGalleryQueue) window.masteredGalleryQueue = [];
+                    
+                    const docData = window.globalLibraryDocs.find(d => d.id === docId);
+                    const cleanTitle = docData ? (docData.title || "Untitled").replace(/\s*\(Part\s*\d+\)/gi, '').replace(/\s*-\s*Versi\s*\d+/gi, '').trim() : "Mastered Audio";
+                    const safeThumb = docData ? (docData.imageUrl || "https://i.postimg.cc/Jh211FTG/46cc61ec-de7f-4c62-8245-946e22312d2b.jpg") : "https://i.postimg.cc/Jh211FTG/46cc61ec-de7f-4c62-8245-946e22312d2b.jpg";
+                    
+                    const activeSamplePill2 = document.querySelector('#mstSampleGroup .mst-pill.active');
+                    const sampleRateText = activeSamplePill2 ? activeSamplePill2.innerText : '44.1 kHz';
+                    const activeBitPill = document.querySelector('#mstBitGroup .mst-pill.active');
+                    const bitDepthText = activeBitPill ? activeBitPill.innerText : '24-bit';
+
+                    window.masteredGalleryQueue.push({
+                        id: docId || Date.now().toString(),
+                        title: cleanTitle,
+                        url: downloadUrl,
+                        imageUrl: safeThumb,
+                        format: targetFormat.toUpperCase(),
+                        specs: `${bitDepthText} | ${sampleRateText}`,
+                        fileName: finalFileName
+                    });
                     
                     try {
                         await updateDoc(doc(db, "render_gallery", docId), {
@@ -9804,8 +10176,11 @@ window.startDspBypassAndUpload = async function() {
                     } catch(e) {}
 
                     updateTopProgress(100, "Selesai!");
-                    setTimeout(() => { hideTopProgress(); URL.revokeObjectURL(downloadUrl); }, 2000);
-                    showIphoneToast("Mastering Selesai!", "Audio bersih dan jernih berhasil diunduh.", "fa-wand-magic-sparkles");
+                    setTimeout(() => { 
+                        hideTopProgress(); 
+                        window.openMasteringGalleryUI(); // Buka UI Galeri
+                    }, 1500);
+                    showIphoneToast("Mastering Selesai!", "Audio berhasil disimpan ke Galeri Mastering.", "fa-wand-magic-sparkles");
 
                 } catch (err) {
                     console.error(err);
