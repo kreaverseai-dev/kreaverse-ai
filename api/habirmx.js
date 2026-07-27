@@ -384,6 +384,12 @@ ATURAN MUTLAK:
 5. SANGAT PENTING: Jawab HANYA dengan lirik lagunya saja. DILARANG memberikan kalimat pembuka atau penutup.`;
                     } else {
                         let whisperTextWithStructure = "";
+                        
+                        // PEMBERSIHAN EKSTREM MENGGUNAKAN REGEX (SEBELUM MASUK KE LLM)
+                        // Hapus huruf Mandarin/Jepang/Korea dan halusinasi bahasa Inggris umum
+                        finalInputText = finalInputText.replace(/[\u4e00-\u9fa5\u3040-\u30ff\uac00-\ud7af]+/g, ""); 
+                        finalInputText = finalInputText.replace(/(Terima kasih|Thanks for watching|I am your love|Don't you doubt|Subtitle by|Subtitles by|Amara\.org|Terimakasih)/gi, "");
+
                         if (audioUrl) {
                             try {
                                 const wQuery = await db.collection("api_keys").where("provider", "==", "Groq Whisper").where("status", "==", "aktif").get();
@@ -393,7 +399,7 @@ ATURAN MUTLAK:
                                     const aBlob = await aFetch.blob();
                                     const fData = new FormData();
                                     fData.append("file", aBlob, "audio.mp3");
-                                    fData.append("model", "whisper-large-v3"); // Ganti ke v3 murni
+                                    fData.append("model", "whisper-large-v3"); // Ganti ke V3 Murni
                                     fData.append("temperature", "0.0"); // Matikan halusinasi
                                     fData.append("response_format", "verbose_json"); 
                                     
@@ -408,31 +414,41 @@ ATURAN MUTLAK:
                                         
                                         for (let i = 0; i < wData.segments.length; i++) {
                                             let seg = wData.segments[i];
-                                            if (seg.start - lastEnd > 8.0 && lastEnd > 0) structuredText += `[Instrumental Break]\n`;
-                                            structuredText += `${seg.text.trim()}\n`;
-                                            lastEnd = seg.end;
+                                            let segText = seg.text.trim();
+                                            
+                                            // Bersihkan segmen dari halusinasi sebelum dimasukkan ke struktur
+                                            segText = segText.replace(/[\u4e00-\u9fa5\u3040-\u30ff\uac00-\ud7af]+/g, "");
+                                            segText = segText.replace(/(Terima kasih|Thanks for watching|I am your love|Don't you doubt|Subtitle by|Subtitles by|Amara\.org|Terimakasih)/gi, "");
+                                            
+                                            // Hanya masukkan jika teks masih memiliki sisa huruf setelah dibersihkan
+                                            if (segText.replace(/[^a-zA-Z0-9]/g, '').length > 1) {
+                                                if (seg.start - lastEnd > 8.0 && lastEnd > 0) structuredText += `[Instrumental Break]\n`;
+                                                structuredText += `${segText}\n`;
+                                                lastEnd = seg.end;
+                                            }
                                         }
                                         structuredText += `[Outro / Instrumental]\n`;
                                         whisperTextWithStructure = structuredText;
                                     } else if (wData.text) {
-                                        whisperTextWithStructure = wData.text;
+                                        whisperTextWithStructure = wData.text.replace(/[\u4e00-\u9fa5\u3040-\u30ff\uac00-\ud7af]+/g, "").replace(/(Terima kasih|Thanks for watching|I am your love|Don't you doubt|Subtitle by|Subtitles by|Amara\.org|Terimakasih)/gi, "");
                                     }
                                 }
                             } catch(e) { console.error("Whisper error in Magic Wand:", e); }
                         }
                         
-                        systemPrompt = `Kamu adalah Ahli Lirik Lagu Profesional. Tugasmu adalah merapikan teks mentah menjadi lirik lagu terstruktur.
-ATURAN MUTLAK (DILARANG MELANGGAR):
-1. BAHASA ASLI: Pertahankan bahasa asli teks 100%. Jika teks berbahasa Arab, biarkan full Arab. Jika Indonesia, biarkan full Indonesia. JANGAN PERNAH MENERJEMAHKANNYA!
-2. PENGULANGAN: Jika ada kalimat yang diulang di teks mentah, tulis ulang semuanya persis seperti aslinya dari awal sampai akhir. Jangan disingkat (misal: 2x).
-3. BERSIHKAN HALUSINASI: Hapus huruf-huruf aneh (seperti karakter Mandarin/China/Jepang) jika lagunya bukan bahasa tersebut, karena itu adalah halusinasi AI saat mendengar instrumen.
-4. STRUKTUR: Tambahkan tag struktur lagu seperti [Intro], [Verse], [Chorus], [Bridge], [Outro] di tempat yang tepat.
-5. SANGAT PENTING: Jawab HANYA dengan lirik lagu. DILARANG KERAS memberikan kalimat pembuka atau kalimat penutup. LANGSUNG ke lirik baris pertama!`;
+                        systemPrompt = `Kamu adalah Ahli Bahasa dan Editor Lirik Lagu Profesional yang sangat teliti. Tugasmu adalah membersihkan teks hasil transkripsi AI (Whisper) yang penuh dengan halusinasi (kata-kata gaib yang tidak ada di lagu asli) dan menatanya menjadi lirik lagu terstruktur.
+ATURAN MUTLAK (HUKUMAN BERAT JIKA DILANGGAR):
+1. HAPUS TOTAL HALUSINASI WHISPER: AI sering mengarang kata saat mendengar melodi instrumen. HAPUS MUTLAK kata-kata gaib seperti "Terima kasih", "Terimakasih", "Thanks for watching", "I am your love", "Subtitle by", atau huruf Mandarin/Jepang/Korea. JANGAN MASUKKAN KATA-KATA INI KE HASIL AKHIR!
+2. FOKUS PADA LIRIK ASLI: Analisis konteks kalimat. Jika ada kalimat yang tiba-tiba melenceng dari topik lagu (misal tiba-tiba bilang terima kasih di tengah lagu patah hati), BUANG kalimat itu!
+3. DILARANG MENERJEMAHKAN: Pertahankan bahasa asli 100%. Jangan pernah tambahkan tag [Terjemahan: ...].
+4. PERTAHANKAN PENGULANGAN: Tulis semua lirik yang diulang secara utuh.
+5. STRUKTUR LAGU: Berikan tag [Intro], [Verse], [Chorus], [Bridge], [Outro] di tempat yang tepat.
+6. OUTPUT LANGSUNG: Jawab HANYA dengan lirik lagu yang sudah bersih. DILARANG memberikan basa-basi, kalimat pembuka, atau penutup!`;
                         
                         if (audioUrl && whisperTextWithStructure) {
-                            finalInputText = `LIRIK MENTAH USER:\n${inputText}\n\nTRANSKRIPSI AUDIO (Acuan Struktur & Pengulangan):\n${whisperTextWithStructure}`;
+                            finalInputText = `LIRIK MENTAH USER:\n${finalInputText}\n\nTRANSKRIPSI AUDIO (Acuan Struktur & Pengulangan):\n${whisperTextWithStructure}`;
                         } else {
-                            finalInputText = `TEKS MENTAH:\n${inputText}`;
+                            finalInputText = `TEKS MENTAH:\n${finalInputText}`;
                         }
                     }
                 }
