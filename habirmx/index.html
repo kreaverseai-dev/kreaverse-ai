@@ -3015,10 +3015,13 @@
     <div id="spotifyPlaylistModal" class="krea-modal-overlay" style="z-index: 9999998; background: #121212;">
         <div style="width: 100%; height: 100vh; display: flex; flex-direction: column; background: linear-gradient(to bottom, #8a6132 0%, #121212 45%); color: #fff; overflow: hidden; position: relative; font-family: 'Plus Jakarta Sans', sans-serif;">
             
-            <!-- Top Bar -->
-            <div style="padding: 20px; display: flex; align-items: center; position: relative; z-index: 10;">
-                <button onclick="window.closePlaylistUI()" style="background: none; border: none; color: #fff; font-size: 1.4rem; cursor: pointer; padding: 5px;"><i class="fa-solid fa-chevron-left"></i></button>
+            <!-- Top Bar (Back Button Aman & Terlihat) -->
+            <div style="padding: 15px 20px; display: flex; align-items: center; position: absolute; top: 0; left: 0; width: 100%; z-index: 999; background: linear-gradient(to bottom, rgba(0,0,0,0.5) 0%, transparent 100%);">
+                <button onclick="window.closePlaylistUI()" style="background: rgba(0,0,0,0.3); border: none; color: #fff; width: 40px; height: 40px; border-radius: 50%; font-size: 1.2rem; cursor: pointer; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(5px); box-shadow: 0 4px 10px rgba(0,0,0,0.3); transition: 0.2s;" onmouseover="this.style.background='rgba(0,0,0,0.6)'" onmouseout="this.style.background='rgba(0,0,0,0.3)'"><i class="fa-solid fa-chevron-left" style="margin-right: 2px;"></i></button>
             </div>
+
+            <!-- Spacer untuk Top Bar -->
+            <div style="height: 70px; width: 100%; flex-shrink: 0;"></div>
 
             <!-- Cover Area -->
             <div style="padding: 0 20px; display: flex; flex-direction: column; align-items: center; position: relative; z-index: 10;">
@@ -3051,10 +3054,13 @@
     <div id="masteringGalleryModal" class="krea-modal-overlay" style="z-index: 9999998; background: #0f172a;">
         <div style="width: 100%; height: 100vh; display: flex; flex-direction: column; background: linear-gradient(to bottom, #0ea5e9 0%, #0f172a 45%); color: #fff; overflow: hidden; position: relative; font-family: 'Plus Jakarta Sans', sans-serif;">
             
-            <!-- Top Bar -->
-            <div style="padding: 20px; display: flex; align-items: center; position: relative; z-index: 10;">
-                <button onclick="window.closeMasteringGalleryUI()" style="background: none; border: none; color: #fff; font-size: 1.4rem; cursor: pointer; padding: 5px;"><i class="fa-solid fa-chevron-left"></i></button>
+            <!-- Top Bar (Back Button Aman & Terlihat) -->
+            <div style="padding: 15px 20px; display: flex; align-items: center; position: absolute; top: 0; left: 0; width: 100%; z-index: 999; background: linear-gradient(to bottom, rgba(0,0,0,0.3) 0%, transparent 100%);">
+                <button onclick="window.closeMasteringGalleryUI()" style="background: rgba(0,0,0,0.3); border: none; color: #fff; width: 40px; height: 40px; border-radius: 50%; font-size: 1.2rem; cursor: pointer; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(5px); box-shadow: 0 4px 10px rgba(0,0,0,0.3); transition: 0.2s;" onmouseover="this.style.background='rgba(0,0,0,0.6)'" onmouseout="this.style.background='rgba(0,0,0,0.3)'"><i class="fa-solid fa-chevron-left" style="margin-right: 2px;"></i></button>
             </div>
+
+            <!-- Spacer untuk Top Bar -->
+            <div style="height: 70px; width: 100%; flex-shrink: 0;"></div>
 
             <!-- Cover Area -->
             <div style="padding: 0 20px; display: flex; flex-direction: column; align-items: center; position: relative; z-index: 10;">
@@ -3091,13 +3097,72 @@
     </div>
 
     <script>
+        // INISIALISASI DATABASE LOKAL (INDEXEDDB) UNTUK AUDIO MASTERING GRATIS
+        window.localAudioDB = {
+            dbName: 'KreaverseAudioDB',
+            storeName: 'mastered_tracks',
+            init: function() {
+                return new Promise((resolve, reject) => {
+                    const request = indexedDB.open(this.dbName, 1);
+                    request.onupgradeneeded = (e) => {
+                        const db = e.target.result;
+                        if (!db.objectStoreNames.contains(this.storeName)) {
+                            db.createObjectStore(this.storeName);
+                        }
+                    };
+                    request.onsuccess = (e) => resolve(e.target.result);
+                    request.onerror = (e) => reject(e.target.error);
+                });
+            },
+            save: async function(id, blob) {
+                const db = await this.init();
+                return new Promise((resolve, reject) => {
+                    const tx = db.transaction(this.storeName, 'readwrite');
+                    const store = tx.objectStore(this.storeName);
+                    store.put(blob, id);
+                    tx.oncomplete = () => resolve();
+                    tx.onerror = () => reject(tx.error);
+                });
+            },
+            get: async function(id) {
+                const db = await this.init();
+                return new Promise((resolve, reject) => {
+                    const tx = db.transaction(this.storeName, 'readonly');
+                    const store = tx.objectStore(this.storeName);
+                    const request = store.get(id);
+                    request.onsuccess = () => resolve(request.result);
+                    request.onerror = () => reject(request.error);
+                });
+            },
+            delete: async function(id) {
+                const db = await this.init();
+                return new Promise((resolve, reject) => {
+                    const tx = db.transaction(this.storeName, 'readwrite');
+                    const store = tx.objectStore(this.storeName);
+                    store.delete(id);
+                    tx.oncomplete = () => resolve();
+                    tx.onerror = () => reject(tx.error);
+                });
+            }
+        };
+
         // INISIALISASI VARIABEL GLOBAL
-        window.globalPlaylistQueue = window.globalPlaylistQueue || [];
+        window.globalPlaylistQueue = [];
         window.masteredGalleryQueue = window.masteredGalleryQueue || [];
         window.currentPlaylistIndex = 0;
         window.currentMasteringIndex = 0;
         window.isPlaylistUIOpen = false;
         window.isMasteringUIOpen = false;
+
+        window.savePlaylistToFirebase = async function() {
+            if (typeof currentUserData !== 'undefined' && currentUserData && currentUserData.id) {
+                try {
+                    await updateDoc(doc(db, "users", currentUserData.id), {
+                        playlistQueue: window.globalPlaylistQueue
+                    });
+                } catch(e) {}
+            }
+        };
 
         // FUNGSI MULTI-SELECT ADD TO PLAYLIST
         window.addSelectedToPlaylist = function() {
@@ -3116,6 +3181,7 @@
                 }
             });
             
+            window.savePlaylistToFirebase();
             window.toggleSelectionMode(false);
             window.showIphoneToast("Playlist Diperbarui", `${addedCount} lagu ditambahkan ke Playlist.`, "fa-list");
             window.openPlaylistUI();
@@ -3172,28 +3238,25 @@
                         source.start(0);
                         const renderedBuffer = await offlineCtx.startRendering();
                         
-                        // 4. Encode ke MP3 (Gunakan fungsi yang sudah ada)
+                        // 4. Encode ke MP3
                         const finalBlob = await encodeAudioBufferToMp3(renderedBuffer, () => {});
-                        const downloadUrl = URL.createObjectURL(finalBlob);
                         
-                        // 5. Simpan ke Galeri
+                        // 5. Simpan ke IndexedDB (Database Lokal Gratis)
+                        await window.localAudioDB.save(docData.id, finalBlob);
+                        
                         const cleanTitle = (docData.title || "Untitled").replace(/\s*\(Part\s*\d+\)/gi, '').replace(/\s*-\s*Versi\s*\d+/gi, '').trim();
-                        const safeThumb = docData.imageUrl || "https://i.postimg.cc/Jh211FTG/46cc61ec-de7f-4c62-8245-946e22312d2b.jpg";
+                        const finalFileName = `Mastered_${cleanTitle.replace(/[^a-zA-Z0-9\s]/g, "_")}.mp3`;
                         
-                        if (!window.masteredGalleryQueue) window.masteredGalleryQueue = [];
-                        window.masteredGalleryQueue.push({
-                            id: docData.id || Date.now().toString(),
-                            title: cleanTitle,
-                            url: downloadUrl,
-                            imageUrl: safeThumb,
-                            format: "MP3",
-                            specs: "24-bit | 44.1 kHz",
-                            fileName: `Mastered_${cleanTitle.replace(/[^a-zA-Z0-9\s]/g, "_")}.mp3`
-                        });
-                        
-                        // 6. Update Firestore
+                        // 6. Update Firestore (Tandai isLocalMastered: true)
                         try {
-                            await updateDoc(doc(db, "render_gallery", docData.id), { isMastered: true, masteringProfile: 'auto_batch' });
+                            await updateDoc(doc(db, "render_gallery", docData.id), { 
+                                isMastered: true, 
+                                masteringProfile: 'auto_batch',
+                                isLocalMastered: true,
+                                masteredFormat: 'MP3',
+                                masteredSpecs: '24-bit | 44.1 kHz',
+                                masteredFileName: finalFileName
+                            });
                         } catch(e) {}
                         
                         successCount++;
@@ -3225,6 +3288,7 @@
 
         window.clearPlaylist = function() {
             window.globalPlaylistQueue = [];
+            window.savePlaylistToFirebase();
             window.renderPlaylistUI();
             window.showIphoneToast("Dikosongkan", "Playlist berhasil dikosongkan.", "fa-trash");
         };
@@ -3264,7 +3328,7 @@
                         </div>
                         <div style="display: flex; align-items: center; gap: 16px; padding-right: 10px;">
                             <button onclick="event.stopPropagation(); window.downloadFileWithCustomName('${item.url}', '${cleanTitle.replace(/'/g, "\\'")}')" style="background: none; border: none; color: #b3b3b3; cursor: pointer; font-size: 1.1rem; transition: 0.2s;" onmouseover="this.style.color='#1DB954'" onmouseout="this.style.color='#b3b3b3'" title="Unduh Lagu"><i class="fa-solid fa-circle-down"></i></button>
-                            <button onclick="event.stopPropagation(); window.globalPlaylistQueue.splice(${index}, 1); window.renderPlaylistUI(); window.showIphoneToast('Dihapus', 'Lagu dihapus dari playlist', 'fa-trash');" style="background: none; border: none; color: #b3b3b3; cursor: pointer; font-size: 1.1rem; transition: 0.2s;" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='#b3b3b3'" title="Hapus dari Playlist"><i class="fa-solid fa-ellipsis"></i></button>
+                            <button onclick="event.stopPropagation(); window.globalPlaylistQueue.splice(${index}, 1); window.savePlaylistToFirebase(); window.renderPlaylistUI(); window.showIphoneToast('Dihapus', 'Lagu dihapus dari playlist', 'fa-trash');" style="background: none; border: none; color: #b3b3b3; cursor: pointer; font-size: 1.1rem; transition: 0.2s;" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='#b3b3b3'" title="Hapus dari Playlist"><i class="fa-solid fa-trash-can"></i></button>
                         </div>
                     </div>
                 `;
@@ -3330,7 +3394,7 @@
                             </div>
                         </div>
                         <div style="display: flex; align-items: center; gap: 16px; padding-right: 10px;">
-                            <button onclick="event.stopPropagation(); window.forceDownloadMastered('${item.masteredUrl}', '${item.masteredFileName || cleanTitle}')" style="background: none; border: none; color: #94a3b8; cursor: pointer; font-size: 1.1rem; transition: 0.2s;" onmouseover="this.style.color='#38bdf8'" onmouseout="this.style.color='#94a3b8'" title="Unduh Lagu"><i class="fa-solid fa-circle-down"></i></button>
+                            <button onclick="event.stopPropagation(); window.forceDownloadMastered('${item.masteredUrl}', '${item.masteredFileName || cleanTitle}', '${item.id}', ${item.isLocalMastered ? 'true' : 'false'})" style="background: none; border: none; color: #94a3b8; cursor: pointer; font-size: 1.1rem; transition: 0.2s;" onmouseover="this.style.color='#38bdf8'" onmouseout="this.style.color='#94a3b8'" title="Unduh Lagu"><i class="fa-solid fa-circle-down"></i></button>
                         </div>
                     </div>
                 `;
@@ -3338,7 +3402,7 @@
             container.innerHTML = html;
         };
 
-        window.playMasteringTrack = function(index) {
+        window.playMasteringTrack = async function(index) {
             const queue = window.globalLibraryDocs.filter(d => d.isMastered === true) || [];
             if (queue.length === 0) return;
             if (index >= queue.length) index = 0;
@@ -3349,18 +3413,55 @@
             const safeThumb = track.imageUrl || "https://i.postimg.cc/Jh211FTG/46cc61ec-de7f-4c62-8245-946e22312d2b.jpg";
             
             window.isPlaylistUIOpen = false; // Matikan flag playlist
-            window.playGlobalAudio(track.masteredUrl, cleanTitle, safeThumb, track.id);
-            window.renderMasteringGalleryUI(); // Update warna biru
+            
+            if (track.isLocalMastered) {
+                try {
+                    const blob = await window.localAudioDB.get(track.id);
+                    if (blob) {
+                        const localUrl = URL.createObjectURL(blob);
+                        window.playGlobalAudio(localUrl, cleanTitle, safeThumb, track.id);
+                        window.renderMasteringGalleryUI();
+                    } else {
+                        window.showIphoneToast("Error", "File audio lokal tidak ditemukan. Mungkin telah terhapus dari cache browser.", "fa-triangle-exclamation");
+                    }
+                } catch (e) {
+                    console.error(e);
+                    window.showIphoneToast("Error", "Gagal memutar file audio lokal.", "fa-triangle-exclamation");
+                }
+            } else {
+                window.playGlobalAudio(track.masteredUrl, cleanTitle, safeThumb, track.id);
+                window.renderMasteringGalleryUI(); 
+            }
         };
 
-        window.forceDownloadMastered = function(url, fileName) {
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = fileName;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            window.showIphoneToast("Mengunduh", "File mastering sedang diunduh.", "fa-cloud-arrow-down");
+        window.forceDownloadMastered = async function(url, fileName, docId, isLocal) {
+            window.showIphoneToast("Mengunduh", "File mastering sedang disiapkan...", "fa-cloud-arrow-down");
+            if (isLocal && docId) {
+                try {
+                    const blob = await window.localAudioDB.get(docId);
+                    if (blob) {
+                        const localUrl = URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = localUrl;
+                        a.download = fileName;
+                        document.body.appendChild(a);
+                        a.click();
+                        document.body.removeChild(a);
+                        setTimeout(() => URL.revokeObjectURL(localUrl), 5000);
+                    } else {
+                        window.showIphoneToast("Error", "File audio lokal tidak ditemukan.", "fa-triangle-exclamation");
+                    }
+                } catch (e) {
+                    window.showIphoneToast("Error", "Gagal mengunduh file lokal.", "fa-triangle-exclamation");
+                }
+            } else {
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = fileName;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+            }
         };
     </script>
 
@@ -3956,7 +4057,12 @@
                 try {
                     for(let id of selectedItemIds) {
                         await deleteDoc(doc(db, "render_gallery", id));
+                        if (window.localAudioDB) {
+                            await window.localAudioDB.delete(id).catch(e=>e);
+                        }
+                        window.globalPlaylistQueue = window.globalPlaylistQueue.filter(item => item.id !== id);
                     }
+                    window.savePlaylistToFirebase();
                     showIphoneToast("Sukses", `${selectedItemIds.length} item berhasil dihapus.`, "fa-trash");
                     window.toggleSelectionMode(false); // Keluar dari mode seleksi setelah hapus
                 } catch(e) {
@@ -4166,6 +4272,11 @@
             window.kreaConfirm("Hapus Lagu", "Hapus lagu ini dari Library secara permanen? File akan hilang dari Server VPS.", async () => {
                 try {
                     await deleteDoc(doc(db, "render_gallery", docId));
+                    if (window.localAudioDB) {
+                        await window.localAudioDB.delete(docId).catch(e=>e);
+                    }
+                    window.globalPlaylistQueue = window.globalPlaylistQueue.filter(item => item.id !== docId);
+                    window.savePlaylistToFirebase();
                     window.showIphoneToast("Dihapus", "Lagu berhasil dihapus.", "fa-trash");
                 } catch(e) {
                     window.showIphoneToast("Error", "Gagal menghapus lagu.", "fa-triangle-exclamation");
@@ -8616,6 +8727,12 @@ window.startDspBypassAndUpload = async function() {
                         userFound = true;
                         currentUserData = { id: docSnap.id, ...d }; 
                         manageUserPresence(docSnap.id);
+                        
+                        // Load Playlist dari Firebase
+                        if (d.playlistQueue && Array.isArray(d.playlistQueue)) {
+                            window.globalPlaylistQueue = d.playlistQueue;
+                            if (window.isPlaylistUIOpen) window.renderPlaylistUI();
+                        }
 
                         const tier = d.tier || 'basic';
                         const isMaxOrAdmin = (d.role === 'admin' || tier === 'max_lifetime' || tier === 'max_monthly' || tier === 'max');
@@ -10228,11 +10345,10 @@ window.startDspBypassAndUpload = async function() {
                         });
                     }
 
-                    updateTopProgress(90, "Mengunggah ke Server Kreaverse...");
+                    updateTopProgress(90, "Menyimpan Audio ke Penyimpanan Lokal...");
 
-                    // 1. Unggah ke Cloudinary agar permanen
-                    await uploadBlobToCloudinary(finalBlob, finalFileName, true, "0:00");
-                    const permanentUrl = selectedAudioUrl; // Fungsi di atas mengatur variabel global ini
+                    // 1. Simpan ke IndexedDB lokal (GRATIS, TANPA CLOUDINARY)
+                    await window.localAudioDB.save(docId, finalBlob);
                     
                     const docData = window.globalLibraryDocs.find(d => d.id === docId);
                     const cleanTitle = docData ? (docData.title || "Untitled").replace(/\s*\(Part\s*\d+\)/gi, '').replace(/\s*-\s*Versi\s*\d+/gi, '').trim() : "Mastered Audio";
@@ -10244,12 +10360,12 @@ window.startDspBypassAndUpload = async function() {
 
                     updateTopProgress(95, "Menyimpan ke Database Firebase...");
                     
-                    // 2. Simpan ke Firestore
+                    // 2. Simpan ke Firestore (Tandai isLocalMastered: true)
                     try {
                         await updateDoc(doc(db, "render_gallery", docId), {
                             isMastered: true,
                             masteringProfile: isAuto ? document.getElementById('mstGenreVal').value : 'manual',
-                            masteredUrl: permanentUrl,
+                            isLocalMastered: true,
                             masteredFormat: targetFormat.toUpperCase(),
                             masteredSpecs: `${bitDepthText} | ${sampleRateText}`,
                             masteredFileName: finalFileName
