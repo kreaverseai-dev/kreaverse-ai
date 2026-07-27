@@ -1019,6 +1019,17 @@ ATURAN MUTLAK (HUKUMAN BERAT JIKA DILANGGAR):
                 }
                 if (!audioUrlVal) { isCompleted = false; isProcessing = true; }
 
+                // Mencegah duplikasi track dari respons API
+                const uniqueTracks = [];
+                const seenUrls = new Set();
+                for (const t of tracks) {
+                    if (t.audioUrl && !seenUrls.has(t.audioUrl)) {
+                        seenUrls.add(t.audioUrl);
+                        uniqueTracks.push(t);
+                    }
+                }
+                tracks = uniqueTracks;
+
                 // === AUTO-SPLIT TRACKS KE DATABASE SAAT POLLING SELESAI ===
                 if (isCompleted && tracks.length > 0) {
                     try {
@@ -1045,14 +1056,18 @@ ATURAN MUTLAK (HUKUMAN BERAT JIKA DILANGGAR):
                                     }
                                 } else {
                                     // Jika API menghasilkan lebih banyak lagu daripada progress bar yang disiapkan frontend
-                                    await db.collection("render_gallery").add({
-                                        ...existingDocs[0].data(),
-                                        status: "complete",
-                                        url: tracks[j].audioUrl,
-                                        imageUrl: tracks[j].imageUrl || existingDocs[0].data().imageUrl || "https://i.postimg.cc/Jh211FTG/46cc61ec-de7f-4c62-8245-946e22312d2b.jpg",
-                                        title: `${baseTitle} - Versi ${j + 1}`,
-                                        timestamp: Date.now() - (j * 1000) // Kurangi agar berurutan dengan benar
-                                    });
+                                    // Proteksi tambahan: Jangan buat duplikat jika URL sudah ada di existingDocs
+                                    const urlExists = existingDocs.some(doc => doc.data().url === tracks[j].audioUrl);
+                                    if (!urlExists) {
+                                        await db.collection("render_gallery").add({
+                                            ...existingDocs[0].data(),
+                                            status: "complete",
+                                            url: tracks[j].audioUrl,
+                                            imageUrl: tracks[j].imageUrl || existingDocs[0].data().imageUrl || "https://i.postimg.cc/Jh211FTG/46cc61ec-de7f-4c62-8245-946e22312d2b.jpg",
+                                            title: `${baseTitle} - Versi ${j + 1}`,
+                                            timestamp: Date.now() - (j * 1000) // Kurangi agar berurutan dengan benar
+                                        });
+                                    }
                                 }
                             }
                             
