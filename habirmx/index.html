@@ -3606,6 +3606,25 @@
             </div>
             
             <div style="padding: 24px; overflow-y: auto; flex: 1; background: #fafafc;">
+                
+                <!-- AUDIO REFERENSI -->
+                <div id="errorAudioContainer" class="hidden" style="margin-bottom: 20px; background: #ffffff; border-radius: 16px; padding: 16px; border: 1px solid #e2e8f0; box-shadow: 0 4px 10px rgba(0,0,0,0.02);">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                        <strong style="font-size: 0.85rem; color: #0ea5e9; display: flex; align-items: center; gap: 8px; text-transform: uppercase; letter-spacing: 0.5px;"><i class="fa-solid fa-music" style="background: rgba(14,165,233,0.1); padding: 6px; border-radius: 6px;"></i> Audio Referensi</strong>
+                        <button id="btnCopyErrorAudio" style="background: rgba(14,165,233,0.1); border: none; color: #0ea5e9; padding: 6px 12px; border-radius: 8px; font-size: 0.75rem; font-weight: 800; cursor: pointer; transition: 0.2s;"><i class="fa-solid fa-link"></i> Copy Link</button>
+                    </div>
+                    
+                    <audio id="errorAudioPlayer" class="hidden"></audio>
+                    <div class="custom-player light-theme" id="cp-errorAudio">
+                        <button class="play-btn" onclick="toggleCustomPlay('errorAudioPlayer', 'cp-errorAudio')"><i class="fa-solid fa-play"></i></button>
+                        <span class="time-display current-time">0:00</span>
+                        <div class="progress-container" onclick="seekCustomAudio(event, 'errorAudioPlayer')">
+                            <div class="progress-bar-fill"></div>
+                        </div>
+                        <span class="time-display duration-time">0:00</span>
+                    </div>
+                </div>
+
                 <div style="margin-bottom: 20px; background: #ffffff; border-radius: 16px; padding: 16px; border: 1px solid #e2e8f0; box-shadow: 0 4px 10px rgba(0,0,0,0.02);">
                     <strong style="font-size: 0.85rem; color: #D95040; display: flex; align-items: center; gap: 8px; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.5px;"><i class="fa-solid fa-bug" style="background: rgba(217,80,64,0.1); padding: 6px; border-radius: 6px;"></i> Pesan Error Server</strong>
                     <div id="errorModalMsg" style="font-size: 0.85rem; color: #334155; line-height: 1.6; word-break: break-word; font-weight: 500;">-</div>
@@ -3972,15 +3991,43 @@
         };
 
         // --- FUNGSI POP-UP ERROR DETAIL ---
-        window.openErrorDetail = function(title, errorMsg) {
+        window.openErrorDetail = function(docId) {
+            const docData = window.globalLibraryDocs.find(d => d.id === docId);
+            if (!docData) return;
+
+            const title = (docData.title || "Untitled").replace(/\s*\(Part\s*\d+\)/gi, '').replace(/\s*-\s*Versi\s*\d+/gi, '').trim();
+            const errorMsg = docData.error || 'Terkena Copyright / Error Server';
+
             document.getElementById('errorModalTitle').innerText = title;
             document.getElementById('errorModalMsg').innerText = errorMsg;
+            
+            // Logika Menampilkan Audio Referensi
+            const audioContainer = document.getElementById('errorAudioContainer');
+            const audioPlayer = document.getElementById('errorAudioPlayer');
+            const btnCopy = document.getElementById('btnCopyErrorAudio');
+            
+            let refUrl = docData.originalAudioUrl || docData.url;
+            if (refUrl) {
+                audioContainer.classList.remove('hidden');
+                audioPlayer.src = refUrl;
+                
+                // Inisialisasi Player
+                setTimeout(() => { initCustomPlayer('errorAudioPlayer', 'cp-errorAudio'); }, 100);
+                
+                btnCopy.onclick = () => {
+                    navigator.clipboard.writeText(refUrl);
+                    window.showIphoneToast('Tersalin', 'Link audio referensi berhasil disalin!', 'fa-link');
+                };
+            } else {
+                audioContainer.classList.add('hidden');
+                audioPlayer.src = "";
+            }
             
             let solution = "Terjadi kesalahan pada server provider AI. Silakan tunggu beberapa saat dan coba generate kembali.";
             const lowerErr = errorMsg.toLowerCase();
             
             if (lowerErr.includes('copyright') || lowerErr.includes('hak cipta') || lowerErr.includes('artist')) {
-                solution = "Sistem mendeteksi adanya perlindungan Hak Cipta (Copyright) pada lirik atau audio referensi yang Anda gunakan.<br><br><b>Langkah Solusi Flixa AI:</b><br><br><b>1. Jika masalah pada Lirik:</b><br>Gunakan fitur <b>'Encrypt'</b> (ikon <i class='fa-solid fa-user-secret'></i>) yang berada tepat di atas kotak pengisian lirik. Fitur ini akan menyisipkan karakter anti-sensor agar lirik Anda tidak terbaca oleh bot Hak Cipta.<br><br><b>2. Jika masalah pada Audio Referensi:</b><br>Saat mengunggah audio, bukalah menu <b>'Flixa AI Audio DSP &nbsp;<i class=\"fa-solid fa-triangle-exclamation\" style=\"color: #eab308;\"></i>&nbsp; AI SENSOR DETECTED'</b> dan gunakan tombol Upload berwarna merah. Sistem akan mengacak sidik jari audio Anda agar lolos dari deteksi bot AI.<br><br><i>*Semua fitur bypass premium ini tersedia 100% Gratis untuk Anda!</i>";
+                solution = "Sistem mendeteksi adanya perlindungan Hak Cipta (Copyright) pada lirik atau audio referensi yang Anda gunakan.<br><br><b>Langkah Solusi Flixa AI:</b><br><br><b>1. Jika masalah pada Lirik:</b><br>Gunakan fitur <b>'Encrypt'</b> (ikon <i class='fa-solid fa-user-secret'></i>) yang berada tepat di atas kotak pengisian lirik. Fitur ini akan menyisipkan karakter anti-sensor agar lirik Anda tidak terbaca oleh bot Hak Cipta.<br><br><b>2. Jika masalah pada Audio Referensi:</b><br>Gunakan fitur <b>'Edit Audio'</b>. Sistem kami akan mencoba mengacak sidik jari digital (Acoustic Fingerprint) lagu Anda secara otomatis agar terlihat seperti lagu baru di mata mesin bot AI.";
             } else if (lowerErr.includes('voice has expired') || lowerErr.includes('voice')) {
                 solution = "Karakter suara (Voice) yang Anda gunakan sudah kedaluwarsa atau tidak tersedia di server AI. Solusi: Pilih karakter suara (Vocal Gender) yang lain atau biarkan default.";
             } else if (lowerErr.includes('saldo') || lowerErr.includes('balance') || lowerErr.includes('credit') || lowerErr.includes('sibuk')) {
@@ -4204,8 +4251,8 @@
                                 </div>
                                 <div class="suno-prompt" style="color:#DC2626; margin-top:2px; display:-webkit-box; -webkit-line-clamp:1; -webkit-box-orient:vertical; overflow:hidden; font-weight: 500;">Alasan: ${displayError}</div>
                                 <div style="margin-top: 4px; display: flex; gap: 6px; flex-wrap: wrap;">
-                                    <button onclick="if(!window.isSelectionMode) window.openErrorDetail('${safeTitleForJS}', '${safeErrorJS}')" style="background:#EF4444; color:#fff; border:none; padding:4px 10px; border-radius:6px; font-size:0.7rem; font-weight:800; cursor:pointer; transition:0.2s;"><i class="fa-solid fa-magnifying-glass"></i> Lihat Alasan</button>
-                                    <button onclick="if(!window.isSelectionMode) window.remixFailedAudio('${d.id}')" style="background:#f59e0b; color:#fff; border:none; padding:4px 10px; border-radius:6px; font-size:0.7rem; font-weight:800; cursor:pointer; transition:0.2s; box-shadow: 0 2px 4px rgba(245,158,11,0.3);"><i class="fa-solid fa-pen-to-square"></i> Edit Audio</button>
+                                    <button onclick="if(!window.isSelectionMode) window.openErrorDetail('${d.id}')" style="background:#EF4444; color:#fff; border:none; padding:4px 10px; border-radius:6px; font-size:0.7rem; font-weight:800; cursor:pointer; transition:0.2s;"><i class="fa-solid fa-magnifying-glass"></i> Lihat Alasan</button>
+                                    <button onclick="if(!window.isSelectionMode) window.autoRemixFailedAudio('${d.id}')" style="background:#f59e0b; color:#fff; border:none; padding:4px 10px; border-radius:6px; font-size:0.7rem; font-weight:800; cursor:pointer; transition:0.2s; box-shadow: 0 2px 4px rgba(245,158,11,0.3);"><i class="fa-solid fa-rotate-right"></i> Edit Audio</button>
                                 </div>
                             </div>
                         </div>
@@ -4314,22 +4361,21 @@
             });
         };
 
-        window.remixFailedAudio = function(docId) {
+        window.autoRemixFailedAudio = async function(docId) {
             const docData = window.globalLibraryDocs.find(d => d.id === docId);
             if (!docData) return;
 
-            if (docData.mode === 'cover') {
-                window.switchMode('cover');
-                if (docData.originalAudioUrl) {
-                    selectedAudioUrl = docData.originalAudioUrl;
-                    window.activateMiniPlayerUI("Audio_Referensi.mp3", "URL Diterapkan", "rgba(14,165,233,0.1)", "#0ea5e9");
-                    document.getElementById('originalAudioPlayer').src = selectedAudioUrl;
-                    document.getElementById('urlInputBox').classList.add('hidden');
-                    document.getElementById('uploadTriggerBox').classList.add('hidden');
-                }
-            } else {
-                window.switchMode('generate');
-            }
+            // 1. Matikan audio error player jika sedang menyala
+            const errPlayer = document.getElementById('errorAudioPlayer');
+            if (errPlayer && !errPlayer.paused) { errPlayer.pause(); }
+            window.closeErrorDetail(); // Tutup modal otomatis
+
+            window.showIphoneToast("Auto Bypass", "Sistem sedang menyiapkan data dan mengacak sidik jari lagu secara otomatis...", "fa-wand-magic-sparkles");
+            if(typeof showTopProgress === 'function') showTopProgress("Mempersiapkan Bypass...", "#f59e0b");
+
+            // 2. Set Mode & Auto-Fill Inputs
+            if (docData.mode === 'cover') window.switchMode('cover');
+            else window.switchMode('generate');
 
             const cleanTitle = (docData.title || "Untitled").replace(/\s*\(Part\s*\d+\)/gi, '').replace(/\s*-\s*Versi\s*\d+/gi, '').trim();
             document.getElementById('titleInput').value = cleanTitle;
@@ -4339,7 +4385,13 @@
             if(typeof window.updateCounter === 'function') window.updateCounter('styleInput', 'styleCounter', 1000);
             
             document.getElementById('lyricsInput').value = docData.lyrics || '';
-            if(typeof window.updateCounter === 'function') window.updateCounter('lyricsInput', 'lyricsCounter', 5000);
+            
+            // AUTO ENCRYPT LYRICS: Untuk mengecoh NLP Bot Copyright
+            if (docData.lyrics && docData.lyrics.trim().length > 0) {
+                window.encryptLyrics(); 
+            } else {
+                if(typeof window.updateCounter === 'function') window.updateCounter('lyricsInput', 'lyricsCounter', 5000);
+            }
             window.checkLyricsState();
 
             if (docData.vocalGender) window.selectGenderOption(docData.vocalGender, docData.vocalGender === 'male' ? 'Male' : (docData.vocalGender === 'female' ? 'Female' : 'Not specified'));
@@ -4349,7 +4401,55 @@
             if (docData.audioWeight) { document.getElementById('audioWeightSlider').value = docData.audioWeight; document.getElementById('audioWeightVal').innerText = docData.audioWeight; }
 
             window.scrollTo({ top: 0, behavior: 'smooth' });
-            window.showIphoneToast("Edit Mode Siap", "Pengaturan, lirik, dan audio referensi berhasil dimuat.", "fa-pen-to-square");
+
+            // 3. Auto-Process Background Audio (Jika Mode Cover)
+            if (docData.mode === 'cover') {
+                let targetUrl = docData.originalAudioUrl || docData.url;
+                if (targetUrl) {
+                    try {
+                        if(typeof updateTopProgress === 'function') updateTopProgress(20, "Mengunduh audio referensi...");
+                        const response = await fetch(targetUrl);
+                        const blob = await response.blob();
+                        const fileName = "Auto_Bypassed_" + Date.now() + ".mp3";
+                        let fileToUpload = new File([blob], fileName, { type: "audio/mp3" });
+                        
+                        if(typeof updateTopProgress === 'function') updateTopProgress(50, "Mengacak sidik jari audio (Silent DSP)...");
+                        
+                        // Terapkan sedikit perubahan sidik jari audio secara SILENT
+                        let bypassedBlob = blob;
+                        if (typeof processKreaverseAudio === 'function') {
+                            bypassedBlob = await processKreaverseAudio(fileToUpload, false, (p) => {});
+                        } else if (typeof processStealthAudio === 'function') {
+                            bypassedBlob = await processStealthAudio(fileToUpload, false, (p) => {});
+                        }
+                        
+                        if(typeof updateTopProgress === 'function') updateTopProgress(80, "Mengunggah audio Bypass ke server...");
+                        await uploadBlobToCloudinary(bypassedBlob, fileName, true, "0:00");
+                        
+                        // Setel ke Mini Player
+                        rawAudioFile = new File([bypassedBlob], fileName, { type: "audio/mp3" });
+                        window.activateMiniPlayerUI(fileName, "Auto Bypass Siap", "rgba(16,185,129,0.1)", "#10b981");
+                        const origPlayer = document.getElementById('originalAudioPlayer');
+                        if (origPlayer) origPlayer.src = URL.createObjectURL(rawAudioFile);
+                        
+                        document.getElementById('urlInputBox').classList.add('hidden');
+                        document.getElementById('uploadTriggerBox').classList.add('hidden');
+                    } catch (e) {
+                        console.error(e);
+                        window.showIphoneToast("Peringatan", "Gagal melakukan bypass audio otomatis. Silakan coba edit manual.", "fa-triangle-exclamation");
+                    }
+                }
+            }
+
+            if(typeof hideTopProgress === 'function') hideTopProgress();
+            
+            // 4. Langsung eksekusi tombol Generate Otomatis!
+            setTimeout(() => {
+                if (typeof window.generateAudioSong === 'function') {
+                    window.generateAudioSong();
+                    window.showIphoneToast("Mencoba Ulang", "Lagu sedang di-generate ulang dengan sidik jari audio baru!", "fa-rocket");
+                }
+            }, 1000);
         };
 
         // --- NEW: GLOBAL MINI PLAYER LOGIC ---
@@ -6684,8 +6784,8 @@ async function processKreaverseAudio(file, isPreview = false, progressCallback) 
                 // 1. Temporal Flux (V1) - Dual LFO untuk Tempo Acak (Asymmetric Time-Warping)
                 if (tgTemporal) {
                     const fluxLfo1 = offlineCtx.createOscillator(); fluxLfo1.frequency.value = 0.3; 
-                    const fluxLfo2 = offlineCtx.createOscillator(); fluxLfo2.frequency.value = 0.77; // Frekuensi ganjil agar acak
-                    const fluxGain = offlineCtx.createGain(); fluxGain.gain.value = 0.025; // Ayunan tempo lebih kuat
+                    const fluxLfo2 = offlineCtx.createOscillator(); fluxLfo2.frequency.value = 0.77; 
+                    const fluxGain = offlineCtx.createGain(); fluxGain.gain.value = 0.002; // DITURUNKAN DRASTIS agar tidak terdengar ditarik-tarik
                     
                     fluxLfo1.connect(fluxGain); 
                     fluxLfo2.connect(fluxGain); 
@@ -6705,7 +6805,7 @@ async function processKreaverseAudio(file, isPreview = false, progressCallback) 
                 // 3. Dimensional Void (V1) - Delay Reflector
                 if (v1Void > 0) {
                     const delay = offlineCtx.createDelay(); delay.delayTime.value = 0.15; 
-                    const delayGain = offlineCtx.createGain(); delayGain.gain.value = (v1Void / 100) * 0.02; // DITURUNKAN DRASTIS: Mencegah gema/pantulan yang ditiru oleh Suno AI
+                    const delayGain = offlineCtx.createGain(); delayGain.gain.value = (v1Void / 100) * 0.02; 
                     const voidMix = offlineCtx.createGain();
                     
                     lastNode.connect(voidMix);
@@ -6755,8 +6855,8 @@ async function processKreaverseAudio(file, isPreview = false, progressCallback) 
                 // 7. Quantum Pitch Drift (V1) - Dual LFO untuk Pitch Acak (Micro-Pitch Shifting)
                 if (tgQuantum) {
                     const driftLfo1 = offlineCtx.createOscillator(); driftLfo1.frequency.value = 0.15;
-                    const driftLfo2 = offlineCtx.createOscillator(); driftLfo2.frequency.value = 1.2; // Getaran cepat (vibrato mikro)
-                    const driftGain = offlineCtx.createGain(); driftGain.gain.value = 25; // Ayunan pitch 25 cents
+                    const driftLfo2 = offlineCtx.createOscillator(); driftLfo2.frequency.value = 1.2;
+                    const driftGain = offlineCtx.createGain(); driftGain.gain.value = 4; // DITURUNKAN DARI 25 KE 4 Cents (Micro-drift, tidak membuat nada fales)
                     
                     driftLfo1.connect(driftGain); 
                     driftLfo2.connect(driftGain);
@@ -6766,21 +6866,17 @@ async function processKreaverseAudio(file, isPreview = false, progressCallback) 
                     driftLfo2.start(0);
                 }
 
-                // 8. Phonetic Decoupler (V1) - Consonant Eraser (Mempertahankan Cengkok, Menghapus Huruf Mati)
+                // 8. Phonetic Decoupler (V1) - Formant Micro-Shifter (Menjaga kejelasan & cengkok)
                 if (tgPhonetic) {
-                    const consonantCut = offlineCtx.createBiquadFilter(); 
-                    consonantCut.type = 'lowpass'; 
-                    consonantCut.frequency.value = 1200; 
+                    // Mencegah filter Lowpass yang membuat vokal jadi mendem/hancur
+                    const vocalMask = offlineCtx.createBiquadFilter(); 
+                    vocalMask.type = 'peaking'; 
+                    vocalMask.frequency.value = 2500; // Fokus di frekuensi artikulasi (huruf s, t, c)
+                    vocalMask.Q.value = 2.5; 
+                    vocalMask.gain.value = -3.5; // Sedikit dipotong agar ASR AI bingung, tapi melodi/cengkok tetap asli
                     
-                    const vowelBoost = offlineCtx.createBiquadFilter(); 
-                    vowelBoost.type = 'peaking'; 
-                    vowelBoost.frequency.value = 500; 
-                    vowelBoost.Q.value = 1.5; 
-                    vowelBoost.gain.value = 4; 
-                    
-                    lastNode.connect(consonantCut); 
-                    consonantCut.connect(vowelBoost); 
-                    lastNode = vowelBoost;
+                    lastNode.connect(vocalMask); 
+                    lastNode = vocalMask;
                 }
 
                 // 3. Binaural Nullifier (Anti-Mono AI) (V1)
@@ -6840,17 +6936,17 @@ async function processKreaverseAudio(file, isPreview = false, progressCallback) 
             const isFluxChecked = document.getElementById('chkFlux') && document.getElementById('chkFlux').checked;
             
             if (isWarpChecked || isFluxChecked) {
-                // Modulasi waktu yang lebih agresif tapi tetap musikal di telinga manusia
+                // MICRO-MODULATION: Menghancurkan FFT AI tanpa merusak tempo & pitch bagi pendengar manusia
                 for (let time = 0; time < finalDuration; time += 0.1) {
                     let dynamicSpeed = speedVal;
                     if (isWarpChecked) {
-                        // Jitter acak yang lebih tajam
-                        const jitter = (Math.random() * 0.015) - 0.0075;
-                        dynamicSpeed += (Math.sin(time * 5.14) * 0.018) + jitter;
+                        // Jitter acak MICRO
+                        const jitter = (Math.random() * 0.002) - 0.001; 
+                        dynamicSpeed += (Math.sin(time * 5.14) * 0.0015) + jitter;
                     }
                     if (isFluxChecked) {
-                        // Flux asimetris: Menarik dan mengulur durasi secara tak terprediksi oleh AI
-                        dynamicSpeed += (Math.sin(time * 0.7) * 0.015) + (Math.cos(time * 0.25) * 0.008);
+                        // Flux MICRO: Tidak akan terdengar ditarik-tarik lagi
+                        dynamicSpeed += (Math.sin(time * 0.7) * 0.002) + (Math.cos(time * 0.25) * 0.001);
                     }
                     source.playbackRate.setValueAtTime(dynamicSpeed, time);
                 }
@@ -6974,26 +7070,26 @@ async function processKreaverseAudio(file, isPreview = false, progressCallback) 
                 noiseSource.start(0);
             }
 
-            // LAYER 7: UPGRADED ASR COGNITIVE JAMMER (PITCH & PAN BLURRING)
+            // LAYER 7: UPGRADED ASR COGNITIVE JAMMER (MICRO-PHASE BLURRING)
             const isObfuscatorChecked = document.getElementById('chkObfuscator') && document.getElementById('chkObfuscator').checked;
             if (isObfuscatorChecked) {
-                // Chorus ganda untuk membutakan Spectrogram Matching secara total
+                // Murni menargetkan ASR Whisper Suno AI, TANPA MEMBUAT MELODI FALES.
                 const chorusDelay = offlineCtx.createDelay();
                 chorusDelay.delayTime.value = 0.020; 
                 
                 const lfo = offlineCtx.createOscillator();
-                lfo.type = 'triangle'; // Triangle LFO mengacaukan deteksi pitch AI lebih baik
-                lfo.frequency.value = 1.5; 
+                lfo.type = 'sine'; // Sine wave lebih natural dari Triangle
+                lfo.frequency.value = 0.8; // Pelan saja
                 
                 const lfoGain = offlineCtx.createGain();
-                lfoGain.gain.value = 0.005; // Modulasi lebih dalam
+                lfoGain.gain.value = 0.0006; // MICRO-MODULATION: Sangat kecil (0.6ms), cukup merusak deteksi ASR bot tanpa merusak telinga manusia
                 
                 lfo.connect(lfoGain);
                 lfoGain.connect(chorusDelay.delayTime);
                 lfo.start(0);
 
                 const chorusWetGain = offlineCtx.createGain();
-                chorusWetGain.gain.value = 0.04; // DITURUNKAN KE 4%: Mencegah suara menjadi dobel/menggema
+                chorusWetGain.gain.value = 0.04; 
                 
                 const chorusMix = offlineCtx.createGain();
                 
@@ -7003,7 +7099,7 @@ async function processKreaverseAudio(file, isPreview = false, progressCallback) 
                 chorusWetGain.connect(chorusMix); 
                 
                 lastNode = chorusMix;
-            } // <-- FIX BUG: Penutup kurung ini sebelumnya hilang!
+            } // <-- FIX BUG: Penutup kurung aman
 
             // LAYER 8: UPGRADED WAVEFORM MIRAGE PROTOCOL
             const isMirageChecked = document.getElementById('chkMirage') && document.getElementById('chkMirage').checked;
