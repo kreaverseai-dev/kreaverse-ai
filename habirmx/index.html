@@ -8797,7 +8797,7 @@ window.startDspBypassAndUpload = async function() {
             inputEl.disabled = true;
 
             // INSTRUKSI KETAT UNTUK LIRIK (DIGUNAKAN DI JALUR 1 & JALUR 2)
-            const lyricsPromptInstruction = "TUGAS: Susun ulang lirik mentah ini menjadi format lirik lagu profesional untuk Suno AI/Udio.\n\nATURAN MUTLAK:\n1. Gunakan struktur baku HANYA dengan kurung siku: [Intro], [Verse 1], [Pre-Chorus], [Chorus], [Interlude], [Bridge], [Outro].\n2. Masukkan arahan instrumen ATAU suara latar ke dalam kurung siku (bukan kurung biasa) agar tidak dienkripsi sistem, contoh: [Instrumental Intro], [Guitar Solo], [Backing Vocals: ...], [Fade Out].\n3. WAJIB tambahkan meta-tag anti-halusinasi ini di baris paling atas lirik: [Exact Original Melody], [Consistent Rhythm], [No Improvisation].\n4. HAPUS semua teks yang tidak relevan (seperti 'Upload By', nama uploader, 'Terima Kasih', dll).\n5. JANGAN menerjemahkan lirik. Hapus huruf Mandarin/Jepang/Korea jika itu halusinasi instrumen.\n6. Langsung berikan hasil liriknya tanpa kata pengantar.\n\nLIRIK MENTAH:\n";
+            const lyricsPromptInstruction = "TUGAS: Susun ulang format lirik mentah ini menjadi format lirik lagu profesional untuk Suno AI/Udio TANPA MENGUBAH KATA-KATA ASLINYA.\n\nATURAN MUTLAK:\n1. Gunakan struktur baku HANYA dengan kurung siku: [Intro], [Verse 1], [Pre-Chorus], [Chorus], [Interlude], [Bridge], [Outro].\n2. Masukkan arahan instrumen ATAU suara latar ke dalam kurung siku agar tidak dienkripsi sistem, contoh: [Instrumental Intro], [Guitar Solo], [Backing Vocals: ...], [Fade Out].\n3. WAJIB tambahkan meta-tag anti-halusinasi ini di baris paling atas lirik: [Exact Original Melody], [Consistent Rhythm], [No Improvisation].\n4. HAPUS semua teks yang tidak relevan (seperti 'Upload By', uploader, 'Terima Kasih', dll) serta HAPUS teks halusinasi lirik bahasa Inggris (seperti 'I\\'m sorry', 'Sculptures...', dll) jika lagu aslinya bukan bahasa Inggris.\n5. WAJIB sisipkan watermark suara latar (Habi RMX) tepat di bawah tag [Intro] dan [Interlude].\n6. PERTAHANKAN atau tambahkan tanda titik tiga (...) di akhir kalimat untuk efek cengkok/nada panjang.\n7. JANGAN MENGUBAH, MENERJEMAHKAN, ATAU MENAMBAH KATA pada lirik utama.\n8. Langsung berikan hasil liriknya tanpa kata pengantar.\n\nLIRIK MENTAH:\n";
 
             // JALUR 1: JIKA KOLOM LIRIK KOSONG (OTOMATIS TRANSKRIPSI WHISPER + STRUKTUR LLM)
             if (type === 'lyrics' && !originalText) {
@@ -10308,7 +10308,8 @@ window.startDspBypassAndUpload = async function() {
                                 // SMART TEMPO ANALYZER LOGIC
                                 mstLiveSource.preservesPitch = true; 
                                 if (window.isTempoNormalized) {
-                                    mstLiveSource.playbackRate.value = 0.85; 
+                                    // REVISI: 0.85 terlalu ekstrem dan bikin fales/letoy. 0.95 jauh lebih natural untuk vokal.
+                                    mstLiveSource.playbackRate.value = 0.95; 
                                 } else {
                                     mstLiveSource.playbackRate.value = 1.0;
                                 }
@@ -10321,35 +10322,35 @@ window.startDspBypassAndUpload = async function() {
                                     const curve = new Float32Array(44100);
                                     for (let i = 0; i < 44100; ++i) {
                                         const x = i * 2 / 44100 - 1;
-                                        curve[i] = Math.abs(x) < threshold ? x * Math.pow(Math.abs(x) / threshold, 2.5) : x;
+                                        curve[i] = Math.abs(x) < threshold ? x * Math.pow(Math.abs(x) / threshold, 3.5) : x;
                                     }
                                     return curve;
                                 };
                                 mstLiveNodes.noiseGate = mstLiveAudioCtx.createWaveShaper();
-                                mstLiveNodes.noiseGate.curve = makeMstGate(0.008);
+                                mstLiveNodes.noiseGate.curve = makeMstGate(0.015); // Threshold diperbesar untuk menangkap noise Suno AI yang tebal
                                 
                                 mstLiveNodes.hissFilter = mstLiveAudioCtx.createBiquadFilter();
                                 mstLiveNodes.hissFilter.type = 'lowpass';
-                                mstLiveNodes.hissFilter.frequency.value = 13500;
+                                mstLiveNodes.hissFilter.frequency.value = 10500; // Frekuensi potong diturunkan agar desis tajam hilang
 
                                 mstLiveNodes.deHarsher = mstLiveAudioCtx.createBiquadFilter();
                                 mstLiveNodes.deHarsher.type = 'peaking';
-                                mstLiveNodes.deHarsher.frequency.value = 5500;
-                                mstLiveNodes.deHarsher.Q.value = 2.0;
-                                mstLiveNodes.deHarsher.gain.value = -3.5;
+                                mstLiveNodes.deHarsher.frequency.value = 4500; // Fokus ke frekuensi cempreng Suno AI
+                                mstLiveNodes.deHarsher.Q.value = 1.5;
+                                mstLiveNodes.deHarsher.gain.value = -6.0; // Pemotongan yang lebih agresif agar tidak sakit kuping
 
                                 // --- UPGRADED: REAL BASS & KICK ENHANCER ---
                                 mstLiveNodes.bassBoost = mstLiveAudioCtx.createBiquadFilter();
                                 mstLiveNodes.bassBoost.type = 'lowshelf';
-                                mstLiveNodes.bassBoost.frequency.value = 75;
-                                mstLiveNodes.bassBoost.gain.value = 4.5;
+                                mstLiveNodes.bassBoost.frequency.value = 85;
+                                mstLiveNodes.bassBoost.gain.value = 5.5; // Bass lebih punchy
 
                                 // --- UPGRADED: VOCAL & MELODY CLARITY ---
                                 mstLiveNodes.vocalPresence = mstLiveAudioCtx.createBiquadFilter();
                                 mstLiveNodes.vocalPresence.type = 'peaking';
-                                mstLiveNodes.vocalPresence.frequency.value = 2800;
+                                mstLiveNodes.vocalPresence.frequency.value = 3200; // Geser ke area vokal yang lebih jernih
                                 mstLiveNodes.vocalPresence.Q.value = 1.2;
-                                mstLiveNodes.vocalPresence.gain.value = 2.5;
+                                mstLiveNodes.vocalPresence.gain.value = 3.5;
 
                                 mstLiveNodes.eqLow = mstLiveAudioCtx.createBiquadFilter(); mstLiveNodes.eqLow.type = 'lowshelf'; mstLiveNodes.eqLow.frequency.value = 60;
                                 mstLiveNodes.eqLMid = mstLiveAudioCtx.createBiquadFilter(); mstLiveNodes.eqLMid.type = 'peaking'; mstLiveNodes.eqLMid.frequency.value = 300; mstLiveNodes.eqLMid.Q.value = 1.0;
@@ -10369,26 +10370,27 @@ window.startDspBypassAndUpload = async function() {
                                 mstLiveNodes.limiter.attack.value = 0.001;
                                 mstLiveNodes.limiter.release.value = 0.05;
 
-                                // --- REVERB KHUSUS VOKAL (ISOLASI GANDA V5) ---
-                                const revLen = mstLiveAudioCtx.sampleRate * 1.5;
+                                // --- REVERB KHUSUS VOKAL (REVISI: PUNCHY & DRY) ---
+                                // Memendekkan ekor reverb dan menekan mix gain agar tidak berlumpur (muddy) / bergema parah
+                                const revLen = mstLiveAudioCtx.sampleRate * 0.6; // Dari 1.5s menjadi 0.6s (Hanya ambience/room)
                                 const impulse = mstLiveAudioCtx.createBuffer(2, revLen, mstLiveAudioCtx.sampleRate);
                                 for (let i = 0; i < 2; i++) {
                                     const ch = impulse.getChannelData(i);
-                                    for (let j = 0; j < revLen; j++) ch[j] = (Math.random() * 2 - 1) * Math.pow(1 - j / revLen, 4);
+                                    for (let j = 0; j < revLen; j++) ch[j] = (Math.random() * 2 - 1) * Math.pow(1 - j / revLen, 6); // Decay lebih cepat
                                 }
                                 mstLiveNodes.convolver = mstLiveAudioCtx.createConvolver();
                                 mstLiveNodes.convolver.buffer = impulse;
                                 
                                 mstLiveNodes.revHPF = mstLiveAudioCtx.createBiquadFilter();
                                 mstLiveNodes.revHPF.type = 'highpass';
-                                mstLiveNodes.revHPF.frequency.value = 800; 
+                                mstLiveNodes.revHPF.frequency.value = 1000; // Reverb low di-cut habis agar bass tetap punchy
                                 
                                 mstLiveNodes.revLPF = mstLiveAudioCtx.createBiquadFilter();
                                 mstLiveNodes.revLPF.type = 'lowpass';
-                                mstLiveNodes.revLPF.frequency.value = 3000; 
+                                mstLiveNodes.revLPF.frequency.value = 2500; // Reverb cempreng di-cut
                                 
                                 mstLiveNodes.wetGain = mstLiveAudioCtx.createGain();
-                                mstLiveNodes.wetGain.gain.value = 0.05; 
+                                mstLiveNodes.wetGain.gain.value = 0.015; // DITURUNKAN DRASTIS DARI 0.05 KE 0.015
                                 
                                 mstLiveNodes.dryGain = mstLiveAudioCtx.createGain();
                                 mstLiveNodes.dryGain.gain.value = 1.0;
@@ -10608,7 +10610,8 @@ window.startDspBypassAndUpload = async function() {
                     
                     let finalDurationMultiplier = 1.0;
                     if (window.isTempoNormalized) {
-                        finalDurationMultiplier = 1 / 0.85; 
+                        // REVISI: Sesuaikan multiplier dengan kecepatan 0.95 yang baru
+                        finalDurationMultiplier = 1 / 0.95; 
                     }
 
                     const offlineCtx = new OfflineAudioContext(audioBuffer.numberOfChannels, ((audioBuffer.length * targetSampleRate) / audioBuffer.sampleRate) * finalDurationMultiplier, targetSampleRate);
@@ -10617,7 +10620,7 @@ window.startDspBypassAndUpload = async function() {
 
                     source.preservesPitch = true;
                     if (window.isTempoNormalized) {
-                        source.playbackRate.value = 0.85;
+                        source.playbackRate.value = 0.95; // 0.85 bikin fales
                     }
 
                     // 3. SETUP DSP GRAPH
@@ -10683,33 +10686,33 @@ window.startDspBypassAndUpload = async function() {
                         const curve = new Float32Array(44100);
                         for (let i = 0; i < 44100; ++i) {
                             const x = i * 2 / 44100 - 1;
-                            curve[i] = Math.abs(x) < threshold ? x * Math.pow(Math.abs(x) / threshold, 2.5) : x;
+                            curve[i] = Math.abs(x) < threshold ? x * Math.pow(Math.abs(x) / threshold, 3.5) : x;
                         }
                         return curve;
                     };
                     const noiseGate = offlineCtx.createWaveShaper();
-                    noiseGate.curve = makeMstGateOffline(0.008);
+                    noiseGate.curve = makeMstGateOffline(0.015); // Threshold diperbesar
                     
                     const hissFilter = offlineCtx.createBiquadFilter();
                     hissFilter.type = 'lowpass';
-                    hissFilter.frequency.value = isNoiseOn ? 13500 : 20000;
+                    hissFilter.frequency.value = isNoiseOn ? 10500 : 20000; // Turunkan high freq bising
 
                     const deHarsher = offlineCtx.createBiquadFilter();
                     deHarsher.type = 'peaking';
-                    deHarsher.frequency.value = 5500;
-                    deHarsher.Q.value = 2.0;
-                    deHarsher.gain.value = isNoiseOn ? -3.5 : 0;
+                    deHarsher.frequency.value = 4500;
+                    deHarsher.Q.value = 1.5;
+                    deHarsher.gain.value = isNoiseOn ? -6.0 : 0; // Cut lebih dalam
 
                     const bassBoost = offlineCtx.createBiquadFilter();
                     bassBoost.type = 'lowshelf';
-                    bassBoost.frequency.value = 75;
-                    bassBoost.gain.value = isBassOn ? 4.5 : 0;
+                    bassBoost.frequency.value = 85;
+                    bassBoost.gain.value = isBassOn ? 5.5 : 0;
 
                     const vocalPresence = offlineCtx.createBiquadFilter();
                     vocalPresence.type = 'peaking';
-                    vocalPresence.frequency.value = 2800;
+                    vocalPresence.frequency.value = 3200;
                     vocalPresence.Q.value = 1.2;
-                    vocalPresence.gain.value = isVocalOn ? 2.5 : 0;
+                    vocalPresence.gain.value = isVocalOn ? 3.5 : 0;
 
                     const filterLow = offlineCtx.createBiquadFilter(); filterLow.type = 'lowshelf'; filterLow.frequency.value = 60; filterLow.gain.value = eqLow;
                     const filterLMid = offlineCtx.createBiquadFilter(); filterLMid.type = 'peaking'; filterLMid.frequency.value = 300; filterLMid.Q.value = 1.0; filterLMid.gain.value = eqLMid;
@@ -10725,25 +10728,25 @@ window.startDspBypassAndUpload = async function() {
                     const limiter = offlineCtx.createDynamicsCompressor();
                     limiter.threshold.value = limThresh; limiter.knee.value = 0.0; limiter.ratio.value = 20.0; limiter.attack.value = 0.001; limiter.release.value = 0.05;
 
-                    const revLen = offlineCtx.sampleRate * 1.5;
+                    const revLen = offlineCtx.sampleRate * 0.6; // REVISI: Pendekkan ekor agar punchy
                     const impulse = offlineCtx.createBuffer(2, revLen, offlineCtx.sampleRate);
                     for (let i = 0; i < 2; i++) {
                         const ch = impulse.getChannelData(i);
-                        for (let j = 0; j < revLen; j++) ch[j] = (Math.random() * 2 - 1) * Math.pow(1 - j / revLen, 4);
+                        for (let j = 0; j < revLen; j++) ch[j] = (Math.random() * 2 - 1) * Math.pow(1 - j / revLen, 6);
                     }
                     const convolver = offlineCtx.createConvolver();
                     convolver.buffer = impulse;
                     
                     const revHPF = offlineCtx.createBiquadFilter();
                     revHPF.type = 'highpass';
-                    revHPF.frequency.value = 800; 
+                    revHPF.frequency.value = 1000; 
                     
                     const revLPF = offlineCtx.createBiquadFilter();
                     revLPF.type = 'lowpass';
-                    revLPF.frequency.value = 3000; 
+                    revLPF.frequency.value = 2500; 
                     
                     const wetGain = offlineCtx.createGain();
-                    wetGain.gain.value = 0.05; 
+                    wetGain.gain.value = 0.015; // REVISI: Sangat dry & punchy
                     
                     const dryGain = offlineCtx.createGain();
                     dryGain.gain.value = 1.0;
