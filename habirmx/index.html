@@ -3173,26 +3173,6 @@
                     }
                 });
             },
-            
-        // --- FUNGSI HAPUS SEMUA MASTERING ---
-        window.deleteAllMasteredTracks = function() {
-            window.kreaConfirm("Hapus Semua", "Yakin ingin menghapus SEMUA lagu mastering dari perangkat dan server?", async () => {
-                showIphoneToast("Memproses", "Sedang menghapus data...", "fa-spinner fa-spin");
-                try {
-                    const masteredDocs = window.globalLibraryDocs.filter(d => d.isMastered === true);
-                    for (let docData of masteredDocs) {
-                        await deleteDoc(doc(db, "render_gallery", docData.id));
-                        if (window.localAudioDB && docData.isLocalMastered) {
-                            await window.localAudioDB.delete(docData.id).catch(e=>e);
-                        }
-                    }
-                    showIphoneToast("Sukses", "Semua lagu mastering berhasil dihapus.", "fa-trash");
-                    window.renderMasteringGalleryUI();
-                } catch(e) {
-                    showIphoneToast("Error", "Gagal menghapus data.", "fa-triangle-exclamation");
-                }
-            });
-        };
             get: async function(id) {
                 const db = await this.init();
                 return new Promise((resolve, reject) => {
@@ -3213,6 +3193,26 @@
                     tx.onerror = () => reject(tx.error);
                 });
             }
+        };
+
+        // --- FUNGSI HAPUS SEMUA MASTERING ---
+        window.deleteAllMasteredTracks = function() {
+            window.kreaConfirm("Hapus Semua", "Yakin ingin menghapus SEMUA lagu mastering dari perangkat dan server?", async () => {
+                showIphoneToast("Memproses", "Sedang menghapus data...", "fa-spinner fa-spin");
+                try {
+                    const masteredDocs = window.globalLibraryDocs.filter(d => d.isMastered === true);
+                    for (let docData of masteredDocs) {
+                        await deleteDoc(doc(db, "render_gallery", docData.id));
+                        if (window.localAudioDB && docData.isLocalMastered) {
+                            await window.localAudioDB.delete(docData.id).catch(e=>e);
+                        }
+                    }
+                    showIphoneToast("Sukses", "Semua lagu mastering berhasil dihapus.", "fa-trash");
+                    window.renderMasteringGalleryUI();
+                } catch(e) {
+                    showIphoneToast("Error", "Gagal menghapus data.", "fa-triangle-exclamation");
+                }
+            });
         };
 
         // INISIALISASI VARIABEL GLOBAL
@@ -6839,7 +6839,18 @@ async function processKreaverseAudio(file, isPreview = false, progressCallback) 
                         }
                     }
                 }
-                const finalDuration = trimDuration / speedVal;
+            } // <-- KURUNG TUTUP LOOPING YANG HILANG DITAMBAHKAN DI SINI
+
+            // AMBIL NILAI SPEED AGAR TIDAK ERROR
+            const activeTab = localStorage.getItem('krea_dsp_tab') || 'v1';
+            let speedVal = 1.0;
+            if (activeTab === 'v1') {
+                speedVal = parseFloat(safeGetVal('sliderTempoV1', '1.0'));
+            } else {
+                speedVal = parseFloat(safeGetVal('kreaverseSpeed', '1.0'));
+            }
+
+            const finalDuration = trimDuration / speedVal;
 const finalFrameCount = Math.floor(finalDuration * originalBuffer.sampleRate);
 
 const offlineCtx = new OfflineAudioContext(
