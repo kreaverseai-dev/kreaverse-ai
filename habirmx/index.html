@@ -6101,7 +6101,7 @@ async function processKreaverseAudio(file, isPreview = false, progressCallback) 
                 // 3. Dimensional Void (V1) - Delay Reflector
                 if (v1Void > 0) {
                     const delay = offlineCtx.createDelay(); delay.delayTime.value = 0.15; 
-                    const delayGain = offlineCtx.createGain(); delayGain.gain.value = (v1Void / 100) * 0.5; 
+                    const delayGain = offlineCtx.createGain(); delayGain.gain.value = (v1Void / 100) * 0.02; // DITURUNKAN DRASTIS: Mencegah gema/pantulan yang ditiru oleh Suno AI
                     const voidMix = offlineCtx.createGain();
                     
                     lastNode.connect(voidMix);
@@ -6211,7 +6211,7 @@ async function processKreaverseAudio(file, isPreview = false, progressCallback) 
                     convolver.buffer = impulse;
                     
                     const wetGain = offlineCtx.createGain();
-                    wetGain.gain.value = (v1Reverb / 100) * 0.5; // Max 50% wet
+                    wetGain.gain.value = (v1Reverb / 100) * 0.03; // DITURUNKAN DRASTIS: Mencegah suara menjadi seperti di dalam gua
                     const dryGain = offlineCtx.createGain();
                     dryGain.gain.value = 1.0;
                     
@@ -6312,7 +6312,7 @@ async function processKreaverseAudio(file, isPreview = false, progressCallback) 
                 delayNode.delayTime.value = 0.035 + (Math.random() * 0.01); // 35ms - 45ms delay (terdengar seperti ruang studio kecil)
                 
                 const delayGain = offlineCtx.createGain();
-                delayGain.gain.value = 0.35; // Cukup keras untuk dibaca AI, tidak terlalu mengganggu manusia
+                delayGain.gain.value = 0.03; // DITURUNKAN KE 3%: Cukup untuk mengecoh bot AI, tapi tidak terdengar gema oleh manusia/Suno
                 
                 const merger = offlineCtx.createGain();
                 
@@ -6387,12 +6387,16 @@ async function processKreaverseAudio(file, isPreview = false, progressCallback) 
                 lfo.connect(lfoGain);
                 lfoGain.connect(chorusDelay.delayTime);
                 lfo.start(0);
+
+                const chorusWetGain = offlineCtx.createGain();
+                chorusWetGain.gain.value = 0.04; // DITURUNKAN KE 4%: Mencegah suara menjadi dobel/menggema
                 
                 const chorusMix = offlineCtx.createGain();
                 
                 lastNode.connect(chorusMix); 
                 lastNode.connect(chorusDelay);
-                chorusDelay.connect(chorusMix); 
+                chorusDelay.connect(chorusWetGain);
+                chorusWetGain.connect(chorusMix); 
                 
                 lastNode = chorusMix;
             } // <-- FIX BUG: Penutup kurung ini sebelumnya hilang!
@@ -6508,7 +6512,7 @@ async function processKreaverseAudio(file, isPreview = false, progressCallback) 
                 combLfo.start(0);
                 
                 combDelay.delayTime.value = 0.012; // Base 12ms
-                combFeedback.gain.value = -0.55; // Phase INVERTED feedback! (Sangat ampuh merusak MFCC AI)
+                combFeedback.gain.value = -0.05; // DITURUNKAN KE -5%: Menghilangkan dengungan metalik/reverb
                 
                 const combMix = offlineCtx.createGain();
                 
