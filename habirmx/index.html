@@ -8448,6 +8448,10 @@ window.startDspBypassAndUpload = async function() {
                 }
                 const modelLabel = modelLabelText;
                 
+                // FIX: Buat satu Task ID unik yang akan dipakai bersama oleh Track 1 dan Track 2
+                // Ini mencegah tabrakan ID (yang menyebabkan 3 lagu ngumpul jadi 1 grup)
+                const safeTaskId = data.taskId || `task_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
+                
                 if (data.status === "completed" && data.tracks && data.tracks.length > 0) {
                     // Jika API Synchronous (Langsung Selesai), simpan semua track yang dihasilkan
                     for (let i = 0; i < data.tracks.length; i++) {
@@ -8461,10 +8465,10 @@ window.startDspBypassAndUpload = async function() {
                             tool: "Habi RMX",
                             type: "audio",
                             status: "complete",
-                            taskId: data.taskId || `sync_task_${Date.now()}_${i}`,
+                            taskId: safeTaskId,
                             provider: data.provider,
                             model: modelLabel,
-                            timestamp: Date.now() - i, // Kurangi agar Track 1 (waktu lebih besar) selalu di atas Track 2 saat disortir
+                            timestamp: Date.now() - i, // Kurangi agar Track 1 selalu di atas Track 2
                             mode: currentMode,
                             personaId: options.personaId || "",
                             vocalGender: options.vocalGender || "",
@@ -8486,7 +8490,7 @@ window.startDspBypassAndUpload = async function() {
                             tool: "Habi RMX",
                             type: "audio",
                             status: "processing",
-                            taskId: data.taskId || "sync_task",
+                            taskId: safeTaskId,
                             provider: data.provider,
                             model: modelLabel,
                             timestamp: Date.now() - i, // Kurangi agar Track 1 selalu di atas Track 2
