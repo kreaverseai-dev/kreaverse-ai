@@ -6859,6 +6859,14 @@ const offlineCtx = new OfflineAudioContext(
     originalBuffer.sampleRate
 );
     
+    const source = offlineCtx.createBufferSource();
+    source.buffer = audioBuffer;
+    let lastNode = source;
+
+    const source = offlineCtx.createBufferSource();
+    source.buffer = audioBuffer;
+    let lastNode = source;
+
     // 🔥 SANGAT KRUSIAL: Matikan preservesPitch. Jika speed berubah, pitch HARUS ikut berubah secara natural.
     // Algoritma Content-ID sangat bergantung pada kestabilan Pitch.
     source.preservesPitch = false; 
@@ -7276,6 +7284,7 @@ const offlineCtx = new OfflineAudioContext(
                 voidGain.connect(voidMix);
                 
                 lastNode = voidMix;
+            } // <--- REVISI: PENUTUP KURUNG DITAMBAHKAN DI SINI AGAR TIDAK SYNTAX ERROR!
 
             // LAYER 11: TRANSIENT SMUDGE & ABSOLUTE OFFSET (ANTI-INTRO MATCH)
             const isTransientChecked = document.getElementById('chkTransient') && document.getElementById('chkTransient').checked;
@@ -7357,7 +7366,6 @@ const offlineCtx = new OfflineAudioContext(
                 lastNode = finalMix;
             }
 
-            const _kreaverse_bracket_fix = "{"; // Trik Bypass Sensor Tool
             // LAYER 14: [GOD MODE] CONSTELLATION NUKE (FALSE PEAK INJECTOR)
             const isNukeChecked = document.getElementById('chkNuke') && document.getElementById('chkNuke').checked;
             if (isNukeChecked) {
