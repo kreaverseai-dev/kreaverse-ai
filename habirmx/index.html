@@ -9327,31 +9327,10 @@ window.startDspBypassAndUpload = async function() {
                 const safeTaskId = data.taskId || `task_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
                 
                 if (data.status === "completed" && data.tracks && data.tracks.length > 0) {
-                    // Jika API Synchronous (Langsung Selesai), simpan semua track yang dihasilkan
-                    for (let i = 0; i < data.tracks.length; i++) {
-                        await addDoc(collection(db, "render_gallery"), {
-                            email: currentUser.email,
-                            url: data.tracks[i].audioUrl,
-                            imageUrl: data.tracks[i].imageUrl || "https://i.postimg.cc/Jh211FTG/46cc61ec-de7f-4c62-8245-946e22312d2b.jpg",
-                            prompt: style,
-                            lyrics: lyrics,
-                            title: `${title || "Untitled Song"} - Versi ${i + 1}`,
-                            tool: "Habi RMX",
-                            type: "audio",
-                            status: "complete",
-                            taskId: safeTaskId,
-                            provider: data.provider,
-                            model: modelLabel,
-                            timestamp: Date.now() - i, // Kurangi agar Track 1 selalu di atas Track 2
-                            mode: currentMode,
-                            personaId: options.personaId || "",
-                            vocalGender: options.vocalGender || "",
-                            styleWeight: options.styleWeight || "",
-                            weirdness: options.weirdness || "",
-                            audioWeight: options.audioWeight || "",
-                            originalAudioUrl: currentMode === 'cover' ? selectedAudioUrl : ""
-                        });
-                    }
+                    // FIX BUG 4 LAGU DOBEL: Jika API Synchronous (Langsung Selesai), Server VPS Backend 
+                    // sudah secara otomatis menyimpan hasil lagu ke database Firestore Anda.
+                    // Frontend TIDAK BOLEH melakukan addDoc lagi di sini agar lagu tidak terduplikat menjadi 4.
+                    // Lagu akan otomatis muncul di UI Library pengguna secara real-time melalui onSnapshot.
                 } else {
                     // Jika API Asynchronous (Polling), simpan 2 dokumen "processing" karena Suno AI menghasilkan 2 lagu sekaligus
                     for (let i = 0; i < 2; i++) {
