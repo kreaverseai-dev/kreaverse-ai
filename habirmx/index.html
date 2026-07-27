@@ -8418,6 +8418,12 @@ window.startDspBypassAndUpload = async function() {
                 personaId: document.getElementById('personaIdInput').value.trim()
             };
 
+            if (window.isGeneratingSong) {
+                showIphoneToast("Sabar", "Sistem sedang memproses antrean Anda sebelumnya.", "fa-hand-paper");
+                return;
+            }
+            window.isGeneratingSong = true;
+
             generateBtn.disabled = true;
             const originalBtnHtml = generateBtn.innerHTML;
             generateBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Menyiapkan Antrean...';
@@ -8507,6 +8513,7 @@ window.startDspBypassAndUpload = async function() {
                 
                 generateBtn.disabled = false;
                 generateBtn.innerHTML = originalBtnHtml;
+                window.isGeneratingSong = false;
                 
                 // Scroll ke bagian Library
                 document.getElementById('miniLibraryContainer').scrollIntoView({ behavior: 'smooth' });
@@ -8514,6 +8521,7 @@ window.startDspBypassAndUpload = async function() {
             } catch (err) {
                 generateBtn.innerHTML = originalBtnHtml;
                 generateBtn.disabled = false;
+                window.isGeneratingSong = false;
                 
                 // AUTO REFUND JIKA GAGAL GENERATE
                 if (!isAdmin && currentUserData && currentUserData.tier !== 'max_lifetime' && currentUserData.tier !== 'max_monthly' && currentUserData.tier !== 'max') {
