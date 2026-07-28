@@ -1920,10 +1920,21 @@
                         <!-- Sticky Header -->
                         <div style="position: sticky; top: 0; background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(10px); padding: 16px 20px; border-bottom: 1px solid rgba(255,255,255,0.08); display: flex; justify-content: space-between; align-items: center; z-index: 100; box-shadow: 0 4px 20px rgba(0,0,0,0.3);">
                             <div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px;">
-                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 450 80" width="130" height="auto">
-                                    <text x="0" y="55%" font-family="'Arial Black', Impact, sans-serif" font-size="65" font-weight="900" fill="#ffffff" dominant-baseline="middle" letter-spacing="3">KREAVERSE</text>
+                                <!-- FIX REBRANDING: Logo Flixa AI Putih untuk DSP Studio -->
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 60" style="width: 140px; height: auto;">
+                                    <defs>
+                                        <linearGradient id="flixaMiniDsp" x1="0%" y1="100%" x2="100%" y2="0%">
+                                            <stop offset="0%" stop-color="#1A1449" />
+                                            <stop offset="50%" stop-color="#7B2956" />
+                                            <stop offset="100%" stop-color="#D95040" />
+                                        </linearGradient>
+                                    </defs>
+                                    <rect x="0" y="5" width="50" height="50" rx="12" fill="url(#flixaMiniDsp)"/>
+                                    <path d="M 32 16 C 32 6, 19 6, 19 20 C 19 29, 23 32, 23 40" stroke="#FFFFFF" stroke-width="6" stroke-linecap="round" fill="none" />
+                                    <path d="M 12 25 Q 21 20 30 25" stroke="#FFFFFF" stroke-width="6" stroke-linecap="round" fill="none" />
+                                    <text x="60" y="36" font-family="'Plus Jakarta Sans', sans-serif" font-weight="900" font-size="24" fill="#ffffff" dominant-baseline="middle" letter-spacing="-0.5px">Flixa AI</text>
                                 </svg>
-                                <span style="font-size: 0.65rem; color: #ef4444; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; display: flex; align-items: center; gap: 5px;"><i class="fa-solid fa-triangle-exclamation" style="color: #eab308; font-size: 0.75rem;"></i> AI SENSOR DETECTED</span>
+                                <span style="font-size: 0.65rem; color: #ef4444; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; display: flex; align-items: center; gap: 5px; margin-top: 4px;"><i class="fa-solid fa-triangle-exclamation" style="color: #eab308; font-size: 0.75rem;"></i> AI SENSOR DETECTED</span>
                             </div>
                             <button onclick="document.getElementById('dspStudioWrapper').classList.add('hidden')" style="background: rgba(255,255,255,0.1); border: none; color: #fff; width: 34px; height: 34px; border-radius: 50%; font-size: 1.1rem; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.2s;"><i class="fa-solid fa-xmark"></i></button>
                         </div>
@@ -6817,6 +6828,16 @@ async function processKreaverseAudio(file, isPreview = false, progressCallback) 
             let trimDuration = endSec - startSec;
             if (trimDuration <= 0) { startSec = 0; trimDuration = originalBuffer.duration; }
 
+            // FIX BUG PREVIEW RAM & CPU: Limitasi maksimal 60 detik jika mode Preview aktif!
+            if (isPreview && trimDuration > 60) {
+                trimDuration = 60;
+                endSec = startSec + 60;
+                // Informasikan lewat toast agar user tidak bingung
+                if (typeof showIphoneToast === 'function') {
+                    showIphoneToast("Mode Preview", "Memutar 1 menit pertama untuk hemat RAM/Baterai.", "fa-stopwatch");
+                }
+            }
+
             const startOffset = Math.floor(startSec * originalBuffer.sampleRate);
             const endOffset = Math.floor((startSec + trimDuration) * originalBuffer.sampleRate);
             const frameCount = endOffset - startOffset;
@@ -6858,37 +6879,45 @@ async function processKreaverseAudio(file, isPreview = false, progressCallback) 
                 audioBuffer.copyToChannel(channelData, c);
             }
 
-            // AMBIL NILAI SPEED AGAR TIDAK ERROR
+            // AMBIL NILAI SPEED DAN PITCH AGAR TIDAK ERROR
             const activeTab = localStorage.getItem('krea_dsp_tab') || 'v1';
             let speedVal = 1.0;
+            let pitchVal = 0;
+            
             if (activeTab === 'v1') {
                 speedVal = parseFloat(safeGetVal('sliderTempoV1', '1.0'));
+                pitchVal = parseFloat(safeGetVal('sliderPitchV1', '0')); // V1 menggunakan Cents (-1200 s/d 1200)
             } else {
                 speedVal = parseFloat(safeGetVal('kreaverseSpeed', '1.0'));
+                pitchVal = parseFloat(safeGetVal('pitchSlider', '0')) * 100; // V2 menggunakan Semitones (-12 s/d 12), kalikan 100 jadi Cents
             }
 
             const finalDuration = trimDuration / speedVal;
-const finalFrameCount = Math.floor(finalDuration * originalBuffer.sampleRate);
+            const finalFrameCount = Math.floor(finalDuration * originalBuffer.sampleRate);
 
-const offlineCtx = new OfflineAudioContext(
-    originalBuffer.numberOfChannels,
-    finalFrameCount, // <--- KANVAS KINI DIPOTONG PAS SESUAI DURASI BARU
-    originalBuffer.sampleRate
-);
-    
-    const source = offlineCtx.createBufferSource();
-    source.buffer = audioBuffer;
-    let lastNode = source;
+            const offlineCtx = new OfflineAudioContext(
+                originalBuffer.numberOfChannels,
+                finalFrameCount, 
+                originalBuffer.sampleRate
+            );
+                
+            const source = offlineCtx.createBufferSource();
+            source.buffer = audioBuffer;
+            let lastNode = source;
 
-    // 🔥 SANGAT KRUSIAL: Matikan preservesPitch. Jika speed berubah, pitch HARUS ikut berubah secara natural. Jika speed berubah, pitch HARUS ikut berubah secara natural.
-    // Algoritma Content-ID sangat bergantung pada kestabilan Pitch.
-    source.preservesPitch = false; 
+            source.preservesPitch = false; 
+            
+            // 🔥 FIX BUG DURASI TERPOTONG & PITCH:
+            // TERAPKAN KECEPATAN (TEMPO) DAN PITCH KE AUDIO SOURCE!
+            // Jika ini tidak dipanggil, kanvas menyusut tapi lagu tetap lambat, hasilnya lagu terpotong.
+            source.playbackRate.value = speedVal;
+            source.detune.value = pitchVal;
 
-    // FIX: Mendeteksi ID toggle yang benar agar mesin DSP menyala
-    const masterToggleEl = document.getElementById('globalMasterToggle') || document.getElementById('masterToggle');
-    let isMasterOn = masterToggleEl ? masterToggleEl.checked : false;
+            // FIX: Mendeteksi ID toggle yang benar agar mesin DSP menyala
+            const masterToggleEl = document.getElementById('globalMasterToggle') || document.getElementById('masterToggle');
+            let isMasterOn = masterToggleEl ? masterToggleEl.checked : false;
 
-    // =========================================================
+            // =========================================================
             // 🔥 EKSEKUSI DSP V1 (BETA) - STRICT & AGGRESSIVE MODE
             // Mengaktifkan 6 Algoritma + 4 Slider Efek
             // =========================================================
