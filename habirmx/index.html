@@ -2473,14 +2473,24 @@
             <div class="input-group">
                 <label for="styleInput">
                     <span style="line-height: 1.2;">Style of<br>Music *</span>
-                    <div style="display: flex; gap: 6px;">
-                        <button type="button" class="magic-wand-btn" style="background: rgba(245, 158, 11, 0.1); color: #f59e0b; border-color: rgba(245, 158, 11, 0.2); padding: 4px 8px; font-size: 0.7rem;" onclick="window.openPromptModal()" title="Lihat Daftar Inspirasi Prompt">
+                    <div style="display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; align-items: center;">
+                        
+                        <!-- FITUR BARU: LANGUAGE DROPDOWN & AUTO-STYLE -->
+                        <select id="autoStyleLang" class="hidden" style="background: rgba(236, 72, 153, 0.05); color: #ec4899; border: 1px solid rgba(236, 72, 153, 0.2); padding: 4px 8px; border-radius: 6px; font-size: 0.7rem; font-weight: 700; outline: none; cursor: pointer; height: 26px;">
+                            <option value="english">English</option>
+                            <option value="indonesian">Indonesia</option>
+                        </select>
+                        <button type="button" id="btnAudioToStyle" class="magic-wand-btn hidden" style="background: rgba(236, 72, 153, 0.1); color: #ec4899; border-color: rgba(236, 72, 153, 0.2); padding: 4px 8px; font-size: 0.7rem; height: 26px;" onclick="window.extractStyleFromAudio()" title="Analisis Audio ke Teks">
+                            <i class="fa-solid fa-compact-disc"></i> Auto-Style
+                        </button>
+                        
+                        <button type="button" class="magic-wand-btn" style="background: rgba(245, 158, 11, 0.1); color: #f59e0b; border-color: rgba(245, 158, 11, 0.2); padding: 4px 8px; font-size: 0.7rem; height: 26px;" onclick="window.openPromptModal()" title="Lihat Daftar Inspirasi Prompt">
                             <i class="fa-solid fa-lightbulb"></i> Inspirasi
                         </button>
-                        <button type="button" class="magic-wand-btn" style="padding: 4px 8px; font-size: 0.7rem;" onclick="triggerMagicWand('style')" title="Auto-Generate Style via AI">
+                        <button type="button" class="magic-wand-btn" style="padding: 4px 8px; font-size: 0.7rem; height: 26px;" onclick="triggerMagicWand('style')" title="Auto-Generate Style via AI">
                             <i class="fa-solid fa-wand-magic-sparkles"></i> AI
                         </button>
-                        <button type="button" class="action-icon-btn" style="padding: 4px 8px; font-size: 0.7rem;" onclick="clearInput('styleInput', 'styleCounter', 1000)" title="Hapus Teks">
+                        <button type="button" class="action-icon-btn" style="padding: 4px 8px; font-size: 0.7rem; height: 26px;" onclick="clearInput('styleInput', 'styleCounter', 1000)" title="Hapus Teks">
                             <i class="fa-solid fa-trash-can"></i>
                         </button>
                     </div>
@@ -5376,6 +5386,10 @@
             const optParamsWrapper = document.getElementById('optionalParametersWrapper');
             const generateBtn = document.getElementById('generateBtn');
             const benefitDesc = generateBtn.nextElementSibling;
+            
+            // Elemen Baru Auto-Style
+            const btnAudioToStyle = document.getElementById('btnAudioToStyle');
+            const selectLang = document.getElementById('autoStyleLang');
 
             localStorage.setItem('kreaverse_last_mode', mode);
 
@@ -5388,6 +5402,10 @@
                 if(btnGenerate) btnGenerate.classList.add('active');
                 if(uploadSection) uploadSection.classList.add('hidden');
                 if(voiceSection) voiceSection.classList.add('hidden');
+                
+                if(btnAudioToStyle) btnAudioToStyle.classList.add('hidden');
+                if(selectLang) selectLang.classList.add('hidden');
+                
                 selectedAudioUrl = ""; 
                 if(modeDesc) modeDesc.innerText = "Buat lagu baru dari awal menggunakan lirik dan gaya musik Anda sendiri.";
                 
@@ -5400,12 +5418,16 @@
                 if(optParamsWrapper) optParamsWrapper.style.display = 'block';
                 if(generateBtn) generateBtn.style.display = 'flex';
                 if(benefitDesc) benefitDesc.style.display = 'flex';
-                window.toggleCustomFields(); // Menyesuaikan title & lirik
+                window.toggleCustomFields(); 
                 
             } else if (mode === 'cover') {
                 if(btnCover) btnCover.classList.add('active');
                 if(uploadSection) uploadSection.classList.remove('hidden');
                 if(voiceSection) voiceSection.classList.add('hidden');
+                
+                if(btnAudioToStyle) btnAudioToStyle.classList.remove('hidden');
+                if(selectLang) selectLang.classList.remove('hidden');
+                
                 if(modeDesc) modeDesc.innerText = "Unggah audio referensi (maks 8 menit). AI akan mengubah gaya musiknya sesuai prompt Anda.";
                 
                 // Tampilkan form standar
@@ -5423,6 +5445,10 @@
                 if(btnVoice) btnVoice.classList.add('active');
                 if(uploadSection) uploadSection.classList.add('hidden');
                 if(voiceSection) voiceSection.classList.remove('hidden');
+                
+                if(btnAudioToStyle) btnAudioToStyle.classList.add('hidden');
+                if(selectLang) selectLang.classList.add('hidden');
+                
                 if(modeDesc) modeDesc.innerText = "Kloning suara Anda sendiri atau ekstrak karakter vokal dari lagu AI sebelumnya.";
                 
                 // Sembunyikan form standar pembuatan lagu
@@ -8919,6 +8945,109 @@ window.startDspBypassAndUpload = async function() {
                 showIphoneToast("ASR Gagal", err.message, "fa-circle-xmark");
             } finally {
                 progressBox.classList.add('hidden');
+            }
+        };
+
+        // ============================================================
+        // AUDIO TO TEXT (MUSIC STYLE EXTRACTOR)
+        // ============================================================
+        window.extractStyleFromAudio = async function() {
+            if (!isLoggedIn || !currentUser) {
+                showIphoneToast("Akses Ditolak", "Silakan login terlebih dahulu.", "fa-lock");
+                return;
+            }
+
+            if (!rawAudioFile && !selectedAudioUrl) {
+                showIphoneToast("Error", "Silakan unggah Audio Referensi terlebih dahulu untuk diekstrak!", "fa-triangle-exclamation");
+                const uploadBox = document.getElementById('uploadTriggerBox');
+                if(uploadBox) {
+                    uploadBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    uploadBox.style.boxShadow = "0 0 0 6px rgba(236, 72, 153, 0.4)";
+                    setTimeout(() => uploadBox.style.boxShadow = "none", 1500);
+                }
+                return;
+            }
+
+            const llmProviderId = document.getElementById('llmSelect') ? document.getElementById('llmSelect').value : 'auto_pool';
+            const llmModelId = document.getElementById('llmModelSelect') ? document.getElementById('llmModelSelect').value : 'auto_pool';
+            const chosenLang = document.getElementById('autoStyleLang') ? document.getElementById('autoStyleLang').value : 'english';
+
+            const btn = document.getElementById('btnAudioToStyle');
+            const inputEl = document.getElementById('styleInput');
+            const originalBtnHtml = btn.innerHTML;
+
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Memproses...';
+            inputEl.disabled = true;
+
+            showIphoneToast("Analisis Audio", "AI sedang menganalisis emosi, melodi, ritme, dan gaya musik. Mohon tunggu...", "fa-ear-listen");
+
+            try {
+                let finalAudioUrl = selectedAudioUrl;
+                
+                if (!finalAudioUrl && rawAudioFile) {
+                    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Upload...';
+                    let finalDurStr = "0:00";
+                    const origPlayer = document.getElementById('originalAudioPlayer');
+                    if (origPlayer && isFinite(origPlayer.duration) && origPlayer.duration > 0) {
+                        finalDurStr = formatTime(origPlayer.duration);
+                    }
+                    await uploadBlobToCloudinary(rawAudioFile, rawAudioFile.name, false, finalDurStr);
+                    finalAudioUrl = selectedAudioUrl;
+                }
+
+                btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Ekstrak...';
+
+                // Logika Bahasa
+                let promptInstruction = "TUGAS KHUSUS MUSICAL ANALYSIS: Bertindaklah sebagai ahli musik. Dengarkan audio pada link yang diberikan, lalu deskripsikan genre, instrumen, mood, tempo, dan getaran (vibe) musiknya secara akurat menjadi sebuah prompt untuk Suno AI/Udio. \n\nATURAN MUTLAK:\n1. JANGAN tuliskan liriknya, fokus hanya pada gaya instrumen dan musiknya (Style of Music).\n2. Format jawaban HARUS berupa kata kunci/frasa pendek yang dipisahkan oleh koma (contoh: acoustic folk, calm, acoustic guitar, slow tempo, rural vibe).\n3. Dilarang keras menggunakan kalimat sapaan. Langsung berikan hasilnya.";
+                
+                if (chosenLang === 'indonesian') {
+                    promptInstruction += "\n4. JAWAB DALAM BAHASA INDONESIA (contoh: pop akustik, santai, gitar akustik, tempo lambat).";
+                } else {
+                    promptInstruction += "\n4. JAWAB DALAM BAHASA INGGRIS (contoh: acoustic pop, chill, acoustic guitar, slow tempo).";
+                }
+
+                const response = await fetch('/api/habirmx', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: 'magic_wand',
+                        providerId: llmProviderId,
+                        modelId: llmModelId,
+                        llmType: 'style',
+                        inputText: promptInstruction, 
+                        audioUrl: finalAudioUrl, 
+                        currentMode: 'cover'
+                    })
+                });
+
+                const data = await response.json();
+                if (!response.ok) throw new Error(data.error || "Gagal menghubungi AI");
+
+                let finalResult = data.result.trim();
+                
+                inputEl.value = "";
+                let i = 0;
+                function typeWriter() {
+                    if (i < finalResult.length) {
+                        inputEl.value += finalResult.charAt(i);
+                        i++;
+                        setTimeout(typeWriter, 10);
+                    } else {
+                        inputEl.disabled = false;
+                        btn.disabled = false;
+                        btn.innerHTML = originalBtnHtml;
+                        updateCounter('styleInput', 'styleCounter', 1000);
+                        showIphoneToast("Ekstrak Selesai", "Genre berhasil diidentifikasi dari audio!", "fa-check-double");
+                    }
+                }
+                typeWriter();
+
+            } catch (err) {
+                inputEl.disabled = false;
+                btn.disabled = false;
+                btn.innerHTML = originalBtnHtml;
+                showIphoneToast("Gagal Ekstrak", err.message, "fa-triangle-exclamation");
             }
         };
 
