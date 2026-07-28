@@ -50,49 +50,18 @@
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        
-        /* FIX NATIVE APP: Mencegah layar di zoom & teks diblok biru */
-        body, html {
-            user-select: none; 
-            -webkit-user-select: none;
-            -webkit-touch-callout: none;
-            touch-action: pan-x pan-y;
-            overflow-x: hidden; 
-        }
-        
-        /* Izinkan ngetik di kotak lirik */
-        input, textarea { user-select: text; -webkit-user-select: text; }
-        
         body { 
             font-family: 'Plus Jakarta Sans', sans-serif; 
             color: var(--text-primary); 
             background-color: #fafafc; 
+            overflow-x: hidden; 
             min-height: 100vh;
             display: flex;
             justify-content: center;
             padding: 20px;
-            padding-bottom: 85px; /* Spasi untuk Menu Bawah */
             -webkit-font-smoothing: antialiased; 
-            overscroll-behavior-y: none; 
+            overscroll-behavior-y: none; /* Mencegah efek mental/jelly saat scroll mentok di HP */
         }
-
-        /* MENU BOTTOM NAV NATIVE ANDROID */
-        .flixa-bottom-nav {
-            position: fixed; bottom: 0; left: 0; width: 100%; height: 65px;
-            background: rgba(255, 255, 255, 0.98);
-            backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
-            border-top: 1px solid #e2e8f0;
-            display: flex; justify-content: space-around; align-items: center;
-            z-index: 99999; box-shadow: 0 -4px 15px rgba(0,0,0,0.03);
-            padding-bottom: env(safe-area-inset-bottom);
-        }
-        .flixa-bottom-nav a {
-            color: #94a3b8; text-decoration: none; font-size: 1.2rem; 
-            display: flex; flex-direction: column; align-items: center; 
-            transition: all 0.3s ease; position: relative; width: 25%;
-        }
-        .flixa-bottom-nav a.active { color: #007AFF; transform: translateY(-2px); }
-        .flixa-bottom-nav a span { font-size: 0.65rem; font-weight: 700; margin-top: 4px; }
         /* PATCH ANTI-LAG SUPER MULUS (GPU RENDER) & HAPUS SHADOW GANGGUAN */
         body::before {
             display: none !important; /* Mematikan efek shadow/gradient yang mengganggu */
@@ -8165,34 +8134,41 @@ window.startDspBypassAndUpload = async function() {
             
             // Tutup DSP Studio dan Munculkan Top Progress
             document.getElementById('dspStudioWrapper').classList.add('hidden');
-            showTopProgress("Mengunggah Original...", "#10b981");
+            showTopProgress("Memotong & Mengunggah...", "#10b981");
             
             try {
-                updateTopProgress(10, "Menghubungkan");
-                await new Promise(r => setTimeout(r, 500));
-                updateTopProgress(30, "Terhubung ke vps Kreaverse AI");
-                await new Promise(r => setTimeout(r, 800));
+                updateTopProgress(15, "Menerapkan Pemotongan Audio...");
                 
-                // Simulasi progress berjalan mulus sampai 90%
-                let fakeProgress = 30;
-                const fakeInterval = setInterval(() => {
-                    if (fakeProgress < 90) {
-                        fakeProgress += Math.floor(Math.random() * 5) + 1;
-                        if (fakeProgress > 90) fakeProgress = 90;
-                        updateTopProgress(fakeProgress, "Proses upload by Kreaverse AI");
-                    }
-                }, 400);
+                // FIX BUG DURASI (POIN 15): Matikan DSP Master, tapi paksa proses potong (Trimmer) berjalan
+                const masterToggleV1 = document.getElementById('globalMasterToggle');
+                if(masterToggleV1) masterToggleV1.checked = false;
                 
-                const origPlayer = document.getElementById('originalAudioPlayer');
+                let trimmedBlob = rawAudioFile;
+                if (typeof processKreaverseAudio === 'function') {
+                    trimmedBlob = await processKreaverseAudio(rawAudioFile, false, () => {});
+                } else if (typeof processStealthAudio === 'function') {
+                    trimmedBlob = await processStealthAudio(rawAudioFile, false, () => {});
+                }
+
+                updateTopProgress(50, "Proses upload by Flixa AI");
+                
+                // Kalkulasi Durasi Hasil Potongan untuk Database & UI
                 let finalDurStr = "0:00";
-                if (origPlayer && isFinite(origPlayer.duration) && origPlayer.duration > 0) {
-                    finalDurStr = formatTime(origPlayer.duration);
+                const startSec = parseTimeToSeconds(document.getElementById('trimStartInput').value);
+                const endSec = parseTimeToSeconds(document.getElementById('trimEndInput').value);
+                
+                if (endSec > startSec) {
+                    finalDurStr = formatTime(endSec - startSec);
+                } else {
+                    const origPlayer = document.getElementById('originalAudioPlayer');
+                    if (origPlayer && isFinite(origPlayer.duration) && origPlayer.duration > 0) {
+                        finalDurStr = formatTime(origPlayer.duration);
+                    }
                 }
                 
-                // Tunggu upload asli selesai
-                await uploadBlobToCloudinary(rawAudioFile, rawAudioFile.name, false, finalDurStr);
+                // Upload hasil potongan yang benar
+                await uploadBlobToCloudinary(trimmedBlob, rawAudioFile.name, false, finalDurStr);
                 
-                clearInterval(fakeInterval);
                 updateTopProgress(100, "Selesai");
                 await new Promise(r => setTimeout(r, 1000));
                 hideTopProgress();
@@ -8202,12 +8178,12 @@ window.startDspBypassAndUpload = async function() {
                 document.getElementById('uploadedMiniBadge').style.background = "rgba(16,185,129,0.1)";
                 document.getElementById('uploadedMiniBadge').style.color = "#10b981";
                 
-                showIphoneToast("Upload Sukses", "Audio original berhasil diunggah tanpa manipulasi.", "fa-circle-check");
+                showIphoneToast("Upload Sukses", "Audio berhasil dipotong dan diunggah.", "fa-circle-check");
                 
             } catch(err) {
                 console.error(err);
                 hideTopProgress();
-                showIphoneToast("Upload Error", "Gagal mengunggah audio original.", "fa-triangle-exclamation");
+                showIphoneToast("Upload Error", "Gagal mengunggah audio.", "fa-triangle-exclamation");
             } finally {
                 btnOriginal.disabled = false;
                 btnStart.disabled = false;
@@ -12555,14 +12531,5 @@ window.startDspBypassAndUpload = async function() {
         if (bannerTimer) clearTimeout(bannerTimer);
     };
 </script>
-
-<!-- MENU BAWAH APLIKASI (NATIVE FEEL) -->
-<div class="flixa-bottom-nav">
-    <a href="/" class="active"><i class="fa-solid fa-music"></i><span>Studio</span></a>
-    <a href="javascript:void(0)" onclick="window.openPlaylistUI()"><i class="fa-solid fa-list-ul"></i><span>Playlist</span></a>
-    <a href="javascript:void(0)" onclick="window.openMasteringGalleryUI()"><i class="fa-solid fa-wand-magic-sparkles"></i><span>Mastering</span></a>
-    <a href="javascript:void(0)" onclick="window.openSidebar()"><i class="fa-solid fa-bars"></i><span>Menu</span></a>
-</div>
-
 </body>
 </html>
