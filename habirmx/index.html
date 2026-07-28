@@ -2471,17 +2471,19 @@
 
             <!-- FIELD: STYLE OF MUSIC -->
             <div class="input-group">
-                <label for="styleInput">
-                    <span style="line-height: 1.2;">Style of<br>Music *</span>
+                <!-- FIX BUG KLIK: Mengeluarkan tombol dari dalam tag <label> -->
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                    <label for="styleInput" style="margin: 0; padding: 0; line-height: 1.2;">Style of<br>Music *</label>
+                    
                     <div style="display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; align-items: center;" id="styleActionButtons">
                         
-                        <!-- FITUR BARU: CUSTOM DROPDOWN BAHASA (Tanpa Popup Browser) -->
-                        <div class="custom-select-container hidden" id="langDropdownContainer" style="width: auto;">
+                        <!-- FITUR BARU: CUSTOM DROPDOWN BAHASA (Bisa di Klik) -->
+                        <div class="custom-select-container hidden" id="langDropdownContainer" style="width: auto; z-index: 105;">
                             <div class="custom-select-trigger" onclick="window.toggleCustomSelect('styleLangDropdownOptions')" style="background: rgba(236, 72, 153, 0.05); color: #ec4899; border: 1px solid rgba(236, 72, 153, 0.3); padding: 4px 10px; border-radius: 6px; font-size: 0.7rem; font-weight: 700; height: 26px; min-height: 26px; box-shadow: none;">
                                 <span id="styleLangSelectedLabel">English</span>
                                 <i class="fa-solid fa-chevron-down" style="font-size: 0.6rem; margin-left: 6px; color: #ec4899;"></i>
                             </div>
-                            <div class="custom-select-options hidden" id="styleLangDropdownOptions" style="border: 1px solid rgba(236, 72, 153, 0.3); min-width: 120px; top: calc(100% + 4px); padding: 4px; right: 0; left: auto;">
+                            <div class="custom-select-options hidden" id="styleLangDropdownOptions" style="border: 1px solid rgba(236, 72, 153, 0.3); min-width: 120px; top: calc(100% + 4px); padding: 4px; right: 0; left: auto; z-index: 1000;">
                                 <div class="custom-select-option selected" onclick="window.selectStyleLang('english', 'English')" style="padding: 8px 10px; font-size: 0.75rem;">English</div>
                                 <div class="custom-select-option" onclick="window.selectStyleLang('indonesian', 'Indonesia')" style="padding: 8px 10px; font-size: 0.75rem;">Indonesia</div>
                             </div>
@@ -2492,13 +2494,18 @@
                         <button type="button" id="btnAudioToStyle" class="magic-wand-btn hidden" style="background: rgba(236, 72, 153, 0.1); color: #ec4899; border-color: rgba(236, 72, 153, 0.3); padding: 4px 10px; font-size: 0.7rem; height: 26px; border-radius: 6px; box-shadow: none;" onclick="window.extractStyleFromAudio()" title="Analisis Audio ke Teks">
                             <i class="fa-solid fa-compact-disc"></i> Auto-Style
                         </button>
+
+                        <!-- TOMBOL INSPIRASI (DIKEMBALIKAN) -->
+                        <button type="button" class="magic-wand-btn" style="background: rgba(245, 158, 11, 0.1); color: #f59e0b; border-color: rgba(245, 158, 11, 0.2); padding: 4px 8px; font-size: 0.7rem; height: 26px; border-radius: 6px; box-shadow: none;" onclick="window.openPromptModal()" title="Lihat Daftar Inspirasi Prompt">
+                            <i class="fa-solid fa-lightbulb"></i> Inspirasi
+                        </button>
                         
                         <!-- TOMBOL HAPUS -->
                         <button type="button" class="action-icon-btn" style="padding: 4px 10px; font-size: 0.7rem; height: 26px; border-radius: 6px; box-shadow: none;" onclick="clearInput('styleInput', 'styleCounter', 1000)" title="Hapus Teks">
                             <i class="fa-solid fa-trash-can"></i>
                         </button>
                     </div>
-                </label>
+                </div>
                 <textarea id="styleInput" placeholder="Contoh: jazz, classical, electronic, upbeat pop..." maxlength="1000" oninput="updateCounter('styleInput', 'styleCounter', 1000)"></textarea>
                 <span class="char-counter" id="styleCounter">0/1000</span>
             </div>
