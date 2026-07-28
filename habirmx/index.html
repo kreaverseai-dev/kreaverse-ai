@@ -50,18 +50,49 @@
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        
+        /* FIX NATIVE APP: Mencegah layar di zoom & teks diblok biru */
+        body, html {
+            user-select: none; 
+            -webkit-user-select: none;
+            -webkit-touch-callout: none;
+            touch-action: pan-x pan-y;
+            overflow-x: hidden; 
+        }
+        
+        /* Izinkan ngetik di kotak lirik */
+        input, textarea { user-select: text; -webkit-user-select: text; }
+        
         body { 
             font-family: 'Plus Jakarta Sans', sans-serif; 
             color: var(--text-primary); 
             background-color: #fafafc; 
-            overflow-x: hidden; 
             min-height: 100vh;
             display: flex;
             justify-content: center;
             padding: 20px;
+            padding-bottom: 85px; /* Spasi untuk Menu Bawah */
             -webkit-font-smoothing: antialiased; 
-            overscroll-behavior-y: none; /* Mencegah efek mental/jelly saat scroll mentok di HP */
+            overscroll-behavior-y: none; 
         }
+
+        /* MENU BOTTOM NAV NATIVE ANDROID */
+        .flixa-bottom-nav {
+            position: fixed; bottom: 0; left: 0; width: 100%; height: 65px;
+            background: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
+            border-top: 1px solid #e2e8f0;
+            display: flex; justify-content: space-around; align-items: center;
+            z-index: 99999; box-shadow: 0 -4px 15px rgba(0,0,0,0.03);
+            padding-bottom: env(safe-area-inset-bottom);
+        }
+        .flixa-bottom-nav a {
+            color: #94a3b8; text-decoration: none; font-size: 1.2rem; 
+            display: flex; flex-direction: column; align-items: center; 
+            transition: all 0.3s ease; position: relative; width: 25%;
+        }
+        .flixa-bottom-nav a.active { color: #007AFF; transform: translateY(-2px); }
+        .flixa-bottom-nav a span { font-size: 0.65rem; font-weight: 700; margin-top: 4px; }
         /* PATCH ANTI-LAG SUPER MULUS (GPU RENDER) & HAPUS SHADOW GANGGUAN */
         body::before {
             display: none !important; /* Mematikan efek shadow/gradient yang mengganggu */
@@ -3224,6 +3255,9 @@
         window.isMasteringUIOpen = false;
 
         window.savePlaylistToFirebase = async function() {
+            // FIX: Simpan ke memori HP agar tidak hilang saat refresh
+            localStorage.setItem('flixa_playlist', JSON.stringify(window.globalPlaylistQueue));
+            
             if (typeof currentUserData !== 'undefined' && currentUserData && currentUserData.id) {
                 try {
                     await updateDoc(doc(db, "users", currentUserData.id), {
@@ -3232,6 +3266,15 @@
                 } catch(e) {}
             }
         };
+
+        // FIX: Panggil data saat aplikasi baru dibuka
+        document.addEventListener('DOMContentLoaded', () => {
+            const savedPlaylist = localStorage.getItem('flixa_playlist');
+            if(savedPlaylist) {
+                window.globalPlaylistQueue = JSON.parse(savedPlaylist);
+                // Jangan render UI jika belum dibuka agar tidak berat
+            }
+        });
 
         // FUNGSI MULTI-SELECT ADD TO PLAYLIST
         window.addSelectedToPlaylist = function() {
@@ -10426,22 +10469,22 @@ window.startDspBypassAndUpload = async function() {
 
                                 mstLiveNodes.deHarsher = mstLiveAudioCtx.createBiquadFilter();
                                 mstLiveNodes.deHarsher.type = 'peaking';
-                                mstLiveNodes.deHarsher.frequency.value = 4500; // Fokus ke frekuensi cempreng Suno AI
-                                mstLiveNodes.deHarsher.Q.value = 1.5;
-                                mstLiveNodes.deHarsher.gain.value = -6.0; // Pemotongan yang lebih agresif agar tidak sakit kuping
+                                mstLiveNodes.deHarsher.frequency.value = 4500; 
+                                mstLiveNodes.deHarsher.Q.value = 1.0; // FIX: Lebarkan jangkauan agar lebih natural
+                                mstLiveNodes.deHarsher.gain.value = -9.0; // FIX: Potong lebih dalam agar telinga tidak sakit
 
                                 // --- UPGRADED: REAL BASS & KICK ENHANCER ---
                                 mstLiveNodes.bassBoost = mstLiveAudioCtx.createBiquadFilter();
                                 mstLiveNodes.bassBoost.type = 'lowshelf';
-                                mstLiveNodes.bassBoost.frequency.value = 75; // REVISI: Fokus ke sub-bass agar tidak boomy
-                                mstLiveNodes.bassBoost.gain.value = 3.5; // REVISI: Turun dari 5.5 agar limiter tidak overwork (ketarik)
+                                mstLiveNodes.bassBoost.frequency.value = 75; 
+                                mstLiveNodes.bassBoost.gain.value = 2.5; // FIX: Turunkan lagi agar musik tidak sember
 
                                 // --- UPGRADED: VOCAL & MELODY CLARITY ---
                                 mstLiveNodes.vocalPresence = mstLiveAudioCtx.createBiquadFilter();
                                 mstLiveNodes.vocalPresence.type = 'peaking';
                                 mstLiveNodes.vocalPresence.frequency.value = 3200; 
                                 mstLiveNodes.vocalPresence.Q.value = 1.2;
-                                mstLiveNodes.vocalPresence.gain.value = 3.5;
+                                mstLiveNodes.vocalPresence.gain.value = 1.5; // FIX: Kurangi clarity agar vokal tidak terlalu tajam
 
                                 mstLiveNodes.eqLow = mstLiveAudioCtx.createBiquadFilter(); mstLiveNodes.eqLow.type = 'lowshelf'; mstLiveNodes.eqLow.frequency.value = 60;
                                 mstLiveNodes.eqLMid = mstLiveAudioCtx.createBiquadFilter(); mstLiveNodes.eqLMid.type = 'peaking'; mstLiveNodes.eqLMid.frequency.value = 300; mstLiveNodes.eqLMid.Q.value = 1.0;
@@ -10486,10 +10529,10 @@ window.startDspBypassAndUpload = async function() {
                                 
                                 // PRE-DELAY: Mencegah Transient/Pukulan Instrumen menjadi bergema
                                 mstLiveNodes.revPreDelay = mstLiveAudioCtx.createDelay();
-                                mstLiveNodes.revPreDelay.delayTime.value = 0.005; // REVISI: Nyaris nol (5ms) agar snare/kick tidak dobel & echoey
+                                mstLiveNodes.revPreDelay.delayTime.value = 0.005; 
                                 
                                 mstLiveNodes.wetGain = mstLiveAudioCtx.createGain();
-                                mstLiveNodes.wetGain.gain.value = 0.02;
+                                mstLiveNodes.wetGain.gain.value = 0.00; // FIX: Jadikan 0 agar gema hilang total dan jernih
                                 
                                 mstLiveNodes.dryGain = mstLiveAudioCtx.createGain();
                                 mstLiveNodes.dryGain.gain.value = 1.0;
@@ -12512,5 +12555,14 @@ window.startDspBypassAndUpload = async function() {
         if (bannerTimer) clearTimeout(bannerTimer);
     };
 </script>
+
+<!-- MENU BAWAH APLIKASI (NATIVE FEEL) -->
+<div class="flixa-bottom-nav">
+    <a href="/" class="active"><i class="fa-solid fa-music"></i><span>Studio</span></a>
+    <a href="javascript:void(0)" onclick="window.openPlaylistUI()"><i class="fa-solid fa-list-ul"></i><span>Playlist</span></a>
+    <a href="javascript:void(0)" onclick="window.openMasteringGalleryUI()"><i class="fa-solid fa-wand-magic-sparkles"></i><span>Mastering</span></a>
+    <a href="javascript:void(0)" onclick="window.openSidebar()"><i class="fa-solid fa-bars"></i><span>Menu</span></a>
+</div>
+
 </body>
 </html>
