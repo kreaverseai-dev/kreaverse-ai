@@ -2473,24 +2473,28 @@
             <div class="input-group">
                 <label for="styleInput">
                     <span style="line-height: 1.2;">Style of<br>Music *</span>
-                    <div style="display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; align-items: center;">
+                    <div style="display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; align-items: center;" id="styleActionButtons">
                         
-                        <!-- FITUR BARU: LANGUAGE DROPDOWN & AUTO-STYLE -->
-                        <select id="autoStyleLang" class="hidden" style="background: rgba(236, 72, 153, 0.05); color: #ec4899; border: 1px solid rgba(236, 72, 153, 0.2); padding: 4px 8px; border-radius: 6px; font-size: 0.7rem; font-weight: 700; outline: none; cursor: pointer; height: 26px;">
-                            <option value="english">English</option>
-                            <option value="indonesian">Indonesia</option>
-                        </select>
-                        <button type="button" id="btnAudioToStyle" class="magic-wand-btn hidden" style="background: rgba(236, 72, 153, 0.1); color: #ec4899; border-color: rgba(236, 72, 153, 0.2); padding: 4px 8px; font-size: 0.7rem; height: 26px;" onclick="window.extractStyleFromAudio()" title="Analisis Audio ke Teks">
+                        <!-- FITUR BARU: CUSTOM DROPDOWN BAHASA (Tanpa Popup Browser) -->
+                        <div class="custom-select-container hidden" id="langDropdownContainer" style="width: auto;">
+                            <div class="custom-select-trigger" onclick="window.toggleCustomSelect('styleLangDropdownOptions')" style="background: rgba(236, 72, 153, 0.05); color: #ec4899; border: 1px solid rgba(236, 72, 153, 0.3); padding: 4px 10px; border-radius: 6px; font-size: 0.7rem; font-weight: 700; height: 26px; min-height: 26px; box-shadow: none;">
+                                <span id="styleLangSelectedLabel">English</span>
+                                <i class="fa-solid fa-chevron-down" style="font-size: 0.6rem; margin-left: 6px; color: #ec4899;"></i>
+                            </div>
+                            <div class="custom-select-options hidden" id="styleLangDropdownOptions" style="border: 1px solid rgba(236, 72, 153, 0.3); min-width: 120px; top: calc(100% + 4px); padding: 4px; right: 0; left: auto;">
+                                <div class="custom-select-option selected" onclick="window.selectStyleLang('english', 'English')" style="padding: 8px 10px; font-size: 0.75rem;">English</div>
+                                <div class="custom-select-option" onclick="window.selectStyleLang('indonesian', 'Indonesia')" style="padding: 8px 10px; font-size: 0.75rem;">Indonesia</div>
+                            </div>
+                        </div>
+                        <input type="hidden" id="autoStyleLang" value="english">
+
+                        <!-- TOMBOL AUTO-STYLE -->
+                        <button type="button" id="btnAudioToStyle" class="magic-wand-btn hidden" style="background: rgba(236, 72, 153, 0.1); color: #ec4899; border-color: rgba(236, 72, 153, 0.3); padding: 4px 10px; font-size: 0.7rem; height: 26px; border-radius: 6px; box-shadow: none;" onclick="window.extractStyleFromAudio()" title="Analisis Audio ke Teks">
                             <i class="fa-solid fa-compact-disc"></i> Auto-Style
                         </button>
                         
-                        <button type="button" class="magic-wand-btn" style="background: rgba(245, 158, 11, 0.1); color: #f59e0b; border-color: rgba(245, 158, 11, 0.2); padding: 4px 8px; font-size: 0.7rem; height: 26px;" onclick="window.openPromptModal()" title="Lihat Daftar Inspirasi Prompt">
-                            <i class="fa-solid fa-lightbulb"></i> Inspirasi
-                        </button>
-                        <button type="button" class="magic-wand-btn" style="padding: 4px 8px; font-size: 0.7rem; height: 26px;" onclick="triggerMagicWand('style')" title="Auto-Generate Style via AI">
-                            <i class="fa-solid fa-wand-magic-sparkles"></i> AI
-                        </button>
-                        <button type="button" class="action-icon-btn" style="padding: 4px 8px; font-size: 0.7rem; height: 26px;" onclick="clearInput('styleInput', 'styleCounter', 1000)" title="Hapus Teks">
+                        <!-- TOMBOL HAPUS -->
+                        <button type="button" class="action-icon-btn" style="padding: 4px 10px; font-size: 0.7rem; height: 26px; border-radius: 6px; box-shadow: none;" onclick="clearInput('styleInput', 'styleCounter', 1000)" title="Hapus Teks">
                             <i class="fa-solid fa-trash-can"></i>
                         </button>
                     </div>
@@ -5269,7 +5273,7 @@
         // LOGIKA DYNAMIC TOGGLE & SELECTION CUSTOM DROPDOWN UI
         // ============================================================
         window.toggleCustomSelect = function(dropdownId) {
-            const dropdowns = ['providerDropdown', 'modelDropdown', 'sunoModelDropdown', 'vocalGenderDropdown', 'llmDropdown', 'voiceGenderDropdown'];
+            const dropdowns = ['providerDropdown', 'modelDropdown', 'sunoModelDropdown', 'vocalGenderDropdown', 'llmDropdown', 'voiceGenderDropdown', 'styleLangDropdownOptions'];
             dropdowns.forEach(id => {
                 if (id !== dropdownId) {
                     const el = document.getElementById(id);
@@ -5282,13 +5286,25 @@
 
         document.addEventListener('click', (e) => {
             if (!e.target.closest('.custom-select-container')) {
-                const dropdowns = ['providerDropdown', 'modelDropdown', 'sunoModelDropdown', 'vocalGenderDropdown', 'llmDropdown', 'voiceGenderDropdown'];
+                const dropdowns = ['providerDropdown', 'modelDropdown', 'sunoModelDropdown', 'vocalGenderDropdown', 'llmDropdown', 'voiceGenderDropdown', 'styleLangDropdownOptions'];
                 dropdowns.forEach(id => {
                     const el = document.getElementById(id);
                     if (el) el.classList.add('hidden');
                 });
             }
         });
+
+        window.selectStyleLang = function(val, label) {
+            document.getElementById('autoStyleLang').value = val;
+            document.getElementById('styleLangSelectedLabel').innerText = label;
+            document.getElementById('styleLangDropdownOptions').classList.add('hidden');
+            
+            const options = document.getElementById('styleLangDropdownOptions').querySelectorAll('.custom-select-option');
+            options.forEach(opt => {
+                if (opt.innerText === label) opt.classList.add('selected');
+                else opt.classList.remove('selected');
+            });
+        };
 
         window.selectVoiceGenderOption = function(val, labelHtml) {
             document.getElementById('voiceGenderFilter').value = val;
@@ -5387,9 +5403,9 @@
             const generateBtn = document.getElementById('generateBtn');
             const benefitDesc = generateBtn.nextElementSibling;
             
-            // Elemen Baru Auto-Style
+            // Elemen Baru Auto-Style (FIX)
             const btnAudioToStyle = document.getElementById('btnAudioToStyle');
-            const selectLang = document.getElementById('autoStyleLang');
+            const selectLangContainer = document.getElementById('langDropdownContainer');
 
             localStorage.setItem('kreaverse_last_mode', mode);
 
@@ -5404,7 +5420,7 @@
                 if(voiceSection) voiceSection.classList.add('hidden');
                 
                 if(btnAudioToStyle) btnAudioToStyle.classList.add('hidden');
-                if(selectLang) selectLang.classList.add('hidden');
+                if(selectLangContainer) selectLangContainer.classList.add('hidden');
                 
                 selectedAudioUrl = ""; 
                 if(modeDesc) modeDesc.innerText = "Buat lagu baru dari awal menggunakan lirik dan gaya musik Anda sendiri.";
@@ -5426,7 +5442,7 @@
                 if(voiceSection) voiceSection.classList.add('hidden');
                 
                 if(btnAudioToStyle) btnAudioToStyle.classList.remove('hidden');
-                if(selectLang) selectLang.classList.remove('hidden');
+                if(selectLangContainer) selectLangContainer.classList.remove('hidden');
                 
                 if(modeDesc) modeDesc.innerText = "Unggah audio referensi (maks 8 menit). AI akan mengubah gaya musiknya sesuai prompt Anda.";
                 
@@ -5447,7 +5463,7 @@
                 if(voiceSection) voiceSection.classList.remove('hidden');
                 
                 if(btnAudioToStyle) btnAudioToStyle.classList.add('hidden');
-                if(selectLang) selectLang.classList.add('hidden');
+                if(selectLangContainer) selectLangContainer.classList.add('hidden');
                 
                 if(modeDesc) modeDesc.innerText = "Kloning suara Anda sendiri atau ekstrak karakter vokal dari lagu AI sebelumnya.";
                 
