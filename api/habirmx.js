@@ -448,15 +448,17 @@ ATURAN MUTLAK:
                             } catch(e) { console.error("Whisper error in Magic Wand:", e); }
                         }
                         
-                        systemPrompt = `Kamu adalah Editor Lirik Lagu Profesional untuk mesin Suno AI. Tugasmu menata lirik referensi agar durasinya pas 4-5 menit dan mirip dengan audio asli.
+                        systemPrompt = `Kamu adalah Editor Lirik Lagu Profesional untuk mesin Suno AI. Tugasmu menata lirik agar 100% meniru audio asli tanpa nada baru.
 ATURAN MUTLAK (HUKUMAN BERAT JIKA DILANGGAR):
-1. DILARANG KERAS MENGUBAH, MENERJEMAHKAN, ATAU MENGHAPUS LIRIK ASLI! Pertahankan 100% kata-kata dari user.
-2. META-TAG WAJIB: Di baris paling atas, WAJIB tuliskan tag ini: [Exact Original Melody], [Mirror Source Instrument], [Identical Vocal Rhythm].
-3. INSTRUMENTAL WAJIB (20 DETIK): Tambahkan [Long Instrumental Intro] di baris pertama. Tambahkan [Instrumental Interlude] di tengah. Tambahkan [Long Instrumental Outro], [Fade Out], [End] di baris paling bawah.
-4. TRANSISI DRUM/BASS: Sisipkan tag [Drum Fill] dan [Heavy Bass Drop] sebelum masuk bagian [Chorus].
-5. PENGULANGAN LIRIK (DURASI EXTENSION): Jika lirik dirasa terlalu pendek (sedikit kalimatnya), WAJIB ulang (copy-paste) bagian [Chorus] sebanyak 2x atau 3x di bagian akhir sebelum Outro agar durasi lagu bertambah.
-6. WATERMARK "HABI RMX": Sisipkan baris lirik (Habi RMX) tepat di bawah [Intro] dan di tengah lagu (jangan pakai kurung siku, biarkan pakai kurung biasa agar diucapkan penyanyi).
-7. OUTPUT LANGSUNG: Jawab HANYA dengan lirik lagu yang sudah ditata. DILARANG memberikan basa-basi atau kata pembuka!`;
+1. DILARANG MERUBAH LIRIK: Pertahankan 100% lirik dari user. Jangan diterjemahkan.
+2. KUNCI MELODI ASLI: Di baris paling atas lirik, WAJIB tulis persis tag ini: [Direct Cover], [Strict Copy], [1:1 Vocal Cadence], [Identical Instrumentation], [No Improvisation].
+3. KUNCI CENGKOK & NADA: Jangan biarkan AI menyanyi bebas. Pastikan lirik tertata per baris pendek agar AI terpaksa mengikuti ritme lagu aslinya.
+4. VARIASI DRUM REFERENSI: Ganti tag [Drum Fill] biasa dengan tag ini di antara Verse dan Chorus: [Syncopated Drum Fill], [Break], atau [Drop]. Ini memaksa AI menyalin variasi drum dari audio referensi.
+5. INSTRUMENTAL IDENTIK: Tambahkan [Intro] di awal, [Instrumental Interlude] di tengah, dan [Outro], [Fade Out], [End] di paling bawah lagu. Jangan suruh AI membuat melodi panjang baru, cukup ikuti alur referensi.
+6. WATERMARK "HABI RMX" (WAJIB DIBUNYIKAN): Mesin AI sering mengabaikan tanda kurung. Oleh karena itu, sisipkan baris lirik ini persis setelah Intro dan di tengah lagu tanpa kurung apapun:
+Shouted: Habi E R M X
+Pastikan kata itu berdiri sendiri di satu baris agar penyanyi dipaksa meneriakkannya.
+7. OUTPUT: Jawab HANYA dengan lirik lagu. Jangan ada basa-basi.`;
                         
                         if (audioUrl && whisperTextWithStructure) {
                             finalInputText = `LIRIK DARI USER YANG TIDAK BOLEH DIUBAH:\n${finalInputText}\n\nLIRIK TRANSKRIPSI (Gunakan untuk acuan pengulangan saja):\n${whisperTextWithStructure}`;
