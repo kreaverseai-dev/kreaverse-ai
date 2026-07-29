@@ -8281,39 +8281,69 @@ window.startDspBypassAndUpload = async function() {
             
             // Tutup DSP Studio dan Munculkan Top Progress
             document.getElementById('dspStudioWrapper').classList.add('hidden');
-            showTopProgress("Memotong & Mengunggah...", "#10b981");
+            showTopProgress("Mengunggah Audio...", "#10b981");
             
             try {
-                updateTopProgress(15, "Menerapkan Pemotongan Audio...");
-                
-                // FIX BUG DURASI (POIN 15): Matikan DSP Master, tapi paksa proses potong (Trimmer) berjalan
-                const masterToggleV1 = document.getElementById('globalMasterToggle');
-                if(masterToggleV1) masterToggleV1.checked = false;
-                
-                let trimmedBlob = rawAudioFile;
-                if (typeof processKreaverseAudio === 'function') {
-                    trimmedBlob = await processKreaverseAudio(rawAudioFile, false, () => {});
-                } else if (typeof processStealthAudio === 'function') {
-                    trimmedBlob = await processStealthAudio(rawAudioFile, false, () => {});
+                // --- LOGIKA BARU: CEK APAKAH BENAR-BENAR DIPOTONG ---
+                const parseTimeLocal = (timeStr) => {
+                    if (!timeStr) return 0;
+                    const parts = timeStr.split(':');
+                    if (parts.length !== 2) return 0;
+                    const m = parseInt(parts[0], 10);
+                    const s = parseInt(parts[1], 10);
+                    return (isNaN(m) || isNaN(s)) ? 0 : (m * 60) + s;
+                };
+
+                let startSec = parseTimeLocal(document.getElementById('trimStartInput').value);
+                let endSec = parseTimeLocal(document.getElementById('trimEndInput').value);
+                const origPlayer = document.getElementById('originalAudioPlayer');
+                let maxDur = (origPlayer && isFinite(origPlayer.duration)) ? origPlayer.duration : 0;
+
+                let needsTrimming = false;
+                // Jika start lebih dari 0, ATAU end kurang dari durasi asli (dan bukan 00:00), berarti dipotong
+                if (startSec > 0 || (endSec > 0 && endSec < Math.floor(maxDur))) {
+                    needsTrimming = true;
+                }
+
+                let trimmedBlob = rawAudioFile; // Default pakai file asli murni
+
+                if (needsTrimming) {
+                    updateTopProgress(15, "Menerapkan Pemotongan Audio...");
+                    
+                    // Matikan DSP Master, tapi paksa proses potong (Trimmer) berjalan
+                    const masterToggleV1 = document.getElementById('globalMasterToggle');
+                    if(masterToggleV1) masterToggleV1.checked = false;
+                    
+                    if (typeof processKreaverseAudio === 'function') {
+                        trimmedBlob = await processKreaverseAudio(rawAudioFile, false, () => {});
+                    } else if (typeof processStealthAudio === 'function') {
+                        trimmedBlob = await processStealthAudio(rawAudioFile, false, () => {});
+                    }
+                } else {
+                    updateTopProgress(15, "Menyiapkan Audio Original...");
+                    // Langsung pakai rawAudioFile, tidak perlu render ulang!
                 }
 
                 updateTopProgress(50, "Proses upload by Flixa AI");
                 
-                // Kalkulasi Durasi Hasil Potongan untuk Database & UI
+                // Kalkulasi Durasi Hasil untuk Database & UI
                 let finalDurStr = "0:00";
-                const startSec = parseTimeToSeconds(document.getElementById('trimStartInput').value);
-                const endSec = parseTimeToSeconds(document.getElementById('trimEndInput').value);
-                
-                if (endSec > startSec) {
-                    finalDurStr = formatTime(endSec - startSec);
+                if (needsTrimming && endSec > startSec) {
+                    const formatTimeLocal = (sec) => {
+                        const m = Math.floor(sec / 60).toString().padStart(2, '0');
+                        const s = Math.floor(sec % 60).toString().padStart(2, '0');
+                        return `${m}:${s}`;
+                    };
+                    finalDurStr = formatTimeLocal(endSec - startSec);
                 } else {
-                    const origPlayer = document.getElementById('originalAudioPlayer');
-                    if (origPlayer && isFinite(origPlayer.duration) && origPlayer.duration > 0) {
-                        finalDurStr = formatTime(origPlayer.duration);
+                    if (maxDur > 0) {
+                        const m = Math.floor(maxDur / 60).toString().padStart(2, '0');
+                        const s = Math.floor(maxDur % 60).toString().padStart(2, '0');
+                        finalDurStr = `${m}:${s}`;
                     }
                 }
                 
-                // Upload hasil potongan yang benar
+                // Upload hasil (bisa file asli atau potongan)
                 await uploadBlobToCloudinary(trimmedBlob, rawAudioFile.name, false, finalDurStr);
                 
                 updateTopProgress(100, "Selesai");
@@ -8325,7 +8355,7 @@ window.startDspBypassAndUpload = async function() {
                 document.getElementById('uploadedMiniBadge').style.background = "rgba(16,185,129,0.1)";
                 document.getElementById('uploadedMiniBadge').style.color = "#10b981";
                 
-                showIphoneToast("Upload Sukses", "Audio berhasil dipotong dan diunggah.", "fa-circle-check");
+                showIphoneToast("Upload Sukses", needsTrimming ? "Audio berhasil dipotong dan diunggah." : "Audio original berhasil diunggah.", "fa-circle-check");
                 
             } catch(err) {
                 console.error(err);
