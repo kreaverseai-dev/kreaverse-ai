@@ -5988,10 +5988,19 @@
                     if (docSnap.exists() && docSnap.data().list) {
                         const list = docSnap.data().list;
                         
-                        // Filter Audio Providers
+                        // FIX BUG ELEVENLABS: Filter Audio Providers secara Ketat
                         globalAudioProviders = list.filter(m => {
                             if (!m.serviceType) return true;
+                            
                             const type = String(m.serviceType).toLowerCase();
+                            const label = String(m.label || m.name || m.provider || "").toLowerCase();
+                            
+                            // BLOKIR KERAS: Jangan masukkan ElevenLabs, Google TTS, atau Whisper ke daftar mesin musik!
+                            if (label.includes('elevenlabs') || label.includes('google tts') || label.includes('whisper') || label.includes('tts') || label.includes('speech')) {
+                                return false; 
+                            }
+                            
+                            // Hanya loloskan yang benar-benar untuk Music Generation
                             return type === "audio" || type === "music" || type === "text-to-audio";
                         });
                         
