@@ -3924,12 +3924,6 @@
         let activeCloudinaryAccounts = [];
         let rawAudioFile = null; 
         let isAdmin = false; 
-        
-        // LOGO CADANGAN PREMIUM FLIXA AI (BASE64 SVG)
-        window.flixaLogo = "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MDAgNTAwIiB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCI+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJmbGl4YVByZW1pdW0iIHgxPSIwJSIgeTE9IjEwMCUiIHgyPSIxMDAlIiB5Mj0iMCUiPjxzdG9wIG9mZnNldD0iMCUiIHN0b3AtY29sb3I9IiMxQTE0NDkiIC8+PHN0b3Agb2Zmc2V0PSI1MCUiIHN0b3AtY29sb3I9IiM3QjI5NTYiIC8+PHN0b3Agb2Zmc2V0PSIxMDAlIiBzdG9wLWNvbG9yPSIjRDk1MDQwIiAvPjwvbGluZWFyR3JhZGllbnQ+PC9kZWZzPjxyZWN0IHdpZHRoPSI1MDAiIGhlaWdodD0iNTAwIiBmaWxsPSJ1cmwoI2ZsaXhhUHJlbWl1bSkiLz48cGF0aCBkPSJNIDMyMCAxNjAgQyAzMjAgNjAsIDE5MCA2MCwgMTkwIDIwMCBDIDE5MCAyOTAsIDIzMCAzMjAsIDIzMCA0MDAiIHN0cm9rZT0iI0ZGRkZGRiIgc3Ryb2tlLXdpZHRoPSI3MCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIiAvPjxwYXRoIGQ9Ik0gMTIwIDI1MCBRIDIxMCAyMDAgMzAwIDI1MCIgc3Ryb2tlPSIjRkZGRkZGIiBzdHJva2Utd2lkdGg9IjcwIiBzdHJva2UtbGluZWNhcD0icm91bmQiIGZpbGw9Im5vbmUiIC8+PC9zdmc+"; 
-        
-        // LOGO CADANGAN PREMIUM FLIXA AI (BASE64 SVG)
-        window.flixaLogo = "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MDAgNTAwIiB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCI+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJmbGl4YVByZW1pdW0iIHgxPSIwJSIgeTE9IjEwMCUiIHgyPSIxMDAlIiB5Mj0iMCUiPjxzdG9wIG9mZnNldD0iMCUiIHN0b3AtY29sb3I9IiMxQTE0NDkiIC8+PHN0b3Agb2Zmc2V0PSI1MCUiIHN0b3AtY29sb3I9IiM3QjI5NTYiIC8+PHN0b3Agb2Zmc2V0PSIxMDAlIiBzdG9wLWNvbG9yPSIjRDk1MDQwIiAvPjwvbGluZWFyR3JhZGllbnQ+PC9kZWZzPjxyZWN0IHdpZHRoPSI1MDAiIGhlaWdodD0iNTAwIiBmaWxsPSJ1cmwoI2ZsaXhhUHJlbWl1bSkiLz48cGF0aCBkPSJNIDMyMCAxNjAgQyAzMjAgNjAsIDE5MCA2MCwgMTkwIDIwMCBDIDE5MCAyOTAsIDIzMCAzMjAsIDIzMCA0MDAiIHN0cm9rZT0iI0ZGRkZGRiIgc3Ryb2tlLXdpZHRoPSI3MCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIiAvPjxwYXRoIGQ9Ik0gMTIwIDI1MCBRIDIxMCAyMDAgMzAwIDI1MCIgc3Ryb2tlPSIjRkZGRkZGIiBzdHJva2Utd2lkdGg9IjcwIiBzdHJva2UtbGluZWNhcD0icm91bmQiIGZpbGw9Im5vbmUiIC8+PC9zdmc+"; 
 
         // ============================================================
         // SIDEBAR MENU LOGIC
@@ -4093,7 +4087,7 @@
             if (!track) return;
 
             const cleanTitle = (track.title || "Untitled").replace(/\s*\(Part\s*\d+\)/gi, '').replace(/\s*-\s*(?:Versi|Track)\s*\d+/gi, '').trim();
-            const safeThumb = track.imageUrl || window.flixaLogo;
+            const safeThumb = track.imageUrl || "https://i.postimg.cc/Jh211FTG/46cc61ec-de7f-4c62-8245-946e22312d2b.jpg";
             
             window.isPlaylistUIOpen = false;
             window.isMasteringUIOpen = false;
@@ -4323,176 +4317,9 @@
 
             displayDocs.forEach((d, index) => {
                 const isFailed = d.status === 'failed';
-                const safeThumb = d.imageUrl || window.flixaLogo;
+                const safeThumb = d.imageUrl || "https://i.postimg.cc/Jh211FTG/46cc61ec-de7f-4c62-8245-946e22312d2b.jpg";
                 // Membersihkan teks (Part X) atau - Versi X dari judul utama karena sudah ada di Badge Track
                 const rawTitle = d.title || 'Untitled Song';
-                const displayTitle = rawTitle.replace(/\s*\(Part\s*\d+\)/gi, '').replace(/\s*-\s*(?:Versi|Track)\s*\d+/gi, '').trim();
-                const displayPrompt = d.prompt || 'No style provided';
-                const modelBadge = d.model || 'v5.5-all'; 
-                
-                // Cek status Like/Dislike
-                const isLiked = d.liked ? 'active-like' : '';
-                const isDisliked = d.disliked ? 'active-dislike' : '';
-
-                // Format pesan error
-                let displayError = d.error || 'Terkena Copyright / Error Server';
-                if (!isAdmin && (displayError.toLowerCase().includes('saldo') || displayError.toLowerCase().includes('balance') || displayError.toLowerCase().includes('insufficient') || displayError.toLowerCase().includes('credit'))) {
-                    displayError = 'Server sedang sibuk/penuh. Silakan coba lagi nanti.';
-                }
-
-                // --- INJEKSI KOTAK CENTANG (CHECKBOX) ---
-                const isChecked = selectedItemIds.includes(d.id) ? 'checked' : '';
-                const selectionClass = window.isSelectionMode ? 'selection-mode' : '';
-                const checkboxHtml = `
-                    <div class="suno-item-checkbox-container" onclick="event.stopPropagation()">
-                        <input type="checkbox" class="suno-item-checkbox" value="${d.id}" onchange="window.handleItemSelection('${d.id}', this.checked)" ${isChecked}>
-                    </div>
-                `;
-
-                // --- PEMISAH ANTAR GENERATE (POIN 3) ---
-                const currentGroup = d.taskId || Math.floor((d.timestamp || 0) / 5000);
-                if (index > 0 && currentGroup !== lastTaskId) {
-                    // Format Waktu Detail untuk Sesi Sebelumnya
-                    const dateObj = new Date(d.timestamp || Date.now());
-                    const days = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
-                    const months = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
-                    
-                    let h = dateObj.getHours();
-                    let m = dateObj.getMinutes().toString().padStart(2, '0');
-                    let period = 'pagi';
-                    if (h >= 11 && h < 15) period = 'siang';
-                    else if (h >= 15 && h < 18) period = 'sore';
-                    else if (h >= 18 || h < 4) period = 'malam';
-                    let displayH = h % 12 || 12;
-                    
-                    const timeString = `${days[dateObj.getDay()]}, ${dateObj.getDate()} ${months[dateObj.getMonth()]} ${dateObj.getFullYear()} • Pukul ${displayH}.${m} ${period}`;
-
-                    html += `
-                        <div style="text-align: center; margin: 16px 0 24px 0; position: relative;">
-                            <div style="position: absolute; top: 50%; left: 0; width: 100%; border-top: 2px dashed #94a3b8; z-index: 1; opacity: 0.3;"></div>
-                            <span style="position: relative; z-index: 2; background: #fafafc; padding: 0 14px; font-size: 0.7rem; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 1px; display: inline-flex; flex-direction: column; align-items: center; gap: 4px;">
-                                <span><i class="fa-solid fa-layer-group"></i> Sesi Generate Sebelumnya</span>
-                                <span style="font-size: 0.6rem; font-weight: 700; color: #94a3b8; text-transform: none; letter-spacing: 0;">${timeString}</span>
-                            </span>
-                        </div>
-                    `;
-                }
-                lastTaskId = currentGroup;
-
-                if (isFailed) {
-                    const safeTitleForJS = displayTitle.replace(/'/g, "\\'").replace(/"/g, "&quot;");
-                    const safeErrorJS = displayError.replace(/'/g, "\\'").replace(/"/g, "&quot;").replace(/\n/g, " ").replace(/\r/g, "");
-                    
-                    html += `
-                        <div class="suno-lib-item ${selectionClass}" style="background: linear-gradient(145deg, #fff0f0, #ffe4e4); border: 1px solid #fecaca; border-radius: 16px; padding: 14px; box-shadow: none;">
-                            ${checkboxHtml}
-                            <div class="suno-thumb-wrapper" style="background: transparent; display:flex; align-items:center; justify-content:center; border-radius: 10px; width: 60px; height: 60px; overflow: hidden; border: 1px solid rgba(239,68,68,0.3);">
-                                <img src="${window.flixaLogo}" style="width:100%; height:100%; object-fit:cover; border-radius: 10px;">
-                            </div>
-                            <div class="suno-lib-details" style="gap: 4px;">
-                                <div class="suno-title-row" style="align-items: flex-start; gap: 6px;">
-                                    <div style="flex: 1; min-width: 0;">
-                                        <div id="title-short-${d.id}" class="suno-title" style="color:#991B1B; white-space: normal; line-height: 1.35; font-weight: 800; font-size: 1rem; letter-spacing: -0.2px; display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden;">${displayTitle}</div>
-                                        <div id="title-full-${d.id}" class="suno-title hidden" style="color:#991B1B; white-space: normal; line-height: 1.35; font-weight: 800; font-size: 1rem; letter-spacing: -0.2px;">${displayTitle}</div>
-                                    </div>
-                                    <button onclick="event.stopPropagation(); const s = document.getElementById('title-short-${d.id}'); const f = document.getElementById('title-full-${d.id}'); if(f.classList.contains('hidden')){ f.classList.remove('hidden'); s.classList.add('hidden'); this.innerHTML='<i class=\\'fa-solid fa-chevron-up\\'></i>'; } else { f.classList.add('hidden'); s.classList.remove('hidden'); this.innerHTML='<i class=\\'fa-solid fa-chevron-down\\'></i>'; }" style="background: rgba(239, 68, 68, 0.15); border: none; color: #ef4444; border-radius: 6px; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; font-size: 0.7rem;"><i class="fa-solid fa-chevron-down"></i></button>
-                                </div>
-                                <div style="margin-top: 2px;">
-                                    <span class="suno-badge" style="background:rgba(239,68,68,0.1); color:#DC2626; border-color:rgba(239,68,68,0.2);"><i class="fa-solid fa-bug"></i> Gagal</span>
-                                </div>
-                                <div class="suno-prompt" style="color:#DC2626; margin-top:2px; display:-webkit-box; -webkit-line-clamp:1; -webkit-box-orient:vertical; overflow:hidden; font-weight: 500;">Alasan: ${displayError}</div>
-                                <div style="margin-top: 4px; display: flex; gap: 6px; flex-wrap: wrap;">
-                                    <button onclick="if(!window.isSelectionMode) window.openErrorDetail('${d.id}')" style="background:#EF4444; color:#fff; border:none; padding:4px 10px; border-radius:6px; font-size:0.7rem; font-weight:800; cursor:pointer; transition:0.2s;"><i class="fa-solid fa-magnifying-glass"></i> Lihat Alasan</button>
-                                    <button onclick="if(!window.isSelectionMode) window.autoRemixFailedAudio('${d.id}')" style="background:#f59e0b; color:#fff; border:none; padding:4px 10px; border-radius:6px; font-size:0.7rem; font-weight:800; cursor:pointer; transition:0.2s; box-shadow: 0 2px 4px rgba(245,158,11,0.3);"><i class="fa-solid fa-rotate-right"></i> Edit Audio</button>
-                                </div>
-                            </div>
-                        </div>
-                    `;
-                } else {
-                    const safeTitleForJS = displayTitle.replace(/'/g, "\\'").replace(/"/g, "&quot;");
-                    const safeUrlForJS = d.url ? d.url.replace(/'/g, "\\'") : '';
-                    const safeThumbForJS = safeThumb.replace(/'/g, "\\'");
-
-                    const redDotHtml = d.isNew ? `<div style="width:8px; height:8px; background:#ef4444; border-radius:50%; flex-shrink:0; box-shadow: 0 0 6px rgba(239,68,68,0.6); margin-top:5px;" title="Lagu Baru"></div>` : '';
-
-                    // 1. Bersihkan nama model (Menampilkan format Flixa AI)
-                    let cleanModel = modelBadge.trim();
-                    if (!cleanModel.toLowerCase().includes('flixa')) {
-                        cleanModel = cleanModel.replace(/Suno /i, '').trim();
-                        cleanModel = `Flixa AI ${cleanModel}`;
-                    }
-                    
-                    // 2. Tentukan Mode & Icon
-                    const modeText = d.mode === 'cover' ? 'Cover Lagu' : 'Lagu Sendiri';
-                    const modeIcon = d.mode === 'cover' ? '<i class="fa-solid fa-microphone-lines"></i>' : '<i class="fa-solid fa-music"></i>';
-
-                    // 3. FIX: Logika Pintar Penentuan Track 1 & 2 (Berdasarkan Task ID, bukan Regex Judul)
-                    const siblings = docs.filter(doc => doc.taskId === d.taskId).sort((a, b) => b.timestamp - a.timestamp);
-                    const trackIndex = siblings.findIndex(doc => doc.id === d.id);
-                    let trackNum = trackIndex !== -1 ? trackIndex + 1 : 1;
-
-                    // 4. FIX: Logika Animasi GIF saat lagu diputar
-                    const isPlaying = (currentPlayingDocId === d.id && document.getElementById('globalMiniPlayer').classList.contains('show') && !document.getElementById('globalAudioEl').paused);
-                    let playingOverlay = isPlaying ? `<div style="position:absolute; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); display:flex; align-items:center; justify-content:center; border-radius:10px; z-index: 5;"><img src="https://i.gifer.com/origin/b4/b4d657e7ef262b88eb5f7ac021edda87.gif" style="width:20px; height:20px; opacity:0.9;"></div>` : '';
-
-                    html += `
-                        <div class="suno-lib-item ${selectionClass}" style="border-radius: 16px; background: linear-gradient(145deg, #f0f8ff, #e0f2fe); border: 1px solid #bae6fd; box-shadow: none; transition: transform 0.2s, background 0.2s; padding: 14px;">
-                            ${checkboxHtml}
-                            <div class="suno-thumb-wrapper" onclick="if(!window.isSelectionMode) window.playLibraryTrack('${d.id}')" style="border-radius: 10px; width: 60px; height: 60px; position: relative;">
-                                <img src="${safeThumb}" onerror="this.src=window.flixaLogo" alt="Cover" style="border-radius: 10px; width: 100%; height: 100%; object-fit: cover;">
-                                <div class="suno-play-overlay" style="border-radius: 10px; z-index: 4;"><i class="fa-solid fa-play"></i></div>
-                                <div class="suno-dur-badge" id="lib-dur-${d.id}" style="z-index: 6;">${d.duration || '--:--'}</div>
-                                ${playingOverlay}
-                            </div>
-                            
-                            <div class="suno-lib-details" style="gap: 4px;">
-                                <!-- JUDUL FULL, BUKA TUTUP (POIN 2) -->
-                                <div class="suno-title-row" style="align-items: flex-start; gap: 6px;">
-                                    ${redDotHtml}
-                                    <div style="flex: 1; min-width: 0;">
-                                        <div id="title-short-${d.id}" class="suno-title" onclick="if(!window.isSelectionMode) window.openSongDetails('${d.id}')" style="color:#0f172a; white-space: normal; line-height: 1.35; margin-top: -2px; font-weight: 800; font-size: 1rem; letter-spacing: -0.2px; display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden;">${displayTitle}</div>
-                                        <div id="title-full-${d.id}" class="suno-title hidden" onclick="if(!window.isSelectionMode) window.openSongDetails('${d.id}')" style="color:#0f172a; white-space: normal; line-height: 1.35; margin-top: -2px; font-weight: 800; font-size: 1rem; letter-spacing: -0.2px;">${displayTitle}</div>
-                                    </div>
-                                    <button onclick="event.stopPropagation(); const s = document.getElementById('title-short-${d.id}'); const f = document.getElementById('title-full-${d.id}'); if(f.classList.contains('hidden')){ f.classList.remove('hidden'); s.classList.add('hidden'); this.innerHTML='<i class=\\'fa-solid fa-chevron-up\\'></i>'; } else { f.classList.add('hidden'); s.classList.remove('hidden'); this.innerHTML='<i class=\\'fa-solid fa-chevron-down\\'></i>'; }" style="background: rgba(0, 122, 255, 0.1); border: none; color: var(--accent-color); border-radius: 6px; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; font-size: 0.7rem;"><i class="fa-solid fa-chevron-down"></i></button>
-                                </div>
-                                
-                                <!-- MODE & TRACK DI KIRI -->
-                                <div style="display: flex; align-items: center; gap: 6px; width: 100%; margin-top: 2px;">
-                                    <span class="suno-badge" style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.2); color: #059669; padding: 2px 8px; border-radius: 6px; font-size: 0.65rem; font-weight: 800;">${modeIcon} ${modeText}</span>
-                                    <span class="suno-badge" style="background: #ffffff; border: 1px solid #bfdbfe; color: var(--text-primary); padding: 2px 8px; border-radius: 6px; font-size: 0.65rem; font-weight: 800; box-shadow: 0 2px 4px rgba(0,0,0,0.02);"><i class="fa-solid fa-compact-disc" style="color: var(--accent-color); margin-right: 4px;"></i>Track ${trackNum}</span>
-                                </div>
-
-                                <!-- PROMPT (1 BARIS) -->
-                                <div class="suno-prompt" style="font-size: 0.75rem; font-weight: 500; color: #334155; margin-top: 2px; display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden;">${displayPrompt}</div>
-                                
-                                <!-- TOMBOL LIKE, DISLIKE, TITIK TIGA & MODEL V5.5 DI KANAN -->
-                                <div class="suno-btn-group" style="margin-top: 4px; display: flex; gap: 6px; align-items: center; flex-wrap: wrap;">
-                                    <button onclick="window.toggleLike('${d.id}', 'like')" class="suno-action-btn ${isLiked}" title="Like" style="background: #ffffff; border-color: #bfdbfe; flex-shrink: 0; width: 28px; height: 28px; font-size: 0.8rem;"><i class="fa-solid fa-thumbs-up"></i></button>
-                                    <button onclick="window.toggleLike('${d.id}', 'dislike')" class="suno-action-btn ${isDisliked}" title="Dislike" style="background: #ffffff; border-color: #bfdbfe; flex-shrink: 0; width: 28px; height: 28px; font-size: 0.8rem;"><i class="fa-solid fa-thumbs-down"></i></button>
-                                    <button onclick="if(!window.isSelectionMode) window.openMoreOptions('${d.id}')" class="suno-action-btn" title="Opsi Lainnya" style="background: #ffffff; border-color: #bfdbfe; flex-shrink: 0; width: 28px; height: 28px; font-size: 0.8rem;"><i class="fa-solid fa-ellipsis"></i></button>
-                                    
-                                    <style>
-                                        @keyframes textShine {
-                                            0% { background-position: 200% center; }
-                                            20%, 100% { background-position: -200% center; }
-                                        }
-                                        .shimmer-text-badge {
-                                            background: linear-gradient(120deg, #475569 40%, #0ea5e9 50%, #475569 60%);
-                                            background-size: 300% auto;
-                                            -webkit-background-clip: text;
-                                            -webkit-text-fill-color: transparent;
-                                            animation: textShine 10s linear infinite;
-                                        }
-                                    </style>
-                                    <div style="height: 28px; padding: 0 6px; border-radius: 6px; border: 1px solid #bfdbfe; display: flex; align-items: center; justify-content: center; font-size: 0.65rem; font-weight: 800; background: rgba(255,255,255,0.7); white-space: nowrap; flex-shrink: 0;">
-                                        <span class="shimmer-text-badge">${cleanModel}</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    `;
-                }
-            });
                 const displayTitle = rawTitle.replace(/\s*\(Part\s*\d+\)/gi, '').replace(/\s*-\s*(?:Versi|Track)\s*\d+/gi, '').trim();
                 const displayPrompt = d.prompt || 'No style provided';
                 const modelBadge = d.model || 'v5.5-all'; 
@@ -4795,8 +4622,7 @@
             
             // Update UI Info
             document.getElementById('gmpTitle').innerText = title;
-            document.getElementById('gmpThumb').src = thumbUrl || window.flixaLogo;
-            document.getElementById('gmpThumb').onerror = function() { this.src = window.flixaLogo; };
+            document.getElementById('gmpThumb').src = thumbUrl;
             document.getElementById('gmpAuthor').innerText = currentUserData?.nama || "Kreaverse AI User";
             
             // Reset & Play
