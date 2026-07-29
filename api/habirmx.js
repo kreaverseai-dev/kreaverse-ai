@@ -140,9 +140,14 @@ module.exports = async (req, res) => {
         if (action === 'detect_lyrics') {
             if (!audioUrl) return res.status(400).json({ error: 'Audio URL wajib diisi untuk deteksi lirik.' });
             try {
-                // 1. PROSES WHISPER (ASR MENTAH)
-                const whisperKeysQuery = await db.collection("api_keys").where("provider", "==", "Groq Whisper").where("status", "==", "aktif").get();
-                if (whisperKeysQuery.empty) throw new Error("API Key untuk Groq Whisper tidak ditemukan atau mati.");
+                // 1. PROSES WHISPER (ASR MENTAH) - AUTO DETECT PROVIDER
+                const providersDoc = await db.collection("settings").doc("api_providers").get();
+                const allProviders = providersDoc.data()?.list || [];
+                const whisperProvider = allProviders.find(p => String(p.label || p.value || "").toLowerCase().includes("whisper"));
+                if (!whisperProvider) throw new Error("Provider Whisper tidak ditemukan di database API.");
+
+                const whisperKeysQuery = await db.collection("api_keys").where("provider", "==", whisperProvider.value).where("status", "==", "aktif").get();
+                if (whisperKeysQuery.empty) throw new Error("API Key untuk Whisper tidak ditemukan atau mati.");
                 const whisperKey = whisperKeysQuery.docs.sort((a, b) => (a.data().priority || 1) - (b.data().priority || 1))[0].data().key;
 
                 const audioFetch = await fetch(audioUrl);
@@ -230,8 +235,14 @@ TUGAS ANDA:
             if (!audioUrl || !lyrics) return res.status(400).json({ error: 'Audio URL dan Teks Lirik wajib diisi untuk sinkronisasi.' });
             const audioDurationSec = body.audioDuration || 240; 
             try {
-                const whisperKeysQuery = await db.collection("api_keys").where("provider", "==", "Groq Whisper").where("status", "==", "aktif").get();
-                if (whisperKeysQuery.empty) throw new Error("API Key untuk Groq Whisper tidak ditemukan atau mati.");
+                // AUTO DETECT WHISPER PROVIDER
+                const providersDoc = await db.collection("settings").doc("api_providers").get();
+                const allProviders = providersDoc.data()?.list || [];
+                const whisperProvider = allProviders.find(p => String(p.label || p.value || "").toLowerCase().includes("whisper"));
+                if (!whisperProvider) throw new Error("Provider Whisper tidak ditemukan di database API.");
+
+                const whisperKeysQuery = await db.collection("api_keys").where("provider", "==", whisperProvider.value).where("status", "==", "aktif").get();
+                if (whisperKeysQuery.empty) throw new Error("API Key untuk Whisper tidak ditemukan atau mati.");
                 const whisperKey = whisperKeysQuery.docs.sort((a, b) => (a.data().priority || 1) - (b.data().priority || 1))[0].data().key;
 
                 const audioFetch = await fetch(audioUrl);
@@ -629,9 +640,22 @@ ATURAN MUTLAK (HUKUMAN BERAT JIKA DILANGGAR):
 
             const providersDoc = await db.collection("settings").doc("api_providers").get();
             const allProviders = providersDoc.data().list || [];
-            const audioProviders = allProviders.filter(p => !p.serviceType || String(p.serviceType).toLowerCase() === "audio" || String(p.serviceType).toLowerCase() === "music" || String(p.serviceType).toLowerCase() === "text-to-audio");
+            
+            // FIX KETAT: Pisahkan mesin pembuat lagu dari mesin suara (TTS) dan transkripsi (ASR)
+            const audioProviders = allProviders.filter(p => {
+                const sType = String(p.serviceType || "").toLowerCase();
+                const label = String(p.label || p.name || p.provider || p.value || "").toLowerCase();
+                
+                if (sType && !sType.includes("audio") && !sType.includes("music")) return false;
+                
+                // BLOKIR KERAS: Jangan masukkan ElevenLabs, Google TTS, atau Whisper ke daftar mesin musik!
+                if (label.includes('elevenlabs') || label.includes('tts') || label.includes('speech') || label.includes('whisper') || label.includes('asr')) {
+                    return false;
+                }
+                return true;
+            });
 
-            if (audioProviders.length === 0) return res.status(500).json({ error: 'Belum ada provider Audio terdaftar.' });
+            if (audioProviders.length === 0) return res.status(500).json({ error: 'Belum ada provider Mesin Musik terdaftar.' });
 
             const targetProviderId = providerId || modelId;
             const isAutoPool = (targetProviderId === 'auto_pool');
