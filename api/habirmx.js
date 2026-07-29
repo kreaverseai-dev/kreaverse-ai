@@ -717,8 +717,12 @@ ATURAN MUTLAK PENALTI:
                 const keysQuery = await db.collection("api_keys").where("provider", "==", currentProvider.value).where("status", "==", "aktif").get();
                 let sortedKeysDocs = keysQuery.docs.sort((a, b) => (a.data().priority || 1) - (b.data().priority || 1));
 
+                // JIKA PROVIDER INI TIDAK PUNYA KEY AKTIF -> LANGSUNG LEWATI (SKIP), JANGAN BUAT ERROR!
                 if (sortedKeysDocs.length === 0) {
-                    lastErrorMessage = `API Key untuk provider '${currentProvider.value}' tidak ditemukan atau mati.`;
+                    if (lastErrorMessage === "Tidak ada respons dari server.") {
+                        lastErrorMessage = `API Key untuk provider '${currentProvider.value}' tidak ditemukan atau mati.`;
+                    }
+                    continue; 
                 }
 
                 // FILTER KHUSUS VOICE: Paksa sistem hanya melirik API Key si pembuat suara
@@ -872,17 +876,14 @@ ATURAN MUTLAK PENALTI:
                                 });
                             } catch(e) {}
                             
-                            // CUSTOM ERROR JIKA KEY MATI (Tutup info dari user publik)
-                            if (requiredKeyDocId) {
-                                lastErrorMessage = "Server penyimpanan untuk Suara ini baru saja penuh (Auto-Kill). Silakan buat / kloning ulang suara Anda di menu 'Kloning Voice' agar dipindah ke server baru.";
-                            } else {
-                                lastErrorMessage = "Antrean server sedang penuh. Mengalihkan ke jalur AI lain..."; // Rahasiakan alasan saldo habis
-                            }
+                            continue; // <--- LANJUT COBA KEY / PROVIDER LAIN
                         } else {
                             await db.collection("system_logs").add({
                                 type: "error", host: currentProvider.value, request: isAutoPool ? "GENERATE_MUSIC_FAILOVER" : "GENERATE_MUSIC_STRICT",
                                 message: `Koneksi atau pemrosesan gagal: ${apiErr.message}`, timestamp: Date.now()
                             });
+                            
+                            continue; // <--- LANJUT COBA KEY / PROVIDER LAIN
                         }
                     }
                 }
