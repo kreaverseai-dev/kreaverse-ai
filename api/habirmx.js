@@ -92,6 +92,26 @@ function findAudioUrlRecursively(obj) {
     return null;
 }
 
+// FITUR BARU: Pencari Cover Image Multi-Provider
+function findImageUrlRecursively(obj) {
+    if (!obj || typeof obj !== 'object') return null;
+    const targetKeys = ['image_url', 'imageUrl', 'cover_url', 'coverUrl', 'thumbnail', 'pic_url', 'picture', 'image', 'avatar'];
+    for (const key of targetKeys) {
+        if (obj[key] && typeof obj[key] === 'string' && obj[key].startsWith('http')) {
+            if (obj[key].match(/\.(jpg|jpeg|png|gif|webp|svg)$/i) || obj[key].includes('image') || obj[key].includes('cover')) {
+                return obj[key];
+            }
+        }
+    }
+    for (const key in obj) {
+        if (typeof obj[key] === 'object') {
+            const found = findImageUrlRecursively(obj[key]);
+            if (found) return found;
+        }
+    }
+    return null;
+}
+
 function extractErrorString(obj) {
     if (!obj) return null;
     if (typeof obj === 'string') return obj;
@@ -837,14 +857,14 @@ ATURAN MUTLAK PENALTI:
                                 searchTargets.forEach(item => {
                                     let url = findAudioUrlRecursively(item);
                                     if (url) {
-                                        let img = item.image_url || item.imageUrl || item.cover_url || "https://i.postimg.cc/Jh211FTG/46cc61ec-de7f-4c62-8245-946e22312d2b.jpg";
+                                        let img = findImageUrlRecursively(item) || "https://i.postimg.cc/Jh211FTG/46cc61ec-de7f-4c62-8245-946e22312d2b.jpg";
                                         tracks.push({ audioUrl: url, imageUrl: img });
                                     }
                                 });
                             }
 
                             if (tracks.length === 0 && audioUrlVal) {
-                                tracks.push({ audioUrl: audioUrlVal, imageUrl: "https://i.postimg.cc/Jh211FTG/46cc61ec-de7f-4c62-8245-946e22312d2b.jpg" });
+                                tracks.push({ audioUrl: audioUrlVal, imageUrl: findImageUrlRecursively(resData) || "https://i.postimg.cc/Jh211FTG/46cc61ec-de7f-4c62-8245-946e22312d2b.jpg" });
                             }
 
                             if (tracks.length === 0) throw new Error("URL Audio tidak ditemukan pada respons Synchronous API.");
@@ -1058,12 +1078,12 @@ ATURAN MUTLAK PENALTI:
                 if (arrayMatch) {
                     let extractedArray = getValueByPath(resData, arrayMatch[1]);
                     if (Array.isArray(extractedArray) && extractedArray.length > 0) {
-                        tracks = extractedArray.map(item => ({ audioId: item.id || item.audio_id || item.audioId || "", audioUrl: item[arrayMatch[2]] || item.audio_url || item.audioUrl || item.url || item.download_url || "", imageUrl: item.image_url || item.imageUrl || item.cover_url || "https://i.postimg.cc/Jh211FTG/46cc61ec-de7f-4c62-8245-946e22312d2b.jpg" })).filter(t => t.audioUrl && typeof t.audioUrl === 'string' && t.audioUrl.startsWith('http'));
+                        tracks = extractedArray.map(item => ({ audioId: item.id || item.audio_id || item.audioId || "", audioUrl: item[arrayMatch[2]] || item.audio_url || item.audioUrl || item.url || item.download_url || "", imageUrl: findImageUrlRecursively(item) || "https://i.postimg.cc/Jh211FTG/46cc61ec-de7f-4c62-8245-946e22312d2b.jpg" })).filter(t => t.audioUrl && typeof t.audioUrl === 'string' && t.audioUrl.startsWith('http'));
                         if (tracks.length > 0) audioUrlVal = tracks[0].audioUrl;
                     }
                 } else if (typeof extractedMedia === 'string' && extractedMedia.startsWith('http')) {
                     audioUrlVal = extractedMedia;
-                    tracks.push({ audioId: resData.id || resData.audio_id || resData.audioId || taskId, audioUrl: audioUrlVal, imageUrl: "https://i.postimg.cc/Jh211FTG/46cc61ec-de7f-4c62-8245-946e22312d2b.jpg" });
+                    tracks.push({ audioId: resData.id || resData.audio_id || resData.audioId || taskId, audioUrl: audioUrlVal, imageUrl: findImageUrlRecursively(resData) || "https://i.postimg.cc/Jh211FTG/46cc61ec-de7f-4c62-8245-946e22312d2b.jpg" });
                 }
 
                 // REVISI BACKEND: Selalu paksa mencari ke dalam array agar Track 2 tidak terlewat
@@ -1077,7 +1097,7 @@ ATURAN MUTLAK PENALTI:
                     searchTargets.forEach(item => {
                         let url = findAudioUrlRecursively(item);
                         if (url) {
-                            let img = item.image_url || item.imageUrl || item.cover_url || "https://i.postimg.cc/Jh211FTG/46cc61ec-de7f-4c62-8245-946e22312d2b.jpg";
+                            let img = findImageUrlRecursively(item) || "https://i.postimg.cc/Jh211FTG/46cc61ec-de7f-4c62-8245-946e22312d2b.jpg";
                             tracks.push({ audioId: item.id || item.audio_id || item.audioId || taskId, audioUrl: url, imageUrl: img });
                         }
                     });
@@ -1086,7 +1106,7 @@ ATURAN MUTLAK PENALTI:
                 // Jika gagal ekstrak array dan tracks masih kosong, cari 1 URL secara rekursif global
                 if (tracks.length === 0) {
                     audioUrlVal = findAudioUrlRecursively(resData) || audioUrlVal;
-                    if (audioUrlVal) tracks.push({ audioId: resData.id || resData.audio_id || resData.audioId || taskId, audioUrl: audioUrlVal, imageUrl: "https://i.postimg.cc/Jh211FTG/46cc61ec-de7f-4c62-8245-946e22312d2b.jpg" });
+                    if (audioUrlVal) tracks.push({ audioId: resData.id || resData.audio_id || resData.audioId || taskId, audioUrl: audioUrlVal, imageUrl: findImageUrlRecursively(resData) || "https://i.postimg.cc/Jh211FTG/46cc61ec-de7f-4c62-8245-946e22312d2b.jpg" });
                 }
                 
                 if (tracks.length > 0) audioUrlVal = tracks[0].audioUrl;
@@ -1112,14 +1132,13 @@ ATURAN MUTLAK PENALTI:
                             const existingDocs = taskQuery.docs.sort((a, b) => b.data().timestamp - a.data().timestamp);
                             
                             for (let j = 0; j < tracks.length; j++) {
-                                let baseTitle = existingDocs[0].data().title || "Lagu Flixa AI";
-                                // Bersihkan embel-embel lama jika ada
-                                baseTitle = baseTitle.replace(/\s*-\s*(?:Track|Versi)\s*\d+/gi, '').trim();
-                                
                                 if (j < existingDocs.length) {
-                                    // Update dokumen processing yang sudah ada di frontend
                                     const docToUpdate = existingDocs[j];
-                                    if (docToUpdate.data().status !== "complete") {
+                                    let baseTitle = docToUpdate.data().title || "Lagu Flixa AI";
+                                    baseTitle = baseTitle.replace(/\s*-\s*(?:Track|Versi)\s*\d+/gi, '').trim();
+                                    
+                                    // Update dokumen processing yang sudah ada di frontend
+                                    if (docToUpdate.data().status !== "complete" || !docToUpdate.data().url) {
                                         await docToUpdate.ref.update({
                                             status: "complete",
                                             url: tracks[j].audioUrl,
@@ -1127,31 +1146,10 @@ ATURAN MUTLAK PENALTI:
                                             title: `${baseTitle} - Versi ${j + 1}`
                                         });
                                     }
-                                } else {
-                                    // Jika API menghasilkan lebih banyak lagu daripada progress bar yang disiapkan frontend
-                                    // Proteksi tambahan: Jangan buat duplikat jika URL sudah ada di existingDocs
-                                    const urlExists = existingDocs.some(doc => doc.data().url === tracks[j].audioUrl);
-                                    if (!urlExists) {
-                                        await db.collection("render_gallery").add({
-                                            ...existingDocs[0].data(),
-                                            status: "complete",
-                                            url: tracks[j].audioUrl,
-                                            imageUrl: tracks[j].imageUrl || existingDocs[0].data().imageUrl || "https://i.postimg.cc/Jh211FTG/46cc61ec-de7f-4c62-8245-946e22312d2b.jpg",
-                                            title: `${baseTitle} - Versi ${j + 1}`,
-                                            timestamp: Date.now() - (j * 1000) // Kurangi agar berurutan dengan benar
-                                        });
-                                    }
                                 }
                             }
-                            
-                            // Hapus sisa progress bar jika API mengembalikan lagu lebih sedikit dari yang diharapkan
-                            if (existingDocs.length > tracks.length) {
-                                for (let j = tracks.length; j < existingDocs.length; j++) {
-                                    if (existingDocs[j].data().status !== "complete") {
-                                        await existingDocs[j].ref.delete();
-                                    }
-                                }
-                            }
+                            // FIX RACE CONDITION: Hapus logika addDoc dan deleteDoc di sini.
+                            // Kita hanya mengupdate dokumen yang sudah disiapkan oleh frontend.
                         }
                     } catch (dbErr) {
                         console.error("Gagal auto-split tracks ke database:", dbErr);
