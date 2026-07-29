@@ -5585,14 +5585,37 @@
         async function uploadVoiceFileToCloudinary(file) {
             if (typeof fetchCloudinaryAccounts === 'function') await fetchCloudinaryAccounts();
             if (!activeCloudinaryAccounts || activeCloudinaryAccounts.length === 0) throw new Error("Storage Cloudinary penuh/limit.");
-            const targetAccount = activeCloudinaryAccounts[0];
-            const formData = new FormData();
-            formData.append("file", file);
-            formData.append("upload_preset", targetAccount.uploadPreset);
-            const res = await fetch(`https://api.cloudinary.com/v1_1/${targetAccount.cloudName}/auto/upload`, { method: 'POST', body: formData });
-            if(!res.ok) throw new Error("Gagal upload file audio ke server.");
-            const data = await res.json();
-            return data.secure_url;
+            
+            let uploadSuccess = false;
+            let finalUrl = "";
+
+            // LOOPING: Coba semua akun Cloudinary satu per satu
+            for (let i = 0; i < activeCloudinaryAccounts.length; i++) {
+                const targetAccount = activeCloudinaryAccounts[i];
+                const formData = new FormData();
+                formData.append("file", file);
+                formData.append("upload_preset", targetAccount.uploadPreset);
+                
+                try {
+                    const res = await fetch(`https://api.cloudinary.com/v1_1/${targetAccount.cloudName}/auto/upload`, { method: 'POST', body: formData });
+                    
+                    if(!res.ok) {
+                        // Jika gagal, matikan akun ini di database
+                        try { await updateDoc(doc(db, "cloudinary_accounts", targetAccount.id), { status: "limit" }); } catch(e) {}
+                        throw new Error("Limit");
+                    }
+                    
+                    const data = await res.json();
+                    finalUrl = data.secure_url;
+                    uploadSuccess = true;
+                    break; // Berhasil, keluar dari loop
+                } catch(err) {
+                    continue; // Gagal? Coba akun berikutnya
+                }
+            }
+
+            if (!uploadSuccess) throw new Error("Gagal upload file audio, semua server storage penuh.");
+            return finalUrl;
         }
 
         window.getValidationPhrase = async function() {
@@ -7805,25 +7828,44 @@ window.startDspBypassAndUpload = async function() {
 
         async function uploadBlobToCloudinary(blob, originalName, isBypassed = true, durationStr = "0:00") {
             await fetchCloudinaryAccounts();
-            if (activeCloudinaryAccounts.length === 0) throw new Error("Storage limit");
+            if (activeCloudinaryAccounts.length === 0) throw new Error("Semua Akun Storage Penuh/Limit.");
             
-            const targetAccount = activeCloudinaryAccounts[0];
-            const formData = new FormData();
-            const prefix = isBypassed ? "bypassed_" : "original_";
-            formData.append("file", blob, prefix + originalName);
-            formData.append("upload_preset", targetAccount.uploadPreset);
-            
-            const res = await fetch(`https://api.cloudinary.com/v1_1/${targetAccount.cloudName}/auto/upload`, {
-                method: 'POST',
-                body: formData
-            });
-            
-            if(!res.ok) throw new Error("Upload failed");
-            const data = await res.json();
-            selectedAudioUrl = data.secure_url;
-            
-            const type = isBypassed ? "dsp" : "original";
-            saveToUploadHistory(originalName, data.secure_url, type, durationStr);
+            let uploadSuccess = false;
+
+            // LOOPING: Coba semua akun Cloudinary satu per satu
+            for (let i = 0; i < activeCloudinaryAccounts.length; i++) {
+                const targetAccount = activeCloudinaryAccounts[i];
+                const formData = new FormData();
+                const prefix = isBypassed ? "bypassed_" : "original_";
+                formData.append("file", blob, prefix + originalName);
+                formData.append("upload_preset", targetAccount.uploadPreset);
+                
+                try {
+                    const res = await fetch(`https://api.cloudinary.com/v1_1/${targetAccount.cloudName}/auto/upload`, {
+                        method: 'POST',
+                        body: formData
+                    });
+                    
+                    if(!res.ok) {
+                        // Jika gagal (biasanya karena limit), matikan akun ini di database
+                        try { await updateDoc(doc(db, "cloudinary_accounts", targetAccount.id), { status: "limit" }); } catch(e) {}
+                        throw new Error("Limit");
+                    }
+                    
+                    const data = await res.json();
+                    selectedAudioUrl = data.secure_url;
+                    
+                    const type = isBypassed ? "dsp" : "original";
+                    saveToUploadHistory(originalName, data.secure_url, type, durationStr);
+                    
+                    uploadSuccess = true;
+                    break; // Upload berhasil, hentikan loop
+                } catch (err) {
+                    continue; // Gagal? Lanjut ke akun Cloudinary berikutnya
+                }
+            }
+
+            if (!uploadSuccess) throw new Error("Semua Storage Cloudinary Penuh. Hubungi Admin.");
         }
 
         // ============================================================
