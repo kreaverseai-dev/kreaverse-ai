@@ -3994,6 +3994,9 @@
         let globalAudioProviders = [];
         let globalLlmProviders = [];
         window.globalLibraryDocs = []; // Array global untuk menyimpan data lagu
+        
+        // LOGO CADANGAN FLIXA AI (SVG DATA URI)
+        window.flixaFallbackLogo = "data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 500 500' width='200' height='200'%3E%3Cdefs%3E%3ClinearGradient id='flixaPremium' x1='0%25' y1='100%25' x2='100%25' y2='0%25'%3E%3Cstop offset='0%25' stop-color='%231A1449' /%3E%3Cstop offset='50%25' stop-color='%237B2956' /%3E%3Cstop offset='100%25' stop-color='%23D95040' /%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='500' height='500' fill='url(%23flixaPremium)'/%3E%3Cpath d='M 320 160 C 320 60, 190 60, 190 200 C 190 290, 230 320, 230 400' stroke='%23FFFFFF' stroke-width='70' stroke-linecap='round' fill='none' /%3E%3Cpath d='M 120 250 Q 210 200 300 250' stroke='%23FFFFFF' stroke-width='70' stroke-linecap='round' fill='none' /%3E%3C/svg%3E";
 
         // ============================================================
         // SISTEM LIBRARY & PROGRESS PERMANEN (REALTIME)
@@ -4087,7 +4090,7 @@
             if (!track) return;
 
             const cleanTitle = (track.title || "Untitled").replace(/\s*\(Part\s*\d+\)/gi, '').replace(/\s*-\s*(?:Versi|Track)\s*\d+/gi, '').trim();
-            const safeThumb = track.imageUrl || "https://i.postimg.cc/Jh211FTG/46cc61ec-de7f-4c62-8245-946e22312d2b.jpg";
+            const safeThumb = track.imageUrl || window.flixaFallbackLogo;
             
             window.isPlaylistUIOpen = false;
             window.isMasteringUIOpen = false;
@@ -4317,7 +4320,7 @@
 
             displayDocs.forEach((d, index) => {
                 const isFailed = d.status === 'failed';
-                const safeThumb = d.imageUrl || "https://i.postimg.cc/Jh211FTG/46cc61ec-de7f-4c62-8245-946e22312d2b.jpg";
+                const safeThumb = d.imageUrl || window.flixaFallbackLogo;
                 // Membersihkan teks (Part X) atau - Versi X dari judul utama karena sudah ada di Badge Track
                 const rawTitle = d.title || 'Untitled Song';
                 const displayTitle = rawTitle.replace(/\s*\(Part\s*\d+\)/gi, '').replace(/\s*-\s*(?:Versi|Track)\s*\d+/gi, '').trim();
@@ -4380,9 +4383,8 @@
                     html += `
                         <div class="suno-lib-item ${selectionClass}" style="background: linear-gradient(145deg, #fff0f0, #ffe4e4); border: 1px solid #fecaca; border-radius: 16px; padding: 14px; box-shadow: none;">
                             ${checkboxHtml}
-                            <div class="suno-thumb-wrapper" style="background: linear-gradient(135deg, #1A1449, #D95040); display:flex; align-items:center; justify-content:center; color:#fff; font-size:1.5rem; cursor:default; border-radius: 12px; width: 60px; height: 60px; overflow: hidden; border: 1px solid rgba(239,68,68,0.3);">
-                                <img src="logo.png" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" style="width:100%; height:100%; object-fit:cover;">
-                                <div style="display:none; font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 900; font-size: 2rem; font-style: italic;">f</div>
+                            <div class="suno-thumb-wrapper" style="border-radius: 12px; width: 60px; height: 60px; overflow: hidden; border: 1px solid rgba(239,68,68,0.3); flex-shrink: 0; cursor: default;">
+                                <img src="${window.flixaFallbackLogo}" style="width:100%; height:100%; object-fit:cover;">
                             </div>
                             <div class="suno-lib-details" style="gap: 4px;">
                                 <div class="suno-title-row" style="align-items: flex-start; gap: 6px;">
@@ -4909,7 +4911,7 @@
             
             // Set Header UI (Gambar, Judul, Model Badge)
             document.getElementById('detailTitleDisplay').innerText = currentDetailTitle;
-            document.getElementById('detailThumb').src = docData.imageUrl || "https://i.postimg.cc/Jh211FTG/46cc61ec-de7f-4c62-8245-946e22312d2b.jpg";
+            document.getElementById('detailThumb').src = docData.imageUrl || window.flixaFallbackLogo;
             
             let displayModel = docData.model || 'Flixa AI v5.5';
             if (!displayModel.toLowerCase().includes('flixa')) {
