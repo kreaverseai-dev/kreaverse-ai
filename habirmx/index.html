@@ -6507,16 +6507,27 @@
             if (!fileInput.files || fileInput.files.length === 0) return;
             
             rawAudioFile = fileInput.files[0];
-            
             window.activateMiniPlayerUI(rawAudioFile.name);
             
             originalPlayer.src = URL.createObjectURL(rawAudioFile);
             initCustomPlayer('originalAudioPlayer', 'uploadedStateBox');
             initCustomPlayer('originalAudioPlayer', 'cp-original'); 
             
+            // FIX BUG NOISE: Ambil durasi asli lagu baru dan Reset kotak pemotong lagu (Trimmer)
+            originalPlayer.onloadedmetadata = () => {
+                if (isFinite(originalPlayer.duration)) {
+                    document.getElementById('trimStartInput').value = "00:00";
+                    
+                    const m = Math.floor(originalPlayer.duration / 60).toString().padStart(2, '0');
+                    const s = Math.floor(originalPlayer.duration % 60).toString().padStart(2, '0');
+                    document.getElementById('trimEndInput').value = `${m}:${s}`;
+                    
+                    window.validateTrimInputs(); // Validasi ulang
+                }
+            };
+            
             dspStudio.classList.remove('hidden');
             document.getElementById('audioProgressBox').classList.add('hidden');
-            
             initVisualizer();
         };
 
@@ -6879,25 +6890,16 @@ async function processKreaverseAudio(file, isPreview = false, progressCallback) 
             const safeGetVal = (id, def) => { const el = document.getElementById(id); return el ? el.value : def; };
             let startSec = parseTimeToSeconds(safeGetVal('trimStartInput', '00:00'));
             let endSec = parseTimeToSeconds(safeGetVal('trimEndInput', '00:00'));
-            if (endSec === 0 || endSec > originalBuffer.duration) endSec = originalBuffer.duration;
             
-            // 🔥 ULTIMATE FEATURE 1: AGGRESSIVE AUTO-TRIM (ANTI "EXISTING RECORDING" MATCH)
-            if (!isPreview) {
-                // Selalu tambahkan offset acak di awal (0.3 - 1.8 detik) untuk merusak Intro Hash
-                if (startSec === 0) {
-                    startSec += (Math.random() * 1.5) + 0.3;
-                } else {
-                    startSec += (Math.random() * 0.2) + 0.05; // Geser sedikit meski user sudah memotong
-                }
-                
-                // Selalu potong bagian akhir secara acak (0.5 - 2.5 detik) untuk merusak Total Duration Hash
-                if (endSec === originalBuffer.duration) {
-                    endSec -= (Math.random() * 2.0) + 0.5;
-                }
+            // Proteksi ketat: Jangan pernah biarkan durasi melebihi batas asli file
+            if (endSec === 0 || endSec > originalBuffer.duration) {
+                endSec = originalBuffer.duration;
+            }
+            if (startSec >= endSec) {
+                startSec = 0; // Fallback jika input tidak logis
             }
             
             let trimDuration = endSec - startSec;
-            if (trimDuration <= 0) { startSec = 0; trimDuration = originalBuffer.duration; }
 
             // FIX BUG PREVIEW RAM & CPU: Limitasi maksimal 60 detik jika mode Preview aktif!
             if (isPreview && trimDuration > 60) {
