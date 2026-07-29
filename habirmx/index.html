@@ -4792,8 +4792,7 @@
             
             // Update UI Info
             document.getElementById('gmpTitle').innerText = title;
-            document.getElementById('gmpThumb').src = thumbUrl || window.flixaLogo;
-            document.getElementById('gmpThumb').onerror = function() { this.src = window.flixaLogo; };
+            document.getElementById('gmpThumb').src = thumbUrl;
             document.getElementById('gmpAuthor').innerText = currentUserData?.nama || "Kreaverse AI User";
             
             // Reset & Play
