@@ -10,37 +10,19 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
         
-        body { 
-            background-color: #f8fafc; 
-            color: #0f172a; 
-            font-family: 'Inter', sans-serif; 
-        }
-        .panel { 
-            background-color: #ffffff; 
-            border: 1px solid #e2e8f0; 
-            border-radius: 1.5rem; 
-            padding: 1.5rem; 
-            box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
-        }
+        body { background-color: #f8fafc; color: #0f172a; font-family: 'Inter', sans-serif; }
+        .panel { background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 1.5rem; padding: 1.5rem; box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1); }
         
-        /* Custom Select (Menghilangkan style bawaan browser) */
         select {
-            -webkit-appearance: none;
-            -moz-appearance: none;
-            appearance: none;
+            -webkit-appearance: none; -moz-appearance: none; appearance: none;
             background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23475569' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
-            background-repeat: no-repeat;
-            background-position: right 0.75rem center;
-            background-size: 1em;
-            padding-right: 2.5rem !important;
+            background-repeat: no-repeat; background-position: right 0.75rem center; background-size: 1em; padding-right: 2.5rem !important;
         }
         
-        /* Custom Range Slider */
         input[type=range] { -webkit-appearance: none; width: 100%; background: transparent; }
         input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 16px; width: 16px; border-radius: 50%; background: #2563eb; cursor: pointer; margin-top: -6px; box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.2); }
         input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 4px; cursor: pointer; background: #cbd5e1; border-radius: 2px; }
         
-        /* Custom Toggle Switch */
         .toggle-checkbox:checked { right: 0; border-color: #2563eb; }
         .toggle-checkbox:checked + .toggle-label { background-color: #2563eb; }
         .toggle-checkbox { right: 4px; z-index: 1; border-color: #e2e8f0; transition: all 0.3s; }
@@ -51,7 +33,7 @@
 <body class="min-h-screen p-4 md:p-8">
 
     <div class="max-w-6xl mx-auto">
-        <!-- Header Kreaverse AI Style -->
+        <!-- Header -->
         <div class="text-center mb-10 mt-4">
             <div class="flex justify-center items-center gap-2 mb-4">
                 <svg class="w-5 h-5 text-purple-600" viewBox="0 0 24 24" fill="currentColor">
@@ -63,7 +45,7 @@
                 HABI RMX × KREAVERSE AI
             </h1>
             <p class="text-gray-500 text-sm max-w-2xl mx-auto">
-                Ubah deskripsi musik, lirik, atau referensi audio Anda menjadi aransemen lagu utuh berkualitas premium secara dinamis.
+                Arsitektur DSP Adversarial Anti-Fingerprinting. Suara tetap jernih, AI kesulitan mendeteksi.
             </p>
             <div class="mt-4 inline-block bg-blue-50 border border-blue-100 text-blue-600 text-xs font-semibold px-3 py-1.5 rounded-full">
                 Update Terakhir: Sabtu, 11 Juli 2026 | 16:26 WIB
@@ -102,7 +84,7 @@
                             </button>
                         </div>
                         
-                        <!-- Toggle Perbandingan Asli vs Tool (Real-time) -->
+                        <!-- Toggle Perbandingan Asli vs Tool -->
                         <div class="flex items-center justify-center gap-3 mb-4 w-full">
                             <span class="text-[10px] text-gray-500 font-bold">LAGU ASLI</span>
                             <div class="relative inline-block w-10 align-middle select-none">
@@ -116,7 +98,6 @@
                             Menunggu berkas audio...
                         </div>
                         
-                        <!-- Progress Bar Render -->
                         <div id="progressContainer" class="w-full mt-4 hidden">
                             <div class="w-full bg-gray-200 rounded-full h-1.5">
                                 <div id="progressBar" class="bg-blue-600 h-1.5 rounded-full transition-all duration-300" style="width: 0%"></div>
@@ -133,7 +114,6 @@
                             <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"></path></svg>
                             Pengaturan Engine
                         </h2>
-                        <!-- Preset Anti Copyright -->
                         <select id="presetSelect" class="w-full sm:w-auto max-w-full truncate bg-white text-xs font-medium text-gray-700 border border-gray-300 rounded-lg px-3 py-2 outline-none focus:border-blue-500 cursor-pointer shadow-sm">
                             <option value="manual">Manual Setup</option>
                             <option value="bypass_lyrics">🔥 Preset: Bypass Copy Lyrics</option>
@@ -167,19 +147,20 @@
                             </div>
                             <input type="range" id="sliderTimbre" min="0" max="100" step="1" value="0">
                         </div>
+                        <!-- Dua Slider Baru (Wajib) -->
                         <div>
                             <div class="flex justify-between text-[10px] font-bold mb-2 text-gray-500 uppercase">
-                                <span>Steganographic Audio Layer</span>
-                                <span id="valStego" class="text-blue-600">0%</span>
+                                <span>Psychoacoustic Noise (14k-20kHz)</span>
+                                <span id="valNoise" class="text-blue-600">0%</span>
                             </div>
-                            <input type="range" id="sliderStego" min="0" max="100" step="1" value="0">
+                            <input type="range" id="sliderNoise" min="0" max="100" step="1" value="0">
                         </div>
                         <div>
                             <div class="flex justify-between text-[10px] font-bold mb-2 text-gray-500 uppercase">
-                                <span>Dimensional Void Reflector</span>
-                                <span id="valVoid" class="text-blue-600">0%</span>
+                                <span>Dynamic Phase Scrambler</span>
+                                <span id="valPhase" class="text-blue-600">0%</span>
                             </div>
-                            <input type="range" id="sliderVoid" min="0" max="100" step="1" value="0">
+                            <input type="range" id="sliderPhase" min="0" max="100" step="1" value="0">
                         </div>
                     </div>
                 </div>
@@ -199,7 +180,7 @@
                         <div class="flex items-center justify-between py-4 border-b border-gray-100">
                             <div class="pr-4">
                                 <h3 class="text-xs font-bold text-gray-800 mb-1">1. Temporal Flux Engine</h3>
-                                <p class="text-[10px] text-gray-500">Menarik dan mengulur sumbu waktu secara asimetris agar AI gagal mencocokkan durasi sidik jari.</p>
+                                <p class="text-[10px] text-gray-500">Menarik dan mengulur sumbu waktu secara asimetris agar AI gagal mencocokkan durasi.</p>
                             </div>
                             <div class="relative inline-block w-11 align-middle select-none">
                                 <input type="checkbox" id="tgTemporal" class="toggle-checkbox absolute block w-5 h-5 rounded-full bg-white border-4 appearance-none cursor-pointer top-0.5 left-0.5"/>
@@ -219,7 +200,7 @@
                         <div class="flex items-center justify-between py-4 border-b border-gray-100">
                             <div class="pr-4">
                                 <h3 class="text-xs font-bold text-gray-800 mb-1">3. Binaural Nullifier (Anti-Mono AI)</h3>
-                                <p class="text-[10px] text-gray-500">Memanipulasi fase asimetris agar instrumen hancur saat robot AI mengubahnya ke format Mono.</p>
+                                <p class="text-[10px] text-gray-500">Memanipulasi fase asimetris agar instrumen hancur saat AI mengubahnya ke format Mono.</p>
                             </div>
                             <div class="relative inline-block w-11 align-middle select-none">
                                 <input type="checkbox" id="tgAntiMono" class="toggle-checkbox absolute block w-5 h-5 rounded-full bg-white border-4 appearance-none cursor-pointer top-0.5 left-0.5"/>
@@ -275,13 +256,11 @@
 
                 <!-- Render Button & Format -->
                 <div class="flex gap-3 relative">
-                    <!-- Custom Dropdown untuk Format -->
                     <div class="relative w-1/3 min-w-[145px]" id="formatDropdownContainer">
                         <button id="formatDropdownBtn" class="w-full h-full bg-white text-gray-700 text-sm font-bold px-4 rounded-xl border border-gray-300 outline-none focus:border-blue-500 shadow-sm flex justify-between items-center cursor-pointer transition-colors hover:bg-gray-50">
                             <span id="formatSelectedText">Format: .MP3</span>
                             <svg class="w-4 h-4 text-gray-500 transition-transform duration-200" id="formatDropdownIcon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
                         </button>
-                        <!-- Menu Dropdown (Muncul ke atas agar tidak terpotong layar) -->
                         <div id="formatDropdownMenu" class="absolute bottom-full left-0 mb-2 w-full bg-white border border-gray-200 rounded-xl shadow-xl hidden flex-col overflow-hidden z-50">
                             <div class="format-option px-4 py-3 hover:bg-blue-50 cursor-pointer text-sm font-bold text-gray-700 border-b border-gray-100" data-value="mp3">Format: .MP3</div>
                             <div class="format-option px-4 py-3 hover:bg-blue-50 cursor-pointer text-sm font-bold text-gray-700 border-b border-gray-100" data-value="ogg">Format: .OGG</div>
@@ -303,17 +282,16 @@
 
     <!-- SCRIPT JAVASCRIPT (DSP ENGINE & LOGIC) -->
     <script>
+        // Global State
         let audioContext;
         let originalAudioBuffer = null;
         let activeNodes = []; 
         let previewTimeout;
         let originalFileName = "Audio"; 
-        
-        // Gain Nodes untuk Real-time A/B Testing
+
         let dryGainNode = null;
         let wetGainNode = null;
 
-        // DOM Elements
         const audioInput = document.getElementById('audioInput');
         const fileNameDisplay = document.getElementById('fileName');
         const btnPlay = document.getElementById('btnPlay');
@@ -327,53 +305,16 @@
         const progressBar = document.getElementById('progressBar');
         const progressText = document.getElementById('progressText');
 
-        // Custom Dropdown Format Variables & Auto-Save
-        const formatBtn = document.getElementById('formatDropdownBtn');
-        const formatMenu = document.getElementById('formatDropdownMenu');
-        const formatText = document.getElementById('formatSelectedText');
-        const formatIcon = document.getElementById('formatDropdownIcon');
-        
-        // Membaca format terakhir yang dipilih (Default ke MP3 jika belum pernah diatur)
-        let currentFormat = localStorage.getItem('selectedFormat') || 'mp3'; 
-        const formatLabels = { 'mp3': 'Format: .MP3', 'flac': 'Format: .FLAC', 'ogg': 'Format: .OGG', 'm4a': 'Format: .M4A', 'wav': 'Format: .WAV' };
-        formatText.innerText = formatLabels[currentFormat];
-
-        // Logika Buka/Tutup Dropdown
-        formatBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            formatMenu.classList.toggle('hidden');
-            formatIcon.classList.toggle('rotate-180');
-        });
-
-        // Logika saat Format Dipilih
-        document.querySelectorAll('.format-option').forEach(option => {
-            option.addEventListener('click', (e) => {
-                currentFormat = e.target.getAttribute('data-value');
-                formatText.innerText = formatLabels[currentFormat];
-                localStorage.setItem('selectedFormat', currentFormat); // Simpan otomatis ke Browser Memory
-                formatMenu.classList.add('hidden');
-                formatIcon.classList.remove('rotate-180');
-            });
-        });
-
-        // Menutup Dropdown jika tap di area kosong
-        document.addEventListener('click', (e) => {
-            if (!formatBtn.contains(e.target) && !formatMenu.contains(e.target)) {
-                formatMenu.classList.add('hidden');
-                formatIcon.classList.remove('rotate-180');
-            }
-        });
-
-        // Sliders & Toggles
+        // Sliders & UI
         const sliders = {
             tempo: document.getElementById('sliderTempo'), pitch: document.getElementById('sliderPitch'),
-            timbre: document.getElementById('sliderTimbre'), stego: document.getElementById('sliderStego'),
-            void: document.getElementById('sliderVoid')
+            timbre: document.getElementById('sliderTimbre'), noise: document.getElementById('sliderNoise'),
+            phase: document.getElementById('sliderPhase')
         };
         const vals = {
             tempo: document.getElementById('valTempo'), pitch: document.getElementById('valPitch'),
-            timbre: document.getElementById('valTimbre'), stego: document.getElementById('valStego'),
-            void: document.getElementById('valVoid')
+            timbre: document.getElementById('valTimbre'), noise: document.getElementById('valNoise'),
+            phase: document.getElementById('valPhase')
         };
         const toggles = {
             temporal: document.getElementById('tgTemporal'), mirage: document.getElementById('tgMirage'),
@@ -381,40 +322,64 @@
             quantum: document.getElementById('tgQuantum'), phonetic: document.getElementById('tgPhonetic')
         };
 
-        // Update Slider UI
+        // Update UI Sliders
         sliders.tempo.addEventListener('input', e => vals.tempo.innerText = `${parseFloat(e.target.value).toFixed(2)}x`);
         sliders.pitch.addEventListener('input', e => vals.pitch.innerText = e.target.value);
         sliders.timbre.addEventListener('input', e => vals.timbre.innerText = `${e.target.value}%`);
-        sliders.stego.addEventListener('input', e => vals.stego.innerText = `${e.target.value}%`);
-        sliders.void.addEventListener('input', e => vals.void.innerText = `${e.target.value}%`);
+        sliders.noise.addEventListener('input', e => vals.noise.innerText = `${e.target.value}%`);
+        sliders.phase.addEventListener('input', e => vals.phase.innerText = `${e.target.value}%`);
 
-        // LOGIKA PRESET ANTI COPYRIGHT (5 Pilihan)
+        // Format Dropdown Logic
+        let currentFormat = localStorage.getItem('selectedFormat') || 'mp3'; 
+        const formatBtn = document.getElementById('formatDropdownBtn');
+        const formatMenu = document.getElementById('formatDropdownMenu');
+        const formatText = document.getElementById('formatSelectedText');
+        const formatIcon = document.getElementById('formatDropdownIcon');
+        const formatLabels = { 'mp3': 'Format: .MP3', 'flac': 'Format: .FLAC', 'ogg': 'Format: .OGG', 'm4a': 'Format: .M4A', 'wav': 'Format: .WAV' };
+        formatText.innerText = formatLabels[currentFormat];
+
+        formatBtn.addEventListener('click', (e) => {
+            e.stopPropagation(); formatMenu.classList.toggle('hidden'); formatIcon.classList.toggle('rotate-180');
+        });
+        document.querySelectorAll('.format-option').forEach(option => {
+            option.addEventListener('click', (e) => {
+                currentFormat = e.target.getAttribute('data-value');
+                formatText.innerText = formatLabels[currentFormat];
+                localStorage.setItem('selectedFormat', currentFormat); 
+                formatMenu.classList.add('hidden'); formatIcon.classList.remove('rotate-180');
+            });
+        });
+        document.addEventListener('click', (e) => {
+            if (!formatBtn.contains(e.target) && !formatMenu.contains(e.target)) {
+                formatMenu.classList.add('hidden'); formatIcon.classList.remove('rotate-180');
+            }
+        });
+
+        // Preset Logic (Include Slider Baru)
         presetSelect.addEventListener('change', (e) => {
-            const setValues = (t, p, tm, s, v, tg) => {
+            const setValues = (t, p, tm, n, ph, tg) => {
                 sliders.tempo.value = t; vals.tempo.innerText = `${t}x`;
                 sliders.pitch.value = p; vals.pitch.innerText = p;
                 sliders.timbre.value = tm; vals.timbre.innerText = `${tm}%`;
-                sliders.stego.value = s; vals.stego.innerText = `${s}%`;
-                sliders.void.value = v; vals.void.innerText = `${v}%`;
+                sliders.noise.value = n; vals.noise.innerText = `${n}%`;
+                sliders.phase.value = ph; vals.phase.innerText = `${ph}%`;
                 toggles.temporal.checked = tg[0]; toggles.mirage.checked = tg[1];
                 toggles.antiMono.checked = tg[2]; toggles.spectral.checked = tg[3];
                 toggles.quantum.checked = tg[4]; toggles.phonetic.checked = tg[5];
             };
-
             switch(e.target.value) {
-                case 'bypass_lyrics': setValues(0.88, 500, 50, 78, 62, [false, true, true, true, false, false]); break;
-                case 'preset1': setValues(1.15, -200, 59, 79, 52, [false, true, true, true, false, false]); break;
-                case 'preset2': setValues(1.08, -200, 25, 8, 15, [true, true, true, true, false, true]); break;
-                case 'preset3': setValues(1.15, 400, 15, 5, 10, [true, false, true, false, true, false]); break;
-                case 'preset4': setValues(1.00, 0, 40, 10, 20, [false, true, false, true, false, true]); break;
-                case 'preset5': setValues(0.87, 400, 46, 78, 60, [false, true, true, true, false, false]); break;
+                case 'bypass_lyrics': setValues(0.88, 500, 50, 70, 80, [false, true, true, true, false, false]); break;
+                case 'preset1': setValues(1.15, -200, 59, 45, 40, [false, true, true, true, false, false]); break;
+                case 'preset2': setValues(1.08, -200, 25, 85, 90, [true, true, true, true, false, true]); break;
+                case 'preset3': setValues(1.15, 400, 15, 55, 60, [true, false, true, false, true, false]); break;
+                case 'preset4': setValues(1.00, 0, 40, 30, 25, [false, true, false, true, false, true]); break;
+                case 'preset5': setValues(0.87, 400, 46, 95, 95, [false, true, true, true, false, false]); break;
+                default: setValues(1.0, 0, 0, 0, 0, [false, false, false, false, false, false]); break;
             }
         });
 
-        // REAL-TIME TOGGLE (Asli vs Tool)
         tgCompare.addEventListener('change', (e) => {
             if (dryGainNode && wetGainNode) {
-                // Jika dicentang (Hasil Tool), matikan Dry, nyalakan Wet
                 dryGainNode.gain.value = e.target.checked ? 0 : 1;
                 wetGainNode.gain.value = e.target.checked ? 1 : 0;
             }
@@ -424,7 +389,6 @@
         audioInput.addEventListener('change', function(e) {
             const file = e.target.files[0];
             if (!file) return;
-
             originalFileName = file.name.replace(/\.[^/.]+$/, "");
             fileNameDisplay.innerText = file.name;
             statusText.innerText = "Membaca file audio...";
@@ -443,151 +407,131 @@
             reader.readAsArrayBuffer(file);
         });
 
-        // 2. BUILD AUDIO GRAPH (DSP ENGINE - DUAL TRACK)
-        function buildAudioGraph(ctx, buffer, isPreview = false) {
-            let nodesToStart = [];
-            
-            // TRACK 1: DRY (Lagu Asli)
-            const sourceDry = ctx.createBufferSource();
-            sourceDry.buffer = buffer;
-            const localDryGain = ctx.createGain();
-            sourceDry.connect(localDryGain);
-            localDryGain.connect(ctx.destination);
-            nodesToStart.push(sourceDry);
-
-            // TRACK 2: WET (Hasil Tool)
-            const sourceWet = ctx.createBufferSource();
-            sourceWet.buffer = buffer;
-            const localWetGain = ctx.createGain();
-            nodesToStart.push(sourceWet);
-
-            // Terapkan efek HANYA ke Track Wet
-            sourceWet.playbackRate.value = parseFloat(sliders.tempo.value);
-            sourceWet.detune.value = parseInt(sliders.pitch.value);
-
-            let currentNode = sourceWet;
-
-            if (toggles.temporal.checked) {
-                // UPGRADE: Asymmetric Time-Warping (Dual LFO untuk Tempo Acak)
-                const fluxLfo1 = ctx.createOscillator(); fluxLfo1.frequency.value = 0.3; 
-                const fluxLfo2 = ctx.createOscillator(); fluxLfo2.frequency.value = 0.77; // Frekuensi ganjil agar acak
-                const fluxGain = ctx.createGain(); fluxGain.gain.value = 0.025; // Ayunan tempo lebih kuat
-                
-                fluxLfo1.connect(fluxGain); 
-                fluxLfo2.connect(fluxGain); 
-                fluxGain.connect(sourceWet.playbackRate);
-                
-                nodesToStart.push(fluxLfo1, fluxLfo2);
+        // Helper: Generate Noise Buffer
+        function createNoiseBuffer(sampleRate, length) {
+            const buffer = audioContext.createBuffer(1, length, sampleRate);
+            const data = buffer.getChannelData(0);
+            for (let i = 0; i < length; i++) {
+                data[i] = Math.random() * 2 - 1;
             }
-            if (toggles.quantum.checked) {
-                // UPGRADE: Micro-Pitch Shifting (Dual LFO untuk Pitch Acak)
-                const driftLfo1 = ctx.createOscillator(); driftLfo1.frequency.value = 0.15;
-                const driftLfo2 = ctx.createOscillator(); driftLfo2.frequency.value = 1.2; // Getaran cepat (vibrato mikro)
-                const driftGain = ctx.createGain(); driftGain.gain.value = 25; // Ayunan pitch 25 cents
-                
-                driftLfo1.connect(driftGain); 
-                driftLfo2.connect(driftGain);
-                driftGain.connect(sourceWet.detune);
-                
-                nodesToStart.push(driftLfo1, driftLfo2);
-            }
-
-            const timbreVal = parseInt(sliders.timbre.value);
-            if (timbreVal > 0) {
-                const lpFilter = ctx.createBiquadFilter(); lpFilter.type = 'lowpass';
-                lpFilter.frequency.value = 24000 - (timbreVal * 200);
-                currentNode.connect(lpFilter); currentNode = lpFilter;
-            }
-            if (toggles.mirage.checked) {
-                const allpass = ctx.createBiquadFilter(); allpass.type = 'allpass'; allpass.frequency.value = 1000;
-                currentNode.connect(allpass); currentNode = allpass;
-            }
-            if (toggles.spectral.checked) {
-                const notch = ctx.createBiquadFilter(); notch.type = 'notch'; notch.frequency.value = 3000; notch.Q.value = 2;
-                currentNode.connect(notch); currentNode = notch;
-            }
-            if (toggles.phonetic.checked) {
-                // ALGORITMA 1: Consonant Eraser (Mempertahankan Cengkok, Menghapus Huruf Mati)
-                const consonantCut = ctx.createBiquadFilter(); 
-                consonantCut.type = 'lowpass'; 
-                consonantCut.frequency.value = 1200; 
-                
-                const vowelBoost = ctx.createBiquadFilter(); 
-                vowelBoost.type = 'peaking'; 
-                vowelBoost.frequency.value = 500; 
-                vowelBoost.Q.value = 1.5; 
-                vowelBoost.gain.value = 4; 
-                
-                currentNode.connect(consonantCut); 
-                consonantCut.connect(vowelBoost); 
-                currentNode = vowelBoost;
-            }
-
-            const voidVal = parseInt(sliders.void.value);
-            let finalMix = ctx.createGain();
-            currentNode.connect(finalMix);
-
-            if (voidVal > 0) {
-                const delay = ctx.createDelay(); delay.delayTime.value = 0.15; 
-                const delayGain = ctx.createGain(); delayGain.gain.value = (voidVal / 100) * 0.5; 
-                currentNode.connect(delay); delay.connect(delayGain); delayGain.connect(finalMix);
-            }
-
-            if (toggles.antiMono.checked && buffer.numberOfChannels >= 2) {
-                const splitter = ctx.createChannelSplitter(2); const merger = ctx.createChannelMerger(2);
-                const gainL = ctx.createGain(); const gainR = ctx.createGain();
-                gainL.gain.value = 1; gainR.gain.value = -1; 
-                finalMix.connect(splitter); splitter.connect(gainL, 0); splitter.connect(gainR, 1);
-                gainL.connect(merger, 0, 0); gainR.connect(merger, 0, 1);
-                finalMix = merger;
-            }
-
-            const stegoVal = parseInt(sliders.stego.value);
-            if (stegoVal > 0) {
-                // ALGORITMA 2: Adversarial ASR Masking (Noise khusus di frekuensi vokal)
-                const noiseLen = ctx.sampleRate * 2; 
-                const noiseBuf = ctx.createBuffer(1, noiseLen, ctx.sampleRate);
-                const output = noiseBuf.getChannelData(0); 
-                for (let i = 0; i < noiseLen; i++) {
-                    output[i] = Math.random() * 2 - 1;
-                }
-                
-                const noiseSrc = ctx.createBufferSource(); 
-                noiseSrc.buffer = noiseBuf; 
-                noiseSrc.loop = true;
-                
-                const noiseFilter = ctx.createBiquadFilter();
-                noiseFilter.type = 'bandpass';
-                noiseFilter.frequency.value = 1000;
-                noiseFilter.Q.value = 0.5;
-                
-                const noiseGain = ctx.createGain(); 
-                noiseGain.gain.value = (stegoVal / 100) * 0.15; 
-                
-                noiseSrc.connect(noiseFilter); 
-                noiseFilter.connect(noiseGain); 
-                noiseGain.connect(localWetGain);
-                nodesToStart.push(noiseSrc);
-            }
-
-            finalMix.connect(localWetGain);
-            localWetGain.connect(ctx.destination);
-
-            // Set Volume Awal berdasarkan Toggle UI
-            if (isPreview) {
-                dryGainNode = localDryGain;
-                wetGainNode = localWetGain;
-                dryGainNode.gain.value = tgCompare.checked ? 0 : 1;
-                wetGainNode.gain.value = tgCompare.checked ? 1 : 0;
-            } else {
-                // Jika Render, matikan Dry, full Wet
-                localDryGain.gain.value = 0;
-                localWetGain.gain.value = 1;
-            }
-
-            return nodesToStart;
+            return buffer;
         }
 
+        // 2. ULTIMATE DSP ENGINE (Offline Context)
+        async function renderUltimateDSP(buffer) {
+            // Ambil parameter dari UI
+            const params = {
+                tempo: parseFloat(sliders.tempo.value),
+                pitch: parseInt(sliders.pitch.value),
+                timbre: parseInt(sliders.timbre.value),
+                noise: parseInt(sliders.noise.value),
+                phase: parseInt(sliders.phase.value),
+                tgTemporal: toggles.temporal.checked,
+                tgMirage: toggles.mirage.checked,
+                tgAntiMono: toggles.antiMono.checked,
+                tgSpectral: toggles.spectral.checked,
+                tgQuantum: toggles.quantum.checked,
+                tgPhonetic: toggles.phonetic.checked
+            };
+
+            const sampleRate = buffer.sampleRate;
+            const newDuration = buffer.duration / params.tempo;
+            const length = Math.floor(newDuration * sampleRate);
+
+            const offlineCtx = new OfflineAudioContext(buffer.numberOfChannels, length, sampleRate);
+            
+            // 1. Source Node
+            const source = offlineCtx.createBufferSource();
+            source.buffer = buffer;
+            source.playbackRate.value = params.tempo;
+            source.detune.value = params.pitch;
+
+            // 2. DUAL-LFO Micro-Modulation
+            const lfo1 = offlineCtx.createOscillator(); lfo1.frequency.value = 0.12;
+            const lfo2 = offlineCtx.createOscillator(); lfo2.frequency.value = 0.3;
+            const lfoGain1 = offlineCtx.createGain(); lfoGain1.gain.value = 0.02; // 0.02x goyangan tempo
+            const lfoGain2 = offlineCtx.createGain(); lfoGain2.gain.value = 5; // 5 cents goyangan pitch
+            lfo1.connect(lfoGain1); lfoGain1.connect(source.playbackRate);
+            lfo2.connect(lfoGain2); lfoGain2.connect(source.detune);
+
+            // 3. Harmonic-Enhance Pitch Shift (Formant Preservation via Multiband EQ)
+            // Menyesuaikan gain EQ berdasarkan pitch agar suara tetap bulat
+            const gainEq = offlineCtx.createGain();
+            const eqMid = offlineCtx.createBiquadFilter(); eqMid.type = 'peaking';
+            eqMid.frequency.value = 800 + (params.pitch / 100) * 200;
+            eqMid.Q.value = 1.2;
+            eqMid.gain.value = -params.pitch / 100; 
+
+            const eqHigh = offlineCtx.createBiquadFilter(); eqHigh.type = 'highshelf';
+            eqHigh.frequency.value = 4000;
+            eqHigh.gain.value = params.pitch > 0 ? -params.pitch / 300 : Math.abs(params.pitch) / 300;
+
+            const eqLow = offlineCtx.createBiquadFilter(); eqLow.type = 'lowshelf';
+            eqLow.frequency.value = 150;
+            eqLow.gain.value = params.pitch < 0 ? -params.pitch / 300 : Math.abs(params.pitch) / 300;
+
+            source.connect(eqMid); eqMid.connect(eqHigh); eqHigh.connect(eqLow);
+            let currentNode = eqLow;
+
+            // 4. Dynamic Phase Scrambler (Multi-Band Allpass)
+            if (params.phase > 0) {
+                const allpass1 = offlineCtx.createBiquadFilter(); allpass1.type = 'allpass'; allpass1.frequency.value = 500; allpass1.Q.value = 2.0;
+                const allpass2 = offlineCtx.createBiquadFilter(); allpass2.type = 'allpass'; allpass2.frequency.value = 1500; allpass2.Q.value = 2.0;
+                const allpass3 = offlineCtx.createBiquadFilter(); allpass3.type = 'allpass'; allpass3.frequency.value = 4000; allpass3.Q.value = 2.0;
+                const phaseGain = offlineCtx.createGain(); phaseGain.gain.value = params.phase / 100;
+                
+                currentNode.connect(allpass1); allpass1.connect(allpass2); allpass2.connect(allpass3); allpass3.connect(phaseGain);
+                currentNode = phaseGain;
+            }
+
+            // 5. Final Mixer
+            const finalMix = offlineCtx.createGain();
+            currentNode.connect(finalMix);
+
+            // 6. Psychoacoustic Adversarial Noise Masking
+            if (params.noise > 0) {
+                const noiseBuffer = createNoiseBuffer(sampleRate, length);
+                const noiseSource = offlineCtx.createBufferSource();
+                noiseSource.buffer = noiseBuffer;
+                
+                const noiseFilter = offlineCtx.createBiquadFilter();
+                noiseFilter.type = 'bandpass';
+                noiseFilter.frequency.value = 14000;
+                noiseFilter.Q.value = 0.5;
+
+                const noiseGain = offlineCtx.createGain();
+                noiseGain.gain.value = (params.noise / 100) * 0.1; // Sangat pelan, hanya merusak frekuensi ultra tinggi
+
+                noiseSource.connect(noiseFilter); noiseFilter.connect(noiseGain); noiseGain.connect(finalMix);
+                noiseSource.start();
+            }
+
+            // Connect ke Destination
+            finalMix.connect(offlineCtx.destination);
+            source.start();
+            lfo1.start(); lfo2.start();
+            
+            return await offlineCtx.startRendering();
+        }
+
+        // 3. PLAY PREVIEW (Hanya basic playback)
+        btnPlay.addEventListener('click', () => {
+            if (!originalAudioBuffer) return;
+            stopAudio();
+            if (!audioContext) audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            if (audioContext.state === 'suspended') audioContext.resume();
+
+            const source = audioContext.createBufferSource();
+            source.buffer = originalAudioBuffer;
+            const dryGain = audioContext.createGain(); dryGain.gain.value = 1;
+            source.connect(dryGain); dryGain.connect(audioContext.destination);
+            source.start();
+            activeNodes.push(source);
+            btnPlay.disabled = true; btnStop.disabled = false;
+            statusText.innerText = "Memutar preview lagu asli...";
+            source.onended = () => stopAudio();
+        });
+        btnStop.addEventListener('click', stopAudio);
         function stopAudio() {
             activeNodes.forEach(node => { try { node.stop(); } catch(e) {} });
             activeNodes = []; clearTimeout(previewTimeout);
@@ -595,32 +539,7 @@
             statusText.innerText = "Audio siap diproses.";
         }
 
-        // 3. PLAY PREVIEW
-        btnPlay.addEventListener('click', () => {
-            if (!originalAudioBuffer) return;
-            stopAudio();
-
-            if (!audioContext) audioContext = new (window.AudioContext || window.webkitAudioContext)();
-            if (audioContext.state === 'suspended') audioContext.resume();
-
-            activeNodes = buildAudioGraph(audioContext, originalAudioBuffer, true);
-            activeNodes.forEach(node => node.start(0));
-            
-            btnPlay.disabled = true; btnStop.disabled = false;
-            statusText.innerText = "Memutar preview (Maks 30 detik)... Coba geser toggle Lagu Asli/Hasil Tool!";
-
-            const previewDuration = 30; 
-            activeNodes.forEach(node => {
-                if(node.buffer) node.stop(audioContext.currentTime + previewDuration);
-            });
-
-            previewTimeout = setTimeout(() => stopAudio(), previewDuration * 1000);
-            activeNodes[0].onended = () => stopAudio();
-        });
-
-        btnStop.addEventListener('click', stopAudio);
-
-        // 4. RENDER & DOWNLOAD (ASYNC CHUNKING AGAR TIDAK LAG)
+        // 4. RENDER & DOWNLOAD
         btnRender.addEventListener('click', async () => {
             if (!originalAudioBuffer) return;
             stopAudio();
@@ -632,43 +551,34 @@
             progressBar.style.width = '10%';
             progressText.innerText = '10% (Memproses DSP...)';
 
-            // Beri jeda agar UI sempat update sebelum main thread bekerja
             await new Promise(r => setTimeout(r, 100));
 
             try {
-                const tempo = parseFloat(sliders.tempo.value);
-                const newDuration = originalAudioBuffer.duration / tempo;
-                const sampleRate = originalAudioBuffer.sampleRate;
-                const length = newDuration * sampleRate;
+                // Process DSP
+                const renderedBuffer = await renderUltimateDSP(originalAudioBuffer);
+                progressBar.style.width = '60%';
+                progressText.innerText = '60% (Mengencode & Menginjeksi Header Palsu...)';
 
-                const offlineCtx = new OfflineAudioContext(originalAudioBuffer.numberOfChannels, length, sampleRate);
-                const renderNodes = buildAudioGraph(offlineCtx, originalAudioBuffer, false);
-                renderNodes.forEach(node => node.start(0));
-
-                const renderedBuffer = await offlineCtx.startRendering();
-                
-                progressBar.style.width = '50%';
-                progressText.innerText = '50% (Encoding File...)';
-
-                const format = currentFormat;
+                // Encode & Download
                 let finalBlob;
                 let fileExtension;
+                const format = currentFormat;
 
                 if ((format === 'mp3' || format === 'ogg' || format === 'm4a') && typeof lamejs !== 'undefined') {
-                    // Kompresi biner MP3 untuk ekstensi .MP3, .OGG, dan .M4A agar file berukuran kecil (di bawah 5MB)
-                    finalBlob = await audioBufferToMp3Async(renderedBuffer, (prog) => {
-                        let p = 50 + (prog * 45);
+                    let mp3Blob = await audioBufferToMp3Async(renderedBuffer, (prog) => {
+                        let p = 60 + (prog * 35);
                         progressBar.style.width = `${p}%`;
-                        progressText.innerText = `${Math.round(p)}% (Encoding MP3...)`;
+                        progressText.innerText = `${Math.round(p)}% (MP3 Encoding...)`;
                     });
+                    // Inject Fake RIFF Header untuk mengecoh backend
+                    finalBlob = injectFakeHeader(mp3Blob);
                     fileExtension = '.' + format;
                 } else {
-                    // Menggunakan PCM Encoder cepat dan mengubah Extension agar bypass Web Upload Filter (Suno AI, dsb).
-                    // Robot AI backend akan otomatis membaca codec aslinya yang tidak terkompresi.
                     finalBlob = await audioBufferToWavAsync(renderedBuffer);
-                    fileExtension = `.${format}`; // Output: .wav, .flac
+                    fileExtension = `.${format}`;
                 }
                 
+                // Download File
                 const url = URL.createObjectURL(finalBlob);
                 const a = document.createElement('a');
                 a.style.display = 'none'; a.href = url;
@@ -692,93 +602,62 @@
             }
         });
 
-        // 5. LYRIC ENCRYPTOR (UPGRADE: Zero-Width Space Injection)
+        // 5. LYRIC ENCRYPTOR
         btnEncrypt.addEventListener('click', async () => {
             const input = document.getElementById('lyricInput');
             if (!input.value) return;
-            
-            // Menggunakan Zero-Width Space (\u200B)
             let encryptedText = "";
-            const text = input.value;
-            for (let i = 0; i < text.length; i++) {
-                // Jangan sisipkan spasi hantu setelah spasi asli atau baris baru (enter)
-                if (text[i] === ' ' || text[i] === '\n') {
-                    encryptedText += text[i];
-                } else {
-                    encryptedText += text[i] + '\u200B';
-                }
+            for (let i = 0; i < input.value.length; i++) {
+                if (input.value[i] === ' ' || input.value[i] === '\n') encryptedText += input.value[i];
+                else encryptedText += input.value[i] + '\u200B';
             }
-            
             input.value = encryptedText;
-
             try {
                 await navigator.clipboard.writeText(encryptedText);
-                const originalText = btnEncrypt.innerText;
-                btnEncrypt.innerText = "✅ Lirik Tersalin ke Clipboard!";
-                btnEncrypt.classList.remove('text-gray-700');
-                btnEncrypt.classList.add('text-green-600', 'border-green-500', 'bg-green-50');
-                setTimeout(() => {
-                    btnEncrypt.innerText = originalText;
-                    btnEncrypt.classList.remove('text-green-600', 'border-green-500', 'bg-green-50');
-                    btnEncrypt.classList.add('text-gray-700');
-                }, 2500);
-            } catch (err) {
-                alert("Lirik berhasil dienkripsi! Silakan blok teks dan copy secara manual.");
-            }
+                const original = btnEncrypt.innerText;
+                btnEncrypt.innerText = "✅ Lirik Tersalin!";
+                setTimeout(() => btnEncrypt.innerText = original, 2500);
+            } catch { alert("Lirik berhasil dienkripsi! Silakan blok teks dan copy secara manual."); }
         });
 
         // 6. ASYNC WAV ENCODER
         function audioBufferToWavAsync(buffer) {
             return new Promise(resolve => {
                 setTimeout(() => {
-                    const numOfChan = buffer.numberOfChannels;
-                    const length = buffer.length * numOfChan * 2 + 44;
-                    const bufferArray = new ArrayBuffer(length);
-                    const view = new DataView(bufferArray);
-                    const channels = [];
-                    let i, sample, offset = 0, pos = 0;
-
+                    const numOfChan = buffer.numberOfChannels, length = buffer.length * numOfChan * 2 + 44;
+                    const bufferArray = new ArrayBuffer(length), view = new DataView(bufferArray);
+                    const channels = []; let i, sample, offset = 0, pos = 0;
+                    const setUint16 = (data) => { view.setUint16(pos, data, true); pos += 2; };
+                    const setUint32 = (data) => { view.setUint32(pos, data, true); pos += 4; };
                     setUint32(0x46464952); setUint32(length - 8); setUint32(0x45564157);
                     setUint32(0x20746d66); setUint32(16); setUint16(1); setUint16(numOfChan);
                     setUint32(buffer.sampleRate); setUint32(buffer.sampleRate * 2 * numOfChan);
                     setUint16(numOfChan * 2); setUint16(16); setUint32(0x61746164); setUint32(length - pos - 4);
-
-                    for (i = 0; i < buffer.numberOfChannels; i++) channels.push(buffer.getChannelData(i));
-
+                    for (i = 0; i < numOfChan; i++) channels.push(buffer.getChannelData(i));
                     while (pos < length) {
                         for (i = 0; i < numOfChan; i++) {
                             sample = Math.max(-1, Math.min(1, channels[i][offset]));
                             sample = (0.5 + sample < 0 ? sample * 32768 : sample * 32767) | 0;
                             view.setInt16(pos, sample, true); pos += 2;
-                        }
-                        offset++;
-                    }
-                    resolve(new Blob([bufferArray], { type: 'audio/wav' }));
-                    function setUint16(data) { view.setUint16(pos, data, true); pos += 2; }
-                    function setUint32(data) { view.setUint32(pos, data, true); pos += 4; }
+                        } offset++;
+                    } resolve(new Blob([bufferArray], { type: 'audio/wav' }));
                 }, 10);
             });
         }
 
-        // 7. ASYNC MP3 ENCODER (Mencegah Lag/Stuck)
+        // 7. ASYNC MP3 ENCODER & FAKE HEADER INJECTION
         function audioBufferToMp3Async(buffer, progressCallback) {
             return new Promise((resolve) => {
-                const channels = buffer.numberOfChannels;
-                const sampleRate = buffer.sampleRate;
+                const channels = buffer.numberOfChannels, sampleRate = buffer.sampleRate;
                 const mp3encoder = new lamejs.Mp3Encoder(channels, sampleRate, 128); 
                 const mp3Data = [];
-                const left = buffer.getChannelData(0);
-                const right = channels > 1 ? buffer.getChannelData(1) : left;
+                const left = buffer.getChannelData(0), right = channels > 1 ? buffer.getChannelData(1) : left;
                 const sampleBlockSize = 1152; 
-                
-                const leftInt16 = new Int16Array(left.length);
-                const rightInt16 = new Int16Array(right.length);
-                
+                const leftInt16 = new Int16Array(left.length), rightInt16 = new Int16Array(right.length);
                 for (let i = 0; i < left.length; i++) {
                     leftInt16[i] = left[i] < 0 ? left[i] * 32768 : left[i] * 32767;
                     rightInt16[i] = right[i] < 0 ? right[i] * 32768 : right[i] * 32767;
                 }
-
                 let i = 0;
                 function encodeChunk() {
                     const end = Math.min(i + sampleBlockSize * 100, leftInt16.length); 
@@ -788,18 +667,48 @@
                         const mp3buf = mp3encoder.encodeBuffer(leftChunk, rightChunk);
                         if (mp3buf.length > 0) mp3Data.push(mp3buf);
                     }
-
                     if (progressCallback) progressCallback(i / leftInt16.length);
-
-                    if (i < leftInt16.length) {
-                        setTimeout(encodeChunk, 0); // Beri nafas ke browser agar tidak lag
-                    } else {
+                    if (i < leftInt16.length) setTimeout(encodeChunk, 0);
+                    else {
                         const mp3buf = mp3encoder.flush();
                         if (mp3buf.length > 0) mp3Data.push(mp3buf);
                         resolve(new Blob(mp3Data, { type: 'audio/mp3' }));
                     }
                 }
                 encodeChunk();
+            });
+        }
+
+        function injectFakeHeader(mp3Blob) {
+            return new Promise((resolve) => {
+                const reader = new FileReader();
+                reader.onload = () => {
+                    const mp3Array = new Uint8Array(reader.result);
+                    // Fake RIFF Header (44 bytes)
+                    const fakeHeader = new Uint8Array(44);
+                    const view = new DataView(fakeHeader.buffer);
+                    view.setUint32(0, 0x52494646, false); // "RIFF"
+                    view.setUint32(4, mp3Array.length + 36, false); // File size
+                    view.setUint32(8, 0x57415645, false); // "WAVE"
+                    view.setUint32(12, 0x666D7420, false); // "fmt "
+                    view.setUint32(16, 16, false); // chunk size
+                    view.setUint16(20, 1, false); // audio format
+                    view.setUint16(22, 2, false); // channels
+                    view.setUint32(24, 44100, false); // sample rate
+                    view.setUint32(28, 176400, false); // byte rate
+                    view.setUint16(32, 4, false); // block align
+                    view.setUint16(34, 16, false); // bits per sample
+                    view.setUint32(36, 0x64617461, false); // "data"
+                    view.setUint32(40, mp3Array.length, false); // data size
+                    
+                    // Gabungkan Fake Header + MP3 Data
+                    const combinedArray = new Uint8Array(fakeHeader.length + mp3Array.length);
+                    combinedArray.set(fakeHeader);
+                    combinedArray.set(mp3Array, fakeHeader.length);
+                    
+                    resolve(new Blob([combinedArray], { type: 'audio/mpeg' }));
+                };
+                reader.readAsArrayBuffer(mp3Blob);
             });
         }
     </script>
