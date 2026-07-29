@@ -386,13 +386,14 @@ Output ONLY the comma-separated prompt tags. No conversational text.`;
                 
                 } else if (llmType === 'lyrics') {
                     if (currentMode === 'generate') {
-                        systemPrompt = `Kamu adalah Penulis Lagu (Songwriter) Profesional pemenang Grammy dan Ahli Lirik Viral. Tugasmu: Buat lirik lagu ORIGINAL yang lengkap, panjang, puitis, dan terasa sangat "manusiawi" berdasarkan input user.
+                        systemPrompt = `Kamu adalah Penulis Lagu Profesional. Tugasmu: Susun lirik lagu berdasarkan input user agar berdurasi panjang (4 hingga 5 menit).
 ATURAN MUTLAK:
-1. ANALISIS INPUT: Jika user menempelkan LIRIK LAGU FULL (lagu terkenal), JANGAN salin liriknya (hindari Copyright). Tulis ulang lirik BARU dengan makna, cerita, pesan, dan emosi (vibe) yang SAMA PERSIS, tapi gunakan pilihan kata yang lebih indah, puitis, dan berpotensi viral. Jika user memberikan IDE/TEMA, buatkan lirik dari nol yang sangat menyentuh hati.
-2. JANGAN PERNAH memasukkan nama genre (seperti "Lagu Dangdut") ke dalam teks lirik!
-3. STRUKTUR WAJIB SUNO AI: Gunakan tag meta standar: [Intro], [Verse 1], [Pre-Chorus], [Chorus], [Bridge], [Guitar Solo] atau [Instrumental], [Outro].
-4. Buat lirik layaknya manusia asli: puitis, rima bagus, dan emosional.
-5. SANGAT PENTING: Jawab HANYA dengan lirik lagunya saja. DILARANG memberikan kalimat pembuka atau penutup.`;
+1. JIKA USER MEMBERIKAN LIRIK ASLI, DILARANG KERAS MENGUBAH, MENERJEMAHKAN, ATAU MENGGANTI SATU HURUF PUN! Tugasmu HANYA menambahkan Tag Struktur (Kurung siku) dan Tag Instrumen.
+2. JIKA LIRIK PENDEK: Wajib ulangi [Chorus] minimal 2 atau 3 kali di bagian akhir untuk menambah durasi.
+3. WAJIB TAMBAHKAN INSTRUMEN: Tambahkan [Long Instrumental Intro] (durasi 20 detik) di baris pertama. Tambahkan [Instrumental Interlude] (durasi 20 detik) di tengah lagu. Tambahkan [Long Instrumental Outro], [Fade Out], dan [End] di baris paling bawah.
+4. WATERMARK: Tambahkan baris lirik persis ini: (Habi RMX) tepat di bawah [Intro] dan di tengah lagu agar diucapkan oleh penyanyi.
+5. TRANSISI: Sisipkan [Drum Fill] sebelum Chorus.
+6. Jawab HANYA dengan lirik lagu yang tersusun rapi.`;
                     } else {
                         let whisperTextWithStructure = "";
                         
@@ -447,19 +448,20 @@ ATURAN MUTLAK:
                             } catch(e) { console.error("Whisper error in Magic Wand:", e); }
                         }
                         
-                        systemPrompt = `Kamu adalah Ahli Bahasa dan Editor Lirik Lagu Profesional yang sangat teliti. Tugasmu adalah membersihkan teks hasil transkripsi AI (Whisper) yang penuh dengan halusinasi (kata-kata gaib yang tidak ada di lagu asli) dan menatanya menjadi lirik lagu terstruktur.
+                        systemPrompt = `Kamu adalah Editor Lirik Lagu Profesional untuk mesin Suno AI. Tugasmu menata lirik referensi agar durasinya pas 4-5 menit dan mirip dengan audio asli.
 ATURAN MUTLAK (HUKUMAN BERAT JIKA DILANGGAR):
-1. HAPUS TOTAL HALUSINASI WHISPER: AI sering mengarang kata saat mendengar melodi instrumen. HAPUS MUTLAK kata-kata gaib seperti "Terima kasih", "Terimakasih", "Thanks for watching", "I am your love", "Subtitle by", atau huruf Mandarin/Jepang/Korea. JANGAN MASUKKAN KATA-KATA INI KE HASIL AKHIR!
-2. FOKUS PADA LIRIK ASLI: Analisis konteks kalimat. Jika ada kalimat yang tiba-tiba melenceng dari topik lagu (misal tiba-tiba bilang terima kasih di tengah lagu patah hati), BUANG kalimat itu!
-3. DILARANG MENERJEMAHKAN: Pertahankan bahasa asli 100%. Jangan pernah tambahkan tag [Terjemahan: ...].
-4. PERTAHANKAN PENGULANGAN: Tulis semua lirik yang diulang secara utuh.
-5. STRUKTUR LAGU: Berikan tag [Intro], [Verse], [Chorus], [Bridge], [Outro] di tempat yang tepat.
-6. OUTPUT LANGSUNG: Jawab HANYA dengan lirik lagu yang sudah bersih. DILARANG memberikan basa-basi, kalimat pembuka, atau penutup!`;
+1. DILARANG KERAS MENGUBAH, MENERJEMAHKAN, ATAU MENGHAPUS LIRIK ASLI! Pertahankan 100% kata-kata dari user.
+2. META-TAG WAJIB: Di baris paling atas, WAJIB tuliskan tag ini: [Exact Original Melody], [Mirror Source Instrument], [Identical Vocal Rhythm].
+3. INSTRUMENTAL WAJIB (20 DETIK): Tambahkan [Long Instrumental Intro] di baris pertama. Tambahkan [Instrumental Interlude] di tengah. Tambahkan [Long Instrumental Outro], [Fade Out], [End] di baris paling bawah.
+4. TRANSISI DRUM/BASS: Sisipkan tag [Drum Fill] dan [Heavy Bass Drop] sebelum masuk bagian [Chorus].
+5. PENGULANGAN LIRIK (DURASI EXTENSION): Jika lirik dirasa terlalu pendek (sedikit kalimatnya), WAJIB ulang (copy-paste) bagian [Chorus] sebanyak 2x atau 3x di bagian akhir sebelum Outro agar durasi lagu bertambah.
+6. WATERMARK "HABI RMX": Sisipkan baris lirik (Habi RMX) tepat di bawah [Intro] dan di tengah lagu (jangan pakai kurung siku, biarkan pakai kurung biasa agar diucapkan penyanyi).
+7. OUTPUT LANGSUNG: Jawab HANYA dengan lirik lagu yang sudah ditata. DILARANG memberikan basa-basi atau kata pembuka!`;
                         
                         if (audioUrl && whisperTextWithStructure) {
-                            finalInputText = `LIRIK MENTAH USER:\n${finalInputText}\n\nTRANSKRIPSI AUDIO (Acuan Struktur & Pengulangan):\n${whisperTextWithStructure}`;
+                            finalInputText = `LIRIK DARI USER YANG TIDAK BOLEH DIUBAH:\n${finalInputText}\n\nLIRIK TRANSKRIPSI (Gunakan untuk acuan pengulangan saja):\n${whisperTextWithStructure}`;
                         } else {
-                            finalInputText = `TEKS MENTAH:\n${finalInputText}`;
+                            finalInputText = `LIRIK DARI USER YANG TIDAK BOLEH DIUBAH:\n${finalInputText}`;
                         }
                     }
                 }
