@@ -3927,6 +3927,9 @@
         
         // LOGO CADANGAN PREMIUM FLIXA AI (BASE64 SVG)
         window.flixaLogo = "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MDAgNTAwIiB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCI+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJmbGl4YVByZW1pdW0iIHgxPSIwJSIgeTE9IjEwMCUiIHgyPSIxMDAlIiB5Mj0iMCUiPjxzdG9wIG9mZnNldD0iMCUiIHN0b3AtY29sb3I9IiMxQTE0NDkiIC8+PHN0b3Agb2Zmc2V0PSI1MCUiIHN0b3AtY29sb3I9IiM3QjI5NTYiIC8+PHN0b3Agb2Zmc2V0PSIxMDAlIiBzdG9wLWNvbG9yPSIjRDk1MDQwIiAvPjwvbGluZWFyR3JhZGllbnQ+PC9kZWZzPjxyZWN0IHdpZHRoPSI1MDAiIGhlaWdodD0iNTAwIiBmaWxsPSJ1cmwoI2ZsaXhhUHJlbWl1bSkiLz48cGF0aCBkPSJNIDMyMCAxNjAgQyAzMjAgNjAsIDE5MCA2MCwgMTkwIDIwMCBDIDE5MCAyOTAsIDIzMCAzMjAsIDIzMCA0MDAiIHN0cm9rZT0iI0ZGRkZGRiIgc3Ryb2tlLXdpZHRoPSI3MCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIiAvPjxwYXRoIGQ9Ik0gMTIwIDI1MCBRIDIxMCAyMDAgMzAwIDI1MCIgc3Ryb2tlPSIjRkZGRkZGIiBzdHJva2Utd2lkdGg9IjcwIiBzdHJva2UtbGluZWNhcD0icm91bmQiIGZpbGw9Im5vbmUiIC8+PC9zdmc+"; 
+        
+        // LOGO CADANGAN PREMIUM FLIXA AI (BASE64 SVG)
+        window.flixaLogo = "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MDAgNTAwIiB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCI+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJmbGl4YVByZW1pdW0iIHgxPSIwJSIgeTE9IjEwMCUiIHgyPSIxMDAlIiB5Mj0iMCUiPjxzdG9wIG9mZnNldD0iMCUiIHN0b3AtY29sb3I9IiMxQTE0NDkiIC8+PHN0b3Agb2Zmc2V0PSI1MCUiIHN0b3AtY29sb3I9IiM3QjI5NTYiIC8+PHN0b3Agb2Zmc2V0PSIxMDAlIiBzdG9wLWNvbG9yPSIjRDk1MDQwIiAvPjwvbGluZWFyR3JhZGllbnQ+PC9kZWZzPjxyZWN0IHdpZHRoPSI1MDAiIGhlaWdodD0iNTAwIiBmaWxsPSJ1cmwoI2ZsaXhhUHJlbWl1bSkiLz48cGF0aCBkPSJNIDMyMCAxNjAgQyAzMjAgNjAsIDE5MCA2MCwgMTkwIDIwMCBDIDE5MCAyOTAsIDIzMCAzMjAsIDIzMCA0MDAiIHN0cm9rZT0iI0ZGRkZGRiIgc3Ryb2tlLXdpZHRoPSI3MCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIiAvPjxwYXRoIGQ9Ik0gMTIwIDI1MCBRIDIxMCAyMDAgMzAwIDI1MCIgc3Ryb2tlPSIjRkZGRkZGIiBzdHJva2Utd2lkdGg9IjcwIiBzdHJva2UtbGluZWNhcD0icm91bmQiIGZpbGw9Im5vbmUiIC8+PC9zdmc+"; 
 
         // ============================================================
         // SIDEBAR MENU LOGIC
@@ -4792,7 +4795,8 @@
             
             // Update UI Info
             document.getElementById('gmpTitle').innerText = title;
-            document.getElementById('gmpThumb').src = thumbUrl;
+            document.getElementById('gmpThumb').src = thumbUrl || window.flixaLogo;
+            document.getElementById('gmpThumb').onerror = function() { this.src = window.flixaLogo; };
             document.getElementById('gmpAuthor').innerText = currentUserData?.nama || "Kreaverse AI User";
             
             // Reset & Play
