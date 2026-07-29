@@ -1034,7 +1034,11 @@ ATURAN MUTLAK PENALTI:
             let failedValues = ["failed", "error", "fail", "failure", "timeout", "canceled", "rejected", "generate_audio_failed", "unsuccessful", "banned", "moderation", "revoked", ...(activeProvider.statusFailedValue?.toLowerCase().split(',').map(s => s.trim()) || [])];
             let processingValues = ["processing", "in_progress", "queued", "pending", "starting", "running", "submitted", "wait", "waiting", "active", "generating", "progress", "streaming", "text_success", "first_success"];
 
-            let isCompleted = completedValues.includes(extractedStatus) || extractedStatus.includes("success") || extractedStatus.includes("complete") || extractedStatus.includes("done");
+            // FIX BUG 1 TRACK & 4 TRACK: Jangan anggap selesai jika statusnya ada di dalam daftar 'processingValues' (seperti first_success)
+            let isCompleted = completedValues.includes(extractedStatus) || 
+                ((extractedStatus.includes("success") || extractedStatus.includes("complete") || extractedStatus.includes("done")) && 
+                !processingValues.includes(extractedStatus));
+                
             let isFailed = failedValues.includes(extractedStatus) || extractedStatus.includes("fail") || extractedStatus.includes("error") || extractedStatus.includes("reject") || extractedStatus.includes("cancel") || extractedStatus.includes("timeout") || extractedStatus.includes("ban");
             let isProcessing = (!isCompleted && !isFailed) || processingValues.includes(extractedStatus) || extractedStatus.includes("process") || extractedStatus.includes("queue") || extractedStatus.includes("run") || extractedStatus.includes("wait");
 
