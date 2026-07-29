@@ -6965,7 +6965,14 @@ async function processKreaverseAudio(file, isPreview = false, progressCallback) 
                 pitchVal = parseFloat(safeGetVal('pitchSlider', '0')) * 100; // V2 menggunakan Semitones (-12 s/d 12), kalikan 100 jadi Cents
             }
 
-            const finalDuration = trimDuration / speedVal;
+            // === PERBAIKAN RUMUS MATEMATIKA DURASI (AKAR MASALAH TERPOTONG & NOISE) ===
+            // Mengubah Pitch (detune) juga mengubah durasi lagu aslinya.
+            // Kita harus menghitung total rasio dari gabungan Speed dan Pitch.
+            const pitchMultiplier = Math.pow(2, pitchVal / 1200);
+            const totalPlaybackRate = speedVal * pitchMultiplier;
+
+            let finalDuration = trimDuration / totalPlaybackRate;
+            if (finalDuration <= 0) finalDuration = 1; // Fallback aman
             const finalFrameCount = Math.floor(finalDuration * originalBuffer.sampleRate);
 
             const offlineCtx = new OfflineAudioContext(
@@ -6979,12 +6986,8 @@ async function processKreaverseAudio(file, isPreview = false, progressCallback) 
             let lastNode = source;
 
             source.preservesPitch = false; 
-            
-            // 🔥 FIX BUG DURASI TERPOTONG & PITCH:
-            // TERAPKAN KECEPATAN (TEMPO) DAN PITCH KE AUDIO SOURCE!
-            // Jika ini tidak dipanggil, kanvas menyusut tapi lagu tetap lambat, hasilnya lagu terpotong.
-            source.playbackRate.value = speedVal;
             source.detune.value = pitchVal;
+            source.playbackRate.value = speedVal;
 
             // FIX: Mendeteksi ID toggle yang benar agar mesin DSP menyala
             const masterToggleEl = document.getElementById('globalMasterToggle') || document.getElementById('masterToggle');
@@ -7511,10 +7514,13 @@ async function processKreaverseAudio(file, isPreview = false, progressCallback) 
             }
         } // Menutup blok "if (isMasterOn)" milik V2 Master DSP
 
-    // LAYER 20: THE ABSOLUTE BRICKWALL LIMITER (ANTI-KRESEK)
-    // Memastikan suara tidak pernah menabrak batas 0 dBFS (Penyebab utama kresek/clipping)
+    // LAYER 20: THE ABSOLUTE BRICKWALL LIMITER & AUTO FADE-OUT (ANTI-KRESEK)
+    // Memastikan suara tidak pernah menabrak batas 0 dBFS dan diakhiri dengan fade-out bersih
     const masterGain = offlineCtx.createGain();
-    masterGain.gain.value = 1.5; // Mengembalikan volume yang tadi diturunkan di inputTrim
+    masterGain.gain.setValueAtTime(1.5, 0);
+    // Anti-Kresek akhir lagu: Turunkan volume ke 0 (Fade Out) tepat di 0.2 detik sebelum lagu habis
+    masterGain.gain.setValueAtTime(1.5, Math.max(0, finalDuration - 0.2));
+    masterGain.gain.linearRampToValueAtTime(0.001, finalDuration); 
     lastNode.connect(masterGain);
 
     const brickwallLimiter = offlineCtx.createDynamicsCompressor();
