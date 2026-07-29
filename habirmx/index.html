@@ -2478,29 +2478,21 @@
                     <!-- WADAH KANAN UNTUK TOMBOL-TOMBOL -->
                     <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 8px;" id="styleActionButtons">
                         
-                        <!-- BARIS ATAS: AI, Inspirasi, Hapus -->
+                        <!-- BARIS 1 (ATAS): AI - Auto-Style - English -->
                         <div style="display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; align-items: center;">
                             <!-- TOMBOL AI -->
-                            <button type="button" class="magic-wand-btn" style="padding: 4px 8px; font-size: 0.7rem;" onclick="triggerMagicWand('style')" title="Auto-Generate Style via AI">
+                            <button type="button" class="magic-wand-btn" style="padding: 4px 8px; font-size: 0.7rem; height: 26px; border-radius: 6px; box-shadow: none;" onclick="triggerMagicWand('style')" title="Auto-Generate Style via AI">
                                 <i class="fa-solid fa-wand-magic-sparkles"></i> AI
                             </button>
 
-                            <!-- TOMBOL INSPIRASI -->
-                            <button type="button" class="magic-wand-btn" style="background: rgba(245, 158, 11, 0.1); color: #f59e0b; border-color: rgba(245, 158, 11, 0.2); padding: 4px 8px; font-size: 0.7rem;" onclick="window.openPromptModal()" title="Lihat Daftar Inspirasi Prompt">
-                                <i class="fa-solid fa-lightbulb"></i> Inspirasi
+                            <!-- TOMBOL AUTO-STYLE (Class hidden dihapus) -->
+                            <button type="button" id="btnAudioToStyle" class="magic-wand-btn" style="background: rgba(236, 72, 153, 0.1); color: #ec4899; border-color: rgba(236, 72, 153, 0.3); padding: 4px 10px; font-size: 0.7rem; height: 26px; border-radius: 6px; box-shadow: none;" onclick="window.extractStyleFromAudio()" title="Analisis Audio ke Teks">
+                                <i class="fa-solid fa-compact-disc"></i> Auto-Style
                             </button>
-                            
-                            <!-- TOMBOL HAPUS (Gaya kotak kecil seperti di lirik) -->
-                            <button type="button" class="action-icon-btn" style="padding: 4px 8px; font-size: 0.7rem;" onclick="clearInput('styleInput', 'styleCounter', 1000)" title="Hapus Teks">
-                                <i class="fa-solid fa-trash-can"></i>
-                            </button>
-                        </div>
 
-                        <!-- BARIS BAWAH: Bahasa & Auto-Style -->
-                        <div style="display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; align-items: center;">
-                            <!-- CUSTOM DROPDOWN BAHASA -->
-                            <div class="custom-select-container hidden" id="langDropdownContainer" style="width: auto; z-index: 105;">
-                                <div class="custom-select-trigger" onclick="window.toggleCustomSelect('styleLangDropdownOptions')" style="background: rgba(236, 72, 153, 0.05); color: #ec4899; border: 1px solid rgba(236, 72, 153, 0.3); padding: 4px 10px; border-radius: 8px; font-size: 0.7rem; font-weight: 700; height: 24px; min-height: 24px; box-shadow: none;">
+                            <!-- CUSTOM DROPDOWN BAHASA (Class hidden dihapus) -->
+                            <div class="custom-select-container" id="langDropdownContainer" style="width: auto; z-index: 105;">
+                                <div class="custom-select-trigger" onclick="window.toggleCustomSelect('styleLangDropdownOptions')" style="background: rgba(236, 72, 153, 0.05); color: #ec4899; border: 1px solid rgba(236, 72, 153, 0.3); padding: 4px 10px; border-radius: 6px; font-size: 0.7rem; font-weight: 700; height: 26px; min-height: 26px; box-shadow: none;">
                                     <span id="styleLangSelectedLabel">English</span>
                                     <i class="fa-solid fa-chevron-down" style="font-size: 0.6rem; margin-left: 6px; color: #ec4899;"></i>
                                 </div>
@@ -2510,10 +2502,18 @@
                                 </div>
                             </div>
                             <input type="hidden" id="autoStyleLang" value="english">
+                        </div>
 
-                            <!-- TOMBOL AUTO-STYLE -->
-                            <button type="button" id="btnAudioToStyle" class="magic-wand-btn hidden" style="background: rgba(236, 72, 153, 0.1); color: #ec4899; border-color: rgba(236, 72, 153, 0.3); padding: 4px 10px; font-size: 0.7rem; height: 24px; border-radius: 8px; box-shadow: none;" onclick="window.extractStyleFromAudio()" title="Analisis Audio ke Teks">
-                                <i class="fa-solid fa-compact-disc"></i> Auto-Style
+                        <!-- BARIS 2 (BAWAH): Hapus - Ide Prompt (Inspirasi) -->
+                        <div style="display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; align-items: center;">
+                            <!-- TOMBOL HAPUS -->
+                            <button type="button" class="action-icon-btn" style="padding: 4px 10px; font-size: 0.7rem; height: 26px; border-radius: 6px; box-shadow: none;" onclick="clearInput('styleInput', 'styleCounter', 1000)" title="Hapus Teks">
+                                <i class="fa-solid fa-trash-can"></i>
+                            </button>
+
+                            <!-- TOMBOL IDE PROMPT (Warna Ungu) -->
+                            <button type="button" class="magic-wand-btn" style="background: rgba(139, 92, 246, 0.1); color: #8b5cf6; border-color: rgba(139, 92, 246, 0.2); padding: 4px 10px; font-size: 0.7rem; height: 26px; border-radius: 6px; box-shadow: none;" onclick="window.openPromptModal()" title="Lihat Pustaka Ide Prompt">
+                                <i class="fa-solid fa-book-open"></i> Ide Prompt
                             </button>
                         </div>
                         
