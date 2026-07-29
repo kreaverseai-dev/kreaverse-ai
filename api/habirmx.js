@@ -448,17 +448,45 @@ ATURAN MUTLAK:
                             } catch(e) { console.error("Whisper error in Magic Wand:", e); }
                         }
                         
-                        systemPrompt = `Kamu adalah Editor Lirik Lagu Profesional untuk mesin Suno AI. Tugasmu menata lirik agar 100% meniru audio asli tanpa nada baru.
-ATURAN MUTLAK (HUKUMAN BERAT JIKA DILANGGAR):
-1. DILARANG MERUBAH LIRIK: Pertahankan 100% lirik dari user. Jangan diterjemahkan.
-2. KUNCI MELODI ASLI: Di baris paling atas lirik, WAJIB tulis persis tag ini: [Direct Cover], [Strict Copy], [1:1 Vocal Cadence], [Identical Instrumentation], [No Improvisation].
-3. KUNCI CENGKOK & NADA: Jangan biarkan AI menyanyi bebas. Pastikan lirik tertata per baris pendek agar AI terpaksa mengikuti ritme lagu aslinya.
-4. VARIASI DRUM REFERENSI: Ganti tag [Drum Fill] biasa dengan tag ini di antara Verse dan Chorus: [Syncopated Drum Fill], [Break], atau [Drop]. Ini memaksa AI menyalin variasi drum dari audio referensi.
-5. INSTRUMENTAL IDENTIK: Tambahkan [Intro] di awal, [Instrumental Interlude] di tengah, dan [Outro], [Fade Out], [End] di paling bawah lagu. Jangan suruh AI membuat melodi panjang baru, cukup ikuti alur referensi.
-6. WATERMARK "HABI RMX" (WAJIB DIBUNYIKAN): Mesin AI sering mengabaikan tanda kurung. Oleh karena itu, sisipkan baris lirik ini persis setelah Intro dan di tengah lagu tanpa kurung apapun:
-Shouted: Habi E R M X
-Pastikan kata itu berdiri sendiri di satu baris agar penyanyi dipaksa meneriakkannya.
-7. OUTPUT: Jawab HANYA dengan lirik lagu. Jangan ada basa-basi.`;
+                        systemPrompt = `Kamu adalah Robot Pemformat Lirik untuk mesin AI Musik. DILARANG KERAS mengubah, menerjemahkan, memotong, atau menambah lirik asli dari user.
+
+TUGAS UTAMA: Salin seluruh lirik user, lalu masukkan ke dalam KERANGKA WAJIB di bawah ini dengan presisi 100%.
+
+KERANGKA WAJIB (Ikuti urutan dan tag ini tanpa kecuali!):
+[Direct Cover], [Strict Copy], [1:1 Vocal Cadence], [Identical Instrumentation]
+
+[Long Instrumental Intro]
+Shouted: Ha bi E r M X
+
+[Verse 1]
+(Tulis bait lirik awal dari user di sini)
+
+[Syncopated Drum Fill]
+[Chorus]
+(Tulis bait lirik utama/chorus dari user di sini)
+
+[Instrumental Interlude]
+Shouted: Ha bi E r M X
+
+[Verse 2]
+(Tulis sisa lirik user di sini sampai habis)
+
+[Break]
+[Heavy Bass Drop]
+[Chorus]
+(Ulangi kembali lirik chorus di sini)
+
+(PENTING UNTUK DURASI 4-5 MENIT: Jika lirik user pendek, WAJIB copy-paste blok [Chorus] beserta liriknya 1x atau 2x lagi di sini agar lagu menjadi panjang!)
+
+[Long Instrumental Outro]
+[Fade Out]
+[End]
+
+ATURAN MUTLAK PENALTI:
+1. HARAM HUKUMNYA menaruh lirik nyanyian di bawah baris [Long Instrumental Intro], [Instrumental Interlude], dan [Long Instrumental Outro]! Bagian instrumental HARUS KOSONG dari lirik agar mesin memainkannya sebagai musik murni (20 detik).
+2. Tulis meta-tag "[Direct Cover]..." di paling atas persis seperti kerangka!
+3. Tulis watermark "Shouted: Ha bi E r M X" persis seperti kerangka.
+4. Langsung berikan hasilnya, DILARANG memberikan kata basa-basi!`;
                         
                         if (audioUrl && whisperTextWithStructure) {
                             finalInputText = `LIRIK DARI USER YANG TIDAK BOLEH DIUBAH:\n${finalInputText}\n\nLIRIK TRANSKRIPSI (Gunakan untuk acuan pengulangan saja):\n${whisperTextWithStructure}`;
