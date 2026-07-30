@@ -2631,12 +2631,14 @@
                             
                             const mantra = "[Is_MAX_MODE: MAX], [QUALITY: MAX], [REAL_INSTRUMENTS: MAX], pristine studio mixing, 1:1 exact melody copy, strict adherence to original chord progression, identical bassline, zero deviation from source audio, consistent rhythm from start to finish, no improvisation, identical vocal timbre, 8k resolution audio, lossless mastering";
 
-                            // Bersihkan mantra lama jika ada agar tidak dobel
-                            let currentStyle = styleInput.value.replace(mantra, "").replace(/,\\s*$/, "").trim();
+                            // Bersihkan mantra lama jika ada agar tidak dobel (Regex diperbaiki)
+                            let currentStyle = styleInput.value.replace(mantra, "").replace(/,\s*$/, "").trim();
 
                             if (type === 'clone') {
                                 negTags.value = "altered melody, different vocals, bad quality, live recording, noise, improvisation, changing chords";
-                                audioW.value = 0.95; styleW.value = 0.5; weirdW.value = 0.1;
+                                audioW.value = 1.0; // FIX: Mentok Kanan (100% Fokus ke Audio)
+                                styleW.value = 0.2; // FIX: Sangat Rendah (Abaikan teks, fokus ke audio)
+                                weirdW.value = 0.1; // FIX: Anti-Improvisasi
                                 if (!currentStyle.includes("pristine studio mixing")) {
                                     styleInput.value = currentStyle ? currentStyle + ", " + mantra : mantra;
                                 }
@@ -2644,7 +2646,9 @@
                             } 
                             else if (type === 'genre_swap') {
                                 negTags.value = "altered melody, off-key, different vocal cadence, changing chords, bad mixing";
-                                audioW.value = 0.75; styleW.value = 0.9; weirdW.value = 0.2;
+                                audioW.value = 0.8; // FIX: Disesuaikan dengan step 0.1
+                                styleW.value = 0.9; 
+                                weirdW.value = 0.2;
                                 if (!currentStyle.includes("pristine studio mixing")) {
                                     styleInput.value = currentStyle ? currentStyle + ", " + mantra : mantra;
                                 }
@@ -2652,7 +2656,9 @@
                             } 
                             else if (type === 'remix') {
                                 negTags.value = "bad mixing, low quality, noise";
-                                audioW.value = 0.4; styleW.value = 0.8; weirdW.value = 0.6;
+                                audioW.value = 0.4; 
+                                styleW.value = 0.8; 
+                                weirdW.value = 0.6;
                                 styleInput.value = currentStyle; // Hapus mantra untuk mode bebas
                                 showIphoneToast("Preset Aktif", "Mode Remix Bebas diterapkan. AI bebas berimprovisasi.", "fa-shuffle");
                             }
