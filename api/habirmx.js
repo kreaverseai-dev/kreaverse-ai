@@ -386,26 +386,32 @@ TUGAS ANDA:
 
                 let systemPrompt = "";
                 
-                // 1. PROMPT UNTUK AUTO-STYLE
+                // 1. PROMPT UNTUK AUTO-STYLE (UPGRADE PROMPT 980 CHARS & ANTI-MELENCENG)
                 if (llmType === 'style') {
                     systemPrompt = `You are a Master Audio Engineer & Prompt Engineer for Suno AI. Listen to the provided audio and convert the vibe into a highly detailed, professional list of comma-separated music tags.
 ABSOLUTE RULES:
 1. 100% ENGLISH. Only keep specific cultural genres ('Dangdut', 'Koplo', 'Sholawat') untranslated.
 2. NO ARTIST NAMES. Focus ONLY on instruments, mood, and tempo.
-3. Output ONLY the comma-separated prompt tags. No conversational text.`;
+3. Output ONLY the comma-separated prompt tags. No conversational text.
+4. CRITICAL: You MUST append these exact tags at the end of your response to force the AI to perfectly clone the audio: "[Is_MAX_MODE: MAX], [QUALITY: MAX], [REAL_INSTRUMENTS: MAX], pristine studio mixing, 1:1 exact melody copy, strict adherence to original chord progression, identical bassline, zero deviation from source audio, consistent rhythm from start to finish, no improvisation, identical vocal timbre, 8k resolution audio, lossless mastering".
+5. LENGTH: Your final output MUST be very long, between 950 and 980 characters. Fill it with highly descriptive instrument tags before appending the mandatory tags above.`;
                 } 
-                // 2. PROMPT UNTUK DETEKSI LIRIK (MULTIMODAL)
+                // 2. PROMPT UNTUK DETEKSI LIRIK (MULTIMODAL) - UPGRADE STRUKTUR PRO
                 else if (llmType === 'detect_lyrics') {
                     systemPrompt = `Kamu adalah Ahli Transkripsi Audio Profesional. Tugasmu adalah MENDENGARKAN file audio yang dilampirkan dari detik pertama hingga detik terakhir, lalu menuliskan liriknya secara VERBATIM (kata per kata persis seperti yang diucapkan penyanyi).
 
 ATURAN MUTLAK (HUKUMAN JIKA DILANGGAR):
-1. DILARANG MENEBAK ATAU MENGARANG LIRIK! Tulis HANYA apa yang benar-benar kamu dengar dari audio ini. Jangan mengambil lirik dari internet meskipun lagunya terdengar familiar.
-2. TULIS SAMPAI HABIS! Jangan berhenti di tengah jalan. Dengarkan sampai audio benar-benar selesai.
+1. DILARANG MENEBAK ATAU MENGARANG LIRIK! Tulis HANYA apa yang benar-benar kamu dengar dari audio ini.
+2. TULIS SAMPAI HABIS! Jangan berhenti di tengah jalan.
 3. Tuliskan sesuai bahasa aslinya (Jangan diterjemahkan).
-4. Berikan tag struktur lagu menggunakan kurung siku, contoh: [Intro], [Verse 1], [Chorus], [Guitar Solo], [Outro].
-5. Jika ada bagian musik yang panjang tanpa orang bernyanyi, tuliskan [Instrumental Interlude].
-6. JIKA LAGU INI MURNI INSTRUMENTAL (Tidak ada orang bernyanyi sama sekali), maka JANGAN mengarang lirik. Cukup tuliskan satu baris ini saja: [Instrumental Music - No Vocals].
-7. Langsung berikan hasil liriknya, dilarang memberikan kata pengantar atau basa-basi.`;
+4. STRUKTUR PRO: Berikan tag struktur lagu menggunakan kurung siku, dan WAJIB tambahkan deskripsi instrumen/vokal yang kamu dengar di detik tersebut. Format: [Nama Bagian | Deskripsi Suara].
+Contoh:
+[Intro | dentingan piano lambat, suasana hening]
+[Verse 1 | vokal pria lembut, gitar akustik masuk]
+[Chorus | drum beat masuk, vokal lebih bertenaga, bass tebal]
+[Instrumental Interlude | melodi gitar solo, tempo sedikit naik]
+5. JIKA LAGU INI MURNI INSTRUMENTAL, tuliskan: [Instrumental Music - No Vocals | jelaskan instrumennya di sini].
+6. Langsung berikan hasil liriknya, dilarang memberikan kata pengantar.`;
                 }
                 // 3. PROMPT UNTUK MERAPIKAN LIRIK (TEKS SAJA)
                 else if (llmType === 'lyrics') {
