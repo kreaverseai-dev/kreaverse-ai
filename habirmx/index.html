@@ -8987,7 +8987,7 @@ window.startDspBypassAndUpload = async function() {
         };
 
         // ============================================================
-        // DETEKSI LIRIK (ASR WHISPER + VOCAL ENHANCER FILTER)
+        // DETEKSI LIRIK (MENGGUNAKAN MULTIMODAL LLM - GEMINI)
         // ============================================================
         window.detectLyrics = async function() {
             if (!isLoggedIn || !currentUser) {
@@ -8995,14 +8995,13 @@ window.startDspBypassAndUpload = async function() {
                 return;
             }
 
-            // PASTIKAN HANYA MENGAMBIL AUDIO ORIGINAL, BUKAN YANG SUDAH DI-DSP
-            let sourceToUse = rawAudioFile;
-            let urlToUse = window.originalRawUrl || selectedAudioUrl;
-
-            if (!sourceToUse && !urlToUse) {
+            if (!rawAudioFile && !selectedAudioUrl) {
                 showIphoneToast("Error", "Silakan unggah audio referensi terlebih dahulu untuk mendeteksi lirik!", "fa-triangle-exclamation");
                 return;
             }
+
+            const llmProviderId = document.getElementById('llmSelect') ? document.getElementById('llmSelect').value : 'auto_pool';
+            const llmModelId = document.getElementById('llmModelSelect') ? document.getElementById('llmModelSelect').value : 'auto_pool';
 
             const inputEl = document.getElementById('lyricsInput');
             const progressBox = document.getElementById('detectLyricsProgress');
@@ -9015,104 +9014,21 @@ window.startDspBypassAndUpload = async function() {
             progressBox.classList.remove('hidden');
 
             try {
-                let audioBlobToGroq = sourceToUse;
-
-                // Jika tidak ada file lokal, unduh dari URL
-                if (!audioBlobToGroq) {
-                    statusText.innerText = "Mengunduh audio dari server...";
-                    const proxyUrl = `https://kreaverse-proxy.kreaverse-ai.workers.dev/?targetUrl=${encodeURIComponent(urlToUse)}`;
-                    const audioRes = await fetch(proxyUrl);
-                    if (!audioRes.ok) throw new Error("Gagal mengambil audio original.");
-                    audioBlobToGroq = await audioRes.blob();
-                }
-
-                // LANGSUNG KIRIM KE GROQ (Tanpa proses lokal yang bikin HP hang/crash)
-                statusText.innerHTML = "Mengunggah ke Flixa AI... <br><small>(Mohon tunggu, bergantung kecepatan internet Anda)</small>";
+                let finalAudioUrl = selectedAudioUrl;
                 
-                // Ambil Kunci API Groq
-                let groqKey = "";
-                try {
-                    const collections = ["api_keys", "keys", "database_keys", "api_providers"];
-                    for (let col of collections) {
-                        const snap = await getDocs(collection(db, col));
-                        snap.forEach(docSnap => {
-                            const d = docSnap.data();
-                            const name = (d.provider || d.name || d.id || "").toLowerCase();
-                            if (name.includes("groq") || name.includes("whisper")) {
-                                if (d.apiKey) groqKey = d.apiKey;
-                                else if (d.key) groqKey = d.key;
-                            }
-                        });
-                        if (groqKey) break;
+                // Jika belum ada URL (baru pilih file lokal), upload dulu ke Cloudinary
+                if (!finalAudioUrl && rawAudioFile) {
+                    statusText.innerText = "Mengunggah audio ke server...";
+                    let finalDurStr = "0:00";
+                    const origPlayer = document.getElementById('originalAudioPlayer');
+                    if (origPlayer && isFinite(origPlayer.duration) && origPlayer.duration > 0) {
+                        finalDurStr = formatTime(origPlayer.duration);
                     }
-                } catch(e) {
-                    console.warn("Firestore fetch key fallback:", e);
+                    await uploadBlobToCloudinary(rawAudioFile, rawAudioFile.name, false, finalDurStr);
+                    finalAudioUrl = selectedAudioUrl;
                 }
 
-                if (!groqKey) {
-                    throw new Error("Kunci API Groq Whisper tidak ditemukan di database.");
-                }
-
-                const formDataGroq = new FormData();
-                // Groq menerima berbagai format, kita beri nama dummy .mp3 agar lolos validasi ekstensi
-                formDataGroq.append("file", audioBlobToGroq, "audio.mp3"); 
-                formDataGroq.append("model", "whisper-large-v3");
-                
-                // KUNCI UTAMA: Matikan imajinasi AI (Temperature 0) agar tidak halusinasi
-                formDataGroq.append("temperature", "0.0"); 
-                
-                // PROMPT BAHASA INGGRIS DIHAPUS AGAR AI BISA AUTO-DETECT BAHASA (INDONESIA/ARAB/DLL) DENGAN BENAR
-
-                // Menggunakan XMLHttpRequest agar bisa melihat Progress Upload ke Groq
-                const whisperData = await new Promise((resolve, reject) => {
-                    const xhr = new XMLHttpRequest();
-                    xhr.open('POST', 'https://api.groq.com/openai/v1/audio/transcriptions');
-                    xhr.setRequestHeader('Authorization', `Bearer ${groqKey}`);
-                    
-                    xhr.upload.onprogress = (event) => {
-                        if (event.lengthComputable) {
-                            const percentComplete = Math.round((event.loaded / event.total) * 100);
-                            const loadedMB = (event.loaded / (1024 * 1024)).toFixed(2);
-                            const totalMB = (event.total / (1024 * 1024)).toFixed(2);
-                            statusText.innerHTML = `Mengunggah ke Flixa AI... <b>${percentComplete}%</b> (${loadedMB} MB / ${totalMB} MB)`;
-                        }
-                    };
-                    
-                    xhr.onload = () => {
-                        if (xhr.status >= 200 && xhr.status < 300) {
-                            resolve(JSON.parse(xhr.responseText));
-                        } else {
-                            try {
-                                const errResp = JSON.parse(xhr.responseText);
-                                reject(new Error(errResp.error?.message || "Gagal transkripsi audio."));
-                            } catch(e) {
-                                reject(new Error("Gagal transkripsi audio. Server error."));
-                            }
-                        }
-                    };
-                    
-                    xhr.onerror = () => reject(new Error("Terjadi kesalahan jaringan saat upload ke Flixa AI."));
-                    xhr.send(formDataGroq);
-                });
-
-                const rawText = whisperData.text;
-
-                // 5. Kirim teks mentah dari Whisper ke LLM (Groq Llama 3.1)
-                statusText.innerText = "Flixa AI sedang merapikan struktur lagu...";
-                
-                // Pengecekan Aman (Safe Fallback) agar tidak error "Cannot read properties of null"
-                const llmProviderEl = document.getElementById('llmSelect');
-                const llmModelEl = document.getElementById('llmModelSelect');
-                const vocalGenderEl = document.getElementById('vocalGenderSelect');
-                
-                const llmProviderId = llmProviderEl ? llmProviderEl.value : 'auto_pool';
-                const llmModelId = llmModelEl ? llmModelEl.value : 'auto_pool';
-                const vocalGenderVal = vocalGenderEl ? vocalGenderEl.value : 'not_specified';
-                
-                const currentMode = document.getElementById('modeGenerateBtn').classList.contains('active') ? 'generate' : 'cover';
-
-                // INJEKSI INSTRUKSI KETAT (ANTI-HALUSINASI & ANTI-TERJEMAHAN)
-                const strictInstruction = "TUGAS: Rapikan teks ini menjadi format lirik lagu untuk Suno AI (gunakan tag [Verse], [Chorus], dll).\n\nATURAN MUTLAK:\n1. JANGAN PERNAH menerjemahkan lirik.\n2. DILARANG KERAS menambahkan teks [Terjemahan: ...].\n3. HAPUS SEMUA huruf Mandarin/China/Jepang/Korea (itu adalah halusinasi AI saat mendengar instrumen).\n4. HANYA pertahankan lirik aslinya saja sesuai bahasa aslinya.\n5. Jangan tambahkan komentar apapun.\n\nLIRIK MENTAH:\n" + rawText;
+                statusText.innerHTML = "AI sedang mendengarkan lagu dan menulis lirik... <br><small>(Menggunakan Chat AI Multimodal)</small>";
 
                 const response = await fetch('/api/habirmx', {
                     method: 'POST',
@@ -9121,32 +9037,32 @@ window.startDspBypassAndUpload = async function() {
                         action: 'magic_wand',
                         providerId: llmProviderId,
                         modelId: llmModelId,
-                        llmType: 'lyrics',
-                        inputText: strictInstruction,
-                        vocalGender: vocalGenderVal,
-                        currentMode: currentMode
+                        llmType: 'detect_lyrics',
+                        inputText: "Tolong dengarkan lagu ini dan tuliskan liriknya dengan akurat dari awal sampai akhir.", 
+                        audioUrl: finalAudioUrl, 
+                        currentMode: 'cover'
                     })
                 });
 
                 const data = await response.json();
-                if (!response.ok) throw new Error(data.error || "Gagal merapikan lirik.");
+                if (!response.ok) throw new Error(data.error || "Gagal menghubungi AI");
 
                 let finalResult = data.result.trim();
+                
                 inputEl.value = "";
                 let i = 0;
-                const chunkSize = 15; 
-                
                 function typeWriter() {
                     if (i < finalResult.length) {
-                        inputEl.value += finalResult.substring(i, i + chunkSize);
-                        i += chunkSize;
-                        setTimeout(typeWriter, 1); 
+                        inputEl.value += finalResult.charAt(i);
+                        i++;
+                        setTimeout(typeWriter, 5);
                     } else {
                         inputEl.disabled = false;
                         btn.disabled = false;
                         btn.innerHTML = originalBtnHtml;
                         updateCounter('lyricsInput', 'lyricsCounter', 5000);
-                        showIphoneToast("Selesai", "Lirik otomatis berhasil disusun oleh Flixa AI!", "fa-circle-check");
+                        showIphoneToast("Deteksi Selesai", "Lirik berhasil diekstrak dari audio!", "fa-check-double");
+                        window.checkLyricsState();
                     }
                 }
                 typeWriter();
@@ -9155,7 +9071,7 @@ window.startDspBypassAndUpload = async function() {
                 inputEl.disabled = false;
                 btn.disabled = false;
                 btn.innerHTML = originalBtnHtml;
-                showIphoneToast("ASR Gagal", err.message, "fa-circle-xmark");
+                showIphoneToast("Gagal Deteksi", err.message, "fa-triangle-exclamation");
             } finally {
                 progressBox.classList.add('hidden');
             }
