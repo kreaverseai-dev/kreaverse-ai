@@ -9027,17 +9027,41 @@ window.startDspBypassAndUpload = async function() {
 
             try {
                 let finalAudioUrl = selectedAudioUrl;
+                const isDspActive = document.getElementById('uploadedMiniBadge') && document.getElementById('uploadedMiniBadge').innerText === "DSP Bypassed";
                 
-                // Jika belum ada URL (baru pilih file lokal), upload dulu ke Cloudinary
-                if (!finalAudioUrl && rawAudioFile) {
-                    statusText.innerText = "Mengunggah audio ke server...";
-                    let finalDurStr = "0:00";
-                    const origPlayer = document.getElementById('originalAudioPlayer');
-                    if (origPlayer && isFinite(origPlayer.duration) && origPlayer.duration > 0) {
-                        finalDurStr = formatTime(origPlayer.duration);
+                // LOGIKA PINTAR: Selalu gunakan Audio Original untuk Gemini, abaikan DSP
+                if (window.originalCleanAudioUrl) {
+                    finalAudioUrl = window.originalCleanAudioUrl;
+                    statusText.innerText = "Menganalisis audio original...";
+                } 
+                else if ((!finalAudioUrl || isDspActive) && rawAudioFile) {
+                    statusText.innerText = "Menyiapkan audio original untuk AI...";
+                    await fetchCloudinaryAccounts();
+                    if (activeCloudinaryAccounts.length > 0) {
+                        const targetAccount = activeCloudinaryAccounts[0];
+                        const formDataCloudinary = new FormData();
+                        formDataCloudinary.append("file", rawAudioFile, "original_detect.mp3");
+                        formDataCloudinary.append("upload_preset", targetAccount.uploadPreset);
+                        
+                        finalAudioUrl = await new Promise((resolve, reject) => {
+                            const xhr = new XMLHttpRequest();
+                            xhr.open('POST', `https://api.cloudinary.com/v1_1/${targetAccount.cloudName}/auto/upload`);
+                            xhr.upload.onprogress = (event) => {
+                                if (event.lengthComputable) {
+                                    const percentComplete = Math.round((event.loaded / event.total) * 100);
+                                    statusText.innerHTML = `Mengunggah Original ke AI... <b>${percentComplete}%</b>`;
+                                }
+                            };
+                            xhr.onload = () => {
+                                if (xhr.status >= 200 && xhr.status < 300) {
+                                    resolve(JSON.parse(xhr.responseText).secure_url);
+                                } else reject(new Error("Upload gagal"));
+                            };
+                            xhr.onerror = () => reject(new Error("Error jaringan"));
+                            xhr.send(formDataCloudinary);
+                        });
+                        window.originalCleanAudioUrl = finalAudioUrl;
                     }
-                    await uploadBlobToCloudinary(rawAudioFile, rawAudioFile.name, false, finalDurStr);
-                    finalAudioUrl = selectedAudioUrl;
                 }
 
                 statusText.innerHTML = "AI sedang mendengarkan lagu dan menulis lirik... <br><small>(Menggunakan Chat AI Multimodal)</small>";
@@ -9125,16 +9149,34 @@ window.startDspBypassAndUpload = async function() {
 
             try {
                 let finalAudioUrl = selectedAudioUrl;
+                const isDspActive = document.getElementById('uploadedMiniBadge') && document.getElementById('uploadedMiniBadge').innerText === "DSP Bypassed";
                 
-                if (!finalAudioUrl && rawAudioFile) {
-                    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Upload...';
-                    let finalDurStr = "0:00";
-                    const origPlayer = document.getElementById('originalAudioPlayer');
-                    if (origPlayer && isFinite(origPlayer.duration) && origPlayer.duration > 0) {
-                        finalDurStr = formatTime(origPlayer.duration);
+                // LOGIKA PINTAR: Selalu gunakan Audio Original untuk Gemini, abaikan DSP
+                if (window.originalCleanAudioUrl) {
+                    finalAudioUrl = window.originalCleanAudioUrl;
+                } 
+                else if ((!finalAudioUrl || isDspActive) && rawAudioFile) {
+                    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Upload Original...';
+                    await fetchCloudinaryAccounts();
+                    if (activeCloudinaryAccounts.length > 0) {
+                        const targetAccount = activeCloudinaryAccounts[0];
+                        const formDataCloudinary = new FormData();
+                        formDataCloudinary.append("file", rawAudioFile, "original_style.mp3");
+                        formDataCloudinary.append("upload_preset", targetAccount.uploadPreset);
+                        
+                        finalAudioUrl = await new Promise((resolve, reject) => {
+                            const xhr = new XMLHttpRequest();
+                            xhr.open('POST', `https://api.cloudinary.com/v1_1/${targetAccount.cloudName}/auto/upload`);
+                            xhr.onload = () => {
+                                if (xhr.status >= 200 && xhr.status < 300) {
+                                    resolve(JSON.parse(xhr.responseText).secure_url);
+                                } else reject(new Error("Upload gagal"));
+                            };
+                            xhr.onerror = () => reject(new Error("Error jaringan"));
+                            xhr.send(formDataCloudinary);
+                        });
+                        window.originalCleanAudioUrl = finalAudioUrl;
                     }
-                    await uploadBlobToCloudinary(rawAudioFile, rawAudioFile.name, false, finalDurStr);
-                    finalAudioUrl = selectedAudioUrl;
                 }
 
                 btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Ekstrak...';
