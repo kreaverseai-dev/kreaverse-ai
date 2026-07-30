@@ -504,6 +504,13 @@ ATURAN MUTLAK:
                                 success = true; break; 
                             } catch (e) {
                                 lastError = e.message;
+                                const lowerErr = lastError.toLowerCase();
+                                
+                                // LOGIKA PINTAR: Jika saldo habis, matikan key ini dan langsung lompat ke key berikutnya
+                                if (lowerErr.includes('insufficient') || lowerErr.includes('balance') || lowerErr.includes('quota') || lowerErr.includes('credit')) {
+                                    try { await db.collection("api_keys").doc(keyDoc.id).update({ status: "mati" }); } catch(err){}
+                                    break; // Berhenti mencoba di key yang sama, lanjut ke key berikutnya!
+                                }
                             }
                         }
                         if (success) break;
