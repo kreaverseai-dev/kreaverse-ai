@@ -396,7 +396,7 @@ ABSOLUTE RULES:
 4. CRITICAL: You MUST append these exact tags at the end of your response to force the AI to perfectly clone the audio: "[Is_MAX_MODE: MAX], [QUALITY: MAX], [REAL_INSTRUMENTS: MAX], pristine studio mixing, 1:1 exact melody copy, strict adherence to original chord progression, identical bassline, zero deviation from source audio, consistent rhythm from start to finish, no improvisation, identical vocal timbre, 8k resolution audio, lossless mastering".
 5. LENGTH: Your final output MUST be very long, between 950 and 980 characters. Fill it with highly descriptive instrument tags before appending the mandatory tags above.`;
                 } 
-                // 2. PROMPT UNTUK DETEKSI LIRIK (MULTIMODAL) - UPGRADE STRUKTUR PRO
+                // 2. PROMPT UNTUK DETEKSI LIRIK (MULTIMODAL) - UPGRADE STRUKTUR PRO + WATERMARK
                 else if (llmType === 'detect_lyrics') {
                     systemPrompt = `Kamu adalah Ahli Transkripsi Audio Profesional. Tugasmu adalah MENDENGARKAN file audio yang dilampirkan dari detik pertama hingga detik terakhir, lalu menuliskan liriknya secara VERBATIM (kata per kata persis seperti yang diucapkan penyanyi).
 
@@ -404,14 +404,14 @@ ATURAN MUTLAK (HUKUMAN JIKA DILANGGAR):
 1. DILARANG MENEBAK ATAU MENGARANG LIRIK! Tulis HANYA apa yang benar-benar kamu dengar dari audio ini.
 2. TULIS SAMPAI HABIS! Jangan berhenti di tengah jalan.
 3. Tuliskan sesuai bahasa aslinya (Jangan diterjemahkan).
-4. STRUKTUR PRO: Berikan tag struktur lagu menggunakan kurung siku, dan WAJIB tambahkan deskripsi instrumen/vokal yang kamu dengar di detik tersebut. Format: [Nama Bagian | Deskripsi Suara].
-Contoh:
-[Intro | dentingan piano lambat, suasana hening]
-[Verse 1 | vokal pria lembut, gitar akustik masuk]
-[Chorus | drum beat masuk, vokal lebih bertenaga, bass tebal]
-[Instrumental Interlude | melodi gitar solo, tempo sedikit naik]
-5. JIKA LAGU INI MURNI INSTRUMENTAL, tuliskan: [Instrumental Music - No Vocals | jelaskan instrumennya di sini].
-6. Langsung berikan hasil liriknya, dilarang memberikan kata pengantar.`;
+4. LYRIC ENGINEERING (ANTI-AMNESIA): Berikan tag struktur lagu menggunakan kurung siku. WAJIB tambahkan deskripsi instrumen, lalu WAJIB akhiri dengan kalimat "EXACT SAME MELODY AND VOCALS".
+Contoh Format:
+[Intro | dentingan piano lambat, EXACT SAME MELODY AND VOCALS]
+[Verse 1 | vokal pria lembut, gitar akustik, EXACT SAME MELODY AND VOCALS]
+[Chorus | drum beat masuk, bass tebal, EXACT SAME MELODY AND VOCALS]
+5. WATERMARK WAJIB: Kamu WAJIB menyisipkan lirik "(Spoken: Ha bi R M X)" tepat di bawah tag [Instrumental Interlude] atau [Guitar Solo] di pertengahan lagu, DAN satu kali lagi tepat di bawah tag [Outro] di akhir lagu.
+6. JIKA LAGU INI MURNI INSTRUMENTAL, tuliskan: [Instrumental Music - No Vocals | EXACT SAME MELODY AND VOCALS].
+7. Langsung berikan hasil liriknya, dilarang memberikan kata pengantar.`;
                 }
                 // 3. PROMPT UNTUK MERAPIKAN LIRIK (TEKS SAJA)
                 else if (llmType === 'lyrics') {
