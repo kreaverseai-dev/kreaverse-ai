@@ -630,7 +630,40 @@ Contoh Format:
 
             const targetProviderId = providerId || modelId;
             const isAutoPool = (targetProviderId === 'auto_pool');
-            let providersToTry = isAutoPool ? audioProviders : [audioProviders.find(p => p.value === targetProviderId)].filter(Boolean);
+            
+            // CEK KEPEMILIKAN SUARA DI DATABASE (Berlaku hanya jika opsi Voice dipakai)
+            let requiredKeyDocId = null;
+            let requiredProviderName = null;
+
+            if (options && options.personaId) {
+                try {
+                    const personaDoc = await db.collection("persona_keys").doc(options.personaId).get();
+                    if (personaDoc.exists) {
+                        requiredKeyDocId = personaDoc.data().keyDocId;
+                        
+                        // PELACAKAN PINTAR: Cari tahu provider mana yang memiliki API Key ini
+                        const keyDoc = await db.collection("api_keys").doc(requiredKeyDocId).get();
+                        if (keyDoc.exists) {
+                            requiredProviderName = keyDoc.data().provider;
+                        }
+                    }
+                } catch(e) { console.error("Gagal cek persona:", e); }
+            }
+
+            let providersToTry = [];
+            
+            // LOGIKA PINTAR: Jika pakai Voice, PAKSA gunakan provider pemilik Voice tersebut!
+            if (requiredProviderName) {
+                const voiceProvider = audioProviders.find(p => p.value === requiredProviderName);
+                if (voiceProvider) {
+                    providersToTry = [voiceProvider];
+                } else {
+                    return res.status(500).json({ error: `Provider '${requiredProviderName}' untuk Suara ini tidak ditemukan di sistem.` });
+                }
+            } else {
+                // Logika normal jika tidak pakai Voice (Auto Pool / Spesifik)
+                providersToTry = isAutoPool ? audioProviders : [audioProviders.find(p => p.value === targetProviderId)].filter(Boolean);
+            }
 
             if (providersToTry.length === 0) return res.status(500).json({ error: 'Provider spesifik tidak ditemukan di database.' });
 
@@ -638,17 +671,6 @@ Contoh Format:
             let successfulProvider = null;
             let lastErrorMessage = "Tidak ada respons dari server.";
             let keyFoundAndUsed = false;
-
-            // CEK KEPEMILIKAN SUARA DI DATABASE (Berlaku hanya jika opsi Voice dipakai)
-            let requiredKeyDocId = null;
-            if (options && options.personaId) {
-                try {
-                    const personaDoc = await db.collection("persona_keys").doc(options.personaId).get();
-                    if (personaDoc.exists) {
-                        requiredKeyDocId = personaDoc.data().keyDocId;
-                    }
-                } catch(e) { console.error("Gagal cek persona:", e); }
-            }
 
             for (let i = 0; i < providersToTry.length; i++) {
                 let currentProvider = providersToTry[i];
@@ -671,8 +693,8 @@ Contoh Format:
                         sortedKeysDocs = [specificKeyDoc]; // Kunci sistem ke API Key ini saja
                     } else {
                         sortedKeysDocs = []; // Kosongkan agar loop key tidak berjalan
-                        lastErrorMessage = "Server penyimpanan untuk Suara ini sedang penuh. Silakan kembali ke menu 'Kloning Voice' untuk me-refresh suara Anda ke server baru.";
-                        if (isAutoPool) break; // Hentikan pencarian Auto-Fallback
+                        lastErrorMessage = "Server penyimpanan untuk Suara ini sedang penuh atau API Key mati. Silakan Kloning ulang suara Anda.";
+                        continue; // FIX: Lanjut ke provider lain (jika ada), jangan di-break paksa
                     }
                 }
 
