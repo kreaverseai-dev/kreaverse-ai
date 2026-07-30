@@ -412,13 +412,19 @@ ATURAN MUTLAK (HUKUMAN JIKA DILANGGAR):
                     systemPrompt = `Kamu adalah Penulis Lagu Profesional. Rapikan lirik dari user ini. Tambahkan tag struktur seperti [Verse] dan [Chorus]. Jangan mengubah kata-kata aslinya.`;
                 }
 
-                let audioBase64 = null;
+                // FIX: UBAH AUDIO URL MENJADI BASE64 DATA URI
+                // KIE.AI sering gagal mendownload link MP3 secara internal. 
+                // Kita paksa Vercel mendownloadnya dan mengirimkan wujud asli audionya (Base64) ke KIE.AI.
+                let finalAudioPayload = audioUrl;
                 if (audioUrl) {
                     try {
                         const aFetch = await fetch(audioUrl);
                         const aBuffer = await aFetch.arrayBuffer();
-                        audioBase64 = Buffer.from(aBuffer).toString('base64');
-                    } catch(e) { console.error("Gagal fetch audio base64:", e); }
+                        const base64Data = Buffer.from(aBuffer).toString('base64');
+                        finalAudioPayload = `data:audio/mp3;base64,${base64Data}`;
+                    } catch(e) {
+                        console.error("Gagal fetch audio base64:", e);
+                    }
                 }
 
                 let resultText = "";
@@ -443,12 +449,12 @@ ATURAN MUTLAK (HUKUMAN JIKA DILANGGAR):
                                     finalPayload = {
                                         model: currentModel,
                                         max_tokens: 8192,
-                                        temperature: 0.1,
+                                        temperature: 0.0, // 0.0 agar sangat kaku dan tidak berhalusinasi
                                         messages: [
                                             { role: "system", content: systemPrompt },
                                             { role: "user", content: [
                                                 { type: "text", text: finalInputText },
-                                                { type: "image_url", image_url: { url: audioUrl } }
+                                                { type: "image_url", image_url: { url: finalAudioPayload } }
                                             ]}
                                         ]
                                     };
