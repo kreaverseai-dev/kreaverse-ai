@@ -5515,6 +5515,10 @@
             if(btnCover) btnCover.classList.remove('active');
             if(btnVoice) btnVoice.classList.remove('active');
 
+            // Elemen Tombol AI (Biru Kecil)
+            const btnStyleAI = document.querySelector('button[onclick="triggerMagicWand(\\'style\\')"]');
+            const btnLyricsAI = document.querySelector('button[onclick="triggerMagicWand(\\'lyrics\\')"]');
+
             if (mode === 'generate') {
                 if(btnGenerate) btnGenerate.classList.add('active');
                 if(uploadSection) uploadSection.classList.add('hidden');
@@ -5522,6 +5526,10 @@
                 
                 if(btnAudioToStyle) btnAudioToStyle.classList.add('hidden');
                 if(selectLangContainer) selectLangContainer.classList.add('hidden');
+                
+                // Tampilkan tombol AI di mode Generate
+                if(btnStyleAI) btnStyleAI.style.display = 'flex';
+                if(btnLyricsAI) btnLyricsAI.style.display = 'flex';
                 
                 selectedAudioUrl = ""; 
                 if(modeDesc) modeDesc.innerText = "Buat lagu baru dari awal menggunakan lirik dan gaya musik Anda sendiri.";
@@ -5544,6 +5552,10 @@
                 
                 if(btnAudioToStyle) btnAudioToStyle.classList.remove('hidden');
                 if(selectLangContainer) selectLangContainer.classList.remove('hidden');
+                
+                // Sembunyikan tombol AI di mode Cover
+                if(btnStyleAI) btnStyleAI.style.display = 'none';
+                if(btnLyricsAI) btnLyricsAI.style.display = 'none';
                 
                 if(modeDesc) modeDesc.innerText = "Unggah audio referensi (maks 8 menit). AI akan mengubah gaya musiknya sesuai prompt Anda.";
                 
