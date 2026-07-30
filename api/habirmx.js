@@ -386,7 +386,7 @@ TUGAS ANDA:
 
                 let systemPrompt = "";
                 
-                // 1. PROMPT UNTUK AUTO-STYLE (UPGRADE PROMPT 980 CHARS & ANTI-MELENCENG)
+                // 1. PROMPT UNTUK AUTO-STYLE (LIMIT KETAT MAX 900 KARAKTER)
                 if (llmType === 'style') {
                     systemPrompt = `You are a Master Audio Engineer & Prompt Engineer for Suno AI. Listen to the provided audio and convert the vibe into a highly detailed, professional list of comma-separated music tags.
 ABSOLUTE RULES:
@@ -394,7 +394,7 @@ ABSOLUTE RULES:
 2. NO ARTIST NAMES. Focus ONLY on instruments, mood, and tempo.
 3. Output ONLY the comma-separated prompt tags. No conversational text.
 4. CRITICAL: You MUST append these exact tags at the end of your response to force the AI to perfectly clone the audio: "[Is_MAX_MODE: MAX], [QUALITY: MAX], [REAL_INSTRUMENTS: MAX], pristine studio mixing, 1:1 exact melody copy, strict adherence to original chord progression, identical bassline, zero deviation from source audio, consistent rhythm from start to finish, no improvisation, identical vocal timbre, 8k resolution audio, lossless mastering".
-5. LENGTH: Your final output MUST be very long, between 950 and 980 characters. Fill it with highly descriptive instrument tags before appending the mandatory tags above.`;
+5. STRICT LENGTH LIMIT: Your ENTIRE response, INCLUDING the mandatory tags above, MUST NOT EXCEED 900 characters. Be concise with your instrument tags to ensure it stays under the limit.`;
                 } 
                 // 2. PROMPT UNTUK DETEKSI LIRIK (MULTIMODAL) - UPGRADE STRUKTUR PRO + WATERMARK
                 else if (llmType === 'detect_lyrics') {
