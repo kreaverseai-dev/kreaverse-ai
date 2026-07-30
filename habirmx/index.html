@@ -2614,8 +2614,12 @@
                                 <span><i class="fa-solid fa-guitar"></i> 2. Ganti Genre (Nada & Cengkok Tetap)</span>
                                 <span style="font-size: 0.65rem; font-weight: 700; opacity: 0.8;">Pop ke DJ / Dangdut dll</span>
                             </button>
+                            <button type="button" onclick="window.applyFlixaPreset('persona')" style="background: #ffffff; border: 1.5px solid #f59e0b; color: #b45309; padding: 10px; border-radius: 10px; font-weight: 800; font-size: 0.8rem; cursor: pointer; text-align: left; transition: 0.2s; display: flex; justify-content: space-between; align-items: center;" onmouseover="this.style.background='#f59e0b'; this.style.color='#fff';" onmouseout="this.style.background='#ffffff'; this.style.color='#b45309';">
+                                <span><i class="fa-solid fa-microphone-lines"></i> 3. Pakai SuaraMu (Voice Clone)</span>
+                                <span style="font-size: 0.65rem; font-weight: 700; opacity: 0.8;">Ganti Vokal, Nada Tetap</span>
+                            </button>
                             <button type="button" onclick="window.applyFlixaPreset('remix')" style="background: #ffffff; border: 1.5px solid #8b5cf6; color: #6d28d9; padding: 10px; border-radius: 10px; font-weight: 800; font-size: 0.8rem; cursor: pointer; text-align: left; transition: 0.2s; display: flex; justify-content: space-between; align-items: center;" onmouseover="this.style.background='#8b5cf6'; this.style.color='#fff';" onmouseout="this.style.background='#ffffff'; this.style.color='#6d28d9';">
-                                <span><i class="fa-solid fa-shuffle"></i> 3. Remix Bebas (Improvisasi AI)</span>
+                                <span><i class="fa-solid fa-shuffle"></i> 4. Remix Bebas (Improvisasi AI)</span>
                                 <span style="font-size: 0.65rem; font-weight: 700; opacity: 0.8;">Nada bisa berubah</span>
                             </button>
                         </div>
@@ -2629,31 +2633,48 @@
                             const styleW = document.getElementById('styleWeightSlider');
                             const weirdW = document.getElementById('weirdnessSlider');
                             
-                            const mantra = "[Is_MAX_MODE: MAX], [QUALITY: MAX], [REAL_INSTRUMENTS: MAX], pristine studio mixing, 1:1 exact melody copy, strict adherence to original chord progression, identical bassline, zero deviation from source audio, consistent rhythm from start to finish, no improvisation, identical vocal timbre, 8k resolution audio, lossless mastering";
+                            let mantra = "[Is_MAX_MODE: MAX], [QUALITY: MAX], [REAL_INSTRUMENTS: MAX], pristine studio mixing, 1:1 exact melody copy, strict adherence to original chord progression, identical bassline, zero deviation from source audio, consistent rhythm from start to finish, no improvisation, identical vocal timbre, 8k resolution audio, lossless mastering";
 
-                            // Bersihkan mantra lama jika ada agar tidak dobel (Regex diperbaiki)
+                            // Bersihkan mantra lama jika ada agar tidak dobel
                             let currentStyle = styleInput.value.replace(mantra, "").replace(/,\s*$/, "").trim();
+                            
+                            // MANTRA KHUSUS PERSONA (Ganti Vokal)
+                            const personaMantra = "[Is_MAX_MODE: MAX], [QUALITY: MAX], pristine studio mixing, 1:1 exact melody copy, strict adherence to original chord progression, identical bassline, consistent rhythm from start to finish, no improvisation, REPLACE ORIGINAL VOCAL WITH PERSONA VOICE, clear vocal mix, 8k resolution audio";
+                            currentStyle = currentStyle.replace(personaMantra, "").replace(/,\s*$/, "").trim();
+
+                            // FUNGSI POTONG OTOMATIS (Mencegah Error 1000 Karakter)
+                            const safeAppendMantra = (targetMantra) => {
+                                const maxAllowedLen = 980 - targetMantra.length - 5; // Sisakan ruang untuk mantra
+                                if (currentStyle.length > maxAllowedLen) {
+                                    currentStyle = currentStyle.substring(0, maxAllowedLen) + "...";
+                                }
+                                styleInput.value = currentStyle ? currentStyle + ", " + targetMantra : targetMantra;
+                            };
 
                             if (type === 'clone') {
                                 negTags.value = "altered melody, different vocals, bad quality, live recording, noise, improvisation, changing chords";
-                                audioW.value = 1.0; // FIX: Mentok Kanan (100% Fokus ke Audio)
-                                styleW.value = 0.2; // FIX: Sangat Rendah (Abaikan teks, fokus ke audio)
-                                weirdW.value = 0.1; // FIX: Anti-Improvisasi
-                                if (!currentStyle.includes("pristine studio mixing")) {
-                                    styleInput.value = currentStyle ? currentStyle + ", " + mantra : mantra;
-                                }
+                                audioW.value = 1.0; 
+                                styleW.value = 0.2; 
+                                weirdW.value = 0.1; 
+                                safeAppendMantra(mantra);
                                 showIphoneToast("Preset Aktif", "Mode Clone Identik diterapkan. Nada & Vokal akan dikunci 100%.", "fa-copy");
                             } 
                             else if (type === 'genre_swap') {
                                 negTags.value = "altered melody, off-key, different vocal cadence, changing chords, bad mixing";
-                                audioW.value = 0.8; // FIX: Disesuaikan dengan step 0.1
+                                audioW.value = 0.8; 
                                 styleW.value = 0.9; 
                                 weirdW.value = 0.2;
-                                if (!currentStyle.includes("pristine studio mixing")) {
-                                    styleInput.value = currentStyle ? currentStyle + ", " + mantra : mantra;
-                                }
+                                safeAppendMantra(mantra);
                                 showIphoneToast("Preset Aktif", "Mode Ganti Genre diterapkan. Cengkok vokal dikunci, instrumen dibebaskan.", "fa-guitar");
                             } 
+                            else if (type === 'persona') {
+                                negTags.value = "altered melody, off-key, changing chords, bad mixing, original singer voice";
+                                audioW.value = 0.8; // Cukup tinggi untuk jaga nada, tapi beri ruang untuk suara baru
+                                styleW.value = 0.6; 
+                                weirdW.value = 0.1;
+                                safeAppendMantra(personaMantra);
+                                showIphoneToast("Preset Aktif", "Mode Pakai SuaraMu diterapkan. Nada dikunci, Vokal diganti.", "fa-microphone-lines");
+                            }
                             else if (type === 'remix') {
                                 negTags.value = "bad mixing, low quality, noise";
                                 audioW.value = 0.4; 
