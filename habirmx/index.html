@@ -1503,34 +1503,9 @@
                 <div style="display: flex; gap: 10px; background: #f8fafc; padding: 6px; border-radius: 16px; border: 1px solid var(--border-color); flex-wrap: wrap;">
                     <button type="button" id="modeGenerateBtn" class="mode-btn active" onclick="switchMode('generate')">Bikin Lagu Sendiri</button>
                     <button type="button" id="modeCoverBtn" class="mode-btn" onclick="switchMode('cover')">Cover Lagu</button>
-                    <button type="button" id="modeVoiceBtn" class="mode-btn" onclick="switchMode('voice')">Pakai SuaraMu <span class="badge-new">New</span></button>
+                    <button type="button" id="modeVoiceBtn" class="mode-btn" onclick="switchMode('voice')">Pakai SuaraMu</button>
                 </div>
                 <span id="modeDescription" class="helper-text">Buat lagu baru dari awal menggunakan lirik dan gaya musik Anda sendiri.</span>
-            </div>
-
-            <!-- CHAT LLM SELECTOR (DINAMIS) -->
-            <div id="llmSettingsWrapper" class="hidden" style="margin-bottom: 24px;">
-                <div class="input-group" style="margin-bottom: 0; position: relative;">
-                    <label style="display: flex; align-items: center; margin-bottom: 8px;">
-                        <span style="font-weight: 800; font-size: 0.8rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px;">Pilihan Chat AI (Lirik & Style) :</span>
-                    </label>
-                    
-                    <div class="custom-select-container">
-                        <div class="custom-select-trigger" onclick="window.toggleCustomSelect('llmDropdown')" style="background: #ffffff; color: var(--text-primary); border: 1px solid var(--border-color); border-radius: 99px; padding: 8px 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.02); display: inline-flex; align-items: center; gap: 12px; width: max-content; cursor: pointer; transition: 0.2s; font-size: 0.85rem; height: 38px;">
-                            <span id="llmSelectedLabel" style="font-weight: 700; display: flex; align-items: center; gap: 6px;">
-                                <i class="fa-solid fa-brain" style="color: #8b5cf6;"></i> Memuat Chat AI...
-                            </span>
-                            <i class="fa-solid fa-chevron-down" style="color: var(--text-light); font-size: 0.75rem;"></i>
-                        </div>
-
-                        <div class="custom-select-options hidden" id="llmDropdown" style="background: #ffffff; border: 1px solid var(--border-color); padding: 6px; border-radius: 16px; top: calc(100% + 8px); left: 0; z-index: 9999; max-height: 350px; overflow-y: auto; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 100%; min-width: 280px; position: absolute;">
-                            <!-- Diisi otomatis oleh JS -->
-                        </div>
-                    </div>
-                    
-                    <input type="hidden" id="llmSelect" value="auto_pool">
-                    <input type="hidden" id="llmModelSelect" value="auto_pool">
-                </div>
             </div>
 
             <!-- CONTAINER PAKAI SUARAMU -->
@@ -6260,14 +6235,11 @@
                             return type === "llm" || type === "text" || type === "chat";
                         });
                         
-                        const llmWrapper = document.getElementById('llmSettingsWrapper');
-                        
                         if (globalLlmProviders.length > 0) {
-                            if (llmWrapper) llmWrapper.classList.remove('hidden'); // Munculkan UI jika ada model
-                            if (llmSelectedLabel) llmSelectedLabel.innerHTML = '<i class="fa-solid fa-brain" style="color: #8b5cf6;"></i> Pilih Chat AI...';
+                            if (llmSelectedLabel) llmSelectedLabel.innerText = "Pilih Model Chat AI...";
                             
-                            let llmOptionsHtml = `<div class="custom-select-option" style="color:var(--accent-color); background:rgba(0,122,255,0.05);" onclick="window.selectLlmOption('auto_pool', 'auto_pool', '<i class=\\'fa-solid fa-brain\\' style=\\'color: %238b5cf6;\\'></i> Flixa AI Chat (Auto)')">
-                                <span style="font-weight:800;"><i class="fa-solid fa-wand-magic-sparkles"></i> Flixa AI Chat (Auto)</span>
+                            let llmOptionsHtml = `<div class="custom-select-option" style="color:var(--accent-color); background:rgba(0,122,255,0.05);" onclick="window.selectLlmOption('auto_pool', 'auto_pool', 'Otomatis (Auto Fallback)')">
+                                <span style="font-weight:800;"><i class="fa-solid fa-wand-magic-sparkles"></i> Otomatis (Auto Fallback)</span>
                                 <span style="font-size:0.65rem; color:#94a3b8; display:block; margin-top:2px;">Mencari model & server aktif secara otomatis</span>
                             </div>`;
                             
@@ -6276,22 +6248,15 @@
                                     const models = p.models.split(',').map(m => m.trim()).filter(m => m);
                                     models.forEach(modelName => {
                                         let displayLabel = formatLlmModelName(modelName);
-                                        // Tambahkan prefix "Flixa AI -" sesuai permintaan
-                                        let fullLabel = `Flixa AI - ${displayLabel}`;
-                                        let triggerLabel = `<i class="fa-solid fa-brain" style="color: #8b5cf6;"></i> ${fullLabel}`;
-                                        
-                                        llmOptionsHtml += `<div class="custom-select-option" onclick="window.selectLlmOption('${p.value}', '${modelName.replace(/'/g, "\\'")}', '${triggerLabel.replace(/'/g, "\\'")}')">
-                                            <span style="font-weight:800;">${fullLabel}</span> 
+                                        llmOptionsHtml += `<div class="custom-select-option" onclick="window.selectLlmOption('${p.value}', '${modelName.replace(/'/g, "\\'")}', '${displayLabel.replace(/'/g, "\\'")}')">
+                                            <span style="font-weight:800;">${displayLabel}</span> 
                                             <span style="font-size:0.65rem; color:#94a3b8; display:block; margin-top:2px;">Server: ${p.label}</span>
                                         </div>`;
                                     });
                                 } else {
                                     let displayLabel = formatLlmModelName(p.label);
-                                    let fullLabel = `Flixa AI - ${displayLabel}`;
-                                    let triggerLabel = `<i class="fa-solid fa-brain" style="color: #8b5cf6;"></i> ${fullLabel}`;
-                                    
-                                    llmOptionsHtml += `<div class="custom-select-option" onclick="window.selectLlmOption('${p.value}', '', '${triggerLabel.replace(/'/g, "\\'")}')">
-                                        <span style="font-weight:800;">${fullLabel}</span> 
+                                    llmOptionsHtml += `<div class="custom-select-option" onclick="window.selectLlmOption('${p.value}', '', '${displayLabel.replace(/'/g, "\\'")}')">
+                                        <span style="font-weight:800;">${displayLabel}</span> 
                                         <span style="font-size:0.65rem; color:#94a3b8; display:block; margin-top:2px;">Server: ${p.label}</span>
                                     </div>`;
                                 }
@@ -6304,10 +6269,9 @@
                             if (llmSelectInput && !llmSelectInput.value) {
                                 llmSelectInput.value = 'auto_pool';
                                 if (llmModelSelectInput) llmModelSelectInput.value = 'auto_pool';
-                                if (llmSelectedLabel) llmSelectedLabel.innerHTML = '<i class="fa-solid fa-brain" style="color: #8b5cf6;"></i> Flixa AI Chat (Auto)';
+                                if (llmSelectedLabel) llmSelectedLabel.innerText = 'Otomatis (Auto Fallback)';
                             }
                         } else {
-                            if (llmWrapper) llmWrapper.classList.add('hidden'); // Sembunyikan UI jika kosong
                             if (llmSelectedLabel) llmSelectedLabel.innerText = "Tidak ada model chat aktif";
                         }
 
@@ -8987,7 +8951,7 @@ window.startDspBypassAndUpload = async function() {
         };
 
         // ============================================================
-        // DETEKSI LIRIK (MENGGUNAKAN MULTIMODAL LLM - GEMINI)
+        // DETEKSI LIRIK (ASR WHISPER + VOCAL ENHANCER FILTER)
         // ============================================================
         window.detectLyrics = async function() {
             if (!isLoggedIn || !currentUser) {
@@ -8995,87 +8959,9 @@ window.startDspBypassAndUpload = async function() {
                 return;
             }
 
-            if (!rawAudioFile && !selectedAudioUrl) {
-                showIphoneToast("Error", "Silakan unggah audio referensi terlebih dahulu untuk mendeteksi lirik!", "fa-triangle-exclamation");
-                return;
-            }
-
-            const llmProviderId = document.getElementById('llmSelect') ? document.getElementById('llmSelect').value : 'auto_pool';
-            const llmModelId = document.getElementById('llmModelSelect') ? document.getElementById('llmModelSelect').value : 'auto_pool';
-
-            const inputEl = document.getElementById('lyricsInput');
-            const progressBox = document.getElementById('detectLyricsProgress');
-            const statusText = document.getElementById('detectLyricsStatus');
-            const btn = event.currentTarget;
-            const originalBtnHtml = btn.innerHTML;
-
-            btn.disabled = true;
-            inputEl.disabled = true;
-            progressBox.classList.remove('hidden');
-
-            try {
-                let finalAudioUrl = selectedAudioUrl;
-                
-                // Jika belum ada URL (baru pilih file lokal), upload dulu ke Cloudinary
-                if (!finalAudioUrl && rawAudioFile) {
-                    statusText.innerText = "Mengunggah audio ke server...";
-                    let finalDurStr = "0:00";
-                    const origPlayer = document.getElementById('originalAudioPlayer');
-                    if (origPlayer && isFinite(origPlayer.duration) && origPlayer.duration > 0) {
-                        finalDurStr = formatTime(origPlayer.duration);
-                    }
-                    await uploadBlobToCloudinary(rawAudioFile, rawAudioFile.name, false, finalDurStr);
-                    finalAudioUrl = selectedAudioUrl;
-                }
-
-                statusText.innerHTML = "AI sedang mendengarkan lagu dan menulis lirik... <br><small>(Menggunakan Chat AI Multimodal)</small>";
-
-                const response = await fetch('/api/habirmx', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        action: 'magic_wand',
-                        providerId: llmProviderId,
-                        modelId: llmModelId,
-                        llmType: 'detect_lyrics',
-                        inputText: "Tolong dengarkan lagu ini dan tuliskan liriknya dengan akurat dari awal sampai akhir.", 
-                        audioUrl: finalAudioUrl, 
-                        currentMode: 'cover'
-                    })
-                });
-
-                const data = await response.json();
-                if (!response.ok) throw new Error(data.error || "Gagal menghubungi AI");
-
-                let finalResult = data.result.trim();
-                
-                inputEl.value = "";
-                let i = 0;
-                function typeWriter() {
-                    if (i < finalResult.length) {
-                        inputEl.value += finalResult.charAt(i);
-                        i++;
-                        setTimeout(typeWriter, 5);
-                    } else {
-                        inputEl.disabled = false;
-                        btn.disabled = false;
-                        btn.innerHTML = originalBtnHtml;
-                        updateCounter('lyricsInput', 'lyricsCounter', 5000);
-                        showIphoneToast("Deteksi Selesai", "Lirik berhasil diekstrak dari audio!", "fa-check-double");
-                        window.checkLyricsState();
-                    }
-                }
-                typeWriter();
-
-            } catch (err) {
-                inputEl.disabled = false;
-                btn.disabled = false;
-                btn.innerHTML = originalBtnHtml;
-                showIphoneToast("Gagal Deteksi", err.message, "fa-triangle-exclamation");
-            } finally {
-                progressBox.classList.add('hidden');
-            }
-        };
+            // PASTIKAN HANYA MENGAMBIL AUDIO ORIGINAL, BUKAN YANG SUDAH DI-DSP
+            let sourceToUse = rawAudioFile;
+            let urlToUse = window.originalRawUrl || selectedAudioUrl;
 
             if (!sourceToUse && !urlToUse) {
                 showIphoneToast("Error", "Silakan unggah audio referensi terlebih dahulu untuk mendeteksi lirik!", "fa-triangle-exclamation");
