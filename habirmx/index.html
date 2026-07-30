@@ -8720,31 +8720,88 @@ window.startDspBypassAndUpload = async function() {
             showIphoneToast("URL Diterapkan", "Audio siap digunakan untuk generate.", "fa-link");
         };
 
-        window.selectFromUploadHistory = async function(url, name) {
+        // Variabel sementara untuk menyimpan pilihan histori
+        let tempHistoryUrl = "";
+        let tempHistoryName = "";
+
+        window.selectFromUploadHistory = function(url, name) {
+            tempHistoryUrl = url;
+            tempHistoryName = name;
+
+            document.getElementById('uploadHistoryPopup').classList.add('hidden');
+
+            // Buat modal pilihan secara dinamis jika belum ada
+            let overlay = document.getElementById('historyActionModalOverlay');
+            if (!overlay) {
+                overlay = document.createElement('div');
+                overlay.id = 'historyActionModalOverlay';
+                overlay.className = 'krea-modal-overlay';
+                overlay.style.zIndex = '9999999';
+                overlay.innerHTML = `
+                    <div class="krea-modal-box" style="max-width: 360px; padding: 24px; text-align: center; border-radius: 24px; background: #ffffff; border: 1px solid #e2e8f0; box-shadow: 0 20px 40px rgba(0,0,0,0.1);">
+                        <div style="width: 50px; height: 50px; background: rgba(14, 165, 233, 0.1); color: #0ea5e9; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; margin: 0 auto 16px;"><i class="fa-solid fa-clock-rotate-left"></i></div>
+                        <h3 style="font-size: 1.1rem; font-weight: 900; color: var(--text-primary); margin-bottom: 8px;">Gunakan Audio Histori</h3>
+                        <p style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 20px; line-height: 1.5;">Audio ini sudah tersimpan di server. Apakah Anda ingin langsung menggunakannya atau mengeditnya terlebih dahulu?</p>
+                        <div style="display: flex; flex-direction: column; gap: 10px;">
+                            <button type="button" onclick="window.confirmUseHistoryDirectly()" style="width: 100%; padding: 12px; border-radius: 12px; font-weight: 800; font-size: 0.85rem; cursor: pointer; border: none; background: #10b981; color: #fff; transition: 0.2s; box-shadow: 0 4px 10px rgba(16,185,129,0.3);"><i class="fa-solid fa-bolt"></i> Langsung Pakai (Cepat)</button>
+                            <button type="button" onclick="window.confirmEditHistoryInDSP()" style="width: 100%; padding: 12px; border-radius: 12px; font-weight: 800; font-size: 0.85rem; cursor: pointer; border: 1.5px solid #0ea5e9; background: #fff; color: #0ea5e9; transition: 0.2s;"><i class="fa-solid fa-sliders"></i> Edit di DSP Studio</button>
+                            <button type="button" onclick="document.getElementById('historyActionModalOverlay').classList.remove('show')" style="width: 100%; padding: 10px; border-radius: 12px; font-weight: 700; font-size: 0.8rem; cursor: pointer; border: none; background: transparent; color: #94a3b8; transition: 0.2s;">Batal</button>
+                        </div>
+                    </div>
+                `;
+                document.body.appendChild(overlay);
+            }
+
+            overlay.classList.add('show');
+        };
+
+        window.confirmUseHistoryDirectly = function() {
+            document.getElementById('historyActionModalOverlay').classList.remove('show');
+
+            // Langsung set URL tanpa download blob (Sangat Cepat & Hemat Kuota)
+            selectedAudioUrl = tempHistoryUrl;
+            window.originalCleanAudioUrl = tempHistoryUrl; // Set untuk Gemini
+            rawAudioFile = null; // Kosongkan file mentah karena kita pakai URL
+
+            window.activateMiniPlayerUI(tempHistoryName, "URL Diterapkan", "rgba(16,185,129,0.1)", "#10b981");
+
+            const originalPlayer = document.getElementById('originalAudioPlayer');
+            originalPlayer.src = tempHistoryUrl;
+            initCustomPlayer('originalAudioPlayer', 'uploadedStateBox');
+
+            document.getElementById('urlInputBox').classList.add('hidden');
+            document.getElementById('dspStudioWrapper').classList.add('hidden');
+
+            showIphoneToast("Audio Siap", "Audio histori langsung diterapkan tanpa upload ulang.", "fa-bolt");
+        };
+
+        window.confirmEditHistoryInDSP = async function() {
+            document.getElementById('historyActionModalOverlay').classList.remove('show');
+
             const dspStudio = document.getElementById('dspStudioWrapper');
             const originalPlayer = document.getElementById('originalAudioPlayer');
-            
-            document.getElementById('uploadHistoryPopup').classList.add('hidden');
-            showIphoneToast("Mengambil Audio", "Mengunduh audio dari histori...", "fa-cloud-arrow-down");
-            
+
+            showIphoneToast("Mengambil Audio", "Mengunduh audio dari histori untuk diedit...", "fa-cloud-arrow-down");
+
             try {
-                const response = await fetch(url);
+                const response = await fetch(tempHistoryUrl);
                 const blob = await response.blob();
-                rawAudioFile = new File([blob], name, { type: "audio/mp3" });
-                
-                window.activateMiniPlayerUI(name, "Histori Siap", "rgba(16,185,129,0.1)", "#10b981");
-                
+                rawAudioFile = new File([blob], tempHistoryName, { type: "audio/mp3" });
+
+                window.activateMiniPlayerUI(tempHistoryName, "Siap Diedit", "rgba(14,165,233,0.1)", "#0ea5e9");
+
                 originalPlayer.src = URL.createObjectURL(rawAudioFile);
                 initCustomPlayer('originalAudioPlayer', 'uploadedStateBox');
                 initCustomPlayer('originalAudioPlayer', 'cp-original');
-                
+
                 dspStudio.classList.remove('hidden');
                 document.getElementById('audioProgressBox').classList.add('hidden');
-                
-                selectedAudioUrl = url; 
-                
-                showIphoneToast("Histori Siap", "Audio siap digunakan.", "fa-circle-check");
-                
+
+                selectedAudioUrl = tempHistoryUrl;
+                window.originalCleanAudioUrl = tempHistoryUrl;
+
+                showIphoneToast("DSP Siap", "Audio berhasil dimuat ke DSP Studio.", "fa-sliders");
+
                 initVisualizer();
             } catch(e) {
                 showIphoneToast("Error", "Gagal mengambil audio dari histori.", "fa-triangle-exclamation");
