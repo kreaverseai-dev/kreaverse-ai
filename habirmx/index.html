@@ -5469,12 +5469,12 @@
         window.selectLlmOption = function(providerVal, modelVal, label) {
             document.getElementById('llmSelect').value = providerVal;
             document.getElementById('llmModelSelect').value = modelVal;
-            document.getElementById('llmSelectedLabel').innerHTML = `<i class="fa-solid fa-brain" style="color: #8b5cf6;"></i> ` + label;
+            document.getElementById('llmSelectedLabel').innerText = label;
             document.getElementById('llmDropdown').classList.add('hidden');
             
             const options = document.getElementById('llmDropdown').querySelectorAll('.custom-select-option');
             options.forEach(opt => {
-                if (opt.innerText.includes(label) || opt.innerHTML.includes(label)) opt.classList.add('selected');
+                if (opt.innerText.includes(label)) opt.classList.add('selected');
                 else opt.classList.remove('selected');
             });
             
@@ -6254,7 +6254,6 @@
                         }
 
                         // Filter LLM Providers
-                        // Filter LLM Providers
                         globalLlmProviders = list.filter(m => {
                             if (!m.serviceType) return false;
                             const type = String(m.serviceType).toLowerCase();
@@ -6264,10 +6263,10 @@
                         const llmWrapper = document.getElementById('llmSettingsWrapper');
                         
                         if (globalLlmProviders.length > 0) {
-                            if (llmWrapper) llmWrapper.classList.remove('hidden');
+                            if (llmWrapper) llmWrapper.classList.remove('hidden'); // Munculkan UI jika ada model
                             if (llmSelectedLabel) llmSelectedLabel.innerHTML = '<i class="fa-solid fa-brain" style="color: #8b5cf6;"></i> Pilih Chat AI...';
                             
-                            let llmOptionsHtml = `<div class="custom-select-option" style="color:var(--accent-color); background:rgba(0,122,255,0.05);" onclick="window.selectLlmOption('auto_pool', 'auto_pool', 'Flixa AI Chat (Auto)')">
+                            let llmOptionsHtml = `<div class="custom-select-option" style="color:var(--accent-color); background:rgba(0,122,255,0.05);" onclick="window.selectLlmOption('auto_pool', 'auto_pool', '<i class=\\'fa-solid fa-brain\\' style=\\'color: %238b5cf6;\\'></i> Flixa AI Chat (Auto)')">
                                 <span style="font-weight:800;"><i class="fa-solid fa-wand-magic-sparkles"></i> Flixa AI Chat (Auto)</span>
                                 <span style="font-size:0.65rem; color:#94a3b8; display:block; margin-top:2px;">Mencari model & server aktif secara otomatis</span>
                             </div>`;
@@ -6277,19 +6276,22 @@
                                     const models = p.models.split(',').map(m => m.trim()).filter(m => m);
                                     models.forEach(modelName => {
                                         let displayLabel = formatLlmModelName(modelName);
+                                        // Tambahkan prefix "Flixa AI -" sesuai permintaan
                                         let fullLabel = `Flixa AI - ${displayLabel}`;
+                                        let triggerLabel = `<i class="fa-solid fa-brain" style="color: #8b5cf6;"></i> ${fullLabel}`;
                                         
-                                        llmOptionsHtml += `<div class="custom-select-option" onclick="window.selectLlmOption('${p.value}', '${modelName.replace(/'/g, "\\'")}', '${fullLabel.replace(/'/g, "\\'")}')">
-                                            <span style="font-weight:800;"><i class="fa-solid fa-brain" style="color: #8b5cf6;"></i> ${fullLabel}</span> 
+                                        llmOptionsHtml += `<div class="custom-select-option" onclick="window.selectLlmOption('${p.value}', '${modelName.replace(/'/g, "\\'")}', '${triggerLabel.replace(/'/g, "\\'")}')">
+                                            <span style="font-weight:800;">${fullLabel}</span> 
                                             <span style="font-size:0.65rem; color:#94a3b8; display:block; margin-top:2px;">Server: ${p.label}</span>
                                         </div>`;
                                     });
                                 } else {
                                     let displayLabel = formatLlmModelName(p.label);
                                     let fullLabel = `Flixa AI - ${displayLabel}`;
+                                    let triggerLabel = `<i class="fa-solid fa-brain" style="color: #8b5cf6;"></i> ${fullLabel}`;
                                     
-                                    llmOptionsHtml += `<div class="custom-select-option" onclick="window.selectLlmOption('${p.value}', '', '${fullLabel.replace(/'/g, "\\'")}')">
-                                        <span style="font-weight:800;"><i class="fa-solid fa-brain" style="color: #8b5cf6;"></i> ${fullLabel}</span> 
+                                    llmOptionsHtml += `<div class="custom-select-option" onclick="window.selectLlmOption('${p.value}', '', '${triggerLabel.replace(/'/g, "\\'")}')">
+                                        <span style="font-weight:800;">${fullLabel}</span> 
                                         <span style="font-size:0.65rem; color:#94a3b8; display:block; margin-top:2px;">Server: ${p.label}</span>
                                     </div>`;
                                 }
@@ -6305,7 +6307,7 @@
                                 if (llmSelectedLabel) llmSelectedLabel.innerHTML = '<i class="fa-solid fa-brain" style="color: #8b5cf6;"></i> Flixa AI Chat (Auto)';
                             }
                         } else {
-                            if (llmWrapper) llmWrapper.classList.add('hidden');
+                            if (llmWrapper) llmWrapper.classList.add('hidden'); // Sembunyikan UI jika kosong
                             if (llmSelectedLabel) llmSelectedLabel.innerText = "Tidak ada model chat aktif";
                         }
 
