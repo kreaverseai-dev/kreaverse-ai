@@ -386,17 +386,17 @@ TUGAS ANDA:
 
                 let systemPrompt = "";
                 
-                // 1. PROMPT UNTUK AUTO-STYLE
+                // 1. PROMPT UNTUK AUTO-STYLE (DITAMBAH KONTROL DURASI 3-4 MENIT)
                 if (llmType === 'style') {
                     systemPrompt = `You are a Master Audio Engineer & Prompt Engineer for Suno AI. Listen to the provided audio and convert the vibe into a highly detailed, professional list of comma-separated music tags.
 ABSOLUTE RULES:
 1. 100% ENGLISH. Only keep specific cultural genres ('Dangdut', 'Koplo', 'Sholawat') untranslated.
 2. NO ARTIST NAMES. Focus ONLY on instruments, mood, and tempo.
 3. Output ONLY the comma-separated prompt tags. No conversational text.
-4. CRITICAL: You MUST append these exact tags at the end of your response to force the AI to perfectly clone the audio: "[Is_MAX_MODE: MAX], [QUALITY: MAX], [REAL_INSTRUMENTS: MAX], pristine studio mixing, 1:1 exact melody copy, strict adherence to original chord progression, identical bassline, zero deviation from source audio, consistent rhythm from start to finish, no improvisation, identical vocal timbre, 8k resolution audio, lossless mastering".
+4. CRITICAL: You MUST append these exact tags at the end of your response to force the AI to perfectly clone the audio and keep it strictly between 3 to 4 minutes: "[Is_MAX_MODE: MAX], [QUALITY: MAX], [REAL_INSTRUMENTS: MAX], pristine studio mixing, 1:1 exact melody copy, strict adherence to original chord progression, identical bassline, zero deviation from source audio, consistent rhythm from start to finish, no improvisation, identical vocal timbre, standard 3 to 4 minute song length, concise arrangement, no extended solos, clear ending, 8k resolution audio, lossless mastering".
 5. STRICT LENGTH LIMIT: Your ENTIRE response, INCLUDING the mandatory tags above, MUST NOT EXCEED 900 characters. Be concise with your instrument tags to ensure it stays under the limit.`;
                 } 
-                // 2. PROMPT UNTUK DETEKSI LIRIK
+                // 2. PROMPT UNTUK DETEKSI LIRIK (HAPUS INSTRUMEN & DITAMBAH TAG [End])
                 else if (llmType === 'detect_lyrics') {
                     systemPrompt = `Kamu adalah Ahli Transkripsi Audio Profesional. Tugasmu adalah MENDENGARKAN file audio yang dilampirkan dari detik pertama hingga detik terakhir, lalu menuliskan liriknya secara VERBATIM (kata per kata persis seperti yang diucapkan penyanyi).
 
@@ -404,18 +404,16 @@ ATURAN MUTLAK (HUKUMAN JIKA DILANGGAR):
 1. DILARANG MENEBAK ATAU MENGARANG LIRIK! Tulis HANYA apa yang benar-benar kamu dengar dari audio ini.
 2. TULIS SAMPAI HABIS! Jangan berhenti di tengah jalan.
 3. Tuliskan sesuai bahasa aslinya (Jangan diterjemahkan).
-4. LYRIC ENGINEERING (ANTI-AMNESIA): Berikan tag struktur lagu menggunakan kurung siku. WAJIB tambahkan deskripsi instrumen, lalu WAJIB akhiri dengan kalimat "EXACT SAME MELODY AND VOCALS".
-Contoh Format:
-[Intro | dentingan piano lambat, EXACT SAME MELODY AND VOCALS]
-[Verse 1 | vokal pria lembut, gitar akustik, EXACT SAME MELODY AND VOCALS]
-[Chorus | drum beat masuk, bass tebal, EXACT SAME MELODY AND VOCALS]
-5. WATERMARK WAJIB: Kamu WAJIB menyisipkan lirik "(Spoken: Ha bi R M X)" tepat di bawah tag [Instrumental Interlude] atau [Guitar Solo] di pertengahan lagu, DAN satu kali lagi tepat di bawah tag [Outro] di akhir lagu.
-6. JIKA LAGU INI MURNI INSTRUMENTAL, tuliskan: [Instrumental Music - No Vocals | EXACT SAME MELODY AND VOCALS].
-7. Langsung berikan hasil liriknya, dilarang memberikan kata pengantar.`;
+4. STRUKTUR STANDAR (TANPA INSTRUMEN): Berikan tag struktur lagu menggunakan kurung siku standar (contoh: [Intro], [Verse 1], [Chorus], [Outro]). DILARANG KERAS menuliskan deskripsi instrumen atau alat musik di dalam kurung siku maupun di luar kurung siku.
+5. LYRIC ENGINEERING (ANTI-AMNESIA): Untuk mengunci nada penyanyi asli, sisipkan tag [EXACT SAME MELODY AND VOCALS] tepat di bawah tag [Intro] dan [Chorus].
+6. WATERMARK WAJIB: Kamu WAJIB menyisipkan lirik "(Spoken: Ha bi R M X)" tepat di bawah tag [Instrumental Interlude] atau [Guitar Solo] di pertengahan lagu, DAN satu kali lagi tepat di bawah tag [Outro] di akhir lagu.
+7. KONTROL DURASI (3 - 4 MENIT): Agar lagu tidak melar lebih dari 4 menit, kamu WAJIB menaruh tag [End] di baris paling bawah setelah [Outro].
+8. JIKA LAGU INI MURNI INSTRUMENTAL, tuliskan: [Instrumental Music - No Vocals] lalu akhiri dengan [End].
+9. Langsung berikan hasil liriknya, dilarang memberikan kata pengantar.`;
                 }
                 // 3. PROMPT UNTUK MERAPIKAN LIRIK (TEKS SAJA)
                 else if (llmType === 'lyrics') {
-                    systemPrompt = `Kamu adalah Penulis Lagu Profesional. Rapikan lirik dari user ini. Tambahkan tag struktur seperti [Verse] dan [Chorus]. Jangan mengubah kata-kata aslinya.`;
+                    systemPrompt = `Kamu adalah Penulis Lagu Profesional. Rapikan lirik dari user ini. Tambahkan tag struktur seperti [Verse] dan [Chorus]. Jangan mengubah kata-kata aslinya. WAJIB tambahkan tag [End] di baris paling bawah agar lagu berhenti tepat waktu.`;
                 }
                 // 4. FITUR BARU: REVISI STYLE (AI AGENT)
                 else if (llmType === 'revise_style') {
@@ -433,7 +431,7 @@ ATURAN MUTLAK:
 ATURAN MUTLAK:
 1. BACA lirik asli yang diberikan user.
 2. LAKUKAN perubahan HANYA sesuai instruksi user (misal: ubah kata, hapus baris, tambah watermark). JANGAN merubah lirik lain yang tidak diminta.
-3. PERTAHANKAN format struktur [Bagian Lagu | Deskripsi Instrumen] jika ada.
+3. PERTAHANKAN format struktur [Bagian Lagu] jika ada. DILARANG menambahkan deskripsi instrumen.
 4. JIKA user meminta menambahkan watermark "HABI RMX", pastikan format penulisannya persis seperti ini: (Spoken: Ha bi R M X).
 5. Langsung berikan hasil akhirnya saja tanpa kata pengantar atau basa-basi.`;
                 }
