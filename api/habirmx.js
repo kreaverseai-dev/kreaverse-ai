@@ -386,7 +386,7 @@ TUGAS ANDA:
 
                 let systemPrompt = "";
                 
-                // 1. PROMPT UNTUK AUTO-STYLE (LIMIT KETAT MAX 900 KARAKTER)
+                // 1. PROMPT UNTUK AUTO-STYLE
                 if (llmType === 'style') {
                     systemPrompt = `You are a Master Audio Engineer & Prompt Engineer for Suno AI. Listen to the provided audio and convert the vibe into a highly detailed, professional list of comma-separated music tags.
 ABSOLUTE RULES:
@@ -396,7 +396,7 @@ ABSOLUTE RULES:
 4. CRITICAL: You MUST append these exact tags at the end of your response to force the AI to perfectly clone the audio: "[Is_MAX_MODE: MAX], [QUALITY: MAX], [REAL_INSTRUMENTS: MAX], pristine studio mixing, 1:1 exact melody copy, strict adherence to original chord progression, identical bassline, zero deviation from source audio, consistent rhythm from start to finish, no improvisation, identical vocal timbre, 8k resolution audio, lossless mastering".
 5. STRICT LENGTH LIMIT: Your ENTIRE response, INCLUDING the mandatory tags above, MUST NOT EXCEED 900 characters. Be concise with your instrument tags to ensure it stays under the limit.`;
                 } 
-                // 2. PROMPT UNTUK DETEKSI LIRIK (MULTIMODAL) - UPGRADE STRUKTUR PRO + WATERMARK
+                // 2. PROMPT UNTUK DETEKSI LIRIK
                 else if (llmType === 'detect_lyrics') {
                     systemPrompt = `Kamu adalah Ahli Transkripsi Audio Profesional. Tugasmu adalah MENDENGARKAN file audio yang dilampirkan dari detik pertama hingga detik terakhir, lalu menuliskan liriknya secara VERBATIM (kata per kata persis seperti yang diucapkan penyanyi).
 
@@ -416,6 +416,26 @@ Contoh Format:
                 // 3. PROMPT UNTUK MERAPIKAN LIRIK (TEKS SAJA)
                 else if (llmType === 'lyrics') {
                     systemPrompt = `Kamu adalah Penulis Lagu Profesional. Rapikan lirik dari user ini. Tambahkan tag struktur seperti [Verse] dan [Chorus]. Jangan mengubah kata-kata aslinya.`;
+                }
+                // 4. FITUR BARU: REVISI STYLE (AI AGENT)
+                else if (llmType === 'revise_style') {
+                    systemPrompt = `Kamu adalah Asisten AI Audio Engineer. Tugasmu adalah MEREVISI prompt gaya musik (Style) yang sudah ada berdasarkan instruksi dari user.
+ATURAN MUTLAK:
+1. BACA prompt asli yang diberikan user.
+2. LAKUKAN perubahan HANYA sesuai instruksi user (misal: tambah bass, ubah jadi dangdut, dll). JANGAN merubah bagian lain yang tidak diminta.
+3. JIKA user menempelkan prompt mereka sendiri, rapikan menjadi format koma (comma-separated) dalam bahasa Inggris.
+4. PANJANG MAKSIMAL: Hasil akhir TIDAK BOLEH LEBIH DARI 950 KARAKTER. Jika terlalu panjang, hapus kata kunci yang kurang penting.
+5. Langsung berikan hasil akhirnya saja tanpa kata pengantar atau basa-basi.`;
+                }
+                // 5. FITUR BARU: REVISI LIRIK (AI AGENT)
+                else if (llmType === 'revise_lyrics') {
+                    systemPrompt = `Kamu adalah Asisten AI Penulis Lagu. Tugasmu adalah MEREVISI lirik lagu yang sudah ada berdasarkan instruksi dari user.
+ATURAN MUTLAK:
+1. BACA lirik asli yang diberikan user.
+2. LAKUKAN perubahan HANYA sesuai instruksi user (misal: ubah kata, hapus baris, tambah watermark). JANGAN merubah lirik lain yang tidak diminta.
+3. PERTAHANKAN format struktur [Bagian Lagu | Deskripsi Instrumen] jika ada.
+4. JIKA user meminta menambahkan watermark "HABI RMX", pastikan format penulisannya persis seperti ini: (Spoken: Ha bi R M X).
+5. Langsung berikan hasil akhirnya saja tanpa kata pengantar atau basa-basi.`;
                 }
 
                 // FIX: UBAH AUDIO URL MENJADI BASE64 DATA URI
