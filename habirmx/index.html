@@ -1503,9 +1503,34 @@
                 <div style="display: flex; gap: 10px; background: #f8fafc; padding: 6px; border-radius: 16px; border: 1px solid var(--border-color); flex-wrap: wrap;">
                     <button type="button" id="modeGenerateBtn" class="mode-btn active" onclick="switchMode('generate')">Bikin Lagu Sendiri</button>
                     <button type="button" id="modeCoverBtn" class="mode-btn" onclick="switchMode('cover')">Cover Lagu</button>
-                    <button type="button" id="modeVoiceBtn" class="mode-btn" onclick="switchMode('voice')">Pakai SuaraMu</button>
+                    <button type="button" id="modeVoiceBtn" class="mode-btn" onclick="switchMode('voice')">Pakai SuaraMu <span class="badge-new">New</span></button>
                 </div>
                 <span id="modeDescription" class="helper-text">Buat lagu baru dari awal menggunakan lirik dan gaya musik Anda sendiri.</span>
+            </div>
+
+            <!-- CHAT LLM SELECTOR (DINAMIS) -->
+            <div id="llmSettingsWrapper" class="hidden" style="margin-bottom: 24px;">
+                <div class="input-group" style="margin-bottom: 0; position: relative;">
+                    <label style="display: flex; align-items: center; margin-bottom: 8px;">
+                        <span style="font-weight: 800; font-size: 0.8rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px;">Pilihan Chat AI (Lirik & Style) :</span>
+                    </label>
+                    
+                    <div class="custom-select-container">
+                        <div class="custom-select-trigger" onclick="window.toggleCustomSelect('llmDropdown')" style="background: #ffffff; color: var(--text-primary); border: 1px solid var(--border-color); border-radius: 99px; padding: 8px 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.02); display: inline-flex; align-items: center; gap: 12px; width: max-content; cursor: pointer; transition: 0.2s; font-size: 0.85rem; height: 38px;">
+                            <span id="llmSelectedLabel" style="font-weight: 700; display: flex; align-items: center; gap: 6px;">
+                                <i class="fa-solid fa-brain" style="color: #8b5cf6;"></i> Memuat Chat AI...
+                            </span>
+                            <i class="fa-solid fa-chevron-down" style="color: var(--text-light); font-size: 0.75rem;"></i>
+                        </div>
+
+                        <div class="custom-select-options hidden" id="llmDropdown" style="background: #ffffff; border: 1px solid var(--border-color); padding: 6px; border-radius: 16px; top: calc(100% + 8px); left: 0; z-index: 9999; max-height: 350px; overflow-y: auto; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 100%; min-width: 280px; position: absolute;">
+                            <!-- Diisi otomatis oleh JS -->
+                        </div>
+                    </div>
+                    
+                    <input type="hidden" id="llmSelect" value="auto_pool">
+                    <input type="hidden" id="llmModelSelect" value="auto_pool">
+                </div>
             </div>
 
             <!-- CONTAINER PAKAI SUARAMU -->
@@ -5444,12 +5469,13 @@
         window.selectLlmOption = function(providerVal, modelVal, label) {
             document.getElementById('llmSelect').value = providerVal;
             document.getElementById('llmModelSelect').value = modelVal;
-            document.getElementById('llmSelectedLabel').innerText = label;
+            // FIX: Tambahkan ikon otak di sini, bukan di HTML onclick agar tidak error
+            document.getElementById('llmSelectedLabel').innerHTML = `<i class="fa-solid fa-brain" style="color: #8b5cf6;"></i> ` + label;
             document.getElementById('llmDropdown').classList.add('hidden');
             
             const options = document.getElementById('llmDropdown').querySelectorAll('.custom-select-option');
             options.forEach(opt => {
-                if (opt.innerText.includes(label)) opt.classList.add('selected');
+                if (opt.innerText.includes(label) || opt.innerHTML.includes(label)) opt.classList.add('selected');
                 else opt.classList.remove('selected');
             });
             
@@ -6235,11 +6261,14 @@
                             return type === "llm" || type === "text" || type === "chat";
                         });
                         
+                        const llmWrapper = document.getElementById('llmSettingsWrapper');
+                        
                         if (globalLlmProviders.length > 0) {
-                            if (llmSelectedLabel) llmSelectedLabel.innerText = "Pilih Model Chat AI...";
+                            if (llmWrapper) llmWrapper.classList.remove('hidden');
+                            if (llmSelectedLabel) llmSelectedLabel.innerHTML = '<i class="fa-solid fa-brain" style="color: #8b5cf6;"></i> Pilih Chat AI...';
                             
-                            let llmOptionsHtml = `<div class="custom-select-option" style="color:var(--accent-color); background:rgba(0,122,255,0.05);" onclick="window.selectLlmOption('auto_pool', 'auto_pool', 'Otomatis (Auto Fallback)')">
-                                <span style="font-weight:800;"><i class="fa-solid fa-wand-magic-sparkles"></i> Otomatis (Auto Fallback)</span>
+                            let llmOptionsHtml = `<div class="custom-select-option" style="color:var(--accent-color); background:rgba(0,122,255,0.05);" onclick="window.selectLlmOption('auto_pool', 'auto_pool', 'Flixa AI Chat (Auto)')">
+                                <span style="font-weight:800;"><i class="fa-solid fa-wand-magic-sparkles"></i> Flixa AI Chat (Auto)</span>
                                 <span style="font-size:0.65rem; color:#94a3b8; display:block; margin-top:2px;">Mencari model & server aktif secara otomatis</span>
                             </div>`;
                             
@@ -6248,15 +6277,21 @@
                                     const models = p.models.split(',').map(m => m.trim()).filter(m => m);
                                     models.forEach(modelName => {
                                         let displayLabel = formatLlmModelName(modelName);
-                                        llmOptionsHtml += `<div class="custom-select-option" onclick="window.selectLlmOption('${p.value}', '${modelName.replace(/'/g, "\\'")}', '${displayLabel.replace(/'/g, "\\'")}')">
-                                            <span style="font-weight:800;">${displayLabel}</span> 
+                                        let fullLabel = `Flixa AI - ${displayLabel}`;
+                                        
+                                        // FIX: Kirim teks biasa ke fungsi, bukan HTML
+                                        llmOptionsHtml += `<div class="custom-select-option" onclick="window.selectLlmOption('${p.value}', '${modelName.replace(/'/g, "\\'")}', '${fullLabel.replace(/'/g, "\\'")}')">
+                                            <span style="font-weight:800;"><i class="fa-solid fa-brain" style="color: #8b5cf6;"></i> ${fullLabel}</span> 
                                             <span style="font-size:0.65rem; color:#94a3b8; display:block; margin-top:2px;">Server: ${p.label}</span>
                                         </div>`;
                                     });
                                 } else {
                                     let displayLabel = formatLlmModelName(p.label);
-                                    llmOptionsHtml += `<div class="custom-select-option" onclick="window.selectLlmOption('${p.value}', '', '${displayLabel.replace(/'/g, "\\'")}')">
-                                        <span style="font-weight:800;">${displayLabel}</span> 
+                                    let fullLabel = `Flixa AI - ${displayLabel}`;
+                                    
+                                    // FIX: Kirim teks biasa ke fungsi, bukan HTML
+                                    llmOptionsHtml += `<div class="custom-select-option" onclick="window.selectLlmOption('${p.value}', '', '${fullLabel.replace(/'/g, "\\'")}')">
+                                        <span style="font-weight:800;"><i class="fa-solid fa-brain" style="color: #8b5cf6;"></i> ${fullLabel}</span> 
                                         <span style="font-size:0.65rem; color:#94a3b8; display:block; margin-top:2px;">Server: ${p.label}</span>
                                     </div>`;
                                 }
@@ -6269,9 +6304,10 @@
                             if (llmSelectInput && !llmSelectInput.value) {
                                 llmSelectInput.value = 'auto_pool';
                                 if (llmModelSelectInput) llmModelSelectInput.value = 'auto_pool';
-                                if (llmSelectedLabel) llmSelectedLabel.innerText = 'Otomatis (Auto Fallback)';
+                                if (llmSelectedLabel) llmSelectedLabel.innerHTML = '<i class="fa-solid fa-brain" style="color: #8b5cf6;"></i> Flixa AI Chat (Auto)';
                             }
                         } else {
+                            if (llmWrapper) llmWrapper.classList.add('hidden');
                             if (llmSelectedLabel) llmSelectedLabel.innerText = "Tidak ada model chat aktif";
                         }
 
