@@ -2510,12 +2510,12 @@
                                 <i class="fa-solid fa-wand-magic-sparkles"></i> AI
                             </button>
 
-                            <!-- TOMBOL AUTO-STYLE (Class hidden dihapus) -->
+                            <!-- TOMBOL AUTO-STYLE -->
                             <button type="button" id="btnAudioToStyle" class="magic-wand-btn" style="background: rgba(236, 72, 153, 0.1); color: #ec4899; border-color: rgba(236, 72, 153, 0.3); padding: 4px 10px; font-size: 0.7rem; height: 26px; border-radius: 6px; box-shadow: none;" onclick="window.extractStyleFromAudio()" title="Analisis Audio ke Teks">
                                 <i class="fa-solid fa-compact-disc"></i> Auto-Style
                             </button>
 
-                            <!-- CUSTOM DROPDOWN BAHASA (Class hidden dihapus) -->
+                            <!-- CUSTOM DROPDOWN BAHASA -->
                             <div class="custom-select-container" id="langDropdownContainer" style="width: auto; z-index: 105;">
                                 <div class="custom-select-trigger" onclick="window.toggleCustomSelect('styleLangDropdownOptions')" style="background: rgba(236, 72, 153, 0.05); color: #ec4899; border: 1px solid rgba(236, 72, 153, 0.3); padding: 4px 10px; border-radius: 6px; font-size: 0.7rem; font-weight: 700; height: 26px; min-height: 26px; box-shadow: none;">
                                     <span id="styleLangSelectedLabel">English</span>
@@ -2529,14 +2529,20 @@
                             <input type="hidden" id="autoStyleLang" value="english">
                         </div>
 
-                        <!-- BARIS 2 (BAWAH): Hapus - Ide Prompt (Inspirasi) -->
+                        <!-- BARIS 2 (BAWAH): Revisi AI - Hapus - Ide Prompt -->
                         <div style="display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; align-items: center;">
+                            
+                            <!-- FITUR BARU: TOMBOL REVISI AI (STYLE) -->
+                            <button type="button" class="magic-wand-btn" style="background: rgba(245, 158, 11, 0.1); color: #d97706; border-color: rgba(245, 158, 11, 0.3); padding: 4px 10px; font-size: 0.7rem; height: 26px; border-radius: 6px; box-shadow: none;" onclick="window.openRevisiModal('style')" title="Revisi Style dengan Chat AI">
+                                <i class="fa-solid fa-pen-nib"></i> Revisi AI
+                            </button>
+
                             <!-- TOMBOL HAPUS -->
                             <button type="button" class="action-icon-btn" style="padding: 4px 10px; font-size: 0.7rem; height: 26px; border-radius: 6px; box-shadow: none;" onclick="clearInput('styleInput', 'styleCounter', 1000)" title="Hapus Teks">
                                 <i class="fa-solid fa-trash-can"></i>
                             </button>
 
-                            <!-- TOMBOL IDE PROMPT (Warna Ungu) -->
+                            <!-- TOMBOL IDE PROMPT -->
                             <button type="button" class="magic-wand-btn" style="background: rgba(139, 92, 246, 0.1); color: #8b5cf6; border-color: rgba(139, 92, 246, 0.2); padding: 4px 10px; font-size: 0.7rem; height: 26px; border-radius: 6px; box-shadow: none;" onclick="window.openPromptModal()" title="Lihat Pustaka Ide Prompt">
                                 <i class="fa-solid fa-book-open"></i> Ide Prompt
                             </button>
@@ -2563,6 +2569,12 @@
                 <label for="lyricsInput">
                     <span style="line-height: 1.2;">Lyrics of<br>music *</span>
                     <div style="display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end;">
+                        
+                        <!-- FITUR BARU: TOMBOL REVISI AI (LIRIK) -->
+                        <button type="button" class="magic-wand-btn" style="background: rgba(245, 158, 11, 0.1); color: #d97706; border-color: rgba(245, 158, 11, 0.3); padding: 4px 8px; font-size: 0.7rem; white-space: nowrap;" onclick="window.openRevisiModal('lyrics')" title="Revisi Lirik dengan Chat AI">
+                            <i class="fa-solid fa-pen-nib"></i> Revisi AI
+                        </button>
+
                         <button type="button" id="btnSyncDetect" class="magic-wand-btn" style="background: rgba(139, 92, 246, 0.1); color: #8b5cf6; border-color: rgba(139, 92, 246, 0.2); padding: 4px 8px; font-size: 0.7rem; white-space: nowrap; transition: all 0.3s ease;" onclick="handleSyncDetectClick()" title="Deteksi Lirik dari Audio">
                             <i class="fa-solid fa-ear-listen" id="iconSyncDetect"></i> <span id="textSyncDetect">Deteksi</span>
                         </button>
@@ -2586,6 +2598,114 @@
                 <textarea id="lyricsInput" placeholder="Tuliskan lirik lagu Anda sendiri di sini..." style="height: 140px;" maxlength="5000" oninput="updateCounter('lyricsInput', 'lyricsCounter', 5000); window.checkLyricsState();"></textarea>
                 <span class="char-counter" id="lyricsCounter">0/5000</span>
             </div>
+
+            <!-- MODAL REVISI AI (DINAMIS) -->
+            <div id="revisiModalOverlay" class="krea-modal-overlay" style="z-index: 9999999;">
+                <div class="krea-modal-box" style="max-width: 400px; padding: 24px; text-align: left; border-radius: 24px; background: #ffffff; border: 1px solid #e2e8f0; box-shadow: 0 20px 40px rgba(0,0,0,0.1);">
+                    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+                        <div style="width: 40px; height: 40px; background: rgba(245, 158, 11, 0.15); color: #d97706; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem;"><i class="fa-solid fa-pen-nib"></i></div>
+                        <div>
+                            <h3 id="revisiModalTitle" style="font-size: 1.05rem; font-weight: 900; color: var(--text-primary); margin: 0;">Revisi AI</h3>
+                        </div>
+                    </div>
+                    <p id="revisiModalDesc" style="font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 16px; line-height: 1.5;">Ketik instruksi perubahan Anda. AI hanya akan mengubah bagian yang diminta tanpa merusak teks lainnya.</p>
+                    
+                    <textarea id="revisiInstructionInput" style="width: 100%; height: 80px; padding: 12px 14px; border-radius: 12px; border: 1.5px solid #cbd5e1; background: #f8fafc; font-size: 0.85rem; color: var(--text-primary); outline: none; margin-bottom: 20px; transition: 0.2s; resize: none;" placeholder="Contoh: Tambahkan suara suling bambu..."></textarea>
+                    
+                    <input type="hidden" id="revisiTargetType" value="">
+                    
+                    <div style="display: flex; gap: 10px;">
+                        <button type="button" onclick="window.closeRevisiModal()" style="flex: 1; padding: 12px; border-radius: 12px; font-weight: 800; font-size: 0.85rem; cursor: pointer; border: none; background: #f1f5f9; color: var(--text-secondary); transition: 0.2s;">Batal</button>
+                        <button type="button" id="btnSubmitRevisi" onclick="window.submitRevisiAI()" style="flex: 1; padding: 12px; border-radius: 12px; font-weight: 800; font-size: 0.85rem; cursor: pointer; border: none; background: #f59e0b; color: #fff; transition: 0.2s; box-shadow: 0 4px 10px rgba(245,158,11,0.3);"><i class="fa-solid fa-wand-magic-sparkles"></i> Proses</button>
+                    </div>
+                </div>
+            </div>
+
+            <script>
+                window.openRevisiModal = function(type) {
+                    const currentText = type === 'style' ? document.getElementById('styleInput').value.trim() : document.getElementById('lyricsInput').value.trim();
+                    
+                    if (!currentText) {
+                        showIphoneToast("Teks Kosong", `Silakan isi kotak ${type === 'style' ? 'Style' : 'Lirik'} terlebih dahulu sebelum direvisi.`, "fa-triangle-exclamation");
+                        return;
+                    }
+
+                    document.getElementById('revisiTargetType').value = type;
+                    document.getElementById('revisiModalTitle').innerText = type === 'style' ? 'Revisi Style Musik' : 'Revisi Lirik Lagu';
+                    document.getElementById('revisiInstructionInput').value = '';
+                    document.getElementById('revisiInstructionInput').placeholder = type === 'style' ? 'Contoh: Tambahkan bass dangdut yang kuat...' : 'Contoh: Ubah kata "kamu hanya" jadi "hanya kamu"...';
+                    
+                    document.getElementById('revisiModalOverlay').classList.add('show');
+                    document.getElementById('revisiInstructionInput').focus();
+                };
+
+                window.closeRevisiModal = function() {
+                    document.getElementById('revisiModalOverlay').classList.remove('show');
+                };
+
+                window.submitRevisiAI = async function() {
+                    const instruction = document.getElementById('revisiInstructionInput').value.trim();
+                    if (!instruction) return;
+
+                    const type = document.getElementById('revisiTargetType').value;
+                    const inputEl = type === 'style' ? document.getElementById('styleInput') : document.getElementById('lyricsInput');
+                    const currentText = inputEl.value.trim();
+                    
+                    const llmProviderId = document.getElementById('llmSelect') ? document.getElementById('llmSelect').value : 'auto_pool';
+                    const llmModelId = document.getElementById('llmModelSelect') ? document.getElementById('llmModelSelect').value : 'auto_pool';
+
+                    const btn = document.getElementById('btnSubmitRevisi');
+                    const originalBtnHtml = btn.innerHTML;
+                    btn.disabled = true;
+                    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Memproses...';
+
+                    // Gabungkan teks asli dengan instruksi user
+                    const combinedPrompt = `TEKS ASLI:\n${currentText}\n\nINSTRUKSI REVISI DARI USER:\n${instruction}`;
+
+                    try {
+                        const response = await fetch('/api/habirmx', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                action: 'magic_wand',
+                                providerId: llmProviderId,
+                                modelId: llmModelId,
+                                llmType: type === 'style' ? 'revise_style' : 'revise_lyrics',
+                                inputText: combinedPrompt
+                            })
+                        });
+
+                        const data = await response.json();
+                        if (!response.ok) throw new Error(data.error || "Gagal menghubungi AI");
+
+                        let finalResult = data.result.trim();
+                        
+                        // Efek ketikan
+                        inputEl.value = "";
+                        let i = 0;
+                        const chunkSize = 15; 
+                        function typeWriter() {
+                            if (i < finalResult.length) {
+                                inputEl.value += finalResult.substring(i, i + chunkSize);
+                                i += chunkSize;
+                                setTimeout(typeWriter, 1); 
+                            } else {
+                                btn.disabled = false;
+                                btn.innerHTML = originalBtnHtml;
+                                window.closeRevisiModal();
+                                updateCounter(type === 'style' ? 'styleInput' : 'lyricsInput', type === 'style' ? 'styleCounter' : 'lyricsCounter', type === 'style' ? 1000 : 5000);
+                                showIphoneToast("Revisi Selesai", "Teks berhasil diperbarui sesuai instruksi Anda!", "fa-check-double");
+                            }
+                        }
+                        typeWriter();
+
+                    } catch (err) {
+                        btn.disabled = false;
+                        btn.innerHTML = originalBtnHtml;
+                        showIphoneToast("Gagal Revisi", err.message, "fa-triangle-exclamation");
+                    }
+                };
+            </script>
 
             <!-- ACCORDION: OPTIONAL PARAMETERS -->
             <div id="optionalParametersWrapper" style="background: #ffffff; border: 1px solid var(--border-color); border-radius: 20px; padding: 20px; margin-bottom: 24px; box-shadow: 0 4px 12px rgba(0,0,0,0.03); text-align: left;">
