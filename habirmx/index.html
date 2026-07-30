@@ -2633,14 +2633,16 @@
                             const styleW = document.getElementById('styleWeightSlider');
                             const weirdW = document.getElementById('weirdnessSlider');
                             
-                            let mantra = "[Is_MAX_MODE: MAX], [QUALITY: MAX], [REAL_INSTRUMENTS: MAX], pristine studio mixing, 1:1 exact melody copy, strict adherence to original chord progression, identical bassline, zero deviation from source audio, consistent rhythm from start to finish, no improvisation, identical vocal timbre, 8k resolution audio, lossless mastering";
+                            const mantra = "[Is_MAX_MODE: MAX], [QUALITY: MAX], [REAL_INSTRUMENTS: MAX], pristine studio mixing, 1:1 exact melody copy, strict adherence to original chord progression, identical bassline, zero deviation from source audio, consistent rhythm from start to finish, no improvisation, identical vocal timbre, 8k resolution audio, lossless mastering";
 
-                            // Bersihkan mantra lama jika ada agar tidak dobel
-                            let currentStyle = styleInput.value.replace(mantra, "").replace(/,\s*$/, "").trim();
-                            
+                            // MANTRA KHUSUS GANTI GENRE (REMIX)
+                            const remixMantra = "[Is_MAX_MODE: MAX], [QUALITY: MAX], KEEP EXACT ORIGINAL VOCAL MELODY, identical vocal cadence, change backing track only, pristine studio mixing, 8k resolution audio";
+
                             // MANTRA KHUSUS PERSONA (Ganti Vokal)
                             const personaMantra = "[Is_MAX_MODE: MAX], [QUALITY: MAX], pristine studio mixing, 1:1 exact melody copy, strict adherence to original chord progression, identical bassline, consistent rhythm from start to finish, no improvisation, REPLACE ORIGINAL VOCAL WITH PERSONA VOICE, clear vocal mix, 8k resolution audio";
-                            currentStyle = currentStyle.replace(personaMantra, "").replace(/,\s*$/, "").trim();
+
+                            // Bersihkan mantra lama jika ada agar tidak dobel
+                            let currentStyle = styleInput.value.replace(mantra, "").replace(remixMantra, "").replace(personaMantra, "").replace(/,\s*$/, "").trim();
 
                             // FUNGSI POTONG OTOMATIS (Mencegah Error 1000 Karakter)
                             const safeAppendMantra = (targetMantra) => {
@@ -2660,16 +2662,16 @@
                                 showIphoneToast("Preset Aktif", "Mode Clone Identik diterapkan. Nada & Vokal akan dikunci 100%.", "fa-copy");
                             } 
                             else if (type === 'genre_swap') {
-                                negTags.value = "altered melody, off-key, different vocal cadence, changing chords, bad mixing";
-                                audioW.value = 0.8; 
-                                styleW.value = 0.9; 
-                                weirdW.value = 0.2;
-                                safeAppendMantra(mantra);
-                                showIphoneToast("Preset Aktif", "Mode Ganti Genre diterapkan. Cengkok vokal dikunci, instrumen dibebaskan.", "fa-guitar");
+                                negTags.value = "altered vocal melody, different vocal cadence, off-key vocals, bad mixing";
+                                audioW.value = 0.9; // FIX: Dinaikkan agar vokal asli terkunci kuat
+                                styleW.value = 0.4; // FIX: Diturunkan agar genre baru tidak merusak cengkok vokal
+                                weirdW.value = 0.0; // FIX: Nol-kan improvisasi agar cengkok tidak lari
+                                safeAppendMantra(remixMantra); // FIX: Gunakan mantra khusus Remix
+                                showIphoneToast("Preset Aktif", "Mode Ganti Genre diterapkan. Vokal dikunci kuat, musik menyesuaikan.", "fa-guitar");
                             } 
                             else if (type === 'persona') {
                                 negTags.value = "altered melody, off-key, changing chords, bad mixing, original singer voice";
-                                audioW.value = 0.8; // Cukup tinggi untuk jaga nada, tapi beri ruang untuk suara baru
+                                audioW.value = 0.8; 
                                 styleW.value = 0.6; 
                                 weirdW.value = 0.1;
                                 safeAppendMantra(personaMantra);
