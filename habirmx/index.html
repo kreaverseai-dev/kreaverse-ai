@@ -5504,9 +5504,13 @@
             const generateBtn = document.getElementById('generateBtn');
             const benefitDesc = generateBtn.nextElementSibling;
             
-            // Elemen Baru Auto-Style (FIX)
+            // Elemen Baru Auto-Style
             const btnAudioToStyle = document.getElementById('btnAudioToStyle');
             const selectLangContainer = document.getElementById('langDropdownContainer');
+
+            // FIX: Elemen Tombol AI (Biru Kecil) dengan selector yang aman
+            const btnStyleAI = document.querySelector("button[onclick*=\"triggerMagicWand('style')\"]");
+            const btnLyricsAI = document.querySelector("button[onclick*=\"triggerMagicWand('lyrics')\"]");
 
             localStorage.setItem('kreaverse_last_mode', mode);
 
@@ -5514,10 +5518,6 @@
             if(btnGenerate) btnGenerate.classList.remove('active');
             if(btnCover) btnCover.classList.remove('active');
             if(btnVoice) btnVoice.classList.remove('active');
-
-            // Elemen Tombol AI (Biru Kecil)
-            const btnStyleAI = document.querySelector('button[onclick="triggerMagicWand(\\'style\\')"]');
-            const btnLyricsAI = document.querySelector('button[onclick="triggerMagicWand(\\'lyrics\\')"]');
 
             if (mode === 'generate') {
                 if(btnGenerate) btnGenerate.classList.add('active');
