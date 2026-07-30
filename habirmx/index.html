@@ -8705,9 +8705,24 @@ window.startDspBypassAndUpload = async function() {
             selectedAudioUrl = urlInput;
             window.originalRawUrl = urlInput; // Menyimpan URL asli agar fitur Deteksi Lirik tidak salah ambil lagu DSP
             
-            // Ekstrak nama file dari URL atau gunakan default
-            let fileName = urlInput.split('/').pop().split('?')[0];
-            if (!fileName || fileName.length > 30) fileName = "Audio_dari_URL.mp3";
+            let fileName = "";
+
+            // LOGIKA PINTAR: Coba cari nama asli di memori Histori HP user
+            try {
+                const key = getHistoryKey();
+                const history = JSON.parse(localStorage.getItem(key)) || [];
+                const foundItem = history.find(item => item.url === urlInput);
+                if (foundItem && foundItem.name) {
+                    fileName = foundItem.name; // Gunakan nama asli dari histori
+                }
+            } catch(e) { console.warn("Gagal cek histori:", e); }
+
+            // Jika URL dari luar (tidak ada di histori), ekstrak dari ujung URL
+            if (!fileName) {
+                fileName = urlInput.split('/').pop().split('?')[0];
+                try { fileName = decodeURIComponent(fileName); } catch(e) {} // Bersihkan %20 jadi spasi
+                if (!fileName || fileName.length > 50) fileName = "Audio_dari_URL.mp3";
+            }
             
             window.activateMiniPlayerUI(fileName, "URL Diterapkan", "rgba(14,165,233,0.1)", "#0ea5e9");
             
