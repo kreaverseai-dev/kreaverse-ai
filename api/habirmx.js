@@ -395,6 +395,122 @@ ABSOLUTE RULES:
 2. NO ARTIST NAMES. Focus ONLY on instruments, mood, and tempo.
 3. Output ONLY the comma-separated prompt tags. No conversational text.`;
                 } 
+                // 2. PROMPT UNTUK DETEKSI LIRIK (MULTIMODAL) - DIPERKETAT ANTI HALUSINASI
+                else if (llmType === 'detect_lyrics') {
+                    systemPrompt = `Kamu adalah Ahli Transkripsi Audio Profesional. Tugasmu adalah MENDENGARKAN file audio yang dilampirkan dari detik pertama hingga detik terakhir, lalu menuliskan liriknya secara VERBATIM (kata per kata persis seperti yang diucapkan penyanyi).
+
+ATURAN MUTLAK (HUKUMAN JIKA DILANGGAR):
+1. DILARANG MENEBAK ATAU MENGARANG LIRIK! Tulis HANYA apa yang benar-benar kamu dengar dari audio ini. Jangan mengambil lirik dari internet meskipun lagunya terdengar familiar.
+2. TULIS SAMPAI HABIS! Jangan berhenti di tengah jalan. Dengarkan sampai audio benar-benar selesai.
+3. Tuliskan sesuai bahasa aslinya (Jangan diterjemahkan).
+4. Berikan tag struktur lagu menggunakan kurung siku, contoh: [Intro], [Verse 1], [Chorus], [Guitar Solo], [Outro].
+5. Jika ada bagian musik yang panjang tanpa orang bernyanyi, tuliskan [Instrumental Interlude].
+6. JIKA LAGU INI MURNI INSTRUMENTAL (Tidak ada orang bernyanyi sama sekali), maka JANGAN mengarang lirik. Cukup tuliskan satu baris ini saja: [Instrumental Music - No Vocals].
+7. Langsung berikan hasil liriknya, dilarang memberikan kata pengantar atau basa-basi.`;
+                }
+                // 3. PROMPT UNTUK MERAPIKAN LIRIK (TEKS SAJA)
+                else if (llmType === 'lyrics') {
+                    systemPrompt = `Kamu adalah Penulis Lagu Profesional. Rapikan lirik dari user ini. Tambahkan tag struktur seperti [Verse] dan [Chorus]. Jangan mengubah kata-kata aslinya.`;
+                }
+
+                let resultText = "";
+                let success = false;
+                let lastError = "";
+
+                for (const llmProvider of llmProvidersToTry) {
+                    const keysQuery = await db.collection("api_keys").where("provider", "==", llmProvider.value).where("status", "==", "aktif").get();
+                    const sortedKeysDocs = keysQuery.docs.sort((a, b) => (a.data().priority || 1) - (b.data().priority || 1));
+                    if (sortedKeysDocs.length === 0) { lastError = `API Key habis.`; continue; }
+
+                    let modelList = llmProvider.models ? llmProvider.models.split(',').map(m => m.trim()).filter(m => m) : ["default"];
+                    let targetModels = (finalProviderId !== 'auto_pool' && modelId && modelList.includes(modelId)) ? [modelId] : modelList;
+
+                    for (const keyDoc of sortedKeysDocs) {
+                        const activeApiKey = keyDoc.data().key;
+                        for (const currentModel of targetModels) {
+                            try {
+                                let finalPayload;
+                                
+                                // JIKA ADA AUDIO, KITA PAKAI ATURAN UNIK KIE.AI
+                                if (audioUrl) {
+                                    finalPayload = {
+                                        model: currentModel,
+                                        max_tokens: 8192, // FIX: Paksa AI agar bisa menulis sangat panjang (Anti-Limit)
+                                        temperature: 0.1, // FIX: Buat AI sangat kaku agar tidak berhalusinasi/mengarang lirik
+                                        messages: [
+                                            { role: "system", content: systemPrompt },
+                                            { role: "user", content: [
+                                                { type: "text", text: finalInputText },
+                                                { type: "image_url", image_url: { url: audioUrl } }
+                                            ]}
+                                        ]
+                                    };
+                                } else {
+                                    // JIKA HANYA TEKS, PAKAI TEMPLATE LAMA
+                                    const variables = { model: currentModel, systemPrompt: systemPrompt, prompt: finalInputText };
+                                    let parsedBodyString = renderTemplate(llmProvider.payloadTemplate || `{"model": "{{model}}", "messages": [{"role": "system", "content": "{{systemPrompt}}"}, {"role": "user", "content": "{{prompt}}"}]}`, variables);
+                                    finalPayload = JSON.parse(parsedBodyString);
+                                    
+                                    // Tambahkan max_tokens untuk merapikan lirik agar tidak terpotong
+                                    if (!finalPayload.max_tokens) finalPayload.max_tokens = 8192;
+                                }
+
+                                const headers = { "Content-Type": "application/json" };
+                                headers[llmProvider.headerName || "Authorization"] = (llmProvider.headerValue || "Bearer {apiKey}").replace("{apiKey}", activeApiKey);
+
+                                const response = await fetch(`${llmProvider.baseUrl}${llmProvider.endpoint}`, { method: 'POST', headers: headers, body: JSON.stringify(finalPayload) });
+                                const resData = await response.json();
+                                
+                                if (!response.ok || (resData.code && resData.code !== 200)) throw new Error(extractErrorString(resData) || "API Error");
+
+                                if (resData.choices && resData.choices[0].message) resultText = resData.choices[0].message.content;
+                                else if (resData.candidates && resData.candidates[0].content) resultText = resData.candidates[0].content.parts[0].text;
+                                else resultText = JSON.stringify(resData);
+
+                                success = true; break; 
+                            } catch (e) {
+                                lastError = e.message;
+                            }
+                        }
+                        if (success) break;
+                    }
+                    if (success) break;
+                }
+                if (!success) throw new Error(`LLM gagal merespons. Pastikan model mendukung Audio (Gemini). Error: ${lastError}`);
+                
+                let finalCleanText = resultText.trim().replace(/Berikut adalah[\s\S]*?:/gi, '');
+                return res.status(200).json({ success: true, result: finalCleanText });
+            } catch (err) {
+                return res.status(500).json({ error: err.message });
+            }
+        }
+
+            try {
+                if (!finalInputText) return res.status(400).json({ error: 'Teks input wajib diisi untuk menggunakan AI.' });
+
+                const providersDoc = await db.collection("settings").doc("api_providers").get();
+                const allProviders = providersDoc.data().list || [];
+                
+                let llmProvidersToTry = [];
+                if (finalProviderId === 'auto_pool') {
+                    llmProvidersToTry = allProviders.filter(p => p.serviceType && (String(p.serviceType).toLowerCase() === "llm" || String(p.serviceType).toLowerCase() === "text" || String(p.serviceType).toLowerCase() === "chat"));
+                    if (llmProvidersToTry.length === 0) return res.status(500).json({ error: 'Tidak ada provider LLM aktif.' });
+                } else {
+                    const specificProvider = allProviders.find(p => p.value === finalProviderId);
+                    if (!specificProvider) return res.status(500).json({ error: 'Provider LLM tidak ditemukan.' });
+                    llmProvidersToTry = [specificProvider];
+                }
+
+                let systemPrompt = "";
+                
+                // 1. PROMPT UNTUK AUTO-STYLE
+                if (llmType === 'style') {
+                    systemPrompt = `You are a Master Audio Engineer & Prompt Engineer for Suno AI. Listen to the provided audio and convert the vibe into a highly detailed, professional list of comma-separated music tags.
+ABSOLUTE RULES:
+1. 100% ENGLISH. Only keep specific cultural genres ('Dangdut', 'Koplo', 'Sholawat') untranslated.
+2. NO ARTIST NAMES. Focus ONLY on instruments, mood, and tempo.
+3. Output ONLY the comma-separated prompt tags. No conversational text.`;
+                } 
                 // 2. PROMPT UNTUK DETEKSI LIRIK (MULTIMODAL)
                 else if (llmType === 'detect_lyrics') {
                     systemPrompt = `Kamu adalah Ahli Transkripsi Musik. Dengarkan lagu yang dilampirkan dari awal sampai akhir dengan sangat teliti.
