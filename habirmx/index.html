@@ -8419,7 +8419,7 @@ window.startDspBypassAndUpload = async function() {
             showIphoneToast("Bypass Berhasil", "Susunan karakter berhasil diubah tanpa merusak pelafalan nyanyian AI.", "fa-shield-halved");
         };
 
-        // OPTIMASI: Inline Web Worker untuk MP3 Encoder (Mencegah UI Freeze/Lag)
+        // OPTIMASI: Inline Web Worker untuk MP3 Encoder (Mencegah UI Freeze/Lag & OOM Crash)
         const mp3WorkerCode = `
             importScripts('https://cdnjs.cloudflare.com/ajax/libs/lamejs/1.2.1/lame.min.js');
 
@@ -8461,8 +8461,18 @@ window.startDspBypassAndUpload = async function() {
                 const mp3buf = mp3encoder.flush();
                 if (mp3buf.length > 0) mp3Data.push(mp3buf);
 
-                // Kirim hasil akhir
-                self.postMessage({ type: 'done', buffer: mp3Data });
+                // OPTIMASI MEMORI EKSTREM: Gabungkan array menjadi satu Uint8Array
+                // Ini mencegah browser HP crash (Out of Memory) saat mengirim data kembali
+                const totalLength = mp3Data.reduce((acc, curr) => acc + curr.length, 0);
+                const combinedBuffer = new Uint8Array(totalLength);
+                let offset = 0;
+                for (let i = 0; i < mp3Data.length; i++) {
+                    combinedBuffer.set(mp3Data[i], offset);
+                    offset += mp3Data[i].length;
+                }
+
+                // Gunakan Transferable Objects (Pemindahan Hak Milik Memori Instan)
+                self.postMessage({ type: 'done', buffer: combinedBuffer.buffer }, [combinedBuffer.buffer]);
             };
         `;
 
@@ -8470,8 +8480,10 @@ window.startDspBypassAndUpload = async function() {
             return new Promise((resolve, reject) => {
                 const channels = audioBuffer.numberOfChannels;
                 const sampleRate = audioBuffer.sampleRate;
-                const left = audioBuffer.getChannelData(0);
-                const right = channels > 1 ? audioBuffer.getChannelData(1) : null;
+                
+                // Salin data agar aman dikirim ke Worker tanpa merusak AudioBuffer asli
+                const left = new Float32Array(audioBuffer.getChannelData(0));
+                const right = channels > 1 ? new Float32Array(audioBuffer.getChannelData(1)) : null;
 
                 // Buat Worker dari string (Inline Worker)
                 const blob = new Blob([mp3WorkerCode], { type: 'application/javascript' });
@@ -8483,7 +8495,7 @@ window.startDspBypassAndUpload = async function() {
                     if (e.data.type === 'progress') {
                         if (progressCallback) progressCallback(e.data.percent);
                     } else if (e.data.type === 'done') {
-                        const finalBlob = new Blob(e.data.buffer, { type: 'audio/mp3' });
+                        const finalBlob = new Blob([e.data.buffer], { type: 'audio/mp3' });
                         worker.terminate(); // Bunuh worker untuk hemat RAM
                         URL.revokeObjectURL(workerUrl); // Bersihkan URL
                         resolve(finalBlob);
@@ -8493,11 +8505,15 @@ window.startDspBypassAndUpload = async function() {
                 worker.onerror = function(err) {
                     worker.terminate();
                     URL.revokeObjectURL(workerUrl);
-                    reject(err);
+                    reject(new Error("Web Worker Crash (Kemungkinan Memori Penuh)"));
                 };
 
-                // Kirim data audio ke Worker untuk diproses di latar belakang
-                worker.postMessage({ left, right, channels, sampleRate });
+                // Kirim data audio ke Worker menggunakan Transferable Objects
+                if (right) {
+                    worker.postMessage({ left, right, channels, sampleRate }, [left.buffer, right.buffer]);
+                } else {
+                    worker.postMessage({ left, right, channels, sampleRate }, [left.buffer]);
+                }
             });
         }
 
