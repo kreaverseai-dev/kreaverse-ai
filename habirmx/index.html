@@ -8931,6 +8931,7 @@ window.startDspBypassAndUpload = async function() {
             }
             selectedAudioUrl = urlInput;
             window.originalRawUrl = urlInput; // Menyimpan URL asli agar fitur Deteksi Lirik tidak salah ambil lagu DSP
+            window.originalCleanAudioUrl = urlInput; // FIX: Pastikan Gemini juga menggunakan URL asli ini
             
             let fileName = "";
 
