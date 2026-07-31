@@ -377,7 +377,19 @@ TUGAS ANDA:
                 let llmProvidersToTry = [];
                 if (finalProviderId === 'auto_pool') {
                     llmProvidersToTry = allProviders.filter(p => p.serviceType && (String(p.serviceType).toLowerCase() === "llm" || String(p.serviceType).toLowerCase() === "text" || String(p.serviceType).toLowerCase() === "chat"));
-                    if (llmProvidersToTry.length === 0) return res.status(500).json({ error: 'Tidak ada provider LLM aktif.' });
+                    
+                    // LOGIKA PINTAR: Jika ada Audio, filter HANYA provider yang mendukung Multimodal (Gemini/Claude)
+                    if (audioUrl) {
+                        const multimodalProviders = llmProvidersToTry.filter(p => 
+                            (p.models && p.models.toLowerCase().includes('gemini')) || 
+                            (p.label && p.label.toLowerCase().includes('multimodal'))
+                        );
+                        if (multimodalProviders.length > 0) {
+                            llmProvidersToTry = multimodalProviders;
+                        }
+                    }
+                    
+                    if (llmProvidersToTry.length === 0) return res.status(500).json({ error: 'Tidak ada provider LLM aktif yang mendukung permintaan ini.' });
                 } else {
                     const specificProvider = allProviders.find(p => p.value === finalProviderId);
                     if (!specificProvider) return res.status(500).json({ error: 'Provider LLM tidak ditemukan.' });
@@ -717,9 +729,11 @@ ATURAN MUTLAK:
                     if (specificKeyDoc) {
                         sortedKeysDocs = [specificKeyDoc]; // Kunci sistem ke API Key ini saja
                     } else {
-                        sortedKeysDocs = []; // Kosongkan agar loop key tidak berjalan
-                        lastErrorMessage = "Server penyimpanan untuk Suara ini sedang penuh atau API Key mati. Silakan Kloning ulang suara Anda.";
-                        continue; // FIX: Lanjut ke provider lain (jika ada), jangan di-break paksa
+                        // LOGIKA PINTAR: Jika API Key pembuat suara ini sudah mati/dihapus, langsung hentikan proses!
+                        // Jangan continue ke provider lain karena Voice ID ini tidak akan dikenali di akun lain.
+                        return res.status(400).json({ 
+                            error: "Karakter Suara (Voice ID) ini sudah kadaluarsa karena limit server. Silakan buat ulang / kloning ulang suara Anda di menu 'Pakai SuaraMu'." 
+                        });
                     }
                 }
 
@@ -883,10 +897,14 @@ ATURAN MUTLAK:
                 if (isAdmin) {
                     return res.status(502).json({ error: `[ADMIN DEBUG] Gagal: ${finalOutputError}` });
                 } else {
-                    if (finalOutputError.toLowerCase().includes('insufficient') || finalOutputError.toLowerCase().includes('balance') || finalOutputError.toLowerCase().includes('quota') || finalOutputError.toLowerCase().includes('api key')) {
-                        finalOutputError = "Server sedang penuh atau antrean terlalu panjang. Silakan coba beberapa saat lagi.";
+                    // LOGIKA PINTAR: Sembunyikan urusan "API Key / Saldo" dari pengguna biasa
+                    const lowerErr = finalOutputError.toLowerCase();
+                    if (lowerErr.includes('insufficient') || lowerErr.includes('balance') || lowerErr.includes('quota') || lowerErr.includes('api key') || lowerErr.includes('mati')) {
+                        finalOutputError = "Semua server AI saat ini sedang penuh atau dalam masa pemeliharaan. Sistem sedang mengalihkan rute, silakan coba lagi dalam beberapa menit.";
+                    } else if (lowerErr.includes('not found') || lowerErr.includes('voice')) {
+                        finalOutputError = "Karakter suara tidak ditemukan di server. Silakan buat ulang suara Anda.";
                     } else {
-                        finalOutputError = "Seluruh server AI sedang sibuk memproses antrean. Silakan coba lagi beberapa saat.";
+                        finalOutputError = "Server AI sedang sibuk memproses antrean. Silakan coba lagi beberapa saat.";
                     }
                     return res.status(502).json({ error: finalOutputError });
                 }
