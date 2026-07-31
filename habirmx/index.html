@@ -10629,7 +10629,8 @@ window.startDspBypassAndUpload = async function() {
                                                 status: "complete",
                                                 url: pollData.tracks[i].audioUrl || pollData.tracks[i].url || "",
                                                 imageUrl: pollData.tracks[i].imageUrl || pollData.tracks[i].cover || "",
-                                                duration: pollData.tracks[i].duration || "--:--"
+                                                duration: pollData.tracks[i].duration || "--:--",
+                                                audioId: pollData.tracks[i].audioId || pollData.tracks[i].id || "" // FIX: Simpan Audio ID asli dari AI ke database
                                             });
                                         }
                                     }
