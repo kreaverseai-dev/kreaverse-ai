@@ -10552,18 +10552,16 @@ window.startDspBypassAndUpload = async function() {
                 const modelLabel = modelLabelText;
                 
                 // FIX: Buat satu Task ID unik yang akan dipakai bersama oleh Track 1 dan Track 2
-                // Ini mencegah tabrakan ID (yang menyebabkan 3 lagu ngumpul jadi 1 grup)
                 const safeTaskId = data.taskId || `task_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
                 
                 if (data.status === "completed" && data.tracks && data.tracks.length > 0) {
-                    // FIX BUG 4 LAGU DOBEL: Jika API Synchronous (Langsung Selesai), Server VPS Backend 
-                    // sudah secara otomatis menyimpan hasil lagu ke database Firestore Anda.
-                    // Frontend TIDAK BOLEH melakukan addDoc lagi di sini agar lagu tidak terduplikat menjadi 4.
-                    // Lagu akan otomatis muncul di UI Library pengguna secara real-time melalui onSnapshot.
+                    // Jika API Synchronous (Langsung Selesai)
                 } else {
-                    // Jika API Asynchronous (Polling), simpan 2 dokumen "processing" karena Suno AI menghasilkan 2 lagu sekaligus
+                    // Jika API Asynchronous (Polling), simpan 2 dokumen "processing"
+                    let createdDocIds = []; // Simpan ID dokumen untuk di-update nanti
+                    
                     for (let i = 0; i < 2; i++) {
-                        await addDoc(collection(db, "render_gallery"), {
+                        const docRef = await addDoc(collection(db, "render_gallery"), {
                             email: currentUser.email,
                             url: "",
                             prompt: style,
@@ -10573,9 +10571,9 @@ window.startDspBypassAndUpload = async function() {
                             type: "audio",
                             status: "processing",
                             taskId: safeTaskId,
-                            provider: data.provider,
+                            provider: data.provider || providerId,
                             model: modelLabel,
-                            timestamp: Date.now() - i, // Kurangi agar Track 1 selalu di atas Track 2
+                            timestamp: Date.now() - i,
                             mode: currentMode,
                             personaId: options.personaId || "",
                             vocalGender: options.vocalGender || "",
@@ -10584,7 +10582,73 @@ window.startDspBypassAndUpload = async function() {
                             audioWeight: options.audioWeight || "",
                             originalAudioUrl: currentMode === 'cover' ? selectedAudioUrl : ""
                         });
+                        createdDocIds.push(docRef.id);
                     }
+
+                    // =================================================================
+                    // SISTEM POLLING (TANYA BERKALA KE BACKEND)
+                    // =================================================================
+                    let pollCount = 0;
+                    const maxPolls = 60; // Maksimal 5 menit (60 * 5 detik)
+                    
+                    const pollInterval = setInterval(async () => {
+                        pollCount++;
+                        try {
+                            // Bertanya ke Backend Vercel
+                            const pollRes = await fetch(`/api/habirmx?taskId=${safeTaskId}&provider=${providerId}`);
+                            const pollData = await pollRes.json();
+
+                            // Jika lagu sudah selesai dibuat oleh AI
+                            if (pollData.status === 'completed' || pollData.status === 'success') {
+                                clearInterval(pollInterval);
+                                
+                                if (pollData.tracks && pollData.tracks.length > 0) {
+                                    // Update dokumen di Firebase dengan URL lagu yang sudah jadi
+                                    for (let i = 0; i < createdDocIds.length; i++) {
+                                        if (pollData.tracks[i]) {
+                                            await updateDoc(doc(db, "render_gallery", createdDocIds[i]), {
+                                                status: "complete",
+                                                url: pollData.tracks[i].audioUrl || pollData.tracks[i].url || "",
+                                                imageUrl: pollData.tracks[i].imageUrl || pollData.tracks[i].cover || "",
+                                                duration: pollData.tracks[i].duration || "--:--"
+                                            });
+                                        }
+                                    }
+                                    if (typeof showIphoneToast === 'function') {
+                                        showIphoneToast("Selesai", "Lagu berhasil dibuat!", "fa-check-circle");
+                                    }
+                                }
+                            } 
+                            // Jika lagu gagal dibuat oleh AI
+                            else if (pollData.status === 'failed' || pollData.status === 'error') {
+                                clearInterval(pollInterval);
+                                for (let i = 0; i < createdDocIds.length; i++) {
+                                    await updateDoc(doc(db, "render_gallery", createdDocIds[i]), {
+                                        status: "failed",
+                                        error: pollData.error || pollData.message || "Gagal di server provider AI."
+                                    });
+                                }
+                                // Auto Refund
+                                if (!isAdmin && currentUserData) {
+                                    const currentKredit = currentUserData.kredit !== undefined ? currentUserData.kredit : (currentUserData.dailyQuota || 0);
+                                    updateDoc(doc(db, "users", currentUserData.id), { kredit: currentKredit + 50 }).catch(e=>e);
+                                }
+                            }
+                            
+                            // Jika terlalu lama (Timeout)
+                            if (pollCount >= maxPolls) {
+                                clearInterval(pollInterval);
+                                for (let i = 0; i < createdDocIds.length; i++) {
+                                    await updateDoc(doc(db, "render_gallery", createdDocIds[i]), {
+                                        status: "failed",
+                                        error: "Timeout: Server AI terlalu lama merespons."
+                                    });
+                                }
+                            }
+                        } catch (e) {
+                            console.error("Polling error:", e);
+                        }
+                    }, 5000); // Tanya ke backend setiap 5 detik
                 }
                 
                 generateBtn.disabled = false;
