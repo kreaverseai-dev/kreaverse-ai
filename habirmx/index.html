@@ -1961,7 +1961,7 @@
                                 </svg>
                                 <span style="font-size: 0.65rem; color: #ef4444; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; display: flex; align-items: center; gap: 5px; margin-top: 4px;"><i class="fa-solid fa-triangle-exclamation" style="color: #eab308; font-size: 0.75rem;"></i> AI SENSOR DETECTED</span>
                             </div>
-                            <button onclick="document.getElementById('dspStudioWrapper').classList.add('hidden')" style="background: rgba(255,255,255,0.1); border: none; color: #fff; width: 34px; height: 34px; border-radius: 50%; font-size: 1.1rem; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.2s;"><i class="fa-solid fa-xmark"></i></button>
+                            <button onclick="window.closeDspStudio()" style="background: rgba(255,255,255,0.1); border: none; color: #fff; width: 34px; height: 34px; border-radius: 50%; font-size: 1.1rem; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.2s;"><i class="fa-solid fa-xmark"></i></button>
                         </div>
 
                         <!-- Konten DSP (Padding bawah dibesarkan agar tidak ketutup) -->
@@ -6964,6 +6964,28 @@
             dspStudio.classList.remove('hidden');
             document.getElementById('audioProgressBox').classList.add('hidden');
             initVisualizer();
+        };
+
+        // OPTIMASI GPU & BATERAI: Matikan visualizer saat DSP Studio ditutup
+        window.closeDspStudio = function() {
+            document.getElementById('dspStudioWrapper').classList.add('hidden');
+            
+            // Bunuh animasi Oscilloscope yang berjalan di latar belakang
+            if (animationFrameId) {
+                cancelAnimationFrame(animationFrameId);
+                animationFrameId = null;
+            }
+            
+            // Hentikan lagu yang sedang diputar di dalam DSP Studio agar suaranya tidak bocor
+            const origPlayer = document.getElementById('originalAudioPlayer');
+            const bypassPlayer = document.getElementById('bypassedAudioPlayer');
+            if (origPlayer && !origPlayer.paused) window.toggleCustomPlay('originalAudioPlayer', 'cp-original');
+            if (bypassPlayer && !bypassPlayer.paused) window.toggleCustomPlay('bypassedAudioPlayer', 'cp-bypassed');
+            
+            // Hentikan Trimmer Preview jika sedang jalan
+            if (trimPreviewCtx && trimPreviewCtx.state === 'running') {
+                window.toggleTrimPlayback();
+            }
         };
 
         window.removeUploadedAudio = function() {
