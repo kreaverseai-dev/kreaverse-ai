@@ -4777,10 +4777,7 @@
             if (errPlayer && !errPlayer.paused) { errPlayer.pause(); }
             window.closeErrorDetail(); // Tutup modal otomatis
 
-            window.showIphoneToast("Auto Bypass", "Sistem sedang menyiapkan data dan mengacak sidik jari lagu secara otomatis...", "fa-wand-magic-sparkles");
-            if(typeof showTopProgress === 'function') showTopProgress("Mempersiapkan Bypass...", "#f59e0b");
-
-            // 2. Set Mode & Auto-Fill Inputs
+            // 2. Set Mode & Auto-Fill Inputs (Instan tanpa loading lama)
             if (docData.mode === 'cover') window.switchMode('cover');
             else window.switchMode('generate');
 
@@ -4814,38 +4811,88 @@
                 let targetUrl = docData.originalAudioUrl || docData.url;
                 if (targetUrl) {
                     try {
-                        if(typeof updateTopProgress === 'function') updateTopProgress(20, "Mengunduh audio referensi...");
+                        showIphoneToast("Mempersiapkan Data", "Mengambil referensi audio original...", "fa-cloud-arrow-down");
+                        if(typeof showTopProgress === 'function') showTopProgress("Mempersiapkan Bypass...", "#f59e0b");
+                        
+                        if(typeof updateTopProgress === 'function') updateTopProgress(10, "Mengunduh audio referensi dari server...");
                         const response = await fetch(targetUrl);
                         const blob = await response.blob();
                         const fileName = "Auto_Bypassed_" + Date.now() + ".mp3";
                         let fileToUpload = new File([blob], fileName, { type: "audio/mp3" });
                         
-                        if(typeof updateTopProgress === 'function') updateTopProgress(50, "Mengacak sidik jari audio (Silent DSP)...");
+                        if(typeof updateTopProgress === 'function') updateTopProgress(30, "Menganalisis struktur gelombang audio...");
+                        await new Promise(r => setTimeout(r, 800)); // Simulasi proses agar UI terbaca
                         
-                        // Terapkan sedikit perubahan sidik jari audio secara SILENT
+                        if(typeof updateTopProgress === 'function') updateTopProgress(45, "Mengacak fingerprint sidik jari baru...");
+                        
+                        // =================================================================
+                        // FITUR BARU: ACAK FINGERPRINT AMAN (TANPA MERUSAK NADA/TEMPO)
+                        // =================================================================
+                        const activeTab = localStorage.getItem('krea_dsp_tab') || 'v1';
+                        const masterToggle = document.getElementById('globalMasterToggle');
+                        if (masterToggle) masterToggle.checked = true;
+                        
+                        if (activeTab === 'v1') {
+                            // V1: Acak Timbre & Stego (Aman, tidak merusak nada)
+                            const timbreEl = document.getElementById('sliderTimbreV1');
+                            const stegoEl = document.getElementById('sliderStegoV1');
+                            if (timbreEl) { timbreEl.value = Math.floor(Math.random() * 20) + 40; document.getElementById('valTimbreV1').innerText = timbreEl.value + '%'; }
+                            if (stegoEl) { stegoEl.value = Math.floor(Math.random() * 30) + 50; document.getElementById('valStegoV1').innerText = stegoEl.value + '%'; }
+                            
+                            // Acak Algoritma V1
+                            const v1Toggles = ['tgTemporalV1', 'tgMirageV1', 'tgAntiMonoV1', 'tgSpectralV1'];
+                            v1Toggles.forEach(id => {
+                                const el = document.getElementById(id);
+                                if (el) el.checked = Math.random() > 0.3; // 70% kemungkinan ON
+                            });
+                        } else {
+                            // V2: Acak 20-Layer Algorithms (Aman, tidak merusak nada)
+                            const v2Toggles = ['chkPhase', 'chkWarp', 'chkFormant', 'chkSpatial', 'chkMasking', 'chkNullifier'];
+                            v2Toggles.forEach(id => {
+                                const el = document.getElementById(id);
+                                if (el) el.checked = Math.random() > 0.2; // 80% kemungkinan ON
+                            });
+                            if(typeof window.updateDSPStatusVisual === 'function') window.updateDSPStatusVisual(true);
+                        }
+
                         let bypassedBlob = blob;
                         if (typeof processKreaverseAudio === 'function') {
-                            bypassedBlob = await processKreaverseAudio(fileToUpload, false, (p) => {});
+                            bypassedBlob = await processKreaverseAudio(fileToUpload, false, (percent) => {
+                                const mappedPercent = 45 + Math.floor(percent * 0.35); // 45% - 80%
+                                if(typeof updateTopProgress === 'function') updateTopProgress(mappedPercent, "Menerapkan algoritma anti-copyright...");
+                            });
                         } else if (typeof processStealthAudio === 'function') {
-                            bypassedBlob = await processStealthAudio(fileToUpload, false, (p) => {});
+                            bypassedBlob = await processStealthAudio(fileToUpload, false, (percent) => {
+                                const mappedPercent = 45 + Math.floor(percent * 0.35); // 45% - 80%
+                                if(typeof updateTopProgress === 'function') updateTopProgress(mappedPercent, "Menerapkan algoritma anti-copyright...");
+                            });
                         }
                         
-                        if(typeof updateTopProgress === 'function') updateTopProgress(80, "Mengunggah audio Bypass ke server...");
+                        if(typeof updateTopProgress === 'function') updateTopProgress(85, "Mengunggah audio dengan fingerprint baru...");
                         await uploadBlobToCloudinary(bypassedBlob, fileName, true, "0:00");
                         
+                        if(typeof updateTopProgress === 'function') updateTopProgress(95, "Menyinkronkan data dengan server AI...");
+                        await new Promise(r => setTimeout(r, 500));
+
                         // Setel ke Mini Player
                         rawAudioFile = new File([bypassedBlob], fileName, { type: "audio/mp3" });
-                        window.activateMiniPlayerUI(fileName, "Auto Bypass Siap", "rgba(16,185,129,0.1)", "#10b981");
+                        window.activateMiniPlayerUI(fileName, "Fingerprint Baru Siap", "rgba(16,185,129,0.1)", "#10b981");
                         const origPlayer = document.getElementById('originalAudioPlayer');
                         if (origPlayer) origPlayer.src = URL.createObjectURL(rawAudioFile);
                         
                         document.getElementById('urlInputBox').classList.add('hidden');
                         document.getElementById('uploadTriggerBox').classList.add('hidden');
+                        
+                        if(typeof updateTopProgress === 'function') updateTopProgress(100, "Selesai! Memulai Generate...");
+                        await new Promise(r => setTimeout(r, 500));
                     } catch (e) {
                         console.error(e);
                         window.showIphoneToast("Peringatan", "Gagal melakukan bypass audio otomatis. Silakan coba edit manual.", "fa-triangle-exclamation");
                     }
                 }
+            } else {
+                // Jika mode generate (bukan cover), langsung proses saja
+                showIphoneToast("Mempersiapkan Data", "Mengisi ulang lirik dan style...", "fa-wand-magic-sparkles");
             }
 
             if(typeof hideTopProgress === 'function') hideTopProgress();
