@@ -5430,7 +5430,8 @@
             const dateStr = `${days[dateObj.getDay()]}, ${dateObj.getDate()} ${months[dateObj.getMonth()]} ${dateObj.getFullYear()} pukul ${displayH}.${m} ${period}`;
             
             document.getElementById('detailTaskId').innerText = docData.taskId || '-';
-            document.getElementById('detailAudioId').innerText = docData.audioId || docData.id || '-';
+            // FIX: Hapus fallback "docData.id" agar tidak menampilkan ID Firebase palsu
+            document.getElementById('detailAudioId').innerText = docData.audioId || '-';
             document.getElementById('detailPersonaId').innerText = docData.personaId || '-';
             
             // Tampilkan Vocal Gender & Params
