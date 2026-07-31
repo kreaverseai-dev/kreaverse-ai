@@ -8693,6 +8693,18 @@ window.startDspBypassAndUpload = async function() {
                 document.getElementById('uploadedMiniBadge').innerText = "Original Ready";
                 document.getElementById('uploadedMiniBadge').style.background = "rgba(16,185,129,0.1)";
                 document.getElementById('uploadedMiniBadge').style.color = "#10b981";
+
+                // =================================================================
+                // FIX: Ganti sumber suara di Mini Player menjadi hasil potongan
+                // agar UI durasi berubah menjadi 3 menit dan user bisa mendengarnya
+                // =================================================================
+                if (needsTrimming) {
+                    const originalPlayer = document.getElementById('originalAudioPlayer');
+                    originalPlayer.src = URL.createObjectURL(trimmedBlob);
+                    initCustomPlayer('originalAudioPlayer', 'uploadedStateBox');
+                    initCustomPlayer('originalAudioPlayer', 'cp-original'); // Update player di dalam modal DSP juga
+                }
+                // =================================================================
                 
                 showIphoneToast("Upload Sukses", needsTrimming ? "Audio berhasil dipotong dan diunggah." : "Audio original berhasil diunggah.", "fa-circle-check");
                 
