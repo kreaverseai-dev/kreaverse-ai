@@ -8644,10 +8644,19 @@ window.startDspBypassAndUpload = async function() {
                     const masterToggleV1 = document.getElementById('globalMasterToggle');
                     if(masterToggleV1) masterToggleV1.checked = false;
                     
+                    // FIX: Tambahkan indikator progress agar tidak stuck di 15%
+                    const safeName = rawAudioFile.name.length > 20 ? rawAudioFile.name.substring(0, 17) + "..." : rawAudioFile.name;
+                    
                     if (typeof processKreaverseAudio === 'function') {
-                        trimmedBlob = await processKreaverseAudio(rawAudioFile, false, () => {});
+                        trimmedBlob = await processKreaverseAudio(rawAudioFile, false, (percent) => {
+                            const mappedPercent = 15 + Math.floor(percent * 0.35); // Map 0-100% to 15-50%
+                            updateTopProgress(mappedPercent, `Memotong & Merender ${safeName}`);
+                        });
                     } else if (typeof processStealthAudio === 'function') {
-                        trimmedBlob = await processStealthAudio(rawAudioFile, false, () => {});
+                        trimmedBlob = await processStealthAudio(rawAudioFile, false, (percent) => {
+                            const mappedPercent = 15 + Math.floor(percent * 0.35); // Map 0-100% to 15-50%
+                            updateTopProgress(mappedPercent, `Memotong & Merender ${safeName}`);
+                        });
                     }
                 } else {
                     updateTopProgress(15, "Menyiapkan Audio Original...");
