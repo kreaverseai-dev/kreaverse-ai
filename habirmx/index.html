@@ -2654,24 +2654,40 @@
                 <span class="char-counter" id="lyricsCounter">0/5000</span>
             </div>
 
-            <!-- MODAL REVISI AI (DINAMIS) -->
-            <div id="revisiModalOverlay" class="krea-modal-overlay" style="z-index: 9999999;">
-                <div class="krea-modal-box" style="max-width: 400px; padding: 24px; text-align: left; border-radius: 24px; background: #ffffff; border: 1px solid #e2e8f0; box-shadow: 0 20px 40px rgba(0,0,0,0.1);">
-                    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
-                        <div style="width: 40px; height: 40px; background: rgba(245, 158, 11, 0.15); color: #d97706; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem;"><i class="fa-solid fa-pen-nib"></i></div>
-                        <div>
-                            <h3 id="revisiModalTitle" style="font-size: 1.05rem; font-weight: 900; color: var(--text-primary); margin: 0;">Revisi AI</h3>
+            <!-- MODAL REVISI AI (TEMA CHATGPT) -->
+            <div id="revisiModalOverlay" class="krea-modal-overlay" style="z-index: 9999999; background: rgba(0,0,0,0.5);">
+                <div class="krea-modal-box" style="max-width: 500px; width: 95%; padding: 0; text-align: left; border-radius: 16px; background: #ffffff; box-shadow: 0 20px 40px rgba(0,0,0,0.2); display: flex; flex-direction: column; overflow: hidden;">
+                    
+                    <!-- Header -->
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 16px 20px; border-bottom: 1px solid #e5e7eb;">
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <div style="width: 28px; height: 28px; background: #10a37f; color: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.8rem;"><i class="fa-solid fa-robot"></i></div>
+                            <h3 id="revisiModalTitle" style="font-size: 1rem; font-weight: 700; color: #374151; margin: 0;">Revisi AI</h3>
+                        </div>
+                        <button onclick="window.closeRevisiModal()" style="background: none; border: none; font-size: 1.2rem; color: #9ca3af; cursor: pointer;">&times;</button>
+                    </div>
+                    
+                    <!-- Chat Body -->
+                    <div style="padding: 24px 20px; background: #f9fafb; flex: 1;">
+                        <div style="display: flex; gap: 12px; margin-bottom: 20px;">
+                            <div style="width: 32px; height: 32px; background: #10a37f; color: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.9rem; flex-shrink: 0;"><i class="fa-solid fa-robot"></i></div>
+                            <div style="background: #ffffff; border: 1px solid #e5e7eb; padding: 12px 16px; border-radius: 0 16px 16px 16px; font-size: 0.85rem; color: #374151; line-height: 1.5; box-shadow: 0 2px 4px rgba(0,0,0,0.02);">
+                                Halo! Saya siap membantu. Bagian mana dari <b id="revisiModalDesc">teks</b> ini yang ingin Anda ubah? Ketik instruksinya di bawah.
+                            </div>
                         </div>
                     </div>
-                    <p id="revisiModalDesc" style="font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 16px; line-height: 1.5;">Ketik instruksi perubahan Anda. AI hanya akan mengubah bagian yang diminta tanpa merusak teks lainnya.</p>
                     
-                    <textarea id="revisiInstructionInput" style="width: 100%; height: 80px; padding: 12px 14px; border-radius: 12px; border: 1.5px solid #cbd5e1; background: #f8fafc; font-size: 0.85rem; color: var(--text-primary); outline: none; margin-bottom: 20px; transition: 0.2s; resize: none;" placeholder="Contoh: Tambahkan suara suling bambu..."></textarea>
-                    
-                    <input type="hidden" id="revisiTargetType" value="">
-                    
-                    <div style="display: flex; gap: 10px;">
-                        <button type="button" onclick="window.closeRevisiModal()" style="flex: 1; padding: 12px; border-radius: 12px; font-weight: 800; font-size: 0.85rem; cursor: pointer; border: none; background: #f1f5f9; color: var(--text-secondary); transition: 0.2s;">Batal</button>
-                        <button type="button" id="btnSubmitRevisi" onclick="window.submitRevisiAI()" style="flex: 1; padding: 12px; border-radius: 12px; font-weight: 800; font-size: 0.85rem; cursor: pointer; border: none; background: #f59e0b; color: #fff; transition: 0.2s; box-shadow: 0 4px 10px rgba(245,158,11,0.3);"><i class="fa-solid fa-wand-magic-sparkles"></i> Proses</button>
+                    <!-- Input Area -->
+                    <div style="padding: 16px 20px; background: #ffffff; border-top: 1px solid #e5e7eb;">
+                        <div style="position: relative; display: flex; align-items: flex-end; background: #f3f4f6; border: 1px solid #d1d5db; border-radius: 16px; padding: 8px 12px; transition: 0.2s;" id="revisiInputWrapper">
+                            <textarea id="revisiInstructionInput" style="width: 100%; max-height: 120px; min-height: 40px; background: transparent; border: none; font-size: 0.9rem; color: #1f2937; outline: none; resize: none; padding: 8px 40px 8px 4px; font-family: inherit;" placeholder="Message AI..." onfocus="document.getElementById('revisiInputWrapper').style.borderColor='#10a37f'; document.getElementById('revisiInputWrapper').style.background='#ffffff';" onblur="document.getElementById('revisiInputWrapper').style.borderColor='#d1d5db'; document.getElementById('revisiInputWrapper').style.background='#f3f4f6';"></textarea>
+                            
+                            <button type="button" id="btnSubmitRevisi" onclick="window.submitRevisiAI()" style="position: absolute; right: 12px; bottom: 12px; width: 32px; height: 32px; border-radius: 50%; background: #10a37f; color: #fff; border: none; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s; box-shadow: 0 2px 6px rgba(16, 163, 127, 0.3);">
+                                <i class="fa-solid fa-arrow-up"></i>
+                            </button>
+                        </div>
+                        <input type="hidden" id="revisiTargetType" value="">
+                        <div style="text-align: center; font-size: 0.65rem; color: #9ca3af; margin-top: 8px;">AI dapat membuat kesalahan. Periksa kembali hasil revisi.</div>
                     </div>
                 </div>
             </div>
@@ -2687,8 +2703,9 @@
 
                     document.getElementById('revisiTargetType').value = type;
                     document.getElementById('revisiModalTitle').innerText = type === 'style' ? 'Revisi Style Musik' : 'Revisi Lirik Lagu';
+                    document.getElementById('revisiModalDesc').innerText = type === 'style' ? 'gaya musik' : 'lirik';
                     document.getElementById('revisiInstructionInput').value = '';
-                    document.getElementById('revisiInstructionInput').placeholder = type === 'style' ? 'Contoh: Tambahkan bass dangdut yang kuat...' : 'Contoh: Ubah kata "kamu hanya" jadi "hanya kamu"...';
+                    document.getElementById('revisiInstructionInput').placeholder = type === 'style' ? 'Contoh: Tambahkan bass dangdut...' : 'Contoh: Ubah kata "kamu" jadi "dia"...';
                     
                     document.getElementById('revisiModalOverlay').classList.add('show');
                     document.getElementById('revisiInstructionInput').focus();
@@ -2712,7 +2729,7 @@
                     const btn = document.getElementById('btnSubmitRevisi');
                     const originalBtnHtml = btn.innerHTML;
                     btn.disabled = true;
-                    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Memproses...';
+                    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
 
                     // Gabungkan teks asli dengan instruksi user
                     const combinedPrompt = `TEKS ASLI:\n${currentText}\n\nINSTRUKSI REVISI DARI USER:\n${instruction}`;
@@ -3245,34 +3262,38 @@
         </div>
     </div>
 
-    <!-- MODAL INSPIRASI PROMPT KREAVERSE AI (UTAMA) -->
+    <!-- MODAL INSPIRASI PROMPT KREAVERSE AI (TEMA VPS SERVER) -->
     <div id="promptModalOverlay" class="krea-modal-overlay">
-        <div class="krea-modal-box" style="max-width: 500px; width: 95%; height: 85vh; display: flex; flex-direction: column; padding: 0; overflow: hidden; background: #f8fafc;">
-            <div style="padding: 20px 24px 15px; border-bottom: 1px solid var(--border-color); background: #ffffff; border-radius: 24px 24px 0 0; flex-shrink: 0;">
-                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
-                    <div style="text-align: left; padding-right: 15px;">
-                        <h3 style="font-size: 1.15rem; font-weight: 900; color: var(--text-primary); margin-bottom: 4px; letter-spacing: -0.3px;"><i class="fa-solid fa-lightbulb" style="color: #f59e0b;"></i> Pustaka Prompt Premium</h3>
-                        <p style="font-size: 0.75rem; color: var(--text-secondary); margin: 0; line-height: 1.4; font-weight: 500;">Gunakan koleksi parameter gaya musik (style) yang telah teruji ini untuk menghasilkan aransemen audio berkualitas studio.</p>
+        <div class="krea-modal-box" style="max-width: 650px; width: 90%; height: 75vh; display: flex; flex-direction: column; padding: 0; overflow: hidden; background: #0f172a; border: 1px solid #334155; border-radius: 16px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);">
+            
+            <!-- SERVER HEADER -->
+            <div style="padding: 12px 20px; background: #1e293b; border-bottom: 1px solid #334155; display: flex; justify-content: space-between; align-items: center; flex-shrink: 0;">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <div style="display: flex; gap: 6px;">
+                        <div style="width: 12px; height: 12px; border-radius: 50%; background: #ef4444;"></div>
+                        <div style="width: 12px; height: 12px; border-radius: 50%; background: #f59e0b;"></div>
+                        <div style="width: 12px; height: 12px; border-radius: 50%; background: #10b981;"></div>
                     </div>
-                    <button onclick="window.closePromptModal()" style="background: rgba(15, 23, 42, 0.05); border: none; width: 32px; height: 32px; border-radius: 50%; font-size: 1.2rem; color: var(--text-secondary); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.2s; flex-shrink: 0;">&times;</button>
+                    <span style="font-family: monospace; font-size: 0.8rem; color: #94a3b8; margin-left: 10px;">root@kreaverse-vps:~ /prompt_library</span>
                 </div>
-                
-                <!-- SEARCH BAR -->
+                <button onclick="window.closePromptModal()" style="background: none; border: none; color: #94a3b8; cursor: pointer; font-size: 1.2rem; transition: 0.2s;" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='#94a3b8'">&times;</button>
+            </div>
+            
+            <!-- SEARCH & TABS -->
+            <div style="padding: 16px 20px; background: #0f172a; border-bottom: 1px solid #1e293b; flex-shrink: 0;">
                 <div style="position: relative; margin-bottom: 12px;">
-                    <i class="fa-solid fa-magnifying-glass" style="position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--text-light); font-size: 0.85rem;"></i>
-                    <input type="text" id="promptSearchInput" placeholder="Cari judul prompt (misal: V1, DJ)..." oninput="window.handlePromptSearch()" style="width: 100%; padding: 10px 14px 10px 36px; border-radius: 12px; border: 1px solid var(--border-color); font-size: 0.85rem; font-family: inherit; outline: none; background: #f8fafc;">
+                    <span style="position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: #10b981; font-family: monospace; font-weight: bold;">$</span>
+                    <input type="text" id="promptSearchInput" placeholder="grep -i 'judul_prompt'..." oninput="window.handlePromptSearch()" style="width: 100%; padding: 10px 14px 10px 30px; border-radius: 8px; border: 1px solid #334155; font-size: 0.85rem; font-family: monospace; outline: none; background: #1e293b; color: #e2e8f0;">
                 </div>
-
-                <!-- TABS -->
-                <div style="display: flex; gap: 8px; background: #f1f5f9; padding: 4px; border-radius: 10px;">
-                    <button id="tabPromptTerbaru" onclick="window.switchPromptTab('terbaru')" style="flex: 1; background: #ffffff; border: 1px solid rgba(0,0,0,0.05); padding: 8px; border-radius: 8px; font-size: 0.8rem; font-weight: 800; color: var(--accent-color); cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.02); transition: 0.2s;">Terbaru</button>
-                    <button id="tabPromptKategori" onclick="window.switchPromptTab('kategori')" style="flex: 1; background: transparent; border: 1px solid transparent; padding: 8px; border-radius: 8px; font-size: 0.8rem; font-weight: 700; color: var(--text-secondary); cursor: pointer; transition: 0.2s;">Kategori</button>
+                <div style="display: flex; gap: 8px;">
+                    <button id="tabPromptTerbaru" onclick="window.switchPromptTab('terbaru')" style="flex: 1; background: #38bdf8; border: none; padding: 8px; border-radius: 6px; font-size: 0.8rem; font-weight: 800; color: #0f172a; cursor: pointer; font-family: monospace; transition: 0.2s;">./recent_files</button>
+                    <button id="tabPromptKategori" onclick="window.switchPromptTab('kategori')" style="flex: 1; background: #1e293b; border: 1px solid #334155; padding: 8px; border-radius: 6px; font-size: 0.8rem; font-weight: 700; color: #94a3b8; cursor: pointer; font-family: monospace; transition: 0.2s;">./directories</button>
                 </div>
             </div>
             
             <!-- LIST CONTAINER -->
-            <div id="promptModalList" style="padding: 16px 20px; overflow-y: auto; flex: 1; display: flex; flex-direction: column; gap: 10px; text-align: left;">
-                <div style="text-align: center; color: var(--text-light); font-size: 0.85rem; padding: 20px 0;"><i class="fa-solid fa-spinner fa-spin"></i> Memuat pustaka prompt...</div>
+            <div id="promptModalList" style="padding: 16px 20px; overflow-y: auto; flex: 1; display: flex; flex-direction: column; gap: 8px; text-align: left; background: #0f172a;">
+                <div style="text-align: center; color: #10b981; font-size: 0.85rem; font-family: monospace; padding: 20px 0;">Loading system files...</div>
             </div>
         </div>
     </div>
@@ -9595,6 +9616,21 @@ window.startDspBypassAndUpload = async function() {
             const llmProviderId = document.getElementById('llmSelect') ? document.getElementById('llmSelect').value : 'auto_pool';
             const llmModelId = document.getElementById('llmModelSelect') ? document.getElementById('llmModelSelect').value : 'auto_pool';
 
+            // SISTEM BLOKIR LLM PINTAR: Pastikan model mendukung Audio (Multimodal)
+            const isAudioCapable = llmModelId === 'auto_pool' || llmModelId.toLowerCase().includes('gemini') || llmModelId.toLowerCase().includes('gpt-4o');
+            if (!isAudioCapable) {
+                showIphoneToast("Model Tidak Mendukung", "Model Chat AI yang Anda pilih tidak bisa mendengar audio. Silakan ganti ke Gemini atau Auto.", "fa-ear-deaf");
+                
+                // Auto-scroll ke pengaturan LLM agar user sadar
+                const llmWrapper = document.getElementById('llmSettingsWrapper');
+                if (llmWrapper) {
+                    llmWrapper.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    llmWrapper.style.boxShadow = "0 0 0 4px rgba(239, 68, 68, 0.3)";
+                    setTimeout(() => { llmWrapper.style.boxShadow = "none"; }, 2000);
+                }
+                return;
+            }
+
             const inputEl = document.getElementById('lyricsInput');
             const progressBox = document.getElementById('detectLyricsProgress');
             const statusText = document.getElementById('detectLyricsStatus');
@@ -9715,6 +9751,22 @@ window.startDspBypassAndUpload = async function() {
 
             const llmProviderId = document.getElementById('llmSelect') ? document.getElementById('llmSelect').value : 'auto_pool';
             const llmModelId = document.getElementById('llmModelSelect') ? document.getElementById('llmModelSelect').value : 'auto_pool';
+
+            // SISTEM BLOKIR LLM PINTAR: Pastikan model mendukung Audio (Multimodal)
+            const isAudioCapable = llmModelId === 'auto_pool' || llmModelId.toLowerCase().includes('gemini') || llmModelId.toLowerCase().includes('gpt-4o');
+            if (!isAudioCapable) {
+                showIphoneToast("Model Tidak Mendukung", "Model Chat AI yang Anda pilih tidak bisa mendengar audio. Silakan ganti ke Gemini atau Auto.", "fa-ear-deaf");
+                
+                // Auto-scroll ke pengaturan LLM agar user sadar
+                const llmWrapper = document.getElementById('llmSettingsWrapper');
+                if (llmWrapper) {
+                    llmWrapper.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    llmWrapper.style.boxShadow = "0 0 0 4px rgba(239, 68, 68, 0.3)";
+                    setTimeout(() => { llmWrapper.style.boxShadow = "none"; }, 2000);
+                }
+                return;
+            }
+
             const chosenLang = document.getElementById('autoStyleLang') ? document.getElementById('autoStyleLang').value : 'english';
 
             const btn = document.getElementById('btnAudioToStyle');
