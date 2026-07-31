@@ -4250,6 +4250,8 @@
         // ============================================================
         // SISTEM LIBRARY & PROGRESS PERMANEN (REALTIME)
         // ============================================================
+        let libraryRenderTimeout = null;
+
         function initLibraryAndProgress() {
             if (!currentUser || !currentUser.email) return;
             const q = query(collection(db, "render_gallery"), where("email", "==", currentUser.email));
@@ -4260,15 +4262,18 @@
                 
                 window.globalLibraryDocs = allDocs; // Simpan ke global agar bisa dibaca Pop-Up
 
-                const processingDocs = allDocs.filter(d => d.status === 'processing' || d.status === 'pending');
-                const completeDocs = allDocs.filter(d => d.status === 'complete' || d.status === 'failed'); 
-                
-                renderActiveProgress(processingDocs);
-                // HAPUS slice di sini agar filter tab berhasil/gagal bekerja dengan benar!
-                renderMiniLibrary(completeDocs); 
-                
-                // SELALU TAMPILKAN CONTAINER JIKA SUDAH LOGIN
-                document.getElementById('miniLibraryContainer').style.display = 'block';
+                // OPTIMASI UI: Gunakan Debounce agar UI tidak freeze saat Firebase mengirim banyak update sekaligus
+                if (libraryRenderTimeout) clearTimeout(libraryRenderTimeout);
+                libraryRenderTimeout = setTimeout(() => {
+                    const processingDocs = allDocs.filter(d => d.status === 'processing' || d.status === 'pending');
+                    const completeDocs = allDocs.filter(d => d.status === 'complete' || d.status === 'failed'); 
+                    
+                    renderActiveProgress(processingDocs);
+                    renderMiniLibrary(completeDocs); 
+                    
+                    // SELALU TAMPILKAN CONTAINER JIKA SUDAH LOGIN
+                    document.getElementById('miniLibraryContainer').style.display = 'block';
+                }, 250); // Tunggu 250ms sebelum menggambar ulang UI
             });
         }
 
@@ -9978,7 +9983,11 @@ window.startDspBypassAndUpload = async function() {
             loadDynamicModels();
             initLibraryAndProgress(); 
             
-            onSnapshot(collection(db, "users"), (snap) => {
+            // OPTIMASI FIREBASE: Hanya pantau data user ini saja, jangan download seluruh database!
+            const safeUserEmailForQuery = userEmail ? String(userEmail).toLowerCase().trim() : "";
+            const userQuery = query(collection(db, "users"), where("email", "==", safeUserEmailForQuery));
+            
+            onSnapshot(userQuery, (snap) => {
                 let userFound = false;
                 snap.forEach(docSnap => {
                     const d = docSnap.data();
