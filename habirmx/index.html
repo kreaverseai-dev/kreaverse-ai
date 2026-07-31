@@ -4756,23 +4756,19 @@
             displayDocs.forEach((d, index) => {
                 const isFailed = d.status === 'failed';
                 const safeThumb = d.imageUrl || window.flixaFallbackLogo;
-                // Membersihkan teks (Part X) atau - Versi X dari judul utama karena sudah ada di Badge Track
                 const rawTitle = d.title || 'Untitled Song';
                 const displayTitle = rawTitle.replace(/\s*\(Part\s*\d+\)/gi, '').replace(/\s*-\s*(?:Versi|Track)\s*\d+/gi, '').trim();
                 const displayPrompt = d.prompt || 'No style provided';
                 const modelBadge = d.model || 'v5.5-all'; 
                 
-                // Cek status Like/Dislike
                 const isLiked = d.liked ? 'active-like' : '';
                 const isDisliked = d.disliked ? 'active-dislike' : '';
 
-                // Format pesan error
                 let displayError = d.error || 'Terkena Copyright / Error Server';
                 if (!isAdmin && (displayError.toLowerCase().includes('saldo') || displayError.toLowerCase().includes('balance') || displayError.toLowerCase().includes('insufficient') || displayError.toLowerCase().includes('credit'))) {
                     displayError = 'Server sedang sibuk/penuh. Silakan coba lagi nanti.';
                 }
 
-                // --- INJEKSI KOTAK CENTANG (CHECKBOX) ---
                 const isChecked = selectedItemIds.includes(d.id) ? 'checked' : '';
                 const selectionClass = window.isSelectionMode ? 'selection-mode' : '';
                 const checkboxHtml = `
@@ -4782,9 +4778,9 @@
                 `;
 
                 // --- PEMISAH ANTAR GENERATE (POIN 3) ---
-                const currentGroup = d.taskId || Math.floor((d.timestamp || 0) / 5000);
+                // FIX BUG 4 TRACK: Gunakan sessionGroup sebagai pengelompok utama, fallback ke taskId untuk lagu lama
+                const currentGroup = d.sessionGroup || d.taskId || Math.floor((d.timestamp || 0) / 5000);
                 if (index > 0 && currentGroup !== lastTaskId) {
-                    // Format Waktu Detail untuk Sesi Sebelumnya
                     const dateObj = new Date(d.timestamp || Date.now());
                     const days = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
                     const months = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
@@ -4847,23 +4843,21 @@
 
                     const redDotHtml = d.isNew ? `<div style="width:8px; height:8px; background:#ef4444; border-radius:50%; flex-shrink:0; box-shadow: 0 0 6px rgba(239,68,68,0.6); margin-top:5px;" title="Lagu Baru"></div>` : '';
 
-                    // 1. Bersihkan nama model (Menampilkan format Flixa AI)
                     let cleanModel = modelBadge.trim();
                     if (!cleanModel.toLowerCase().includes('flixa')) {
                         cleanModel = cleanModel.replace(/Suno /i, '').trim();
                         cleanModel = `Flixa AI ${cleanModel}`;
                     }
                     
-                    // 2. Tentukan Mode & Icon
                     const modeText = d.mode === 'cover' ? 'Cover Lagu' : 'Lagu Sendiri';
                     const modeIcon = d.mode === 'cover' ? '<i class="fa-solid fa-microphone-lines"></i>' : '<i class="fa-solid fa-music"></i>';
 
-                    // 3. FIX: Logika Pintar Penentuan Track 1 & 2 (Berdasarkan Task ID, bukan Regex Judul)
-                    const siblings = docs.filter(doc => doc.taskId === d.taskId).sort((a, b) => b.timestamp - a.timestamp);
+                    // FIX BUG 4 TRACK: Logika Pintar Penentuan Track 1 & 2 (Berdasarkan Session Group, bukan Task ID)
+                    const currentGroupKey = d.sessionGroup || d.taskId;
+                    const siblings = docs.filter(doc => (doc.sessionGroup || doc.taskId) === currentGroupKey).sort((a, b) => b.timestamp - a.timestamp);
                     const trackIndex = siblings.findIndex(doc => doc.id === d.id);
                     let trackNum = trackIndex !== -1 ? trackIndex + 1 : 1;
 
-                    // 4. FIX: Logika Animasi GIF saat lagu diputar
                     const isPlaying = (currentPlayingDocId === d.id && document.getElementById('globalMiniPlayer').classList.contains('show') && !document.getElementById('globalAudioEl').paused);
                     let playingOverlay = isPlaying ? `<div style="position:absolute; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); display:flex; align-items:center; justify-content:center; border-radius:10px; z-index: 5;"><img src="https://i.gifer.com/origin/b4/b4d657e7ef262b88eb5f7ac021edda87.gif" style="width:20px; height:20px; opacity:0.9;"></div>` : '';
 
@@ -4878,7 +4872,6 @@
                             </div>
                             
                             <div class="suno-lib-details" style="gap: 4px;">
-                                <!-- JUDUL FULL, BUKA TUTUP (POIN 2) -->
                                 <div class="suno-title-row" style="align-items: flex-start; gap: 6px;">
                                     ${redDotHtml}
                                     <div style="flex: 1; min-width: 0;">
@@ -4888,16 +4881,13 @@
                                     <button onclick="event.stopPropagation(); const s = document.getElementById('title-short-${d.id}'); const f = document.getElementById('title-full-${d.id}'); if(f.classList.contains('hidden')){ f.classList.remove('hidden'); s.classList.add('hidden'); this.innerHTML='<i class=\\'fa-solid fa-chevron-up\\'></i>'; } else { f.classList.add('hidden'); s.classList.remove('hidden'); this.innerHTML='<i class=\\'fa-solid fa-chevron-down\\'></i>'; }" style="background: rgba(0, 122, 255, 0.1); border: none; color: var(--accent-color); border-radius: 6px; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; font-size: 0.7rem;"><i class="fa-solid fa-chevron-down"></i></button>
                                 </div>
                                 
-                                <!-- MODE & TRACK DI KIRI -->
                                 <div style="display: flex; align-items: center; gap: 6px; width: 100%; margin-top: 2px;">
                                     <span class="suno-badge" style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.2); color: #059669; padding: 2px 8px; border-radius: 6px; font-size: 0.65rem; font-weight: 800;">${modeIcon} ${modeText}</span>
                                     <span class="suno-badge" style="background: #ffffff; border: 1px solid #bfdbfe; color: var(--text-primary); padding: 2px 8px; border-radius: 6px; font-size: 0.65rem; font-weight: 800; box-shadow: 0 2px 4px rgba(0,0,0,0.02);"><i class="fa-solid fa-compact-disc" style="color: var(--accent-color); margin-right: 4px;"></i>Track ${trackNum}</span>
                                 </div>
 
-                                <!-- PROMPT (1 BARIS) -->
                                 <div class="suno-prompt" style="font-size: 0.75rem; font-weight: 500; color: #334155; margin-top: 2px; display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden;">${displayPrompt}</div>
                                 
-                                <!-- TOMBOL LIKE, DISLIKE, TITIK TIGA & MODEL V5.5 DI KANAN -->
                                 <div class="suno-btn-group" style="margin-top: 4px; display: flex; gap: 6px; align-items: center; flex-wrap: wrap;">
                                     <button onclick="window.toggleLike('${d.id}', 'like')" class="suno-action-btn ${isLiked}" title="Like" style="background: #ffffff; border-color: #bfdbfe; flex-shrink: 0; width: 28px; height: 28px; font-size: 0.8rem;"><i class="fa-solid fa-thumbs-up"></i></button>
                                     <button onclick="window.toggleLike('${d.id}', 'dislike')" class="suno-action-btn ${isDisliked}" title="Dislike" style="background: #ffffff; border-color: #bfdbfe; flex-shrink: 0; width: 28px; height: 28px; font-size: 0.8rem;"><i class="fa-solid fa-thumbs-down"></i></button>
@@ -10437,7 +10427,7 @@ window.startDspBypassAndUpload = async function() {
                 const engineWrapper = document.getElementById('engineSettingsWrapper');
                 const engineBody = document.getElementById('engineSettingsBody');
                 
-                if (engineBody.classList.contains('hidden')) {
+                if (engineBody && engineBody.classList.contains('hidden')) {
                     window.toggleAccordion('engineSettingsBody');
                 }
                 
@@ -10561,8 +10551,6 @@ window.startDspBypassAndUpload = async function() {
                     showIphoneToast("Kredit Terpakai", `50 Kredit dipotong. Sisa saldo: ${newKredit} Kredit.`, "fa-coins");
                 }
 
-                // Simpan ke Firebase. Karena kita pakai onSnapshot di initLibraryAndProgress, 
-                // UI akan otomatis terupdate tanpa perlu kode tambahan di sini!
                 let modelLabelText = modelId;
                 const activeSunoModelNameEl = document.getElementById('activeSunoModelName');
                 if (activeSunoModelNameEl) {
@@ -10572,6 +10560,9 @@ window.startDspBypassAndUpload = async function() {
                 
                 // FIX: Buat satu Task ID unik yang akan dipakai bersama oleh Track 1 dan Track 2
                 const safeTaskId = data.taskId || `task_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
+                
+                // FIX BUG 4 TRACK: Buat ID Sesi unik setiap kali tombol diklik
+                const sessionGroupId = `sg_${Date.now()}`;
                 
                 if (data.status === "completed" && data.tracks && data.tracks.length > 0) {
                     // Jika API Synchronous (Langsung Selesai)
@@ -10590,6 +10581,7 @@ window.startDspBypassAndUpload = async function() {
                             type: "audio",
                             status: "processing",
                             taskId: safeTaskId,
+                            sessionGroup: sessionGroupId, // Simpan ID Sesi ke database
                             provider: data.provider || providerId,
                             model: modelLabel,
                             timestamp: Date.now() - i,
