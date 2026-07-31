@@ -7166,6 +7166,11 @@
                 animationFrameId = null;
             }
             
+            // FIX AUDIO BISU: Tidurkan mesin visualizer (Suspend), JANGAN dibunuh (Close)!
+            if (audioContextForVis && audioContextForVis.state === 'running') {
+                audioContextForVis.suspend();
+            }
+            
             // Hentikan lagu yang sedang diputar di dalam DSP Studio agar suaranya tidak bocor
             const origPlayer = document.getElementById('originalAudioPlayer');
             const bypassPlayer = document.getElementById('bypassedAudioPlayer');
@@ -7191,10 +7196,9 @@
                 bypassPlayer.src = "";
             }
 
-            // OPTIMASI MEMORI: Matikan Mesin Visualizer & Kosongkan Cache
-            if (audioContextForVis && audioContextForVis.state !== 'closed') {
-                audioContextForVis.close();
-                audioContextForVis = null;
+            // FIX AUDIO BISU: Tidurkan mesin visualizer (Suspend), JANGAN dibunuh (Close)!
+            if (audioContextForVis && audioContextForVis.state === 'running') {
+                audioContextForVis.suspend();
             }
             if (animationFrameId) cancelAnimationFrame(animationFrameId);
             cachedAudioBuffer = null; // Kosongkan cache trimmer
