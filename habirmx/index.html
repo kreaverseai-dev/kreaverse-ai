@@ -8303,6 +8303,13 @@ window.generateDspPreview = async function() {
 };
 
 window.startDspBypassAndUpload = async function() {
+            // KEAMANAN: Cek apakah user sudah login sebelum mengizinkan upload
+            if (!isLoggedIn || !currentUser) {
+                showIphoneToast("Akses Ditolak", "Silakan login terlebih dahulu untuk mengunggah audio.", "fa-lock");
+                setTimeout(() => { window.location.href = "/login/index.html"; }, 2000);
+                return;
+            }
+
             if(!rawAudioFile) return;
             
             const btnStart = document.getElementById('btnStartDsp');
@@ -8970,6 +8977,13 @@ window.startDspBypassAndUpload = async function() {
         };
 
         window.uploadOriginalAudio = async function() {
+            // KEAMANAN: Cek apakah user sudah login sebelum mengizinkan upload
+            if (!isLoggedIn || !currentUser) {
+                showIphoneToast("Akses Ditolak", "Silakan login terlebih dahulu untuk mengunggah audio.", "fa-lock");
+                setTimeout(() => { window.location.href = "/login/index.html"; }, 2000);
+                return;
+            }
+
             if(!rawAudioFile) return;
             
             const btnOriginal = document.getElementById('btnUploadOriginal');
