@@ -1810,30 +1810,61 @@
                             <i class="fa-solid fa-chevron-right" style="color: #94a3b8; font-size: 0.9rem;"></i>
                         </div>
 
-                        <!-- UPLOADED STATE MINI PLAYER (KIE STYLE) -->
-                        <div id="uploadedStateBox" class="hidden" style="display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 14px; width: 100%; border-radius: 16px; background: #f8fafc; border: 1.5px solid var(--accent-color); box-shadow: 0 4px 12px rgba(0, 122, 255, 0.1);">
-                            <!-- Play Icon Presisi (padding-left: 2px) -->
-                            <button id="uploadedMiniPlayBtn" onclick="window.toggleCustomPlay('originalAudioPlayer', 'uploadedStateBox')" style="width: 36px; height: 36px; border-radius: 50%; background: var(--accent-color); color: #fff; border: none; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; box-shadow: 0 2px 6px rgba(0,122,255,0.3); transition: 0.2s; padding-left: 2px;">
-                                <i class="fa-solid fa-play"></i>
-                            </button>
-                            <div style="flex: 1; min-width: 0; text-align: left;">
-                                <div id="uploadedMiniFileName" style="font-size: 0.8rem; font-weight: 800; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 6px;">-</div>
-                                
-                                <!-- SLIDER NATIVE (SANGAT MUDAH DIGESER) -->
-                                <input type="range" class="audio-seek-slider custom-mini-slider" value="0" min="0" max="100" step="0.1">
+                        <!-- UPLOADED STATE MINI PLAYER (CRUN AI STYLE) -->
+                        <style>
+                            /* Trik CSS untuk membuat slider terlihat seperti Waveform Crun AI */
+                            .crun-waveform-slider {
+                                -webkit-appearance: none;
+                                width: 100%;
+                                height: 36px;
+                                background-color: #f1f5f9;
+                                background-image: repeating-linear-gradient(to right, #cbd5e1, #cbd5e1 2px, transparent 2px, transparent 4px);
+                                border-radius: 6px;
+                                outline: none;
+                                overflow: hidden;
+                                margin-top: 8px;
+                            }
+                            .crun-waveform-slider::-webkit-slider-thumb {
+                                -webkit-appearance: none;
+                                width: 2px;
+                                height: 36px;
+                                background: var(--accent-color);
+                                cursor: pointer;
+                                box-shadow: -100vw 0 0 100vw rgba(0, 122, 255, 0.25); /* Warna biru transparan pengisi progress */
+                            }
+                        </style>
+                        <div id="uploadedStateBox" class="hidden" style="display: flex; flex-direction: column; padding: 16px; width: 100%; border-radius: 16px; background: #ffffff; border: 2px dashed #cbd5e1; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02);">
+                            
+                            <!-- Baris Atas: Play, Judul, Badge, Waktu, Tombol X -->
+                            <div style="display: flex; align-items: flex-start; gap: 12px; width: 100%;">
+                                <!-- Tombol Play -->
+                                <button id="uploadedMiniPlayBtn" onclick="window.toggleCustomPlay('originalAudioPlayer', 'uploadedStateBox')" style="width: 42px; height: 42px; border-radius: 50%; background: var(--accent-color); color: #fff; border: none; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; box-shadow: 0 4px 10px rgba(0,122,255,0.3); transition: 0.2s; padding-left: 2px; font-size: 1.1rem;">
+                                    <i class="fa-solid fa-play"></i>
+                                </button>
 
-                                <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px;">
-                                    <div style="display: flex; gap: 4px;">
-                                        <span class="current-time" style="font-size: 0.65rem; font-family: monospace; color: var(--text-secondary); font-weight: 700;">0:00</span>
-                                        <span style="font-size: 0.65rem; color: var(--text-light);">/</span>
-                                        <span class="duration-time" style="font-size: 0.65rem; font-family: monospace; color: var(--text-secondary); font-weight: 700;">0:00</span>
+                                <!-- Judul & Badge (Bisa memanjang dan terpotong otomatis) -->
+                                <div style="display: flex; flex-direction: column; flex: 1; min-width: 0; gap: 4px; padding-top: 2px;">
+                                    <div id="uploadedMiniFileName" style="font-size: 0.9rem; font-weight: 800; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">origin.mp3</div>
+                                    <div style="display: flex;">
+                                        <span id="uploadedMiniBadge" style="font-size: 0.6rem; font-weight: 800; background: #e2e8f0; color: #475569; padding: 2px 6px; border-radius: 4px; white-space: nowrap;">Menunggu Upload</span>
                                     </div>
-                                    <span id="uploadedMiniBadge" style="font-size: 0.6rem; font-weight: 800; background: #e2e8f0; color: #475569; padding: 2px 6px; border-radius: 4px;">Menunggu Upload</span>
+                                </div>
+
+                                <!-- Waktu & Tombol X -->
+                                <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 6px; flex-shrink: 0;">
+                                    <button onclick="window.removeUploadedAudio()" style="background: rgba(239, 68, 68, 0.1); border: none; color: var(--danger-color); width: 26px; height: 26px; border-radius: 50%; font-size: 0.85rem; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.2s;" title="Hapus Audio">
+                                        <i class="fa-solid fa-xmark"></i>
+                                    </button>
+                                    <div style="display: flex; gap: 2px; align-items: center;">
+                                        <span class="current-time" style="font-size: 0.7rem; font-family: monospace; color: var(--accent-color); font-weight: 800;">0:00</span>
+                                        <span style="font-size: 0.7rem; color: var(--text-light);">/</span>
+                                        <span class="duration-time" style="font-size: 0.7rem; font-family: monospace; color: var(--text-secondary); font-weight: 700;">0:00</span>
+                                    </div>
                                 </div>
                             </div>
-                            <button onclick="window.removeUploadedAudio()" style="background: none; border: none; color: var(--danger-color); font-size: 1.2rem; cursor: pointer; padding: 4px; display: flex; align-items: center; justify-content: center; transition: 0.2s;" title="Hapus Audio">
-                                <i class="fa-solid fa-xmark"></i>
-                            </button>
+
+                            <!-- Baris Bawah: Slider Waveform -->
+                            <input type="range" class="audio-seek-slider crun-waveform-slider" value="0" min="0" max="100" step="0.1">
                         </div>
                         <input type="file" id="audioReferenceInput" accept="audio/*" style="display: none;">
 
