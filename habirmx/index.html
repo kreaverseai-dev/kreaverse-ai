@@ -5769,6 +5769,14 @@
                 if(uploadSection) uploadSection.classList.remove('hidden');
                 if(voiceSection) voiceSection.classList.add('hidden');
                 
+                // LOGIKA PINTAR: Paksa LLM ke Auto Pool saat mode Cover agar Backend bisa memilih model Multimodal (Gemini)
+                if (document.getElementById('llmSelect') && document.getElementById('llmSelect').value !== 'auto_pool') {
+                    window.selectLlmOption('auto_pool', 'auto_pool', 'Flixa AI Chat (Auto)');
+                    if (typeof showIphoneToast === 'function') {
+                        showIphoneToast("Info AI", "Chat AI dialihkan ke mode Auto agar dapat mendengarkan audio referensi Anda.", "fa-brain");
+                    }
+                }
+                
                 if(btnAudioToStyle) btnAudioToStyle.classList.remove('hidden');
                 if(selectLangContainer) selectLangContainer.classList.remove('hidden');
                 
@@ -6500,7 +6508,7 @@
                             
                             let llmOptionsHtml = `<div class="custom-select-option" style="color:var(--accent-color); background:rgba(0,122,255,0.05);" onclick="window.selectLlmOption('auto_pool', 'auto_pool', 'Flixa AI Chat (Auto)')">
                                 <span style="font-weight:800;"><i class="fa-solid fa-wand-magic-sparkles"></i> Flixa AI Chat (Auto)</span>
-                                <span style="font-size:0.65rem; color:#94a3b8; display:block; margin-top:2px;">Mencari model & server aktif secara otomatis</span>
+                                <span style="font-size:0.65rem; color:#94a3b8; display:block; margin-top:2px;">Otomatis memilih model Teks atau Audio (Multimodal) sesuai kebutuhan</span>
                             </div>`;
                             
                             globalLlmProviders.forEach(p => {
@@ -10162,7 +10170,14 @@ window.startDspBypassAndUpload = async function() {
                 if (!isAdmin && (displayError.toLowerCase().includes('habis') || displayError.toLowerCase().includes('insufficient') || displayError.toLowerCase().includes('api'))) {
                     displayError = "Trafik server sedang penuh atau dalam perbaikan. Silakan coba beberapa saat lagi.";
                 }
-                showIphoneToast("Gagal", displayError, "fa-triangle-exclamation");
+                
+                // LOGIKA PINTAR: Penanganan khusus jika Voice ID kadaluarsa
+                if (displayError.toLowerCase().includes('karakter suara') || displayError.toLowerCase().includes('kadaluarsa')) {
+                    showIphoneToast("Suara Kadaluarsa", displayError, "fa-user-astronaut", 6000);
+                    document.getElementById('personaIdInput').value = '';
+                } else {
+                    showIphoneToast("Gagal", displayError, "fa-triangle-exclamation");
+                }
             }
         };
 
