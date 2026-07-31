@@ -414,13 +414,13 @@ ABSOLUTE RULES:
 
 ATURAN MUTLAK (HUKUMAN JIKA DILANGGAR):
 1. DILARANG MENEBAK ATAU MENGARANG LIRIK! Tulis HANYA apa yang benar-benar kamu dengar dari audio ini.
-2. TULIS SAMPAI HABIS! Jangan berhenti di tengah jalan.
-3. Tuliskan sesuai bahasa aslinya (Jangan diterjemahkan).
-4. STRUKTUR STANDAR (TANPA INSTRUMEN): Berikan tag struktur lagu menggunakan kurung siku standar (contoh: [Intro], [Verse 1], [Chorus], [Outro]). DILARANG KERAS menuliskan deskripsi instrumen atau alat musik di dalam kurung siku maupun di luar kurung siku.
-5. LYRIC ENGINEERING (ANTI-AMNESIA): Untuk mengunci nada penyanyi asli, sisipkan tag [EXACT SAME MELODY AND VOCALS] tepat di bawah tag [Intro] dan [Chorus].
-6. WATERMARK WAJIB: Kamu WAJIB menyisipkan lirik "(Spoken: Ha bi R M X)" tepat di bawah tag [Instrumental Interlude] atau [Guitar Solo] di pertengahan lagu, DAN satu kali lagi tepat di bawah tag [Outro] di akhir lagu.
-7. KONTROL DURASI (3 - 4 MENIT): Agar lagu tidak melar lebih dari 4 menit, kamu WAJIB menaruh tag [End] di baris paling bawah setelah [Outro].
-8. JIKA LAGU INI MURNI INSTRUMENTAL, tuliskan: [Instrumental Music - No Vocals] lalu akhiri dengan [End].
+2. JIKA AUDIO KOSONG, RUSAK, ATAU TIDAK TERDENGAR SUARA VOKAL SAMA SEKALI, WAJIB TULIS: "[Instrumental Music - No Vocals]". JANGAN PERNAH mengarang lirik seperti "Kulihat senja" atau lirik klise lainnya!
+3. TULIS SAMPAI HABIS! Jangan berhenti di tengah jalan.
+4. Tuliskan sesuai bahasa aslinya (Jangan diterjemahkan).
+5. STRUKTUR STANDAR (TANPA INSTRUMEN): Berikan tag struktur lagu menggunakan kurung siku standar (contoh: [Intro], [Verse 1], [Chorus], [Outro]). DILARANG KERAS menuliskan deskripsi instrumen atau alat musik di dalam kurung siku maupun di luar kurung siku.
+6. LYRIC ENGINEERING (ANTI-AMNESIA): Untuk mengunci nada penyanyi asli, sisipkan tag [EXACT SAME MELODY AND VOCALS] tepat di bawah tag [Intro] dan [Chorus].
+7. WATERMARK WAJIB: Kamu WAJIB menyisipkan lirik "(Spoken: Ha bi R M X)" tepat di bawah tag [Instrumental Interlude] atau [Guitar Solo] di pertengahan lagu, DAN satu kali lagi tepat di bawah tag [Outro] di akhir lagu.
+8. KONTROL DURASI (3 - 4 MENIT): Agar lagu tidak melar lebih dari 4 menit, kamu WAJIB menaruh tag [End] di baris paling bawah setelah [Outro].
 9. Langsung berikan hasil liriknya, dilarang memberikan kata pengantar.`;
                 }
                 // 3. PROMPT UNTUK MERAPIKAN LIRIK (TEKS SAJA)
@@ -448,18 +448,26 @@ ATURAN MUTLAK:
 5. Langsung berikan hasil akhirnya saja tanpa kata pengantar atau basa-basi.`;
                 }
 
-                // FIX: UBAH AUDIO URL MENJADI BASE64 DATA URI
-                // KIE.AI sering gagal mendownload link MP3 secara internal. 
-                // Kita paksa Vercel mendownloadnya dan mengirimkan wujud asli audionya (Base64) ke KIE.AI.
+                // FIX: UBAH AUDIO URL MENJADI BASE64 DATA URI DENGAN PROTEKSI
                 let finalAudioPayload = audioUrl;
                 if (audioUrl) {
                     try {
                         const aFetch = await fetch(audioUrl);
-                        const aBuffer = await aFetch.arrayBuffer();
-                        const base64Data = Buffer.from(aBuffer).toString('base64');
-                        finalAudioPayload = `data:audio/mp3;base64,${base64Data}`;
+                        if (!aFetch.ok) throw new Error(`HTTP error! status: ${aFetch.status}`);
+                        const contentType = aFetch.headers.get('content-type');
+                        
+                        // Pastikan yang didownload benar-benar audio/video, bukan HTML (link error/diblokir)
+                        if (contentType && !contentType.includes('text/html')) {
+                            const aBuffer = await aFetch.arrayBuffer();
+                            const base64Data = Buffer.from(aBuffer).toString('base64');
+                            const mimeType = contentType || 'audio/mp3';
+                            finalAudioPayload = `data:${mimeType};base64,${base64Data}`;
+                        } else {
+                            console.warn("URL tidak mengembalikan file audio langsung, mengirim URL mentah ke LLM.");
+                        }
                     } catch(e) {
-                        console.error("Gagal fetch audio base64:", e);
+                        console.error("Gagal fetch audio base64, fallback ke URL mentah:", e);
+                        // Fallback: biarkan finalAudioPayload berisi URL mentah agar API provider yang mencoba mendownloadnya
                     }
                 }
 
