@@ -2625,12 +2625,6 @@
                 <label for="lyricsInput">
                     <span style="line-height: 1.2;">Lyrics of<br>music *</span>
                     <div style="display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end;">
-                        
-                        <!-- FITUR BARU: TOMBOL REVISI AI (LIRIK) -->
-                        <button type="button" class="magic-wand-btn" style="background: rgba(245, 158, 11, 0.1); color: #d97706; border-color: rgba(245, 158, 11, 0.3); padding: 4px 8px; font-size: 0.7rem; white-space: nowrap;" onclick="window.openRevisiModal('lyrics')" title="Revisi Lirik dengan Chat AI">
-                            <i class="fa-solid fa-pen-nib"></i> Revisi AI
-                        </button>
-
                         <button type="button" id="btnSyncDetect" class="magic-wand-btn" style="background: rgba(139, 92, 246, 0.1); color: #8b5cf6; border-color: rgba(139, 92, 246, 0.2); padding: 4px 8px; font-size: 0.7rem; white-space: nowrap; transition: all 0.3s ease;" onclick="handleSyncDetectClick()" title="Deteksi Lirik dari Audio">
                             <i class="fa-solid fa-ear-listen" id="iconSyncDetect"></i> <span id="textSyncDetect">Deteksi</span>
                         </button>
@@ -2640,13 +2634,18 @@
                         <button type="button" class="magic-wand-btn" style="background: rgba(16, 185, 129, 0.1); color: #10B981; border-color: rgba(16, 185, 129, 0.2); padding: 4px 8px; font-size: 0.7rem; white-space: nowrap;" onclick="encryptLyrics()" title="Bypass Filter NLP">
                             <i class="fa-solid fa-user-secret"></i> Encrypt
                         </button>
+                        
+                        <!-- REVISI AI DIPINDAH KE SEBELAH HAPUS -->
+                        <button type="button" class="magic-wand-btn" style="background: rgba(245, 158, 11, 0.1); color: #d97706; border-color: rgba(245, 158, 11, 0.3); padding: 4px 8px; font-size: 0.7rem; white-space: nowrap;" onclick="window.openRevisiModal('lyrics')" title="Revisi Lirik dengan Chat AI">
+                            <i class="fa-solid fa-pen-nib"></i> Revisi AI
+                        </button>
                         <button type="button" class="action-icon-btn" style="padding: 4px 8px; font-size: 0.7rem; white-space: nowrap;" onclick="clearInput('lyricsInput', 'lyricsCounter', 5000); window.checkLyricsState();" title="Hapus Teks">
                             <i class="fa-solid fa-trash-can"></i>
                         </button>
                     </div>
                 </label>
-                <div id="lyricsHelperText" style="font-size: 0.7rem; color: var(--accent-color); margin-bottom: 6px; font-weight: 600; background: rgba(0, 122, 255, 0.05); padding: 8px 12px; border-radius: 8px; border: 1px solid rgba(0, 122, 255, 0.1); line-height: 1.5; transition: all 0.3s ease;">
-                    <i class="fa-solid fa-circle-info"></i> <b>Panduan:</b> Biarkan kotak ini kosong lalu klik <b>Deteksi</b> untuk menebak lirik dari audio. <br><br><b>ATAU</b> paste lirik asli dari Google ke kotak ini, lalu klik <b>Sync Lirik</b> untuk menyinkronkan waktu lirik dengan lagu (Karaoke).
+                <div id="lyricsHelperText" style="font-size: 0.7rem; color: var(--accent-color); margin-bottom: 6px; font-weight: 600; background: rgba(0, 122, 255, 0.05); padding: 8px 12px; border-radius: 8px; border: 1px solid rgba(0, 122, 255, 0.1); line-height: 1.4; transition: all 0.3s ease;">
+                    <i class="fa-solid fa-circle-info"></i> <b>Panduan:</b> Klik <b>Deteksi</b> untuk mengekstrak lirik dari audio, atau paste lirik manual lalu klik <b>Sync Lirik</b>.
                 </div>
                 <div id="detectLyricsProgress" class="hidden" style="font-size: 0.75rem; color: #8b5cf6; margin-bottom: 6px; font-weight: 600; background: rgba(139, 92, 246, 0.05); padding: 8px 12px; border-radius: 8px; border: 1px solid rgba(139, 92, 246, 0.2); display: flex; align-items: center; gap: 8px;">
                     <i class="fa-solid fa-circle-notch fa-spin"></i> <span id="detectLyricsStatus">Mendengarkan audio...</span>
@@ -9407,7 +9406,7 @@ window.startDspBypassAndUpload = async function() {
                 spanText.innerText = 'Sync Lirik';
                 btn.title = 'Sinkronkan waktu lirik dengan lagu';
                 
-                helper.innerHTML = '<i class="fa-solid fa-stopwatch"></i> <b>Smart Sync Aktif:</b> Klik tombol <b>Sync Lirik</b> di atas untuk mencocokkan teks ini dengan ketukan lagu secara otomatis.';
+                helper.innerHTML = '<i class="fa-solid fa-stopwatch"></i> <b>Smart Sync:</b> Klik <b>Sync Lirik</b> di atas untuk mencocokkan teks dengan ketukan audio.';
                 helper.style.color = '#ef4444';
                 helper.style.background = 'rgba(239, 68, 68, 0.05)';
                 helper.style.borderColor = 'rgba(239, 68, 68, 0.1)';
@@ -9420,7 +9419,7 @@ window.startDspBypassAndUpload = async function() {
                 spanText.innerText = 'Deteksi';
                 btn.title = 'Deteksi Lirik dari Audio';
                 
-                helper.innerHTML = '<i class="fa-solid fa-circle-info"></i> <b>Panduan:</b> Biarkan kotak ini kosong lalu klik <b>Deteksi</b> untuk menebak lirik dari audio. <br><br><b>ATAU</b> paste lirik asli dari Google ke kotak ini, lalu klik <b>Sync Lirik</b> untuk menyinkronkan waktu lirik dengan lagu (Karaoke).';
+                helper.innerHTML = '<i class="fa-solid fa-circle-info"></i> <b>Panduan:</b> Klik <b>Deteksi</b> untuk mengekstrak lirik dari audio, atau paste lirik manual lalu klik <b>Sync Lirik</b>.';
                 helper.style.color = 'var(--accent-color)';
                 helper.style.background = 'rgba(0, 122, 255, 0.05)';
                 helper.style.borderColor = 'rgba(0, 122, 255, 0.1)';
