@@ -5254,9 +5254,6 @@
             if (docData.audioWeight) paramsText.push(`Audio: ${docData.audioWeight}`);
             document.getElementById('detailParams').innerText = paramsText.length > 0 ? paramsText.join(' | ') : '-';
 
-            // Tampilkan Durasi Audio
-            document.getElementById('detailAudioDuration').innerText = docData.duration ? docData.duration : 'Belum diputar';
-
             // Tampilkan Original Audio jika ada (Mode Cover)
             const origAudioBox = document.getElementById('detailOriginalAudioBox');
             const origAudioLink = document.getElementById('detailOriginalAudioLink');
@@ -5266,6 +5263,30 @@
             } else {
                 origAudioBox.style.display = 'none';
             }
+
+            // =================================================================
+            // FITUR BARU: DETEKSI DURASI ORIGINAL AUDIO
+            // =================================================================
+            const durationEl = document.getElementById('detailAudioDuration');
+            if (docData.mode === 'cover' && docData.originalAudioUrl) {
+                durationEl.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Menghitung...';
+                const tempAudio = new Audio(docData.originalAudioUrl);
+                tempAudio.addEventListener('loadedmetadata', () => {
+                    if (isFinite(tempAudio.duration)) {
+                        const durM = Math.floor(tempAudio.duration / 60).toString().padStart(2, '0');
+                        const durS = Math.floor(tempAudio.duration % 60).toString().padStart(2, '0');
+                        durationEl.innerHTML = `<span style="color: #10b981;">${durM}:${durS} (Original)</span>`;
+                    } else {
+                        durationEl.innerText = docData.duration ? docData.duration : 'Gagal memuat durasi';
+                    }
+                });
+                tempAudio.addEventListener('error', () => {
+                    durationEl.innerText = docData.duration ? docData.duration : 'Gagal memuat durasi';
+                });
+            } else {
+                durationEl.innerText = docData.duration ? docData.duration : 'Belum diputar';
+            }
+            // =================================================================
 
             document.getElementById('detailDate').innerText = dateStr;
 
