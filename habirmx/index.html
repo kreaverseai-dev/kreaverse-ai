@@ -5052,9 +5052,16 @@
 
                         // Setel ke Mini Player
                         rawAudioFile = new File([bypassedBlob], fileName, { type: "audio/mp3" });
-                        window.activateMiniPlayerUI(fileName, "Fingerprint Baru Siap", "rgba(16,185,129,0.1)", "#10b981");
+                        
+                        // FIX: Gunakan judul asli agar tidak berubah jadi nama file random
+                        const cleanTitleBypass = document.getElementById('titleInput').value || "Audio_Bypassed";
+                        window.activateMiniPlayerUI(cleanTitleBypass + ".mp3", "Fingerprint Baru Siap", "rgba(16,185,129,0.1)", "#10b981");
+                        
                         const origPlayer = document.getElementById('originalAudioPlayer');
                         if (origPlayer) origPlayer.src = URL.createObjectURL(rawAudioFile);
+                        
+                        // FIX: Inisialisasi Player agar Slider & Durasi berfungsi
+                        initCustomPlayer('originalAudioPlayer', 'uploadedStateBox'); 
                         
                         document.getElementById('urlInputBox').classList.add('hidden');
                         document.getElementById('uploadTriggerBox').classList.add('hidden');
@@ -10970,13 +10977,22 @@ window.startDspBypassAndUpload = async function() {
                         break;
                         
                     case 'remix':
-                        // 1. Tentukan Mode
+                        // 1. Tentukan Mode & Amankan Judul Asli
+                        const cleanTitleRemix = (docData.title || "Untitled").replace(/\s*\(Part\s*\d+\)/gi, '').replace(/\s*-\s*Versi\s*\d+/gi, '').trim();
+                        document.getElementById('titleInput').value = cleanTitleRemix;
+                        if(typeof updateCounter === 'function') updateCounter('titleInput', 'titleCounter', 100);
+
                         if (docData.mode === 'cover') {
                             window.switchMode('cover');
                             if (docData.originalAudioUrl) {
                                 selectedAudioUrl = docData.originalAudioUrl;
-                                window.activateMiniPlayerUI("Audio_dari_Histori.mp3", "URL Diterapkan", "rgba(14,165,233,0.1)", "#0ea5e9");
+                                // Gunakan judul asli untuk Mini Player
+                                window.activateMiniPlayerUI(cleanTitleRemix + ".mp3", "URL Diterapkan", "rgba(14,165,233,0.1)", "#0ea5e9");
                                 document.getElementById('originalAudioPlayer').src = selectedAudioUrl;
+                                
+                                // FIX: Inisialisasi Player agar Slider & Durasi berfungsi
+                                initCustomPlayer('originalAudioPlayer', 'uploadedStateBox'); 
+                                
                                 document.getElementById('urlInputBox').classList.add('hidden');
                                 document.getElementById('uploadTriggerBox').classList.add('hidden');
                             }
