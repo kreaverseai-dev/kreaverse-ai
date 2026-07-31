@@ -4933,6 +4933,11 @@
             document.getElementById('gmpThumb').src = thumbUrl;
             document.getElementById('gmpAuthor').innerText = currentUserData?.nama || "Kreaverse AI User";
             
+            // OPTIMASI MEMORI: Hancurkan URL Hantu lagu sebelumnya jika itu file lokal (blob)
+            if (audioEl.src && audioEl.src.startsWith('blob:')) {
+                URL.revokeObjectURL(audioEl.src);
+            }
+
             // Reset & Play
             audioEl.src = url;
             audioEl.play().then(() => {
@@ -6962,9 +6967,29 @@
         };
 
         window.removeUploadedAudio = function() {
+            // OPTIMASI MEMORI: Hancurkan URL Hantu dari RAM
+            const originalPlayer = document.getElementById('originalAudioPlayer');
+            const bypassPlayer = document.getElementById('bypassedAudioPlayer');
+            
+            if (originalPlayer.src && originalPlayer.src.startsWith('blob:')) {
+                URL.revokeObjectURL(originalPlayer.src);
+            }
+            if (bypassPlayer && bypassPlayer.src && bypassPlayer.src.startsWith('blob:')) {
+                URL.revokeObjectURL(bypassPlayer.src);
+                bypassPlayer.src = "";
+            }
+
+            // OPTIMASI MEMORI: Matikan Mesin Visualizer & Kosongkan Cache
+            if (audioContextForVis && audioContextForVis.state !== 'closed') {
+                audioContextForVis.close();
+                audioContextForVis = null;
+            }
+            if (animationFrameId) cancelAnimationFrame(animationFrameId);
+            cachedAudioBuffer = null; // Kosongkan cache trimmer
+            recordedBlob = null; // Kosongkan cache rekaman suara
+
             rawAudioFile = null;
             selectedAudioUrl = "";
-            const originalPlayer = document.getElementById('originalAudioPlayer');
             originalPlayer.src = "";
             
             document.getElementById('uploadedStateBox').classList.add('hidden');
@@ -8189,48 +8214,86 @@ window.startDspBypassAndUpload = async function() {
             showIphoneToast("Bypass Berhasil", "Susunan karakter berhasil diubah tanpa merusak pelafalan nyanyian AI.", "fa-shield-halved");
         };
 
-        async function encodeAudioBufferToMp3(audioBuffer, progressCallback) {
-            const channels = audioBuffer.numberOfChannels;
-            const sampleRate = audioBuffer.sampleRate;
-            const mp3encoder = new lamejs.Mp3Encoder(channels, sampleRate, 128);
-            const mp3Data = [];
-            
-            const left = audioBuffer.getChannelData(0);
-            const right = channels > 1 ? audioBuffer.getChannelData(1) : left;
-            const sampleBlockSize = 1152;
-            
-            for (let i = 0; i < left.length; i += sampleBlockSize) {
-                const end = Math.min(i + sampleBlockSize, left.length);
-                const leftChunk = new Int16Array(end - i);
-                const rightChunk = new Int16Array(end - i);
-                
-                for (let j = 0; j < end - i; j++) {
-                    let sampleL = left[i + j];
-                    let sampleR = right[i + j];
-                    
-                    // HARD CLIPPER: Mencegah Int16 Overflow (Penyebab utama kresek digital)
-                    if (sampleL > 1.0) sampleL = 1.0;
-                    if (sampleL < -1.0) sampleL = -1.0;
-                    if (sampleR > 1.0) sampleR = 1.0;
-                    if (sampleR < -1.0) sampleR = -1.0;
+        // OPTIMASI: Inline Web Worker untuk MP3 Encoder (Mencegah UI Freeze/Lag)
+        const mp3WorkerCode = `
+            importScripts('https://cdnjs.cloudflare.com/ajax/libs/lamejs/1.2.1/lame.min.js');
 
-                    leftChunk[j] = sampleL < 0 ? sampleL * 32768 : sampleL * 32767;
-                    rightChunk[j] = sampleR < 0 ? sampleR * 32768 : sampleR * 32767;
+            self.onmessage = function(e) {
+                const { left, right, channels, sampleRate } = e.data;
+                const mp3encoder = new lamejs.Mp3Encoder(channels, sampleRate, 128);
+                const mp3Data = [];
+                const sampleBlockSize = 1152;
+
+                for (let i = 0; i < left.length; i += sampleBlockSize) {
+                    const end = Math.min(i + sampleBlockSize, left.length);
+                    const leftChunk = new Int16Array(end - i);
+                    const rightChunk = new Int16Array(end - i);
+
+                    for (let j = 0; j < end - i; j++) {
+                        let sampleL = left[i + j];
+                        let sampleR = right ? right[i + j] : sampleL;
+
+                        // HARD CLIPPER
+                        if (sampleL > 1.0) sampleL = 1.0;
+                        if (sampleL < -1.0) sampleL = -1.0;
+                        if (sampleR > 1.0) sampleR = 1.0;
+                        if (sampleR < -1.0) sampleR = -1.0;
+
+                        leftChunk[j] = sampleL < 0 ? sampleL * 32768 : sampleL * 32767;
+                        rightChunk[j] = sampleR < 0 ? sampleR * 32768 : sampleR * 32767;
+                    }
+
+                    const mp3buf = mp3encoder.encodeBuffer(leftChunk, rightChunk);
+                    if (mp3buf.length > 0) mp3Data.push(mp3buf);
+
+                    // Kirim progress ke Main Thread
+                    if (i % (sampleBlockSize * 50) === 0) {
+                        const percent = (i / left.length) * 100;
+                        self.postMessage({ type: 'progress', percent: percent });
+                    }
                 }
-                
-                const mp3buf = mp3encoder.encodeBuffer(leftChunk, rightChunk);
+
+                const mp3buf = mp3encoder.flush();
                 if (mp3buf.length > 0) mp3Data.push(mp3buf);
-                
-                if (i % (sampleBlockSize * 50) === 0) {
-                    const percent = (i / left.length) * 100;
-                    progressCallback(percent);
-                    await new Promise(resolve => setTimeout(resolve, 0)); 
-                }
-            }
-            const mp3buf = mp3encoder.flush();
-            if (mp3buf.length > 0) mp3Data.push(mp3buf);
-            
-            return new Blob(mp3Data, { type: 'audio/mp3' });
+
+                // Kirim hasil akhir
+                self.postMessage({ type: 'done', buffer: mp3Data });
+            };
+        `;
+
+        async function encodeAudioBufferToMp3(audioBuffer, progressCallback) {
+            return new Promise((resolve, reject) => {
+                const channels = audioBuffer.numberOfChannels;
+                const sampleRate = audioBuffer.sampleRate;
+                const left = audioBuffer.getChannelData(0);
+                const right = channels > 1 ? audioBuffer.getChannelData(1) : null;
+
+                // Buat Worker dari string (Inline Worker)
+                const blob = new Blob([mp3WorkerCode], { type: 'application/javascript' });
+                const workerUrl = URL.createObjectURL(blob);
+                const worker = new Worker(workerUrl);
+
+                // Tangkap pesan dari Worker
+                worker.onmessage = function(e) {
+                    if (e.data.type === 'progress') {
+                        if (progressCallback) progressCallback(e.data.percent);
+                    } else if (e.data.type === 'done') {
+                        const finalBlob = new Blob(e.data.buffer, { type: 'audio/mp3' });
+                        worker.terminate(); // Bunuh worker untuk hemat RAM
+                        URL.revokeObjectURL(workerUrl); // Bersihkan URL
+                        resolve(finalBlob);
+                    }
+                };
+
+                worker.onerror = function(err) {
+                    worker.terminate();
+                    URL.revokeObjectURL(workerUrl);
+                    reject(err);
+                };
+
+                // Kirim data audio ke Worker untuk diproses di latar belakang
+                worker.postMessage({ left, right, channels, sampleRate });
+            });
         }
 
         async function uploadBlobToCloudinary(blob, originalName, isBypassed = true, durationStr = "0:00") {
@@ -10710,7 +10773,13 @@ window.startDspBypassAndUpload = async function() {
             }
             if (mstLiveAudioCtx && mstLiveAudioCtx.state !== 'closed') {
                 mstLiveAudioCtx.close();
+                mstLiveAudioCtx = null;
             }
+            
+            // OPTIMASI MEMORI: Kosongkan ArrayBuffer raksasa dan Node Audio
+            mstOfflineArrayBuffer = null;
+            mstLiveNodes = {}; 
+            
             cancelAnimationFrame(mstLiveAnimFrame);
             mstIsPlaying = false;
             mstPauseTime = 0;
