@@ -10630,7 +10630,7 @@ window.startDspBypassAndUpload = async function() {
                                                 url: pollData.tracks[i].audioUrl || pollData.tracks[i].url || "",
                                                 imageUrl: pollData.tracks[i].imageUrl || pollData.tracks[i].cover || "",
                                                 duration: pollData.tracks[i].duration || "--:--",
-                                                audioId: pollData.tracks[i].audioId || pollData.tracks[i].id || "" // FIX: Simpan Audio ID asli dari AI ke database
+                                                audioId: pollData.tracks[i].audioId || pollData.tracks[i].id || ""
                                             });
                                         }
                                     }
@@ -10642,10 +10642,19 @@ window.startDspBypassAndUpload = async function() {
                             // Jika lagu gagal dibuat oleh AI
                             else if (pollData.status === 'failed' || pollData.status === 'error') {
                                 clearInterval(pollInterval);
+                                
+                                // FIX: Tangkap pesan error yang benar dari backend
+                                let finalErrorMsg = pollData.reason || pollData.error || pollData.message || "Gagal diproses oleh server AI.";
+                                
+                                // Jika APIPass mengirimkan pesan "success" padahal statusnya "failed"
+                                if (finalErrorMsg.toLowerCase() === 'success' || finalErrorMsg.toLowerCase() === 'ok') {
+                                    finalErrorMsg = "Dibatalkan oleh AI (Durasi audio referensi melebihi batas 60 detik atau melanggar hak cipta).";
+                                }
+
                                 for (let i = 0; i < createdDocIds.length; i++) {
                                     await updateDoc(doc(db, "render_gallery", createdDocIds[i]), {
                                         status: "failed",
-                                        error: pollData.error || pollData.message || "Gagal di server provider AI."
+                                        error: finalErrorMsg
                                     });
                                 }
                                 // Auto Refund
