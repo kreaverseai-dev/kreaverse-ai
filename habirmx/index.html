@@ -2624,24 +2624,31 @@
             <div class="input-group" id="lyricsFieldWrapper">
                 <label for="lyricsInput">
                     <span style="line-height: 1.2;">Lyrics of<br>music *</span>
-                    <div style="display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end;">
-                        <button type="button" id="btnSyncDetect" class="magic-wand-btn" style="background: rgba(139, 92, 246, 0.1); color: #8b5cf6; border-color: rgba(139, 92, 246, 0.2); padding: 4px 8px; font-size: 0.7rem; white-space: nowrap; transition: all 0.3s ease;" onclick="handleSyncDetectClick()" title="Deteksi Lirik dari Audio">
-                            <i class="fa-solid fa-ear-listen" id="iconSyncDetect"></i> <span id="textSyncDetect">Deteksi</span>
-                        </button>
-                        <button type="button" class="magic-wand-btn" style="padding: 4px 8px; font-size: 0.7rem; white-space: nowrap;" onclick="triggerMagicWand('lyrics')" title="Rapikan Struktur Lagu via AI">
-                            <i class="fa-solid fa-wand-magic-sparkles"></i> AI
-                        </button>
-                        <button type="button" class="magic-wand-btn" style="background: rgba(16, 185, 129, 0.1); color: #10B981; border-color: rgba(16, 185, 129, 0.2); padding: 4px 8px; font-size: 0.7rem; white-space: nowrap;" onclick="encryptLyrics()" title="Bypass Filter NLP">
-                            <i class="fa-solid fa-user-secret"></i> Encrypt
-                        </button>
+                    <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 8px;">
                         
-                        <!-- REVISI AI DIPINDAH KE SEBELAH HAPUS -->
-                        <button type="button" class="magic-wand-btn" style="background: rgba(245, 158, 11, 0.1); color: #d97706; border-color: rgba(245, 158, 11, 0.3); padding: 4px 8px; font-size: 0.7rem; white-space: nowrap;" onclick="window.openRevisiModal('lyrics')" title="Revisi Lirik dengan Chat AI">
-                            <i class="fa-solid fa-pen-nib"></i> Revisi AI
-                        </button>
-                        <button type="button" class="action-icon-btn" style="padding: 4px 8px; font-size: 0.7rem; white-space: nowrap;" onclick="clearInput('lyricsInput', 'lyricsCounter', 5000); window.checkLyricsState();" title="Hapus Teks">
-                            <i class="fa-solid fa-trash-can"></i>
-                        </button>
+                        <!-- Baris 1: Deteksi, AI, Encrypt -->
+                        <div style="display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end;">
+                            <button type="button" id="btnSyncDetect" class="magic-wand-btn" style="background: rgba(139, 92, 246, 0.1); color: #8b5cf6; border-color: rgba(139, 92, 246, 0.2); padding: 4px 8px; font-size: 0.7rem; white-space: nowrap; transition: all 0.3s ease;" onclick="handleSyncDetectClick()" title="Deteksi Lirik dari Audio">
+                                <i class="fa-solid fa-ear-listen" id="iconSyncDetect"></i> <span id="textSyncDetect">Deteksi</span>
+                            </button>
+                            <button type="button" class="magic-wand-btn" style="padding: 4px 8px; font-size: 0.7rem; white-space: nowrap;" onclick="triggerMagicWand('lyrics')" title="Rapikan Struktur Lagu via AI">
+                                <i class="fa-solid fa-wand-magic-sparkles"></i> AI
+                            </button>
+                            <button type="button" class="magic-wand-btn" style="background: rgba(16, 185, 129, 0.1); color: #10B981; border-color: rgba(16, 185, 129, 0.2); padding: 4px 8px; font-size: 0.7rem; white-space: nowrap;" onclick="encryptLyrics()" title="Bypass Filter NLP">
+                                <i class="fa-solid fa-user-secret"></i> Encrypt
+                            </button>
+                        </div>
+
+                        <!-- Baris 2: Revisi AI, Hapus -->
+                        <div style="display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end;">
+                            <button type="button" class="magic-wand-btn" style="background: rgba(245, 158, 11, 0.1); color: #d97706; border-color: rgba(245, 158, 11, 0.3); padding: 4px 8px; font-size: 0.7rem; white-space: nowrap;" onclick="window.openRevisiModal('lyrics')" title="Revisi Lirik dengan Chat AI">
+                                <i class="fa-solid fa-pen-nib"></i> Revisi AI
+                            </button>
+                            <button type="button" class="action-icon-btn" style="padding: 4px 8px; font-size: 0.7rem; white-space: nowrap;" onclick="clearInput('lyricsInput', 'lyricsCounter', 5000); window.checkLyricsState();" title="Hapus Teks">
+                                <i class="fa-solid fa-trash-can"></i>
+                            </button>
+                        </div>
+
                     </div>
                 </label>
                 <div id="lyricsHelperText" style="font-size: 0.7rem; color: var(--accent-color); margin-bottom: 6px; font-weight: 600; background: rgba(0, 122, 255, 0.05); padding: 8px 12px; border-radius: 8px; border: 1px solid rgba(0, 122, 255, 0.1); line-height: 1.4; transition: all 0.3s ease;">
@@ -5923,9 +5930,10 @@
             const generateBtn = document.getElementById('generateBtn');
             const benefitDesc = generateBtn.nextElementSibling;
             
-            // Elemen Baru Auto-Style
+            // Elemen Baru Auto-Style & Deteksi Lirik
             const btnAudioToStyle = document.getElementById('btnAudioToStyle');
             const selectLangContainer = document.getElementById('langDropdownContainer');
+            const btnSyncDetect = document.getElementById('btnSyncDetect');
 
             // FIX: Elemen Tombol AI (Biru Kecil) dengan selector yang aman
             const btnStyleAI = document.querySelector("button[onclick*=\"triggerMagicWand('style')\"]");
@@ -5945,6 +5953,7 @@
                 
                 if(btnAudioToStyle) btnAudioToStyle.classList.add('hidden');
                 if(selectLangContainer) selectLangContainer.classList.add('hidden');
+                if(btnSyncDetect) btnSyncDetect.style.display = 'none'; // Sembunyikan Deteksi
                 
                 // Tampilkan tombol AI di mode Generate
                 if(btnStyleAI) btnStyleAI.style.display = 'flex';
@@ -5979,6 +5988,7 @@
                 
                 if(btnAudioToStyle) btnAudioToStyle.classList.remove('hidden');
                 if(selectLangContainer) selectLangContainer.classList.remove('hidden');
+                if(btnSyncDetect) btnSyncDetect.style.display = 'flex'; // Tampilkan Deteksi
                 
                 // Sembunyikan tombol AI di mode Cover
                 if(btnStyleAI) btnStyleAI.style.display = 'none';
@@ -6004,6 +6014,7 @@
                 
                 if(btnAudioToStyle) btnAudioToStyle.classList.add('hidden');
                 if(selectLangContainer) selectLangContainer.classList.add('hidden');
+                if(btnSyncDetect) btnSyncDetect.style.display = 'none'; // Sembunyikan Deteksi
                 
                 if(modeDesc) modeDesc.innerText = "Kloning suara Anda sendiri atau ekstrak karakter vokal dari lagu AI sebelumnya.";
                 
@@ -6021,6 +6032,9 @@
                 if(generateBtn) generateBtn.style.display = 'none';
                 if(benefitDesc) benefitDesc.style.display = 'none';
             }
+            
+            // Update teks panduan lirik sesuai mode
+            if(typeof window.checkLyricsState === 'function') window.checkLyricsState();
         };
 
         window.toggleCustomFields = function() {
@@ -9415,6 +9429,9 @@ window.startDspBypassAndUpload = async function() {
             const icon = document.getElementById('iconSyncDetect');
             const spanText = document.getElementById('textSyncDetect');
             const helper = document.getElementById('lyricsHelperText');
+            
+            // Cek mode saat ini
+            const currentMode = document.getElementById('modeGenerateBtn') && document.getElementById('modeGenerateBtn').classList.contains('active') ? 'generate' : 'cover';
 
             if (!btn || !helper) return;
 
@@ -9427,10 +9444,17 @@ window.startDspBypassAndUpload = async function() {
                 spanText.innerText = 'Sync Lirik';
                 btn.title = 'Sinkronkan waktu lirik dengan lagu';
                 
-                helper.innerHTML = '<i class="fa-solid fa-stopwatch"></i> <b>Smart Sync:</b> Klik <b>Sync Lirik</b> di atas untuk mencocokkan teks dengan ketukan audio.';
-                helper.style.color = '#ef4444';
-                helper.style.background = 'rgba(239, 68, 68, 0.05)';
-                helper.style.borderColor = 'rgba(239, 68, 68, 0.1)';
+                if (currentMode === 'generate') {
+                    helper.innerHTML = '<i class="fa-solid fa-circle-info"></i> <b>Panduan:</b> Tulis lirik Anda di sini. Gunakan tombol <b>AI</b> untuk merapikan struktur, atau <b>Revisi AI</b> untuk mengubah kata-kata.';
+                    helper.style.color = 'var(--accent-color)';
+                    helper.style.background = 'rgba(0, 122, 255, 0.05)';
+                    helper.style.borderColor = 'rgba(0, 122, 255, 0.1)';
+                } else {
+                    helper.innerHTML = '<i class="fa-solid fa-stopwatch"></i> <b>Smart Sync:</b> Klik <b>Sync Lirik</b> di atas untuk mencocokkan teks dengan ketukan audio.';
+                    helper.style.color = '#ef4444';
+                    helper.style.background = 'rgba(239, 68, 68, 0.05)';
+                    helper.style.borderColor = 'rgba(239, 68, 68, 0.1)';
+                }
             } else {
                 // MODE DETEKSI (Jika kotak kosong)
                 btn.style.background = 'rgba(139, 92, 246, 0.1)';
@@ -9440,10 +9464,17 @@ window.startDspBypassAndUpload = async function() {
                 spanText.innerText = 'Deteksi';
                 btn.title = 'Deteksi Lirik dari Audio';
                 
-                helper.innerHTML = '<i class="fa-solid fa-circle-info"></i> <b>Panduan:</b> Klik <b>Deteksi</b> untuk mengekstrak lirik dari audio, atau paste lirik manual lalu klik <b>Sync Lirik</b>.';
-                helper.style.color = 'var(--accent-color)';
-                helper.style.background = 'rgba(0, 122, 255, 0.05)';
-                helper.style.borderColor = 'rgba(0, 122, 255, 0.1)';
+                if (currentMode === 'generate') {
+                    helper.innerHTML = '<i class="fa-solid fa-circle-info"></i> <b>Panduan:</b> Tulis lirik Anda di sini. Gunakan tombol <b>AI</b> untuk membuat lirik otomatis dari prompt.';
+                    helper.style.color = 'var(--accent-color)';
+                    helper.style.background = 'rgba(0, 122, 255, 0.05)';
+                    helper.style.borderColor = 'rgba(0, 122, 255, 0.1)';
+                } else {
+                    helper.innerHTML = '<i class="fa-solid fa-circle-info"></i> <b>Panduan:</b> Klik <b>Deteksi</b> untuk mengekstrak lirik dari audio, atau paste lirik manual lalu klik <b>Sync Lirik</b>.';
+                    helper.style.color = 'var(--accent-color)';
+                    helper.style.background = 'rgba(0, 122, 255, 0.05)';
+                    helper.style.borderColor = 'rgba(0, 122, 255, 0.1)';
+                }
             }
         };
 
