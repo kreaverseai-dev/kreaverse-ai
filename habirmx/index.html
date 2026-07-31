@@ -2756,7 +2756,7 @@
                     }
 
                     document.getElementById('revisiTargetType').value = type;
-                    document.getElementById('revisiModalTitle').innerText = type === 'style' ? 'Revisi Style Musik' : 'Revisi Lirik Lagu';
+                    // Baris revisiModalTitle dihapus karena judul modal sekarang permanen "Flixa AI"
                     document.getElementById('revisiModalDesc').innerText = type === 'style' ? 'gaya musik' : 'lirik';
                     document.getElementById('revisiInstructionInput').value = '';
                     document.getElementById('revisiInstructionInput').placeholder = type === 'style' ? 'Contoh: Tambahkan bass dangdut...' : 'Contoh: Ubah kata "kamu" jadi "dia"...';
