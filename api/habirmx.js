@@ -519,7 +519,7 @@ ATURAN MUTLAK:
                                 const lowerErr = lastError.toLowerCase();
                                 
                                 // LOGIKA PINTAR: Jika saldo habis, matikan key ini dan langsung lompat ke key berikutnya
-                                if (lowerErr.includes('insufficient') || lowerErr.includes('balance') || lowerErr.includes('quota') || lowerErr.includes('credit')) {
+                                if (lowerErr.includes('insufficient') || lowerErr.includes('balance') || lowerErr.includes('quota') || lowerErr.includes('credit') || lowerErr.includes('available') || lowerErr.includes('need at least') || lowerErr.includes('not enough')) {
                                     try { await db.collection("api_keys").doc(keyDoc.id).update({ status: "mati" }); } catch(err){}
                                     break; // Berhenti mencoba di key yang sama, lanjut ke key berikutnya!
                                 }
@@ -867,7 +867,7 @@ ATURAN MUTLAK:
                         const lowerErr = lastErrorMessage.toLowerCase();
                         
                         // FITUR AUTO-KILL API KEY JIKA SALDO HABIS
-                        if (lowerErr.includes('insufficient') || lowerErr.includes('balance') || lowerErr.includes('credit') || lowerErr.includes('quota') || lowerErr.includes('fund') || lowerErr.includes('limit')) {
+                        if (lowerErr.includes('insufficient') || lowerErr.includes('balance') || lowerErr.includes('credit') || lowerErr.includes('quota') || lowerErr.includes('fund') || lowerErr.includes('limit') || lowerErr.includes('available') || lowerErr.includes('need at least') || lowerErr.includes('not enough')) {
                             try {
                                 await db.collection("api_keys").doc(keyDoc.id).update({ status: "mati" });
                                 await db.collection("system_logs").add({
