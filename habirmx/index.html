@@ -1890,27 +1890,40 @@
                         <div id="presetSelectionModal" class="krea-modal-overlay" style="z-index: 9999999;">
                             <div class="krea-modal-box" style="max-width: 380px; padding: 24px; text-align: left; border-radius: 24px; background: #ffffff; border: 1px solid #e2e8f0; box-shadow: 0 20px 40px rgba(0,0,0,0.1);">
                                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
-                                    <h3 style="font-size: 1.1rem; font-weight: 900; color: #10b981; margin: 0; display: flex; align-items: center; gap: 8px;"><i class="fa-solid fa-wand-magic-sparkles"></i> Auto-Tuning Presets</h3>
+                                    <h3 style="font-size: 1.1rem; font-weight: 900; color: var(--accent-color); margin: 0; display: flex; align-items: center; gap: 8px;"><i class="fa-solid fa-wand-magic-sparkles"></i> Auto-Tuning Presets</h3>
                                     <button onclick="window.closePresetModal()" style="background: none; border: none; font-size: 1.2rem; color: #94a3b8; cursor: pointer;">&times;</button>
                                 </div>
-                                <p style="font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 16px; line-height: 1.4;">Pilih preset untuk mengatur Audio Weight, Negative Tags, dan mantra Anti-Amnesia secara otomatis.</p>
+                                <p style="font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 12px; line-height: 1.4;">Pilih preset untuk mengatur Audio Weight, Negative Tags, dan mantra Anti-Amnesia secara otomatis.</p>
                                 
+                                <div style="background: #fffbeb; border: 1px solid #fde68a; border-radius: 12px; padding: 12px; margin-bottom: 16px;">
+                                    <div style="font-size: 0.75rem; font-weight: 900; color: #d97706; margin-bottom: 4px; display: flex; align-items: center; gap: 6px;">
+                                        <i class="fa-solid fa-circle-info"></i> INFO DURASI AUDIO
+                                    </div>
+                                    <div style="font-size: 0.7rem; color: #b45309; line-height: 1.5; font-weight: 600;">
+                                        Agar hasil <b>Cover Lagu</b> tetap mirip dengan aslinya:<br>
+                                        <span style="color: #16a34a;">• <b>1 - 3 Menit:</b> Sangat Mirip (Akurat)</span><br>
+                                        <span style="color: #ca8a04;">• <b>4 Menit:</b> Lumayan Mirip</span><br>
+                                        <span style="color: #ea580c;">• <b>5 Menit:</b> Kadang Mirip</span><br>
+                                        <span style="color: #dc2626;">• <b>6+ Menit:</b> Ngawur / Halusinasi AI</span>
+                                    </div>
+                                </div>
+
                                 <div style="display: flex; flex-direction: column; gap: 10px;">
-                                    <button type="button" onclick="window.applyFlixaPreset('clone')" style="background: #f0fdf4; border: 1.5px solid #22c55e; color: #15803d; padding: 12px; border-radius: 12px; font-weight: 800; font-size: 0.85rem; cursor: pointer; text-align: left; transition: 0.2s; display: flex; justify-content: space-between; align-items: center;" onmouseover="this.style.background='#22c55e'; this.style.color='#fff';" onmouseout="this.style.background='#f0fdf4'; this.style.color='#15803d';">
-                                        <span><i class="fa-solid fa-copy"></i> 1. Clone Identik</span>
-                                        <span style="font-size: 0.65rem; font-weight: 700; opacity: 0.8;">100% Mirip</span>
+                                    <button type="button" onclick="window.applyFlixaPreset('clone')" style="background: #f8fafc; border: 1.5px solid #e2e8f0; color: var(--text-primary); padding: 12px; border-radius: 12px; font-weight: 800; font-size: 0.85rem; cursor: pointer; text-align: left; transition: 0.2s; display: flex; justify-content: space-between; align-items: center;" onmouseover="this.style.borderColor='var(--accent-color)'; this.style.color='var(--accent-color)';" onmouseout="this.style.borderColor='#e2e8f0'; this.style.color='var(--text-primary)';">
+                                        <span><i class="fa-solid fa-copy" style="color: #10b981;"></i> 1. Clone Identik</span>
+                                        <span style="font-size: 0.65rem; font-weight: 700; color: var(--text-light);">100% Mirip</span>
                                     </button>
-                                    <button type="button" onclick="window.applyFlixaPreset('genre_swap')" style="background: #f0f9ff; border: 1.5px solid #0ea5e9; color: #0369a1; padding: 12px; border-radius: 12px; font-weight: 800; font-size: 0.85rem; cursor: pointer; text-align: left; transition: 0.2s; display: flex; justify-content: space-between; align-items: center;" onmouseover="this.style.background='#0ea5e9'; this.style.color='#fff';" onmouseout="this.style.background='#f0f9ff'; this.style.color='#0369a1';">
-                                        <span><i class="fa-solid fa-guitar"></i> 2. Ganti Genre</span>
-                                        <span style="font-size: 0.65rem; font-weight: 700; opacity: 0.8;">Cengkok Tetap</span>
+                                    <button type="button" onclick="window.applyFlixaPreset('genre_swap')" style="background: #f8fafc; border: 1.5px solid #e2e8f0; color: var(--text-primary); padding: 12px; border-radius: 12px; font-weight: 800; font-size: 0.85rem; cursor: pointer; text-align: left; transition: 0.2s; display: flex; justify-content: space-between; align-items: center;" onmouseover="this.style.borderColor='var(--accent-color)'; this.style.color='var(--accent-color)';" onmouseout="this.style.borderColor='#e2e8f0'; this.style.color='var(--text-primary)';">
+                                        <span><i class="fa-solid fa-guitar" style="color: #0ea5e9;"></i> 2. Ganti Genre</span>
+                                        <span style="font-size: 0.65rem; font-weight: 700; color: var(--text-light);">Cengkok Tetap</span>
                                     </button>
-                                    <button type="button" onclick="window.applyFlixaPreset('persona')" style="background: #fffbeb; border: 1.5px solid #f59e0b; color: #b45309; padding: 12px; border-radius: 12px; font-weight: 800; font-size: 0.85rem; cursor: pointer; text-align: left; transition: 0.2s; display: flex; justify-content: space-between; align-items: center;" onmouseover="this.style.background='#f59e0b'; this.style.color='#fff';" onmouseout="this.style.background='#fffbeb'; this.style.color='#b45309';">
-                                        <span><i class="fa-solid fa-microphone-lines"></i> 3. Pakai SuaraMu</span>
-                                        <span style="font-size: 0.65rem; font-weight: 700; opacity: 0.8;">Voice Clone</span>
+                                    <button type="button" onclick="window.applyFlixaPreset('persona')" style="background: #f8fafc; border: 1.5px solid #e2e8f0; color: var(--text-primary); padding: 12px; border-radius: 12px; font-weight: 800; font-size: 0.85rem; cursor: pointer; text-align: left; transition: 0.2s; display: flex; justify-content: space-between; align-items: center;" onmouseover="this.style.borderColor='var(--accent-color)'; this.style.color='var(--accent-color)';" onmouseout="this.style.borderColor='#e2e8f0'; this.style.color='var(--text-primary)';">
+                                        <span><i class="fa-solid fa-microphone-lines" style="color: #f59e0b;"></i> 3. Pakai SuaraMu</span>
+                                        <span style="font-size: 0.65rem; font-weight: 700; color: var(--text-light);">Voice Clone</span>
                                     </button>
-                                    <button type="button" onclick="window.applyFlixaPreset('remix')" style="background: #f5f3ff; border: 1.5px solid #8b5cf6; color: #6d28d9; padding: 12px; border-radius: 12px; font-weight: 800; font-size: 0.85rem; cursor: pointer; text-align: left; transition: 0.2s; display: flex; justify-content: space-between; align-items: center;" onmouseover="this.style.background='#8b5cf6'; this.style.color='#fff';" onmouseout="this.style.background='#f5f3ff'; this.style.color='#6d28d9';">
-                                        <span><i class="fa-solid fa-shuffle"></i> 4. Remix Bebas</span>
-                                        <span style="font-size: 0.65rem; font-weight: 700; opacity: 0.8;">Improvisasi AI</span>
+                                    <button type="button" onclick="window.applyFlixaPreset('remix')" style="background: #f8fafc; border: 1.5px solid #e2e8f0; color: var(--text-primary); padding: 12px; border-radius: 12px; font-weight: 800; font-size: 0.85rem; cursor: pointer; text-align: left; transition: 0.2s; display: flex; justify-content: space-between; align-items: center;" onmouseover="this.style.borderColor='var(--accent-color)'; this.style.color='var(--accent-color)';" onmouseout="this.style.borderColor='#e2e8f0'; this.style.color='var(--text-primary)';">
+                                        <span><i class="fa-solid fa-shuffle" style="color: #8b5cf6;"></i> 4. Remix Bebas</span>
+                                        <span style="font-size: 0.65rem; font-weight: 700; color: var(--text-light);">Improvisasi AI</span>
                                     </button>
                                 </div>
                             </div>
@@ -2760,24 +2773,10 @@
                 
                 <div id="optionalParamsBody" class="hidden" style="padding-top: 18px; display: flex; flex-direction: column; gap: 14px;">
                     
-                    <!-- FITUR BARU: TOMBOL FLIXA AI PRESETS & NOTE DURASI -->
-                    <button type="button" onclick="window.openPresetModal()" style="width: 100%; background: linear-gradient(135deg, #10b981, #059669); color: #fff; border: none; padding: 14px; border-radius: 16px; font-weight: 900; font-size: 0.9rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 6px 15px rgba(16, 185, 129, 0.3); transition: transform 0.2s; margin-bottom: 12px;" onmouseover="this.style.transform='scale(0.98)'" onmouseout="this.style.transform='scale(1)'">
+                    <!-- FITUR BARU: TOMBOL FLIXA AI PRESETS -->
+                    <button type="button" onclick="window.openPresetModal()" style="width: 100%; background: #ffffff; color: var(--accent-color); border: 1.5px solid var(--accent-color); padding: 14px; border-radius: 16px; font-weight: 800; font-size: 0.9rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: var(--transition); margin-bottom: 16px; box-shadow: 0 4px 10px rgba(0, 122, 255, 0.1);" onmouseover="this.style.background='var(--accent-color)'; this.style.color='#ffffff';" onmouseout="this.style.background='#ffffff'; this.style.color='var(--accent-color)';">
                         <i class="fa-solid fa-wand-magic-sparkles"></i> Flixa AI Presets (Auto-Tuning)
                     </button>
-
-                    <div style="background: #fffbeb; border: 1px solid #fde68a; border-radius: 12px; padding: 12px; margin-bottom: 16px;">
-                        <div style="font-size: 0.75rem; font-weight: 900; color: #d97706; margin-bottom: 4px; display: flex; align-items: center; gap: 6px;">
-                            <i class="fa-solid fa-circle-info"></i> INFO PENTING: DURASI AUDIO
-                        </div>
-                        <div style="font-size: 0.7rem; color: #b45309; line-height: 1.5; font-weight: 600;">
-                            Agar hasil <b>Cover Lagu</b> tetap mirip dengan aslinya (cengkok & nada tidak ngawur), perhatikan durasi audio referensi Anda:<br>
-                            <span style="color: #16a34a;">• <b>1 - 3 Menit:</b> Sangat Mirip (Akurat)</span><br>
-                            <span style="color: #ca8a04;">• <b>4 Menit:</b> Lumayan Mirip</span><br>
-                            <span style="color: #ea580c;">• <b>5 Menit:</b> Kadang Mirip</span><br>
-                            <span style="color: #dc2626;">• <b>6+ Menit:</b> Ngawur / Halusinasi AI</span><br>
-                            <i>Gunakan fitur <b>Pangkas Audio (Trimmer)</b> di DSP Studio untuk memotong lagu jika terlalu panjang.</i>
-                        </div>
-                    </div>
 
                     <script>
                         window.openPresetModal = function() {
