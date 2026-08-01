@@ -10441,10 +10441,16 @@ window.startDspBypassAndUpload = async function() {
         // PROSES PEMICU PEMBUATAN ARANSEMEN LAGU (GENERATE SONG)
         // ============================================================
         window.generateAudioSong = async function() {
+            // 1. KUNCI ABSOLUT: Cek Double Click di detik pertama!
+            if (window.isGeneratingSong) {
+                showIphoneToast("Sabar", "Sistem sedang memproses antrean Anda sebelumnya.", "fa-hand-paper");
+                return;
+            }
+
             // BLOKIR JIKA MAINTENANCE AKTIF
             if (window.isMaintenanceModeActive) {
                 window.showMaintenanceScreen();
-                return; // Hentikan fungsi disini, lagu tidak akan di-generate
+                return; 
             }
 
             if (!isLoggedIn || !currentUser) {
@@ -10465,15 +10471,12 @@ window.startDspBypassAndUpload = async function() {
             }
 
             if (!providerId || !modelId) {
-                // Daftarkan fungsi scroll ke global window agar bisa dipanggil tombol Pop-Up
                 window.scrollToGenerate = function() {
                     const genBtn = document.getElementById('generateBtn');
                     genBtn.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    
                     const origShadow = genBtn.style.boxShadow;
                     genBtn.style.boxShadow = "0 0 0 6px rgba(0, 122, 255, 0.3)";
                     setTimeout(() => { genBtn.style.boxShadow = origShadow; }, 2000);
-                    
                     const helper = document.getElementById('helperPopup');
                     if (helper) {
                         helper.style.opacity = '0';
@@ -10482,31 +10485,24 @@ window.startDspBypassAndUpload = async function() {
                     }
                 };
 
-                // AUTO-SCROLL PINTAR KE PENGATURAN ENGINE AI
                 const engineWrapper = document.getElementById('engineSettingsWrapper');
                 const engineBody = document.getElementById('engineSettingsBody');
-                
                 if (engineBody && engineBody.classList.contains('hidden')) {
                     window.toggleAccordion('engineSettingsBody');
                 }
-                
                 engineWrapper.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                
                 const helperPop = document.getElementById('helperPopup');
                 if (helperPop) {
                     helperPop.style.opacity = '1';
                     helperPop.style.transform = 'translateX(-50%) translateY(0)';
                     helperPop.style.pointerEvents = 'auto';
                 }
-                
                 engineWrapper.style.transition = "box-shadow 0.3s";
                 engineWrapper.style.boxShadow = "0 0 0 4px rgba(0, 122, 255, 0.3)";
                 setTimeout(() => { engineWrapper.style.boxShadow = "0 8px 24px rgba(0,0,0,0.04)"; }, 2000);
-                
                 return;
             }
             
-            // Sembunyikan popup helper jika sebelumnya muncul (saat lolos validasi)
             const helperPopActive = document.getElementById('helperPopup');
             if (helperPopActive) {
                 helperPopActive.style.opacity = '0';
@@ -10521,25 +10517,6 @@ window.startDspBypassAndUpload = async function() {
                     showIphoneToast("Error", "Mode Cover memerlukan file audio referensi. Silakan unggah audio terlebih dahulu!", "fa-triangle-exclamation");
                     return;
                 }
-                
-                if (!selectedAudioUrl && rawAudioFile) {
-                    const tempBtnHtml = generateBtn.innerHTML;
-                    generateBtn.disabled = true;
-                    generateBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Mengunggah Audio...';
-                    try {
-                        let finalDurStr = "0:00";
-                        const origPlayer = document.getElementById('originalAudioPlayer');
-                        if (origPlayer && isFinite(origPlayer.duration) && origPlayer.duration > 0) {
-                            finalDurStr = formatTime(origPlayer.duration);
-                        }
-                        await uploadBlobToCloudinary(rawAudioFile, rawAudioFile.name, false, finalDurStr);
-                    } catch (uploadErr) {
-                        showIphoneToast("Error", "Gagal mengunggah audio ke server. Silakan coba lagi.", "fa-triangle-exclamation");
-                        generateBtn.disabled = false;
-                        generateBtn.innerHTML = tempBtnHtml;
-                        return;
-                    }
-                }
             }
 
             if (!isAdmin && currentUserData && currentUserData.tier !== 'max_lifetime' && currentUserData.tier !== 'max_monthly' && currentUserData.tier !== 'max') {
@@ -10550,50 +10527,59 @@ window.startDspBypassAndUpload = async function() {
                 }
             }
 
-            let title = document.getElementById('titleInput').value.trim();
-            
-            // AUTO-FILL JUDUL DARI NAMA FILE JIKA KOSONG (DAN SANITIZE)
-            if (!title && (selectedAudioUrl || rawAudioFile)) {
-                let rawName = document.getElementById('uploadedMiniFileName').innerText;
-                if (rawName && rawName !== '-' && !rawName.startsWith('http')) {
-                    let cleanName = rawName.replace(/\.(mp3|wav|ogg|m4a|flac|aac)$/i, '');
-                    cleanName = cleanName.replace(/[\[\]\(\)\|\-_]/g, ' ').replace(/\s+/g, ' ').trim();
-                    let finalTitle = `Flixa AI - ${cleanName}`;
-                    if (finalTitle.length > 99) finalTitle = finalTitle.substring(0, 99);
-                    title = finalTitle;
-                    document.getElementById('titleInput').value = title; // Tampilkan di UI
-                }
-            }
-
             const style = document.getElementById('styleInput').value.trim();
-            const lyrics = document.getElementById('lyricsInput').value.trim();
-            const instrumental = document.getElementById('instrumentalToggle').checked;
-
             if (!style) {
                 showIphoneToast("Error", "Gaya musik (Style of Music) wajib diisi!", "fa-triangle-exclamation");
                 return;
             }
 
-            const options = {
-                negativeTags: document.getElementById('negativeTagsInput').value.trim(),
-                vocalGender: document.getElementById('vocalGenderSelect').value,
-                styleWeight: document.getElementById('styleWeightSlider').value,
-                weirdness: document.getElementById('weirdnessSlider').value,
-                audioWeight: document.getElementById('audioWeightSlider').value,
-                personaId: document.getElementById('personaIdInput').value.trim()
-            };
-
-            if (window.isGeneratingSong) {
-                showIphoneToast("Sabar", "Sistem sedang memproses antrean Anda sebelumnya.", "fa-hand-paper");
-                return;
-            }
+            // =================================================================
+            // 2. KUNCI TOMBOL SEKARANG JUGA (Karena semua validasi sudah lolos)
+            // =================================================================
             window.isGeneratingSong = true;
-
-            generateBtn.disabled = true;
             const originalBtnHtml = generateBtn.innerHTML;
+            generateBtn.disabled = true;
             generateBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Menyiapkan Antrean...';
 
             try {
+                // Proses Upload Audio (Jika Mode Cover & Belum ada URL)
+                if (currentMode === 'cover' && !selectedAudioUrl && rawAudioFile) {
+                    generateBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Mengunggah Audio...';
+                    let finalDurStr = "0:00";
+                    const origPlayer = document.getElementById('originalAudioPlayer');
+                    if (origPlayer && isFinite(origPlayer.duration) && origPlayer.duration > 0) {
+                        finalDurStr = formatTime(origPlayer.duration);
+                    }
+                    await uploadBlobToCloudinary(rawAudioFile, rawAudioFile.name, false, finalDurStr);
+                }
+
+                let title = document.getElementById('titleInput').value.trim();
+                if (!title && (selectedAudioUrl || rawAudioFile)) {
+                    let rawName = document.getElementById('uploadedMiniFileName').innerText;
+                    if (rawName && rawName !== '-' && !rawName.startsWith('http')) {
+                        let cleanName = rawName.replace(/\.(mp3|wav|ogg|m4a|flac|aac)$/i, '');
+                        cleanName = cleanName.replace(/[\[\]\(\)\|\-_]/g, ' ').replace(/\s+/g, ' ').trim();
+                        let finalTitle = `Flixa AI - ${cleanName}`;
+                        if (finalTitle.length > 99) finalTitle = finalTitle.substring(0, 99);
+                        title = finalTitle;
+                        document.getElementById('titleInput').value = title; 
+                    }
+                }
+
+                const lyrics = document.getElementById('lyricsInput').value.trim();
+                const instrumental = document.getElementById('instrumentalToggle').checked;
+
+                const options = {
+                    negativeTags: document.getElementById('negativeTagsInput').value.trim(),
+                    vocalGender: document.getElementById('vocalGenderSelect').value,
+                    styleWeight: document.getElementById('styleWeightSlider').value,
+                    weirdness: document.getElementById('weirdnessSlider').value,
+                    audioWeight: document.getElementById('audioWeightSlider').value,
+                    personaId: document.getElementById('personaIdInput').value.trim()
+                };
+
+                generateBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Menghubungi AI...';
+
                 const response = await fetch('/api/habirmx', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -10617,17 +10603,13 @@ window.startDspBypassAndUpload = async function() {
                 }
                 const modelLabel = modelLabelText;
                 
-                // FIX: Buat satu Task ID unik yang akan dipakai bersama oleh Track 1 dan Track 2
                 const safeTaskId = data.taskId || `task_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
-                
-                // FIX BUG 4 TRACK: Buat ID Sesi unik setiap kali tombol diklik
                 const sessionGroupId = `sg_${Date.now()}`;
                 
                 if (data.status === "completed" && data.tracks && data.tracks.length > 0) {
                     // Jika API Synchronous (Langsung Selesai)
                 } else {
-                    // Jika API Asynchronous (Polling), simpan 2 dokumen "processing"
-                    let createdDocIds = []; // Simpan ID dokumen untuk di-update nanti
+                    let createdDocIds = []; 
                     
                     for (let i = 0; i < 2; i++) {
                         const docRef = await addDoc(collection(db, "render_gallery"), {
@@ -10640,7 +10622,8 @@ window.startDspBypassAndUpload = async function() {
                             type: "audio",
                             status: "processing",
                             taskId: safeTaskId,
-                            sessionGroup: sessionGroupId, // Simpan ID Sesi ke database
+                            audioId: "-", // FIX: Beri nilai default agar tidak kosong saat loading
+                            sessionGroup: sessionGroupId, 
                             provider: data.provider || providerId,
                             model: modelLabel,
                             timestamp: Date.now() - i,
@@ -10655,31 +10638,23 @@ window.startDspBypassAndUpload = async function() {
                         createdDocIds.push(docRef.id);
                     }
 
-                    // =================================================================
-                    // SISTEM POLLING (TANYA BERKALA KE BACKEND)
-                    // =================================================================
                     let pollCount = 0;
-                    const maxPolls = 180; // FIX: Naikkan jadi 15 menit (180 * 5 detik) karena AI kadang antre panjang
+                    const maxPolls = 180; 
                     
                     const pollInterval = setInterval(async () => {
                         pollCount++;
                         try {
-                            // Bertanya ke Backend Vercel
                             const pollRes = await fetch(`/api/habirmx?taskId=${safeTaskId}&provider=${providerId}`);
                             const pollData = await pollRes.json();
 
-                            // Jika lagu sudah selesai dibuat oleh AI
                             if (pollData.status === 'completed' || pollData.status === 'success') {
                                 clearInterval(pollInterval);
                                 
                                 if (pollData.tracks && pollData.tracks.length > 0) {
-                                    // Update dokumen di Firebase dengan URL lagu yang sudah jadi
                                     for (let i = 0; i < createdDocIds.length; i++) {
-                                        // FIX: Jika track tersedia, gunakan. Jika API hanya mengirim 1 lagu, gunakan lagu itu untuk keduanya.
                                         const trackData = pollData.tracks[i] || pollData.tracks[pollData.tracks.length - 1];
                                         
                                         if (trackData) {
-                                            // Format durasi dari detik ke MM:SS jika API mengirimkan angka detik
                                             let finalDur = trackData.duration || "--:--";
                                             if (typeof finalDur === 'number') {
                                                 const m = Math.floor(finalDur / 60).toString().padStart(2, '0');
@@ -10701,14 +10676,10 @@ window.startDspBypassAndUpload = async function() {
                                     }
                                 }
                             } 
-                            // Jika lagu gagal dibuat oleh AI
                             else if (pollData.status === 'failed' || pollData.status === 'error') {
                                 clearInterval(pollInterval);
                                 
-                                // FIX: Tangkap pesan error yang benar dari backend
                                 let finalErrorMsg = pollData.reason || pollData.error || pollData.message || "Gagal diproses oleh server AI.";
-                                
-                                // Jika APIPass mengirimkan pesan "success" padahal statusnya "failed"
                                 if (finalErrorMsg.toLowerCase() === 'success' || finalErrorMsg.toLowerCase() === 'ok') {
                                     finalErrorMsg = "Dibatalkan oleh AI (Durasi audio referensi melebihi batas 60 detik atau melanggar hak cipta).";
                                 }
@@ -10719,14 +10690,12 @@ window.startDspBypassAndUpload = async function() {
                                         error: finalErrorMsg
                                     });
                                 }
-                                // Auto Refund
                                 if (!isAdmin && currentUserData) {
                                     const currentKredit = currentUserData.kredit !== undefined ? currentUserData.kredit : (currentUserData.dailyQuota || 0);
                                     updateDoc(doc(db, "users", currentUserData.id), { kredit: currentKredit + 50 }).catch(e=>e);
                                 }
                             }
                             
-                            // Jika terlalu lama (Timeout)
                             if (pollCount >= maxPolls) {
                                 clearInterval(pollInterval);
                                 for (let i = 0; i < createdDocIds.length; i++) {
@@ -10739,25 +10708,15 @@ window.startDspBypassAndUpload = async function() {
                         } catch (e) {
                             console.error("Polling error:", e);
                         }
-                    }, 5000); // Tanya ke backend setiap 5 detik
+                    }, 5000); 
                 }
                 
-                generateBtn.disabled = false;
-                generateBtn.innerHTML = originalBtnHtml;
-                window.isGeneratingSong = false;
-                
-                // Scroll ke bagian Library
                 document.getElementById('miniLibraryContainer').scrollIntoView({ behavior: 'smooth' });
 
             } catch (err) {
-                generateBtn.innerHTML = originalBtnHtml;
-                generateBtn.disabled = false;
-                window.isGeneratingSong = false;
-                
-                // AUTO REFUND JIKA GAGAL GENERATE
                 if (!isAdmin && currentUserData && currentUserData.tier !== 'max_lifetime' && currentUserData.tier !== 'max_monthly' && currentUserData.tier !== 'max') {
                     const currentKredit = currentUserData.kredit !== undefined ? currentUserData.kredit : (currentUserData.dailyQuota || 0);
-                    const refundedKredit = currentKredit + 50; // Kembalikan 50 kredit
+                    const refundedKredit = currentKredit + 50; 
                     updateDoc(doc(db, "users", currentUserData.id), { kredit: refundedKredit }).catch(e=>e);
                     setTimeout(() => showIphoneToast("Refund Sukses", "Generate gagal. 50 Kredit telah dikembalikan.", "fa-rotate-left"), 1000);
                 }
@@ -10767,13 +10726,17 @@ window.startDspBypassAndUpload = async function() {
                     displayError = "Trafik server sedang penuh atau dalam perbaikan. Silakan coba beberapa saat lagi.";
                 }
                 
-                // LOGIKA PINTAR: Penanganan khusus jika Voice ID kadaluarsa
                 if (displayError.toLowerCase().includes('karakter suara') || displayError.toLowerCase().includes('kadaluarsa')) {
                     showIphoneToast("Suara Kadaluarsa", displayError, "fa-user-astronaut", 6000);
                     document.getElementById('personaIdInput').value = '';
                 } else {
                     showIphoneToast("Gagal", displayError, "fa-triangle-exclamation");
                 }
+            } finally {
+                // 3. BUKA KUNCI TOMBOL APAPUN YANG TERJADI (Sukses/Gagal)
+                window.isGeneratingSong = false;
+                generateBtn.disabled = false;
+                generateBtn.innerHTML = originalBtnHtml;
             }
         };
 
