@@ -92,6 +92,24 @@ function findAudioUrlRecursively(obj) {
     return null;
 }
 
+// FITUR BARU: Pelacak Array Lagu Pintar (Bisa menembus JSON sedalam apapun)
+function findTracksArrayRecursively(obj) {
+    if (!obj || typeof obj !== 'object') return null;
+    if (Array.isArray(obj) && obj.length > 0) {
+        const firstItem = obj[0];
+        if (firstItem && typeof firstItem === 'object' && (firstItem.audio_url || firstItem.audioUrl || firstItem.video_url || firstItem.videoUrl || firstItem.url)) {
+            return obj;
+        }
+    }
+    for (const key in obj) {
+        if (typeof obj[key] === 'object') {
+            const foundArray = findTracksArrayRecursively(obj[key]);
+            if (foundArray) return foundArray;
+        }
+    }
+    return null;
+}
+
 // FITUR BARU: Pencari Cover Image Multi-Provider
 function findImageUrlRecursively(obj) {
     if (!obj || typeof obj !== 'object') return null;
