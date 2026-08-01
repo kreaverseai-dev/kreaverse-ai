@@ -5008,17 +5008,19 @@
                         if (masterToggle) masterToggle.checked = true;
                         
                         if (activeTab === 'v1') {
-                            // V1: Acak Timbre & Stego (Aman, tidak merusak nada)
+                            // V1 AGRESIF: Paksa maksimal tanpa merusak Nada & Tempo
                             const timbreEl = document.getElementById('sliderTimbreV1');
                             const stegoEl = document.getElementById('sliderStegoV1');
-                            if (timbreEl) { timbreEl.value = Math.floor(Math.random() * 20) + 40; document.getElementById('valTimbreV1').innerText = timbreEl.value + '%'; }
-                            if (stegoEl) { stegoEl.value = Math.floor(Math.random() * 30) + 50; document.getElementById('valStegoV1').innerText = stegoEl.value + '%'; }
                             
-                            // Acak Algoritma V1
-                            const v1Toggles = ['tgTemporalV1', 'tgMirageV1', 'tgAntiMonoV1', 'tgSpectralV1'];
+                            // Stego (Noise Pelindung) dinaikkan drastis ke 80-95% agar bot AI buta
+                            if (timbreEl) { timbreEl.value = 60; document.getElementById('valTimbreV1').innerText = '60%'; }
+                            if (stegoEl) { stegoEl.value = Math.floor(Math.random() * 15) + 80; document.getElementById('valStegoV1').innerText = stegoEl.value + '%'; }
+                            
+                            // PAKSA NYALA SEMUA ALGORITMA V1 (100% ON, Jangan diacak)
+                            const v1Toggles = ['tgTemporalV1', 'tgMirageV1', 'tgAntiMonoV1', 'tgSpectralV1', 'tgPhoneticV1'];
                             v1Toggles.forEach(id => {
                                 const el = document.getElementById(id);
-                                if (el) el.checked = Math.random() > 0.3; // 70% kemungkinan ON
+                                if (el) el.checked = true; 
                             });
                         } else {
                             // V2: Acak 20-Layer Algorithms (Aman, tidak merusak nada)
