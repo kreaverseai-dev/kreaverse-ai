@@ -2847,8 +2847,8 @@
                 
                 <div id="optionalParamsBody" class="hidden" style="padding-top: 18px; display: flex; flex-direction: column; gap: 14px;">
                     
-                    <!-- FITUR BARU: TOMBOL FLIXA AI PRESETS -->
-                    <button type="button" id="btnFlixaPresets" onclick="window.openPresetModal()" style="width: 100%; background: #ffffff; color: var(--accent-color); border: 1.5px solid var(--accent-color); padding: 14px; border-radius: 16px; font-weight: 800; font-size: 0.9rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: var(--transition); margin-bottom: 16px; box-shadow: 0 4px 10px rgba(0, 122, 255, 0.1);" onmouseover="this.style.background='var(--accent-color)'; this.style.color='#ffffff';" onmouseout="this.style.background='#ffffff'; this.style.color='var(--accent-color)';">
+                    <!-- FITUR BARU: TOMBOL FLIXA AI PRESETS (Sembunyi by Default) -->
+                    <button type="button" id="btnFlixaPresets" onclick="window.openPresetModal()" style="display: none; width: 100%; background: #ffffff; color: var(--accent-color); border: 1.5px solid var(--accent-color); padding: 14px; border-radius: 16px; font-weight: 800; font-size: 0.9rem; cursor: pointer; align-items: center; justify-content: center; gap: 8px; transition: var(--transition); margin-bottom: 16px; box-shadow: 0 4px 10px rgba(0, 122, 255, 0.1);" onmouseover="this.style.background='var(--accent-color)'; this.style.color='#ffffff';" onmouseout="this.style.background='#ffffff'; this.style.color='var(--accent-color)';">
                         <i class="fa-solid fa-wand-magic-sparkles"></i> Flixa AI Presets (Auto-Tuning)
                     </button>
 
@@ -2994,13 +2994,13 @@
                         <label>Vocal Gender</label>
                         <div class="custom-select-container">
                             <div class="custom-select-trigger" onclick="window.toggleCustomSelect('vocalGenderDropdown')">
-                                <span id="vocalGenderSelectedLabel">Not specified</span>
+                                <span id="vocalGenderSelectedLabel">Bebas (Tidak Ditentukan)</span>
                                 <i class="fa-solid fa-chevron-down"></i>
                             </div>
                             <div class="custom-select-options hidden" id="vocalGenderDropdown">
-                                <div class="custom-select-option selected" onclick="window.selectGenderOption('not_specified', 'Not specified')">Not specified</div>
-                                <div class="custom-select-option" onclick="window.selectGenderOption('male', 'Male')">Male</div>
-                                <div class="custom-select-option" onclick="window.selectGenderOption('female', 'Female')">Female</div>
+                                <div class="custom-select-option selected" onclick="window.selectGenderOption('not_specified', 'Bebas (Tidak Ditentukan)')">Bebas (Tidak Ditentukan)</div>
+                                <div class="custom-select-option" onclick="window.selectGenderOption('male', 'Pria')">Pria</div>
+                                <div class="custom-select-option" onclick="window.selectGenderOption('female', 'Wanita')">Wanita</div>
                             </div>
                         </div>
                         <input type="hidden" id="vocalGenderSelect" value="not_specified">
