@@ -4973,7 +4973,7 @@
             }
             window.checkLyricsState();
 
-            if (docData.vocalGender) window.selectGenderOption(docData.vocalGender, docData.vocalGender === 'male' ? 'Male' : (docData.vocalGender === 'female' ? 'Female' : 'Not specified'));
+            if (docData.vocalGender) window.selectGenderOption(docData.vocalGender, docData.vocalGender === 'male' ? 'Pria' : (docData.vocalGender === 'female' ? 'Wanita' : 'Bebas (Tidak Ditentukan)'));
             if (docData.personaId) document.getElementById('personaIdInput').value = docData.personaId;
             if (docData.styleWeight) { document.getElementById('styleWeightSlider').value = docData.styleWeight; document.getElementById('styleWeightVal').innerText = docData.styleWeight; }
             if (docData.weirdness) { document.getElementById('weirdnessSlider').value = docData.weirdness; document.getElementById('weirdnessVal').innerText = docData.weirdness; }
@@ -11164,7 +11164,7 @@ window.startDspBypassAndUpload = async function() {
                         window.checkLyricsState();
 
                         // 3. Isi Parameter Opsional
-                        if (docData.vocalGender) window.selectGenderOption(docData.vocalGender, docData.vocalGender === 'male' ? 'Male' : (docData.vocalGender === 'female' ? 'Female' : 'Not specified'));
+                        if (docData.vocalGender) window.selectGenderOption(docData.vocalGender, docData.vocalGender === 'male' ? 'Pria' : (docData.vocalGender === 'female' ? 'Wanita' : 'Bebas (Tidak Ditentukan)'));
                         if (docData.personaId) document.getElementById('personaIdInput').value = docData.personaId;
                         if (docData.styleWeight) { document.getElementById('styleWeightSlider').value = docData.styleWeight; document.getElementById('styleWeightVal').innerText = docData.styleWeight; }
                         if (docData.weirdness) { document.getElementById('weirdnessSlider').value = docData.weirdness; document.getElementById('weirdnessVal').innerText = docData.weirdness; }
