@@ -1078,19 +1078,22 @@ ATURAN MUTLAK:
                     tracks.push({ audioId: resData.id || resData.audio_id || resData.audioId || taskId, audioUrl: audioUrlVal, imageUrl: findImageUrlRecursively(resData) || "https://i.postimg.cc/Jh211FTG/46cc61ec-de7f-4c62-8245-946e22312d2b.jpg" });
                 }
 
-                // REVISI BACKEND: Selalu paksa mencari ke dalam array agar Track 2 tidak terlewat
-                let searchTargets = [];
-                if (Array.isArray(resData.data)) searchTargets = resData.data;
-                else if (Array.isArray(resData.result)) searchTargets = resData.result;
-                else if (Array.isArray(resData.tracks)) searchTargets = resData.tracks;
-                else if (Array.isArray(resData)) searchTargets = resData;
+                // REVISI BACKEND: Gunakan pelacak pintar untuk menemukan array lagu sedalam apapun
+                let searchTargets = findTracksArrayRecursively(resData) || [];
 
                 if (searchTargets.length > 0) {
                     searchTargets.forEach(item => {
                         let url = findAudioUrlRecursively(item);
                         if (url) {
                             let img = findImageUrlRecursively(item) || "https://i.postimg.cc/Jh211FTG/46cc61ec-de7f-4c62-8245-946e22312d2b.jpg";
-                            tracks.push({ audioId: item.id || item.audio_id || item.audioId || taskId, audioUrl: url, imageUrl: img });
+                            // Ambil durasi asli dari API jika ada
+                            let dur = item.duration || item.play_time || null;
+                            tracks.push({ 
+                                audioId: item.id || item.audio_id || item.audioId || taskId, 
+                                audioUrl: url, 
+                                imageUrl: img,
+                                duration: dur // Simpan durasi asli
+                            });
                         }
                     });
                 }
