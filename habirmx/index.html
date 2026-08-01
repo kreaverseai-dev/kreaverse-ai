@@ -8178,55 +8178,68 @@ async function processKreaverseAudio(file, isPreview = false, progressCallback) 
                 lastNode = combMix;
             }
 
-            // LAYER 13: TRUE RING MODULATOR (CARRIER KILLER)
+            // LAYER 13: SPECTRAL PHASER (PENGGANTI RING MODULATOR)
             const isRingModChecked = document.getElementById('chkRingMod') && document.getElementById('chkRingMod').checked;
             if (isRingModChecked) {
-                const ringOsc = offlineCtx.createOscillator();
-                ringOsc.type = 'sine';
-                ringOsc.frequency.value = 15; // Diturunkan agar tidak terlalu bergetar
+                // Menggunakan Allpass filter yang digerakkan LFO. 
+                // Ini mengubah fase spektrum audio (mengecoh AI) tanpa membuat suara putus-putus/berat.
+                const phaser = offlineCtx.createBiquadFilter();
+                phaser.type = 'allpass';
+                phaser.Q.value = 3.0; 
                 
-                const ringGain = offlineCtx.createGain();
-                ringGain.gain.value = 0; 
+                const lfo = offlineCtx.createOscillator();
+                lfo.type = 'sine';
+                lfo.frequency.value = 0.2; // Ayunan sangat lambat
                 
-                ringOsc.connect(ringGain.gain);
-                ringOsc.start(0);
+                const lfoDepth = offlineCtx.createGain();
+                lfoDepth.gain.value = 800; 
                 
-                const dryMix = offlineCtx.createGain();
-                dryMix.gain.value = 0.85; // NAIKKAN KE 85%: Pertahankan suara asli agar Suno tidak ngawur
+                phaser.frequency.value = 1200; // Base frequency
                 
-                const finalMix = offlineCtx.createGain();
+                lfo.connect(lfoDepth);
+                lfoDepth.connect(phaser.frequency);
+                lfo.start(0);
                 
-                lastNode.connect(ringGain);
-                lastNode.connect(dryMix);
-                
-                ringGain.connect(finalMix);
-                dryMix.connect(finalMix);
-                
-                lastNode = finalMix;
+                lastNode.connect(phaser);
+                lastNode = phaser;
             }
 
-            // LAYER 14: [GOD MODE] CONSTELLATION NUKE (FALSE PEAK INJECTOR)
+            // LAYER 14: [GOD MODE] GHOST HISS INJECTOR (PENGGANTI CONSTELLATION NUKE)
             const isNukeChecked = document.getElementById('chkNuke') && document.getElementById('chkNuke').checked;
             if (isNukeChecked) {
+                // Mengganti suara "twit twit" dengan desis kaset (Filtered Noise) yang bergerak halus.
+                // Bot AI sangat kesulitan membaca melodi jika ada desis dinamis ini.
+                const noiseLen = offlineCtx.sampleRate * finalDuration;
+                const noiseBuf = offlineCtx.createBuffer(1, noiseLen, offlineCtx.sampleRate);
+                const output = noiseBuf.getChannelData(0);
+                for (let i = 0; i < noiseLen; i++) {
+                    output[i] = Math.random() * 2 - 1; // White noise
+                }
+                
+                const noiseSrc = offlineCtx.createBufferSource();
+                noiseSrc.buffer = noiseBuf;
+                
+                const bpFilter = offlineCtx.createBiquadFilter();
+                bpFilter.type = 'bandpass';
+                bpFilter.Q.value = 6.0; // Pita suara sempit
+                
+                // Ayunan desis yang halus, bukan lompatan acak
+                for(let t=0; t<finalDuration; t+=0.5) {
+                    const sweepFreq = 3000 + (Math.sin(t) * 1500); 
+                    bpFilter.frequency.linearRampToValueAtTime(sweepFreq, t + 0.5);
+                }
+                
+                const noiseGain = offlineCtx.createGain();
+                noiseGain.gain.value = 0.015; // Volume desis pelan (seperti kaset pita)
+                
+                noiseSrc.connect(bpFilter);
+                bpFilter.connect(noiseGain);
+                
                 const nukeMix = offlineCtx.createGain();
                 lastNode.connect(nukeMix);
+                noiseGain.connect(nukeMix);
+                noiseSrc.start(0);
                 
-                for(let i=0; i<3; i++) {
-                    const fakeOsc = offlineCtx.createOscillator();
-                    fakeOsc.type = 'sine';
-                    
-                    const fakeGain = offlineCtx.createGain();
-                    fakeGain.gain.value = 0.008; // DITURUNKAN DRASTIS: Agar tidak terdengar seperti alien/radio rusak
-                    
-                    for(let t=0; t<finalDuration; t+=0.1) {
-                        const randomFreq = 300 + (Math.random() * 4500); 
-                        fakeOsc.frequency.setValueAtTime(randomFreq, t);
-                    }
-                    
-                    fakeOsc.connect(fakeGain);
-                    fakeGain.connect(nukeMix);
-                    fakeOsc.start(0);
-                }
                 lastNode = nukeMix;
             }
         } // Menutup blok "if (isMasterOn)" milik V2 Master DSP
