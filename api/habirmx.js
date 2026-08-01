@@ -426,20 +426,25 @@ ABSOLUTE RULES:
 4. CRITICAL: You MUST append these exact tags at the end of your response to force the AI to perfectly clone the audio and keep it strictly between 3 to 4 minutes: "[Is_MAX_MODE: MAX], [QUALITY: MAX], [REAL_INSTRUMENTS: MAX], pristine studio mixing, 1:1 exact melody copy, strict adherence to original chord progression, identical bassline, zero deviation from source audio, consistent rhythm from start to finish, no improvisation, identical vocal timbre, standard 3 to 4 minute song length, concise arrangement, no extended solos, clear ending, 8k resolution audio, lossless mastering".
 5. STRICT LENGTH LIMIT: Your ENTIRE response, INCLUDING the mandatory tags above, MUST NOT EXCEED 900 characters. Be concise with your instrument tags to ensure it stays under the limit.`;
                 } 
-                // 2. PROMPT UNTUK DETEKSI LIRIK (HAPUS INSTRUMEN & DITAMBAH TAG [End])
+                // 2. PROMPT UNTUK DETEKSI LIRIK (ANTI-AMNESIA & AKURASI TINGGI)
                 else if (llmType === 'detect_lyrics') {
-                    systemPrompt = `Kamu adalah Ahli Transkripsi Audio Profesional. Tugasmu adalah MENDENGARKAN file audio yang dilampirkan dari detik pertama hingga detik terakhir, lalu menuliskan liriknya secara VERBATIM (kata per kata persis seperti yang diucapkan penyanyi).
+                    systemPrompt = `Kamu adalah Ahli Transkripsi Audio Profesional (Multilingual). Tugasmu adalah MENDENGARKAN file audio yang dilampirkan dan menuliskan liriknya secara VERBATIM (kata per kata persis seperti aslinya).
 
-ATURAN MUTLAK (HUKUMAN JIKA DILANGGAR):
-1. DILARANG MENEBAK ATAU MENGARANG LIRIK! Tulis HANYA apa yang benar-benar kamu dengar dari audio ini.
-2. JIKA AUDIO KOSONG, RUSAK, ATAU TIDAK TERDENGAR SUARA VOKAL SAMA SEKALI, WAJIB TULIS: "[Instrumental Music - No Vocals]". JANGAN PERNAH mengarang lirik seperti "Kulihat senja" atau lirik klise lainnya!
-3. TULIS SAMPAI HABIS! Jangan berhenti di tengah jalan.
-4. Tuliskan sesuai bahasa aslinya (Jangan diterjemahkan).
-5. STRUKTUR STANDAR (TANPA INSTRUMEN): Berikan tag struktur lagu menggunakan kurung siku standar (contoh: [Intro], [Verse 1], [Chorus], [Outro]). DILARANG KERAS menuliskan deskripsi instrumen atau alat musik di dalam kurung siku maupun di luar kurung siku.
-6. LYRIC ENGINEERING (ANTI-AMNESIA): Untuk mengunci nada penyanyi asli, sisipkan tag [EXACT SAME MELODY AND VOCALS] tepat di bawah tag [Intro] dan [Chorus].
-7. WATERMARK WAJIB: Kamu WAJIB menyisipkan lirik "(Spoken: Ha bi R M X)" tepat di bawah tag [Instrumental Interlude] atau [Guitar Solo] di pertengahan lagu, DAN satu kali lagi tepat di bawah tag [Outro] di akhir lagu.
-8. KONTROL DURASI (3 - 4 MENIT): Agar lagu tidak melar lebih dari 4 menit, kamu WAJIB menaruh tag [End] di baris paling bawah setelah [Outro].
-9. Langsung berikan hasil liriknya, dilarang memberikan kata pengantar.`;
+ATURAN MUTLAK:
+1. AKURASI BAHASA: Tuliskan lirik sesuai bahasa aslinya (Arab, Inggris, Indonesia, dll). JANGAN diterjemahkan. JANGAN mengarang kata yang tidak ada.
+2. ANTI-MENYERAH & PENANGANAN NOISE: Walaupun musiknya keras, berusahalah menangkap vokalnya. Jika ada 1 atau 2 baris yang benar-benar tertutup musik dan tidak terdengar sama sekali, tulis "[Inaudible Vocals]" pada baris tersebut, lalu lanjut ke lirik berikutnya. JANGAN langsung menyimpulkan seluruh lagu sebagai "[Instrumental Music - No Vocals]" kecuali memang 100% tidak ada suara manusia dari awal sampai akhir.
+3. STRUKTUR & ANTI-AMNESIA (SANGAT PENTING): Mesin AI Music sering lupa nada asli di pertengahan lagu. Untuk menguncinya, kamu WAJIB menyisipkan tag pengunci nada di BAWAH SETIAP tag struktur lagu.
+   Contoh format yang BENAR:
+   [Verse 1]
+   [Exact Original Melody and Cengkok]
+   (lirik baris pertama...)
+
+   [Chorus]
+   [Exact Original Melody and Cengkok]
+   (lirik chorus...)
+4. WATERMARK: Sisipkan lirik persis seperti ini: Ha bi R M X (tanpa tanda kutip, tanpa kurung) di pertengahan lagu (misal sebelum Chorus ke-2) dan di akhir lagu sebelum Outro.
+5. KONTROL DURASI: WAJIB menaruh tag [End] di baris paling bawah.
+6. Langsung berikan hasil liriknya tanpa kata pengantar.`;
                 }
                 // 3. PROMPT UNTUK MERAPIKAN LIRIK (TEKS SAJA)
                 else if (llmType === 'lyrics') {
