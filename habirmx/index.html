@@ -8147,16 +8147,14 @@ async function processKreaverseAudio(file, isPreview = false, progressCallback) 
             const isFluxChecked = document.getElementById('chkFlux') && document.getElementById('chkFlux').checked;
             
             if (isWarpChecked || isFluxChecked) {
-                // MICRO-MODULATION: Menghancurkan FFT AI tanpa merusak tempo & pitch bagi pendengar manusia
                 for (let time = 0; time < finalDuration; time += 0.1) {
                     let dynamicSpeed = speedVal;
                     if (isWarpChecked) {
-                        // Jitter acak MICRO
                         const jitter = (Math.random() * 0.002) - 0.001; 
-                        dynamicSpeed += (Math.sin(time * 5.14) * 0.0015) + jitter;
+                        // REVISI: Diperlambat dari 5.14 menjadi 0.5 agar tidak bergetar
+                        dynamicSpeed += (Math.sin(time * 0.5) * 0.0015) + jitter;
                     }
                     if (isFluxChecked) {
-                        // Flux MICRO: Tidak akan terdengar ditarik-tarik lagi
                         dynamicSpeed += (Math.sin(time * 0.7) * 0.002) + (Math.cos(time * 0.25) * 0.001);
                     }
                     source.playbackRate.setValueAtTime(dynamicSpeed, time);
@@ -8166,13 +8164,12 @@ async function processKreaverseAudio(file, isPreview = false, progressCallback) 
             // LAYER 2: MULTI-STAGE PHASE SCRAMBLER
             const isPhaseChecked = document.getElementById('chkPhase') && document.getElementById('chkPhase').checked;
             if (isPhaseChecked) {
-                // Menargetkan frekuensi krusial yang sering dipakai AI untuk fingerprinting
                 const freqs = [250, 850, 2200, 4500, 7000];
                 freqs.forEach(freq => {
                     const allpass = offlineCtx.createBiquadFilter();
                     allpass.type = 'allpass';
                     allpass.frequency.value = freq + (Math.random() * 100);
-                    allpass.Q.value = 2.5 + Math.random(); // Q dinaikkan agar pergeseran fase lebih tajam
+                    allpass.Q.value = 2.5 + Math.random(); 
                     lastNode.connect(allpass);
                     lastNode = allpass;
                 });
@@ -8181,14 +8178,14 @@ async function processKreaverseAudio(file, isPreview = false, progressCallback) 
             // LAYER 3: DYNAMIC CONSTELLATION DESTROYER (NOTCH SWEEPER)
             const isFormantChecked = document.getElementById('chkFormant') && document.getElementById('chkFormant').checked;
             if (isFormantChecked) {
-                // Bot AI mencari "Puncak" (Peaks). Kita gunakan Notch filter dinamis untuk memotong puncak tersebut secara acak.
                 const peakDestroyer = offlineCtx.createBiquadFilter();
                 peakDestroyer.type = 'notch';
-                peakDestroyer.Q.value = 4.0; // Sangat sempit agar telinga manusia tidak sadar
+                peakDestroyer.Q.value = 4.0; 
                 
-                for (let t = 0; t < finalDuration; t += 0.2) {
-                    const sweepFreq = 1000 + (Math.sin(t * 5.0) * 800) + (Math.random() * 400); 
-                    peakDestroyer.frequency.setValueAtTime(sweepFreq, t);
+                // REVISI: Step diperhalus (0.5) dan kecepatan ayunan diperlambat drastis (0.5)
+                for (let t = 0; t < finalDuration; t += 0.5) {
+                    const sweepFreq = 1000 + (Math.sin(t * 0.5) * 800) + (Math.random() * 400); 
+                    peakDestroyer.frequency.linearRampToValueAtTime(sweepFreq, t + 0.5);
                 }
                 lastNode.connect(peakDestroyer);
                 lastNode = peakDestroyer;
@@ -8267,12 +8264,13 @@ async function processKreaverseAudio(file, isPreview = false, progressCallback) 
                 const noiseGain = offlineCtx.createGain();
                 
                 // Sweep noise frequency & volume agar AI tidak bisa memfilter noise ini sebagai "static background noise"
-                for (let t = 0; t < finalDuration; t += 0.1) {
-                    const sweepFreq = 1500 + (Math.sin(t * 2.0) * 1000);
-                    noiseFilter.frequency.setValueAtTime(sweepFreq, t);
+                // REVISI: Step diperhalus (0.5) dan kecepatan ayunan diperlambat drastis (0.2 dan 0.5)
+                for (let t = 0; t < finalDuration; t += 0.5) {
+                    const sweepFreq = 1500 + (Math.sin(t * 0.2) * 1000);
+                    noiseFilter.frequency.linearRampToValueAtTime(sweepFreq, t + 0.5);
                     
-                    const dGain = 0.02 + (Math.sin(t * 4.0) * 0.015);
-                    noiseGain.gain.setValueAtTime(dGain, t);
+                    const dGain = 0.02 + (Math.sin(t * 0.5) * 0.015);
+                    noiseGain.gain.linearRampToValueAtTime(dGain, t + 0.5);
                 }
                 
                 noiseSource.connect(noiseFilter); 
