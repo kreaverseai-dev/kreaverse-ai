@@ -1104,13 +1104,14 @@ ATURAN MUTLAK:
                         let url = findAudioUrlRecursively(item);
                         if (url) {
                             let img = findImageUrlRecursively(item) || "https://i.postimg.cc/Jh211FTG/46cc61ec-de7f-4c62-8245-946e22312d2b.jpg";
-                            // Ambil durasi asli dari API jika ada
                             let dur = item.duration || item.play_time || null;
+                            let finalAudioId = item.id || item.audio_id || item.audioId || taskId;
                             tracks.push({ 
-                                audioId: item.id || item.audio_id || item.audioId || taskId, 
+                                audioId: finalAudioId, 
+                                audio_id: finalAudioId, // Fallback aman untuk frontend
                                 audioUrl: url, 
                                 imageUrl: img,
-                                duration: dur // Simpan durasi asli
+                                duration: dur 
                             });
                         }
                     });
@@ -1119,7 +1120,15 @@ ATURAN MUTLAK:
                 // Jika gagal ekstrak array dan tracks masih kosong, cari 1 URL secara rekursif global
                 if (tracks.length === 0) {
                     audioUrlVal = findAudioUrlRecursively(resData) || audioUrlVal;
-                    if (audioUrlVal) tracks.push({ audioId: resData.id || resData.audio_id || resData.audioId || taskId, audioUrl: audioUrlVal, imageUrl: findImageUrlRecursively(resData) || "https://i.postimg.cc/Jh211FTG/46cc61ec-de7f-4c62-8245-946e22312d2b.jpg" });
+                    if (audioUrlVal) {
+                        let finalAudioId = resData.id || resData.audio_id || resData.audioId || taskId;
+                        tracks.push({ 
+                            audioId: finalAudioId, 
+                            audio_id: finalAudioId, // Fallback aman untuk frontend
+                            audioUrl: audioUrlVal, 
+                            imageUrl: findImageUrlRecursively(resData) || "https://i.postimg.cc/Jh211FTG/46cc61ec-de7f-4c62-8245-946e22312d2b.jpg" 
+                        });
+                    }
                 }
                 
                 if (tracks.length > 0) audioUrlVal = tracks[0].audioUrl;
