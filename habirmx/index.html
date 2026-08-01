@@ -2848,7 +2848,7 @@
                 <div id="optionalParamsBody" class="hidden" style="padding-top: 18px; display: flex; flex-direction: column; gap: 14px;">
                     
                     <!-- FITUR BARU: TOMBOL FLIXA AI PRESETS -->
-                    <button type="button" onclick="window.openPresetModal()" style="width: 100%; background: #ffffff; color: var(--accent-color); border: 1.5px solid var(--accent-color); padding: 14px; border-radius: 16px; font-weight: 800; font-size: 0.9rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: var(--transition); margin-bottom: 16px; box-shadow: 0 4px 10px rgba(0, 122, 255, 0.1);" onmouseover="this.style.background='var(--accent-color)'; this.style.color='#ffffff';" onmouseout="this.style.background='#ffffff'; this.style.color='var(--accent-color)';">
+                    <button type="button" id="btnFlixaPresets" onclick="window.openPresetModal()" style="width: 100%; background: #ffffff; color: var(--accent-color); border: 1.5px solid var(--accent-color); padding: 14px; border-radius: 16px; font-weight: 800; font-size: 0.9rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: var(--transition); margin-bottom: 16px; box-shadow: 0 4px 10px rgba(0, 122, 255, 0.1);" onmouseover="this.style.background='var(--accent-color)'; this.style.color='#ffffff';" onmouseout="this.style.background='#ffffff'; this.style.color='var(--accent-color)';">
                         <i class="fa-solid fa-wand-magic-sparkles"></i> Flixa AI Presets (Auto-Tuning)
                     </button>
 
@@ -5987,10 +5987,11 @@
             const generateBtn = document.getElementById('generateBtn');
             const benefitDesc = generateBtn.nextElementSibling;
             
-            // Elemen Baru Auto-Style & Deteksi Lirik
+            // Elemen Baru Auto-Style, Deteksi Lirik, & Presets
             const btnAudioToStyle = document.getElementById('btnAudioToStyle');
             const selectLangContainer = document.getElementById('langDropdownContainer');
             const btnSyncDetect = document.getElementById('btnSyncDetect');
+            const btnFlixaPresets = document.getElementById('btnFlixaPresets');
 
             // FIX: Elemen Tombol AI (Biru Kecil) dengan selector yang aman
             const btnStyleAI = document.querySelector("button[onclick*=\"triggerMagicWand('style')\"]");
@@ -6008,10 +6009,11 @@
                 if(uploadSection) uploadSection.classList.add('hidden');
                 if(voiceSection) voiceSection.classList.add('hidden');
                 
-                // FIX: SEMBUNYIKAN AUTO-STYLE & DETEKSI SECARA PAKSA
+                // FIX: SEMBUNYIKAN AUTO-STYLE, DETEKSI, & PRESETS SECARA PAKSA
                 if(btnAudioToStyle) btnAudioToStyle.style.display = 'none';
                 if(selectLangContainer) selectLangContainer.style.display = 'none';
                 if(btnSyncDetect) btnSyncDetect.style.display = 'none';
+                if(btnFlixaPresets) btnFlixaPresets.style.display = 'none';
                 
                 // Tampilkan tombol AI di mode Generate
                 if(btnStyleAI) btnStyleAI.style.display = 'flex';
@@ -6044,10 +6046,11 @@
                     }
                 }
                 
-                // FIX: TAMPILKAN KEMBALI AUTO-STYLE & DETEKSI
+                // FIX: TAMPILKAN KEMBALI AUTO-STYLE, DETEKSI, & PRESETS
                 if(btnAudioToStyle) btnAudioToStyle.style.display = 'flex';
                 if(selectLangContainer) selectLangContainer.style.display = 'flex';
                 if(btnSyncDetect) btnSyncDetect.style.display = 'flex';
+                if(btnFlixaPresets) btnFlixaPresets.style.display = 'flex';
                 
                 // Sembunyikan tombol AI di mode Cover
                 if(btnStyleAI) btnStyleAI.style.display = 'none';
@@ -6071,10 +6074,11 @@
                 if(uploadSection) uploadSection.classList.add('hidden');
                 if(voiceSection) voiceSection.classList.remove('hidden');
                 
-                // FIX: SEMBUNYIKAN AUTO-STYLE & DETEKSI
+                // FIX: SEMBUNYIKAN AUTO-STYLE, DETEKSI, & PRESETS
                 if(btnAudioToStyle) btnAudioToStyle.style.display = 'none';
                 if(selectLangContainer) selectLangContainer.style.display = 'none';
                 if(btnSyncDetect) btnSyncDetect.style.display = 'none';
+                if(btnFlixaPresets) btnFlixaPresets.style.display = 'none';
                 
                 if(modeDesc) modeDesc.innerText = "Kloning suara Anda sendiri atau ekstrak karakter vokal dari lagu AI sebelumnya.";
                 
