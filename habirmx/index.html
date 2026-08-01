@@ -10644,7 +10644,7 @@ window.startDspBypassAndUpload = async function() {
                     // SISTEM POLLING (TANYA BERKALA KE BACKEND)
                     // =================================================================
                     let pollCount = 0;
-                    const maxPolls = 60; // Maksimal 5 menit (60 * 5 detik)
+                    const maxPolls = 180; // FIX: Naikkan jadi 15 menit (180 * 5 detik) karena AI kadang antre panjang
                     
                     const pollInterval = setInterval(async () => {
                         pollCount++;
@@ -10717,7 +10717,7 @@ window.startDspBypassAndUpload = async function() {
                                 for (let i = 0; i < createdDocIds.length; i++) {
                                     await updateDoc(doc(db, "render_gallery", createdDocIds[i]), {
                                         status: "failed",
-                                        error: "Timeout: Server AI terlalu lama merespons."
+                                        error: "Timeout: Server AI terlalu lama merespons (Lebih dari 15 Menit)."
                                     });
                                 }
                             }
