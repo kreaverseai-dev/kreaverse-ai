@@ -4726,14 +4726,13 @@
             const grid = document.getElementById('miniLibraryGrid');
             if(!grid) return;
 
-            // Filter dokumen berdasarkan Tab yang sedang aktif
             const filteredDocs = docs.filter(d => {
                 if (currentLibraryTab === 'berhasil') return d.status === 'complete';
                 return d.status === 'failed';
             });
 
-            // Pastikan hanya tampil 4 (baik di tab berhasil maupun gagal)
-            const displayDocs = filteredDocs.slice(0, 4); 
+            // Tampilkan 10 lagu agar user bisa melihat garis pemisahnya bekerja
+            const displayDocs = filteredDocs.slice(0, 10); 
 
             if(displayDocs.length === 0) { 
                 if (currentLibraryTab === 'berhasil') {
@@ -4752,7 +4751,7 @@
             }
             
             let html = '';
-            let lastTaskId = null; // Variabel untuk mengecek pergantian Generate (Poin 3)
+            let lastGroupKey = null;
 
             displayDocs.forEach((d, index) => {
                 const isFailed = d.status === 'failed';
@@ -4778,10 +4777,12 @@
                     </div>
                 `;
 
-                // --- PEMISAH ANTAR GENERATE (POIN 3) ---
-                // FIX BUG 4 TRACK: Gunakan sessionGroup sebagai pengelompok utama, fallback ke taskId untuk lagu lama
-                const currentGroup = d.sessionGroup || d.taskId || Math.floor((d.timestamp || 0) / 5000);
-                if (index > 0 && currentGroup !== lastTaskId) {
+                // === LOGIKA PENGELOMPOKAN PINTAR (ANTI 4 TRACK) ===
+                // Cari lagu "Leader" yang dibuat di waktu yang hampir bersamaan (selisih < 5 detik)
+                const leader = docs.find(doc => Math.abs((doc.timestamp || 0) - (d.timestamp || 0)) < 5000);
+                const currentGroupKey = d.sessionGroup || (leader ? leader.id : d.id);
+
+                if (index > 0 && currentGroupKey !== lastGroupKey) {
                     const dateObj = new Date(d.timestamp || Date.now());
                     const days = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
                     const months = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
@@ -4806,7 +4807,7 @@
                         </div>
                     `;
                 }
-                lastTaskId = currentGroup;
+                lastGroupKey = currentGroupKey;
 
                 if (isFailed) {
                     const safeTitleForJS = displayTitle.replace(/'/g, "\\'").replace(/"/g, "&quot;");
@@ -4853,11 +4854,18 @@
                     const modeText = d.mode === 'cover' ? 'Cover Lagu' : 'Lagu Sendiri';
                     const modeIcon = d.mode === 'cover' ? '<i class="fa-solid fa-microphone-lines"></i>' : '<i class="fa-solid fa-music"></i>';
 
-                    // FIX BUG 4 TRACK: Logika Pintar Penentuan Track 1 & 2 (Berdasarkan Session Group, bukan Task ID)
-                    const currentGroupKey = d.sessionGroup || d.taskId;
-                    const siblings = docs.filter(doc => (doc.sessionGroup || doc.taskId) === currentGroupKey).sort((a, b) => b.timestamp - a.timestamp);
+                    // Tentukan Track 1 atau Track 2 berdasarkan kelompok waktu
+                    const siblings = docs.filter(doc => {
+                        const docLeader = docs.find(x => Math.abs((x.timestamp || 0) - (doc.timestamp || 0)) < 5000);
+                        const docKey = doc.sessionGroup || (docLeader ? docLeader.id : doc.id);
+                        return docKey === currentGroupKey;
+                    }).sort((a, b) => b.timestamp - a.timestamp);
+                    
                     const trackIndex = siblings.findIndex(doc => doc.id === d.id);
                     let trackNum = trackIndex !== -1 ? trackIndex + 1 : 1;
+                    
+                    // Proteksi Mutlak: Paksa maksimal Track 2 (Jika data lama rusak, Track 3 jadi 1, Track 4 jadi 2)
+                    if (trackNum > 2) trackNum = (trackNum % 2 === 0) ? 2 : 1;
 
                     const isPlaying = (currentPlayingDocId === d.id && document.getElementById('globalMiniPlayer').classList.contains('show') && !document.getElementById('globalAudioEl').paused);
                     let playingOverlay = isPlaying ? `<div style="position:absolute; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); display:flex; align-items:center; justify-content:center; border-radius:10px; z-index: 5;"><img src="https://i.gifer.com/origin/b4/b4d657e7ef262b88eb5f7ac021edda87.gif" style="width:20px; height:20px; opacity:0.9;"></div>` : '';
