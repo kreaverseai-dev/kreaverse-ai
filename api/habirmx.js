@@ -1136,40 +1136,9 @@ ATURAN MUTLAK:
                 }
                 tracks = uniqueTracks;
 
-                // === AUTO-SPLIT TRACKS KE DATABASE SAAT POLLING SELESAI ===
-                if (isCompleted && tracks.length > 0) {
-                    try {
-                        const taskQuery = await db.collection("render_gallery").where("taskId", "==", taskId).get();
-                        if (!taskQuery.empty) {
-                            // Urutkan berdasarkan timestamp descending (karena di frontend Track 1 dibuat dengan timestamp lebih besar)
-                            const existingDocs = taskQuery.docs.sort((a, b) => b.data().timestamp - a.data().timestamp);
-                            
-                            for (let j = 0; j < tracks.length; j++) {
-                                if (j < existingDocs.length) {
-                                    const docToUpdate = existingDocs[j];
-                                    let baseTitle = docToUpdate.data().title || "Lagu Flixa AI";
-                                    baseTitle = baseTitle.replace(/\s*-\s*(?:Track|Versi)\s*\d+/gi, '').trim();
-                                    
-                                    // Update dokumen processing yang sudah ada di frontend
-                            if (docToUpdate.data().status !== "complete" || !docToUpdate.data().url) {
-                                await docToUpdate.ref.update({
-                                    status: "complete",
-                                    url: tracks[j].audioUrl,
-                                    imageUrl: tracks[j].imageUrl || docToUpdate.data().imageUrl || "https://i.postimg.cc/Jh211FTG/46cc61ec-de7f-4c62-8245-946e22312d2b.jpg",
-                                    title: `${baseTitle} - Versi ${j + 1}`,
-                                    audioId: tracks[j].audioId || taskId // FIX: Simpan Audio ID asli agar tidak kosong (-)
-                                });
-                            }
-                                }
-                            }
-                            // FIX RACE CONDITION: Hapus logika addDoc dan deleteDoc di sini.
-                            // Kita hanya mengupdate dokumen yang sudah disiapkan oleh frontend.
-                        }
-                    } catch (dbErr) {
-                        console.error("Gagal auto-split tracks ke database:", dbErr);
-                    }
-                }
-                // ==========================================================
+                // FIX BUG 4 TRACK: Logika Auto-Split Backend DIHAPUS TOTAL.
+                // Penyimpanan ke Firebase sekarang 100% ditangani oleh Frontend (Sistem Polling)
+                // Ini mencegah terjadinya Race Condition (Tabrakan) yang membuat lagu gagal hidup kembali menjadi 4 track.
             }
 
             let finalStatus = isCompleted ? "completed" : (isFailed ? "failed" : "processing");
