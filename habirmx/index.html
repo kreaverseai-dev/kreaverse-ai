@@ -8181,20 +8181,18 @@ async function processKreaverseAudio(file, isPreview = false, progressCallback) 
             // LAYER 13: TRUE RING MODULATOR (CARRIER KILLER)
             const isRingModChecked = document.getElementById('chkRingMod') && document.getElementById('chkRingMod').checked;
             if (isRingModChecked) {
-                // Upgrade dari sekadar Tremolo (AM) menjadi True Ring Modulation.
-                // Frekuensi asli (Carrier) DIHAPUS 100% dan diganti frekuensi palsu (Sidebands).
                 const ringOsc = offlineCtx.createOscillator();
                 ringOsc.type = 'sine';
-                ringOsc.frequency.value = 22; // 22 Hz shift
+                ringOsc.frequency.value = 15; // Diturunkan agar tidak terlalu bergetar
                 
                 const ringGain = offlineCtx.createGain();
-                ringGain.gain.value = 0; // Base 0 memaksa carrier terhapus
+                ringGain.gain.value = 0; 
                 
                 ringOsc.connect(ringGain.gain);
                 ringOsc.start(0);
                 
                 const dryMix = offlineCtx.createGain();
-                dryMix.gain.value = 0.4; // Simpan 40% suara asli agar manusia masih paham lagunya
+                dryMix.gain.value = 0.85; // NAIKKAN KE 85%: Pertahankan suara asli agar Suno tidak ngawur
                 
                 const finalMix = offlineCtx.createGain();
                 
@@ -8210,9 +8208,6 @@ async function processKreaverseAudio(file, isPreview = false, progressCallback) 
             // LAYER 14: [GOD MODE] CONSTELLATION NUKE (FALSE PEAK INJECTOR)
             const isNukeChecked = document.getElementById('chkNuke') && document.getElementById('chkNuke').checked;
             if (isNukeChecked) {
-                // Algoritma bot AI mencari titik-titik puncak (peaks) di spektrogram.
-                // Kita tembakkan 3 osilator yang melompat-lompat frekuensinya setiap 0.1 detik.
-                // Ini akan membanjiri database AI dengan "Fake Peaks", sehingga lagu asli buta total!
                 const nukeMix = offlineCtx.createGain();
                 lastNode.connect(nukeMix);
                 
@@ -8221,11 +8216,10 @@ async function processKreaverseAudio(file, isPreview = false, progressCallback) 
                     fakeOsc.type = 'sine';
                     
                     const fakeGain = offlineCtx.createGain();
-                    fakeGain.gain.value = 0.035; // Cukup keras untuk AI, tapi tenggelam di musik bagi manusia
+                    fakeGain.gain.value = 0.008; // DITURUNKAN DRASTIS: Agar tidak terdengar seperti alien/radio rusak
                     
-                    // Randomize frequency aggressively
                     for(let t=0; t<finalDuration; t+=0.1) {
-                        const randomFreq = 300 + (Math.random() * 4500); // 300Hz - 4800Hz
+                        const randomFreq = 300 + (Math.random() * 4500); 
                         fakeOsc.frequency.setValueAtTime(randomFreq, t);
                     }
                     
