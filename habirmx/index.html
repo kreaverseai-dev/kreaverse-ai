@@ -10660,13 +10660,24 @@ window.startDspBypassAndUpload = async function() {
                                 if (pollData.tracks && pollData.tracks.length > 0) {
                                     // Update dokumen di Firebase dengan URL lagu yang sudah jadi
                                     for (let i = 0; i < createdDocIds.length; i++) {
-                                        if (pollData.tracks[i]) {
+                                        // FIX: Jika track tersedia, gunakan. Jika API hanya mengirim 1 lagu, gunakan lagu itu untuk keduanya.
+                                        const trackData = pollData.tracks[i] || pollData.tracks[pollData.tracks.length - 1];
+                                        
+                                        if (trackData) {
+                                            // Format durasi dari detik ke MM:SS jika API mengirimkan angka detik
+                                            let finalDur = trackData.duration || "--:--";
+                                            if (typeof finalDur === 'number') {
+                                                const m = Math.floor(finalDur / 60).toString().padStart(2, '0');
+                                                const s = Math.floor(finalDur % 60).toString().padStart(2, '0');
+                                                finalDur = `${m}:${s}`;
+                                            }
+
                                             await updateDoc(doc(db, "render_gallery", createdDocIds[i]), {
                                                 status: "complete",
-                                                url: pollData.tracks[i].audioUrl || pollData.tracks[i].url || "",
-                                                imageUrl: pollData.tracks[i].imageUrl || pollData.tracks[i].cover || "",
-                                                duration: pollData.tracks[i].duration || "--:--",
-                                                audioId: pollData.tracks[i].audioId || pollData.tracks[i].id || safeTaskId // FIX: Fallback ke Task ID agar tidak pernah kosong (-)
+                                                url: trackData.audioUrl || trackData.url || "",
+                                                imageUrl: trackData.imageUrl || trackData.cover || "",
+                                                duration: finalDur,
+                                                audioId: trackData.audioId || trackData.id || safeTaskId
                                             });
                                         }
                                     }
