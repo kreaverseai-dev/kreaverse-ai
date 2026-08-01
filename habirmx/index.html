@@ -2345,132 +2345,225 @@
 
                                 <!-- TAB CONTENT V2 STABIL -->
                                 <div id="dspTabV2" class="hidden">
-                                    <div class="dsp-grid">
-                                        <!-- PITCH & TEMPO -->
-                                        <div class="dsp-control-box">
-                                            <!-- PITCH -->
-                                            <div class="dsp-row-flex">
-                                                <span class="dsp-control-title"><i class="fa-solid fa-music"></i> Pitch (Nada Dasar)</span>
-                                                <div class="stepper-container">
-                                                    <button type="button" class="stepper-btn" onclick="window.adjustStepper('pitchSlider', -1)">-</button>
-                                                    <input type="text" id="valKreaversePitch" class="stepper-val" value="+0.0" readonly>
-                                                    <button type="button" class="stepper-btn" onclick="window.adjustStepper('pitchSlider', 1)">+</button>
+                                    <div style="margin-bottom: 20px;">
+                                        <div class="dsp-row-flex" style="margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+                                            <span style="font-size: 0.85rem; font-weight: 800; color: #e2e8f0; display: flex; align-items: center; gap: 8px;">
+                                                ⚙️ Pengaturan Engine (v2 Stabil)
+                                                <button type="button" id="v2MasterLockBtn" onclick="window.toggleV2MasterLock()" style="background: none; border: none; color: #ef4444; cursor: pointer; font-size: 0.95rem; padding: 2px 6px; display: inline-flex; align-items: center;" title="Buka Kunci Panel">
+                                                    <i class="fa-solid fa-lock"></i>
+                                                </button>
+                                            </span>
+                                            
+                                            <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap; flex: 1; justify-content: flex-end;">
+                                                <!-- CUSTOM DROPDOWN PRESET V2 -->
+                                                <div class="custom-select-container" style="width: 220px; z-index: 10110;">
+                                                    <div class="custom-select-trigger" onclick="window.toggleCustomSelect('presetDropdownV2')" style="background: rgba(255,255,255,0.05); color: #ffffff; border: 1px solid rgba(255,255,255,0.12); border-radius: 10px; padding: 10px 14px; font-size: 0.75rem; min-height: auto; font-weight: 700; transition: 0.2s;">
+                                                        <span id="presetSelectedLabelV2" style="color: #ffffff;">🔥 Preset: 100% Bypass (Aman)</span>
+                                                        <i class="fa-solid fa-chevron-down" style="color: #ffffff;"></i>
+                                                    </div>
+                                                    <div class="custom-select-options hidden" id="presetDropdownV2" style="background: #1e293b; border: 1px solid #334155; top: calc(100% + 4px); max-height: 250px; overflow-y: auto; padding: 6px; border-radius: 12px; z-index: 10111;">
+                                                        <div style="font-size: 0.65rem; color: #e2e8f0; font-weight: 800; text-transform: uppercase; padding: 4px 10px; margin-bottom: 4px; letter-spacing: 0.5px; opacity: 0.8;">Sistem Preset V2</div>
+                                                        <div class="custom-select-option" style="color: #ffffff !important; font-weight: 700;" onclick="window.selectPresetOptionV2('manual', 'Manual Setup')">Manual Setup</div>
+                                                        <div class="custom-select-option selected" style="color: #ffffff !important; font-weight: 700;" onclick="window.selectPresetOptionV2('bypass_100', '🔥 Preset: 100% Bypass (Aman)')">🔥 Preset: 100% Bypass (Aman)</div>
+                                                        <div class="custom-select-option" style="color: #ffffff !important; font-weight: 700;" onclick="window.selectPresetOptionV2('bypass_extreme', '💣 Preset: Extreme Nuke (Ubah Nada)')">💣 Preset: Extreme Nuke (Ubah Nada)</div>
+                                                    </div>
                                                 </div>
-                                            </div>
-                                            <input type="range" id="pitchSlider" class="dsp-slider" min="-12" max="12" step="1" value="0" oninput="window.updateKreaverseVal()">
-                                            <div style="font-size: 0.65rem; color: #38bdf8; margin-top: 4px;">*Biarkan 0. Algoritma 20-Layer di bawah yang akan mengecoh AI.</div>
-                                            
-                                            <div style="height: 1px; background: rgba(255,255,255,0.05); margin: 16px 0;"></div>
-
-                                            <!-- TEMPO -->
-                                            <div class="dsp-row-flex">
-                                                <span class="dsp-control-title"><i class="fa-solid fa-gauge-high"></i> Tempo (Speed)</span>
-                                                <div class="stepper-container">
-                                                    <button type="button" class="stepper-btn" onclick="window.adjustStepper('kreaverseSpeed', -0.01)">-</button>
-                                                    <input type="text" id="valKreaverseSpeed" class="stepper-val" value="100%" readonly>
-                                                    <button type="button" class="stepper-btn" onclick="window.adjustStepper('kreaverseSpeed', 0.01)">+</button>
-                                                </div>
-                                            </div>
-                                            <input type="range" id="kreaverseSpeed" class="dsp-slider" min="0.5" max="1.5" step="0.01" value="1.0" oninput="window.updateKreaverseVal()">
-                                            <div id="kreaverseEstimatedDuration" style="font-size: 0.65rem; color: #94a3b8; margin-top: 8px; font-weight: 600; text-align: right;">Estimasi Durasi: 0:00</div>
-                                            
-                                            <div style="height: 1px; background: rgba(255,255,255,0.05); margin: 16px 0;"></div>
-                                            
-                                            <!-- REVERB (NEW) -->
-                                            <div class="dsp-row-flex" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                                                <span class="dsp-control-title" style="font-size: 0.8rem; font-weight: 800; color: #e2e8f0;">Studio Reverb (Vokal & Musik)</span>
-                                                <span id="valReverbV2" style="color: #38bdf8; font-weight: 800; font-size: 0.8rem;">0%</span>
-                                            </div>
-                                            <input type="range" id="sliderReverbV2" class="dsp-slider" style="width: 100%; accent-color: #38bdf8; height: 4px; border-radius: 10px; outline: none; -webkit-appearance: none; background: rgba(255,255,255,0.1);" min="0" max="100" step="1" value="0" oninput="document.getElementById('valReverbV2').innerText = this.value + '%'">
-                                        </div>
-                                    </div>
-
-                                    <!-- ADVANCED ALGORITHMS TOGGLES -->
-                                    <div style="margin-bottom: 24px;">
-                                        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 12px; margin-bottom: 12px; flex-wrap: wrap; gap: 12px;">
-                                            <div style="display: flex; align-items: center; gap: 10px; cursor: pointer; flex: 1; min-width: 200px;" onclick="toggleAccordion('advAlgoBody')">
-                                                <span style="font-size: 0.85rem; font-weight: 800; color: #e2e8f0;">🔥 20-Layer Ultimate Bypass DSP</span>
-                                                <i class="fa-solid fa-chevron-down" style="color: #94a3b8; transition: 0.3s;"></i>
                                             </div>
                                         </div>
                                         
-                                        <div id="advAlgoBody" class="hidden" style="display: flex; flex-direction: column; gap: 12px;">
+                                        <div class="dsp-grid" style="display: flex; flex-direction: column; gap: 16px;">
+                                            <div class="dsp-control-box" style="background: rgba(0,0,0,0.25); border: 1px solid rgba(255,255,255,0.08); padding: 16px; border-radius: 16px;">
+                                                <!-- Tempo -->
+                                                <div class="dsp-row-flex" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                                                    <span class="dsp-control-title" style="font-size: 0.8rem; font-weight: 800; color: #e2e8f0; display: flex; align-items: center; gap: 8px;">
+                                                        Kecepatan (Tempo)
+                                                        <button type="button" onclick="window.toggleSliderLock('kreaverseSpeed', this)" class="slider-lock-btn" style="background: none; border: none; color: #ef4444; cursor: pointer; font-size: 0.8rem; padding: 2px 4px; display: inline-flex; align-items: center;" title="Buka Kunci">
+                                                            <i class="fa-solid fa-lock"></i>
+                                                        </button>
+                                                    </span>
+                                                    <span id="valKreaverseSpeedText" style="color: #38bdf8; font-weight: 800; font-size: 0.8rem;">1.00x</span>
+                                                </div>
+                                                <input type="range" id="kreaverseSpeed" class="dsp-slider" style="width: 100%; accent-color: #38bdf8; height: 4px; border-radius: 10px; outline: none; -webkit-appearance: none; background: rgba(255,255,255,0.1);" min="0.5" max="1.5" step="0.01" value="1.0" oninput="document.getElementById('valKreaverseSpeedText').innerText = parseFloat(this.value).toFixed(2) + 'x'; window.updateKreaverseVal();" disabled>
+                                                <div id="kreaverseEstimatedDuration" style="font-size: 0.65rem; color: #94a3b8; margin-top: 8px; font-weight: 600; text-align: right;">Estimasi Durasi: 0:00</div>
+                                                
+                                                <div style="height: 1px; background: rgba(255,255,255,0.05); margin: 16px 0;"></div>
+                                                
+                                                <!-- Pitch -->
+                                                <div class="dsp-row-flex" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                                                    <span class="dsp-control-title" style="font-size: 0.8rem; font-weight: 800; color: #e2e8f0; display: flex; align-items: center; gap: 8px;">
+                                                        Pitch Shift (Semitones)
+                                                        <button type="button" onclick="window.toggleSliderLock('pitchSlider', this)" class="slider-lock-btn" style="background: none; border: none; color: #ef4444; cursor: pointer; font-size: 0.8rem; padding: 2px 4px; display: inline-flex; align-items: center;" title="Buka Kunci">
+                                                            <i class="fa-solid fa-lock"></i>
+                                                        </button>
+                                                    </span>
+                                                    <span id="valKreaversePitchText" style="color: #38bdf8; font-weight: 800; font-size: 0.8rem;">0</span>
+                                                </div>
+                                                <input type="range" id="pitchSlider" class="dsp-slider" style="width: 100%; accent-color: #38bdf8; height: 4px; border-radius: 10px; outline: none; -webkit-appearance: none; background: rgba(255,255,255,0.1);" min="-12" max="12" step="1" value="0" oninput="document.getElementById('valKreaversePitchText').innerText = this.value > 0 ? '+' + this.value : this.value; window.updateKreaverseVal();" disabled>
+                                                <div style="font-size: 0.65rem; color: #38bdf8; margin-top: 4px;">*Ubah Pitch (+1 atau -1) adalah cara paling ampuh mengecoh AI.</div>
+
+                                                <div style="height: 1px; background: rgba(255,255,255,0.05); margin: 16px 0;"></div>
+                                                
+                                                <!-- REVERB -->
+                                                <div class="dsp-row-flex" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                                                    <span class="dsp-control-title" style="font-size: 0.8rem; font-weight: 800; color: #e2e8f0; display: flex; align-items: center; gap: 8px;">
+                                                        Studio Reverb (Vokal & Musik)
+                                                        <button type="button" onclick="window.toggleSliderLock('sliderReverbV2', this)" class="slider-lock-btn" style="background: none; border: none; color: #ef4444; cursor: pointer; font-size: 0.8rem; padding: 2px 4px; display: inline-flex; align-items: center;" title="Buka Kunci">
+                                                            <i class="fa-solid fa-lock"></i>
+                                                        </button>
+                                                    </span>
+                                                    <span id="valReverbV2" style="color: #38bdf8; font-weight: 800; font-size: 0.8rem;">0%</span>
+                                                </div>
+                                                <input type="range" id="sliderReverbV2" class="dsp-slider" style="width: 100%; accent-color: #38bdf8; height: 4px; border-radius: 10px; outline: none; -webkit-appearance: none; background: rgba(255,255,255,0.1);" min="0" max="100" step="1" value="0" oninput="document.getElementById('valReverbV2').innerText = this.value + '%'" disabled>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div style="margin-bottom: 20px;">
+                                        <span style="font-size: 0.85rem; font-weight: 800; color: #e2e8f0; display: block; margin-bottom: 10px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 5px;">🔥 20-Layer Ultimate Bypass DSP</span>
+                                        
+                                        <div class="dsp-control-box" style="display: flex; flex-direction: column; gap: 16px; background: rgba(0,0,0,0.25); border: 1px solid rgba(255,255,255,0.08); padding: 16px; border-radius: 16px;">
                                             
-                                            <!-- 20-LAYER ENGINE STATUS DASHBOARD -->
-                                            <div id="dspStatusDashboard" style="background: linear-gradient(145deg, rgba(100, 116, 139, 0.1), rgba(0,0,0,0.2)); border: 1px solid rgba(100, 116, 139, 0.2); padding: 14px; border-radius: 12px; text-align: left; transition: all 0.3s ease;">
-                                                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
-                                                    <div id="dspStatusDot" style="width: 8px; height: 8px; background: #64748b; border-radius: 50%; transition: all 0.3s ease;"></div>
-                                                    <div id="dspStatusText" style="font-size: 0.85rem; font-weight: 800; color: #64748b; letter-spacing: 0.5px; transition: all 0.3s ease;">ENGINE STATUS: OFFLINE</div>
+                                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                                <div>
+                                                    <div style="font-size: 0.75rem; font-weight: 800; color: #e2e8f0;">1. Phase Scrambler</div>
+                                                    <div style="font-size: 0.65rem; color: #94a3b8;">Mengacak fase frekuensi vokal asli.</div>
                                                 </div>
-                                                <div style="font-size: 0.75rem; color: #cbd5e1; line-height: 1.6;">
-                                                    Saat tombol <b>ON SEMUA</b> diaktifkan, algoritma di bawah berjalan serentak untuk menghancurkan sidik jari audio:
-                                                    <div style="margin-top: 10px; display: flex; flex-direction: column; gap: 10px;">
-                                                        <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; text-transform: none; font-size: 0.75rem; color: #cbd5e1; font-weight: 600;">
-                                                            <input type="checkbox" class="dsp-chk" id="chkPhase" onchange="window.updateDSPStatusVisual()" style="width: 16px; height: 16px; accent-color: var(--accent-color);">
-                                                            <span><b>Phase Scrambler:</b> Mengacak fase frekuensi vokal asli</span>
-                                                        </label>
-                                                        <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; text-transform: none; font-size: 0.75rem; color: #cbd5e1; font-weight: 600;">
-                                                            <input type="checkbox" class="dsp-chk" id="chkWarp" onchange="window.updateDSPStatusVisual()" style="width: 16px; height: 16px; accent-color: var(--accent-color);">
-                                                            <span><b>Micro-Time Jitter:</b> Mengacak timeline melodi (Anti-FFT Match)</span>
-                                                        </label>
-                                                        <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; text-transform: none; font-size: 0.75rem; color: #cbd5e1; font-weight: 600;">
-                                                            <input type="checkbox" class="dsp-chk" id="chkFormant" onchange="window.updateDSPStatusVisual()" style="width: 16px; height: 16px; accent-color: var(--accent-color);">
-                                                            <span><b>Spectrogram Formant Shifter:</b> Menggeser pola resonansi vokal asli</span>
-                                                        </label>
-                                                        <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; text-transform: none; font-size: 0.75rem; color: #cbd5e1; font-weight: 600;">
-                                                            <input type="checkbox" class="dsp-chk" id="chkHarmonics" onchange="window.updateDSPStatusVisual()" style="width: 16px; height: 16px; accent-color: var(--accent-color);">
-                                                            <span><b>Harmonics Distortion:</b> Kompresi saturasi lembut (Anti-Fingerprint)</span>
-                                                        </label>
-                                                        <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; text-transform: none; font-size: 0.75rem; color: #cbd5e1; font-weight: 600;">
-                                                            <input type="checkbox" class="dsp-chk" id="chkSpatial" onchange="window.updateDSPStatusVisual()" style="width: 16px; height: 16px; accent-color: var(--accent-color);">
-                                                            <span><b>Spatial 3D Cross-Feed:</b> Pelebaran spasial asimetris</span>
-                                                        </label>
-                                                        <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; text-transform: none; font-size: 0.75rem; color: #cbd5e1; font-weight: 600;">
-                                                            <input type="checkbox" class="dsp-chk" id="chkMasking" onchange="window.updateDSPStatusVisual()" style="width: 16px; height: 16px; accent-color: var(--accent-color);">
-                                                            <span><b>Spectrogram Valley Masking:</b> Menyisipkan desis masking dinamis</span>
-                                                        </label>
-                                                        <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; text-transform: none; font-size: 0.75rem; color: #fca5a5; font-weight: 800;">
-                                                            <input type="checkbox" class="dsp-chk" id="chkObfuscator" onchange="window.updateDSPStatusVisual()" style="width: 16px; height: 16px; accent-color: #ef4444;">
-                                                            <span><b>[UPGRADED] ASR Cognitive Jammer:</b> Menghancurkan deteksi lirik vokal</span>
-                                                        </label>
-                                                        <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; text-transform: none; font-size: 0.75rem; color: #fca5a5; font-weight: 800;">
-                                                            <input type="checkbox" class="dsp-chk" id="chkFlux" onchange="window.updateDSPStatusVisual()" style="width: 16px; height: 16px; accent-color: #ef4444;">
-                                                            <span><b>[UPGRADED] Temporal Flux Engine:</b> Menarik & mengulur sumbu waktu agresif</span>
-                                                        </label>
-                                                        <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; text-transform: none; font-size: 0.75rem; color: #fca5a5; font-weight: 800;">
-                                                            <input type="checkbox" class="dsp-chk" id="chkMirage" onchange="window.updateDSPStatusVisual()" style="width: 16px; height: 16px; accent-color: #ef4444;">
-                                                            <span><b>[UPGRADED] Waveform Mirage Protocol:</b> Membiaskan struktur gelombang</span>
-                                                        </label>
-                                                        <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; text-transform: none; font-size: 0.75rem; color: #cbd5e1; font-weight: 600;">
-                                                            <input type="checkbox" class="dsp-chk" id="chkNullifier" onchange="window.updateDSPStatusVisual()" style="width: 16px; height: 16px; accent-color: var(--accent-color);">
-                                                            <span><b>Binaural Nullifier:</b> Memanipulasi fase asimetris (Anti-Mono AI)</span>
-                                                        </label>
-                                                        <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; text-transform: none; font-size: 0.75rem; color: #cbd5e1; font-weight: 600;">
-                                                            <input type="checkbox" class="dsp-chk" id="chkLayering" onchange="window.updateDSPStatusVisual()" style="width: 16px; height: 16px; accent-color: var(--accent-color);">
-                                                            <span><b>Layering & Reflektor:</b> Steganographic Audio Layer & Dimensional Void Reflector</span>
-                                                        </label>
-                                                        <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; text-transform: none; font-size: 0.75rem; color: #fca5a5; font-weight: 800;">
-                                                            <input type="checkbox" class="dsp-chk" id="chkTransient" onchange="window.updateDSPStatusVisual()" style="width: 16px; height: 16px; accent-color: #ef4444;">
-                                                            <span><b>[NEW] Transient Smudge:</b> Merusak keselarasan Intro & Durasi Absolut</span>
-                                                        </label>
-                                                        <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; text-transform: none; font-size: 0.75rem; color: #fca5a5; font-weight: 800;">
-                                                            <input type="checkbox" class="dsp-chk" id="chkChroma" onchange="window.updateDSPStatusVisual()" style="width: 16px; height: 16px; accent-color: #ef4444;">
-                                                            <span><b>[NEW] Deep Chroma Scrambler:</b> Membodohi sistem pencocokan Melodi AI</span>
-                                                        </label>
-                                                        <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; text-transform: none; font-size: 0.75rem; color: #fca5a5; font-weight: 800;">
-                                                            <input type="checkbox" class="dsp-chk" id="chkMicroReverse" onchange="window.updateDSPStatusVisual()" style="width: 16px; height: 16px; accent-color: #ef4444;">
-                                                            <span><b>[EXTREME] Waveform DNA Scrambler:</b> Membalikkan mikrosekon audio</span>
-                                                        </label>
-                                                        <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; text-transform: none; font-size: 0.75rem; color: #fca5a5; font-weight: 800;">
-                                                            <input type="checkbox" class="dsp-chk" id="chkRingMod" onchange="window.updateDSPStatusVisual()" style="width: 16px; height: 16px; accent-color: #ef4444;">
-                                                            <span><b>[EXTREME] Spectral Sideband:</b> Menggeser seluruh puncak frekuensi</span>
-                                                        </label>
-                                                        <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; text-transform: none; font-size: 0.75rem; color: #991b1b; font-weight: 900; background: #fecaca; padding: 4px 8px; border-radius: 6px;">
-                                                            <input type="checkbox" class="dsp-chk" id="chkNuke" onchange="window.updateDSPStatusVisual()" style="width: 16px; height: 16px; accent-color: #991b1b;">
-                                                            <span><b>[GOD MODE] Constellation Nuke:</b> Tembakkan Puncak Audio Palsu ke AI!</span>
-                                                        </label>
-                                                    </div>
+                                                <label class="switch" style="transform: scale(0.8); margin: 0;"><input type="checkbox" id="chkPhase" class="dsp-chk"><span class="slider-toggle"></span></label>
+                                            </div>
+                                            <div style="height: 1px; background: rgba(255,255,255,0.05);"></div>
+
+                                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                                <div>
+                                                    <div style="font-size: 0.75rem; font-weight: 800; color: #e2e8f0;">2. Micro-Time Jitter</div>
+                                                    <div style="font-size: 0.65rem; color: #94a3b8;">Mengacak timeline melodi (Anti-FFT Match).</div>
                                                 </div>
+                                                <label class="switch" style="transform: scale(0.8); margin: 0;"><input type="checkbox" id="chkWarp" class="dsp-chk"><span class="slider-toggle"></span></label>
+                                            </div>
+                                            <div style="height: 1px; background: rgba(255,255,255,0.05);"></div>
+
+                                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                                <div>
+                                                    <div style="font-size: 0.75rem; font-weight: 800; color: #e2e8f0;">3. Spectrogram Formant Shifter</div>
+                                                    <div style="font-size: 0.65rem; color: #94a3b8;">Menggeser pola resonansi vokal asli.</div>
+                                                </div>
+                                                <label class="switch" style="transform: scale(0.8); margin: 0;"><input type="checkbox" id="chkFormant" class="dsp-chk"><span class="slider-toggle"></span></label>
+                                            </div>
+                                            <div style="height: 1px; background: rgba(255,255,255,0.05);"></div>
+
+                                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                                <div>
+                                                    <div style="font-size: 0.75rem; font-weight: 800; color: #e2e8f0;">4. Harmonics Distortion</div>
+                                                    <div style="font-size: 0.65rem; color: #94a3b8;">Kompresi saturasi lembut (Anti-Fingerprint).</div>
+                                                </div>
+                                                <label class="switch" style="transform: scale(0.8); margin: 0;"><input type="checkbox" id="chkHarmonics" class="dsp-chk"><span class="slider-toggle"></span></label>
+                                            </div>
+                                            <div style="height: 1px; background: rgba(255,255,255,0.05);"></div>
+
+                                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                                <div>
+                                                    <div style="font-size: 0.75rem; font-weight: 800; color: #e2e8f0;">5. Spatial 3D Cross-Feed</div>
+                                                    <div style="font-size: 0.65rem; color: #94a3b8;">Pelebaran spasial asimetris.</div>
+                                                </div>
+                                                <label class="switch" style="transform: scale(0.8); margin: 0;"><input type="checkbox" id="chkSpatial" class="dsp-chk"><span class="slider-toggle"></span></label>
+                                            </div>
+                                            <div style="height: 1px; background: rgba(255,255,255,0.05);"></div>
+
+                                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                                <div>
+                                                    <div style="font-size: 0.75rem; font-weight: 800; color: #e2e8f0;">6. Spectrogram Valley Masking</div>
+                                                    <div style="font-size: 0.65rem; color: #94a3b8;">Menyisipkan desis masking dinamis.</div>
+                                                </div>
+                                                <label class="switch" style="transform: scale(0.8); margin: 0;"><input type="checkbox" id="chkMasking" class="dsp-chk"><span class="slider-toggle"></span></label>
+                                            </div>
+                                            <div style="height: 1px; background: rgba(255,255,255,0.05);"></div>
+
+                                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                                <div>
+                                                    <div style="font-size: 0.75rem; font-weight: 800; color: #fca5a5;">7. ASR Cognitive Jammer</div>
+                                                    <div style="font-size: 0.65rem; color: #fecaca;">Menghancurkan deteksi lirik vokal.</div>
+                                                </div>
+                                                <label class="switch" style="transform: scale(0.8); margin: 0;"><input type="checkbox" id="chkObfuscator" class="dsp-chk"><span class="slider-toggle" style="background-color: #ef4444;"></span></label>
+                                            </div>
+                                            <div style="height: 1px; background: rgba(255,255,255,0.05);"></div>
+
+                                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                                <div>
+                                                    <div style="font-size: 0.75rem; font-weight: 800; color: #fca5a5;">8. Temporal Flux Engine</div>
+                                                    <div style="font-size: 0.65rem; color: #fecaca;">Menarik & mengulur sumbu waktu agresif.</div>
+                                                </div>
+                                                <label class="switch" style="transform: scale(0.8); margin: 0;"><input type="checkbox" id="chkFlux" class="dsp-chk"><span class="slider-toggle" style="background-color: #ef4444;"></span></label>
+                                            </div>
+                                            <div style="height: 1px; background: rgba(255,255,255,0.05);"></div>
+
+                                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                                <div>
+                                                    <div style="font-size: 0.75rem; font-weight: 800; color: #fca5a5;">9. Waveform Mirage Protocol</div>
+                                                    <div style="font-size: 0.65rem; color: #fecaca;">Membiaskan struktur gelombang.</div>
+                                                </div>
+                                                <label class="switch" style="transform: scale(0.8); margin: 0;"><input type="checkbox" id="chkMirage" class="dsp-chk"><span class="slider-toggle" style="background-color: #ef4444;"></span></label>
+                                            </div>
+                                            <div style="height: 1px; background: rgba(255,255,255,0.05);"></div>
+
+                                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                                <div>
+                                                    <div style="font-size: 0.75rem; font-weight: 800; color: #e2e8f0;">10. Binaural Nullifier</div>
+                                                    <div style="font-size: 0.65rem; color: #94a3b8;">Memanipulasi fase asimetris (Anti-Mono AI).</div>
+                                                </div>
+                                                <label class="switch" style="transform: scale(0.8); margin: 0;"><input type="checkbox" id="chkNullifier" class="dsp-chk"><span class="slider-toggle"></span></label>
+                                            </div>
+                                            <div style="height: 1px; background: rgba(255,255,255,0.05);"></div>
+
+                                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                                <div>
+                                                    <div style="font-size: 0.75rem; font-weight: 800; color: #e2e8f0;">11. Layering & Reflektor</div>
+                                                    <div style="font-size: 0.65rem; color: #94a3b8;">Steganographic Audio Layer & Dimensional Void.</div>
+                                                </div>
+                                                <label class="switch" style="transform: scale(0.8); margin: 0;"><input type="checkbox" id="chkLayering" class="dsp-chk"><span class="slider-toggle"></span></label>
+                                            </div>
+                                            <div style="height: 1px; background: rgba(255,255,255,0.05);"></div>
+
+                                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                                <div>
+                                                    <div style="font-size: 0.75rem; font-weight: 800; color: #fca5a5;">12. Transient Smudge</div>
+                                                    <div style="font-size: 0.65rem; color: #fecaca;">Merusak keselarasan Intro & Durasi Absolut.</div>
+                                                </div>
+                                                <label class="switch" style="transform: scale(0.8); margin: 0;"><input type="checkbox" id="chkTransient" class="dsp-chk"><span class="slider-toggle" style="background-color: #ef4444;"></span></label>
+                                            </div>
+                                            <div style="height: 1px; background: rgba(255,255,255,0.05);"></div>
+
+                                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                                <div>
+                                                    <div style="font-size: 0.75rem; font-weight: 800; color: #fca5a5;">13. Deep Chroma Scrambler</div>
+                                                    <div style="font-size: 0.65rem; color: #fecaca;">Membodohi sistem pencocokan Melodi AI.</div>
+                                                </div>
+                                                <label class="switch" style="transform: scale(0.8); margin: 0;"><input type="checkbox" id="chkChroma" class="dsp-chk"><span class="slider-toggle" style="background-color: #ef4444;"></span></label>
+                                            </div>
+                                            <div style="height: 1px; background: rgba(255,255,255,0.05);"></div>
+
+                                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                                <div>
+                                                    <div style="font-size: 0.75rem; font-weight: 800; color: #fca5a5;">14. Waveform DNA Scrambler</div>
+                                                    <div style="font-size: 0.65rem; color: #fecaca;">Membalikkan mikrosekon audio.</div>
+                                                </div>
+                                                <label class="switch" style="transform: scale(0.8); margin: 0;"><input type="checkbox" id="chkMicroReverse" class="dsp-chk"><span class="slider-toggle" style="background-color: #ef4444;"></span></label>
+                                            </div>
+                                            <div style="height: 1px; background: rgba(255,255,255,0.05);"></div>
+
+                                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                                <div>
+                                                    <div style="font-size: 0.75rem; font-weight: 800; color: #fca5a5;">15. Spectral Phaser</div>
+                                                    <div style="font-size: 0.65rem; color: #fecaca;">Menggeser seluruh puncak frekuensi.</div>
+                                                </div>
+                                                <label class="switch" style="transform: scale(0.8); margin: 0;"><input type="checkbox" id="chkRingMod" class="dsp-chk"><span class="slider-toggle" style="background-color: #ef4444;"></span></label>
+                                            </div>
+                                            <div style="height: 1px; background: rgba(255,255,255,0.05);"></div>
+
+                                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                                <div>
+                                                    <div style="font-size: 0.75rem; font-weight: 900; color: #991b1b; background: #fecaca; padding: 2px 6px; border-radius: 4px; display: inline-block;">16. Ghost Hiss Injector</div>
+                                                    <div style="font-size: 0.65rem; color: #fecaca; margin-top: 4px;">Tembakkan Puncak Audio Palsu ke AI!</div>
+                                                </div>
+                                                <label class="switch" style="transform: scale(0.8); margin: 0;"><input type="checkbox" id="chkNuke" class="dsp-chk"><span class="slider-toggle" style="background-color: #991b1b;"></span></label>
                                             </div>
 
                                             <!-- Lyric Phonetic Encryptor -->
@@ -2485,6 +2578,86 @@
                                     </div>
                                 </div> <!-- END OF dspTabV2 -->
                             </div> <!-- END OF dspTabsContentContainer -->
+
+                            <script>
+                                // LOGIKA PRESET V2
+                                window.selectPresetOptionV2 = function(val, label) {
+                                    document.getElementById('presetSelectedLabelV2').innerText = label;
+                                    document.getElementById('presetDropdownV2').classList.add('hidden');
+                                    
+                                    const options = document.getElementById('presetDropdownV2').querySelectorAll('.custom-select-option');
+                                    options.forEach(opt => {
+                                        if (opt.innerText === label || opt.innerHTML.includes(label)) opt.classList.add('selected');
+                                        else opt.classList.remove('selected');
+                                    });
+                                    
+                                    window.applyV2Preset(val);
+                                };
+
+                                window.applyV2Preset = function(val) {
+                                    const setV2Values = (speed, pitch, reverb, toggles) => {
+                                        document.getElementById('kreaverseSpeed').value = speed; 
+                                        document.getElementById('valKreaverseSpeedText').innerText = parseFloat(speed).toFixed(2) + 'x';
+                                        
+                                        document.getElementById('pitchSlider').value = pitch; 
+                                        document.getElementById('valKreaversePitchText').innerText = pitch > 0 ? '+' + pitch : pitch;
+                                        
+                                        document.getElementById('sliderReverbV2').value = reverb; 
+                                        document.getElementById('valReverbV2').innerText = reverb + '%';
+                                        
+                                        const v2Ids = ['chkPhase', 'chkWarp', 'chkFormant', 'chkHarmonics', 'chkSpatial', 'chkMasking', 'chkObfuscator', 'chkFlux', 'chkMirage', 'chkNullifier', 'chkLayering', 'chkTransient', 'chkChroma', 'chkMicroReverse', 'chkRingMod', 'chkNuke'];
+                                        
+                                        v2Ids.forEach((id, index) => {
+                                            const el = document.getElementById(id);
+                                            if (el) el.checked = toggles[index];
+                                        });
+                                        
+                                        if(typeof window.updateKreaverseVal === 'function') window.updateKreaverseVal();
+                                    };
+
+                                    switch(val) {
+                                        case 'manual':
+                                            // Biarkan user mengatur sendiri
+                                            break;
+                                        case 'bypass_100': 
+                                            // Aman: Pitch 0, Speed 1.0, tapi semua efek nyala
+                                            setV2Values(1.00, 0, 10, [true, true, true, true, true, true, true, true, true, true, true, true, true, false, true, true]); 
+                                            break;
+                                        case 'bypass_extreme': 
+                                            // Extreme: Pitch +1, Speed 1.03, semua efek nyala (Pasti tembus, tapi nada berubah)
+                                            setV2Values(1.03, 1, 15, [true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true]); 
+                                            break;
+                                    }
+                                };
+
+                                // Fungsi Kunci & Buka Kunci Slider V2 (UX Anti-Geser - Master Lock)
+                                window.toggleV2MasterLock = function() {
+                                    const sliders = ['kreaverseSpeed', 'pitchSlider', 'sliderReverbV2'];
+                                    const btn = document.getElementById('v2MasterLockBtn');
+                                    if (!btn) return;
+
+                                    const firstSlider = document.getElementById(sliders[0]);
+                                    if (!firstSlider) return;
+
+                                    const isCurrentlyLocked = firstSlider.disabled;
+                                    const newDisabledState = !isCurrentlyLocked;
+
+                                    sliders.forEach(id => {
+                                        const el = document.getElementById(id);
+                                        if (el) el.disabled = newDisabledState;
+                                    });
+
+                                    if (isCurrentlyLocked) {
+                                        btn.innerHTML = '<i class="fa-solid fa-lock-open" style="color: #10b981;"></i>';
+                                        btn.title = "Kunci Panel";
+                                        if (typeof showIphoneToast === 'function') showIphoneToast("Panel Terbuka", "Semua slider V2 sekarang bisa disesuaikan.", "fa-lock-open");
+                                    } else {
+                                        btn.innerHTML = '<i class="fa-solid fa-lock" style="color: #ef4444;"></i>';
+                                        btn.title = "Buka Kunci Panel";
+                                        if (typeof showIphoneToast === 'function') showIphoneToast("Panel Terkunci", "Semua slider V2 dikunci untuk menghindari pergeseran tidak sengaja.", "fa-lock");
+                                    }
+                                };
+                            </script>
 
                             <!-- CHOOSE FORMAT FOR UPLOAD (NEW) -->
                             <div style="margin-bottom: 20px; background: rgba(255,255,255,0.03); border: 1px dashed rgba(255,255,255,0.1); padding: 14px; border-radius: 16px;">
@@ -8147,35 +8320,61 @@ async function processKreaverseAudio(file, isPreview = false, progressCallback) 
             // LAYER 12: DEEP CHROMA SCRAMBLER (ANTI-MELODY MATCHING)
             const isChromaChecked = document.getElementById('chkChroma') && document.getElementById('chkChroma').checked;
             if (isChromaChecked) {
-                // AI mencocokkan "Melody Contour". Kita memecahnya dengan Comb Filter dinamis
-                // yang terus bergerak, mengubah struktur harmonik (MFCC) tanpa merusak nada dasar
-                const combDelay = offlineCtx.createDelay();
-                const combFeedback = offlineCtx.createGain();
+                // REVISI: Mengubah Comb Filter (Helikopter) menjadi Stereo Chorus Halus.
+                // Ini memecah "Melody Contour" (MFCC) dengan cara melebarkan suara ke kiri dan kanan,
+                // sehingga bot AI gagal mencocokkan sidik jari mono-nya.
+                const splitter = offlineCtx.createChannelSplitter(2);
+                const merger = offlineCtx.createChannelMerger(2);
                 
-                // LFO untuk menggerakkan delay time comb filter
-                const combLfo = offlineCtx.createOscillator();
-                combLfo.type = 'sine';
-                combLfo.frequency.value = 0.15; // Sangat lambat agar manusia tidak pusing
+                const delayL = offlineCtx.createDelay();
+                const delayR = offlineCtx.createDelay();
                 
-                const combLfoGain = offlineCtx.createGain();
-                combLfoGain.gain.value = 0.0025; // Modulasi 2.5ms
+                // Delay sangat pendek (15ms dan 22ms) agar tidak terdengar seperti gema
+                delayL.delayTime.value = 0.015;
+                delayR.delayTime.value = 0.022;
                 
-                combLfo.connect(combLfoGain);
-                combLfoGain.connect(combDelay.delayTime);
-                combLfo.start(0);
+                // LFO sangat lambat (0.05 Hz) agar tidak ada efek putaran/helikopter
+                const lfo = offlineCtx.createOscillator();
+                lfo.type = 'sine';
+                lfo.frequency.value = 0.05; 
                 
-                combDelay.delayTime.value = 0.012; // Base 12ms
-                combFeedback.gain.value = -0.05; // DITURUNKAN KE -5%: Menghilangkan dengungan metalik/reverb
+                const lfoGain = offlineCtx.createGain();
+                lfoGain.gain.value = 0.001; // Modulasi sangat tipis (1ms)
                 
-                const combMix = offlineCtx.createGain();
+                lfo.connect(lfoGain);
+                lfoGain.connect(delayL.delayTime);
+                // Invert LFO untuk channel kanan agar suaranya lebar
+                const invertGain = offlineCtx.createGain();
+                invertGain.gain.value = -1;
+                lfoGain.connect(invertGain);
+                invertGain.connect(delayR.delayTime);
                 
-                lastNode.connect(combMix); // Dry
-                lastNode.connect(combDelay);
-                combDelay.connect(combFeedback);
-                combFeedback.connect(combDelay); // Loop
-                combDelay.connect(combMix); // Wet
+                lfo.start(0);
                 
-                lastNode = combMix;
+                lastNode.connect(splitter);
+                
+                // Channel Kiri
+                splitter.connect(delayL, 0);
+                delayL.connect(merger, 0, 0);
+                
+                // Channel Kanan
+                splitter.connect(delayR, 1);
+                delayR.connect(merger, 0, 1);
+                
+                // Campur suara asli (Dry) dengan suara Chorus (Wet)
+                const dryGain = offlineCtx.createGain();
+                dryGain.gain.value = 0.7;
+                const wetGain = offlineCtx.createGain();
+                wetGain.gain.value = 0.3; // Efek chorus hanya 30%
+                
+                const finalMix = offlineCtx.createGain();
+                lastNode.connect(dryGain);
+                merger.connect(wetGain);
+                
+                dryGain.connect(finalMix);
+                wetGain.connect(finalMix);
+                
+                lastNode = finalMix;
             }
 
             // LAYER 13: SPECTRAL PHASER (PENGGANTI RING MODULATOR)
