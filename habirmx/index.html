@@ -6008,9 +6008,10 @@
                 if(uploadSection) uploadSection.classList.add('hidden');
                 if(voiceSection) voiceSection.classList.add('hidden');
                 
-                if(btnAudioToStyle) btnAudioToStyle.classList.add('hidden');
-                if(selectLangContainer) selectLangContainer.classList.add('hidden');
-                if(btnSyncDetect) btnSyncDetect.style.display = 'none'; // Sembunyikan Deteksi
+                // FIX: SEMBUNYIKAN AUTO-STYLE & DETEKSI SECARA PAKSA
+                if(btnAudioToStyle) btnAudioToStyle.style.display = 'none';
+                if(selectLangContainer) selectLangContainer.style.display = 'none';
+                if(btnSyncDetect) btnSyncDetect.style.display = 'none';
                 
                 // Tampilkan tombol AI di mode Generate
                 if(btnStyleAI) btnStyleAI.style.display = 'flex';
@@ -6043,9 +6044,10 @@
                     }
                 }
                 
-                if(btnAudioToStyle) btnAudioToStyle.classList.remove('hidden');
-                if(selectLangContainer) selectLangContainer.classList.remove('hidden');
-                if(btnSyncDetect) btnSyncDetect.style.display = 'flex'; // Tampilkan Deteksi
+                // FIX: TAMPILKAN KEMBALI AUTO-STYLE & DETEKSI
+                if(btnAudioToStyle) btnAudioToStyle.style.display = 'flex';
+                if(selectLangContainer) selectLangContainer.style.display = 'flex';
+                if(btnSyncDetect) btnSyncDetect.style.display = 'flex';
                 
                 // Sembunyikan tombol AI di mode Cover
                 if(btnStyleAI) btnStyleAI.style.display = 'none';
@@ -6069,9 +6071,10 @@
                 if(uploadSection) uploadSection.classList.add('hidden');
                 if(voiceSection) voiceSection.classList.remove('hidden');
                 
-                if(btnAudioToStyle) btnAudioToStyle.classList.add('hidden');
-                if(selectLangContainer) selectLangContainer.classList.add('hidden');
-                if(btnSyncDetect) btnSyncDetect.style.display = 'none'; // Sembunyikan Deteksi
+                // FIX: SEMBUNYIKAN AUTO-STYLE & DETEKSI
+                if(btnAudioToStyle) btnAudioToStyle.style.display = 'none';
+                if(selectLangContainer) selectLangContainer.style.display = 'none';
+                if(btnSyncDetect) btnSyncDetect.style.display = 'none';
                 
                 if(modeDesc) modeDesc.innerText = "Kloning suara Anda sendiri atau ekstrak karakter vokal dari lagu AI sebelumnya.";
                 
