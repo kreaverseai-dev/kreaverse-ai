@@ -2414,6 +2414,48 @@
                                                     <span id="valReverbV2" style="color: #38bdf8; font-weight: 800; font-size: 0.8rem;">0%</span>
                                                 </div>
                                                 <input type="range" id="sliderReverbV2" class="dsp-slider" style="width: 100%; accent-color: #38bdf8; height: 4px; border-radius: 10px; outline: none; -webkit-appearance: none; background: rgba(255,255,255,0.1);" min="0" max="100" step="1" value="0" oninput="document.getElementById('valReverbV2').innerText = this.value + '%'" disabled>
+
+                                                <div style="height: 1px; background: rgba(255,255,255,0.05); margin: 16px 0;"></div>
+
+                                                <!-- TIMBRE V2 -->
+                                                <div class="dsp-row-flex" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                                                    <span class="dsp-control-title" style="font-size: 0.8rem; font-weight: 800; color: #e2e8f0; display: flex; align-items: center; gap: 8px;">
+                                                        Timbre Density Enhancer
+                                                        <button type="button" onclick="window.toggleSliderLock('sliderTimbreV2', this)" class="slider-lock-btn" style="background: none; border: none; color: #ef4444; cursor: pointer; font-size: 0.8rem; padding: 2px 4px; display: inline-flex; align-items: center;" title="Buka Kunci">
+                                                            <i class="fa-solid fa-lock"></i>
+                                                        </button>
+                                                    </span>
+                                                    <span id="valTimbreV2" style="color: #38bdf8; font-weight: 800; font-size: 0.8rem;">0%</span>
+                                                </div>
+                                                <input type="range" id="sliderTimbreV2" class="dsp-slider" style="width: 100%; accent-color: #38bdf8; height: 4px; border-radius: 10px; outline: none; -webkit-appearance: none; background: rgba(255,255,255,0.1);" min="0" max="100" step="1" value="0" oninput="document.getElementById('valTimbreV2').innerText = this.value + '%'" disabled>
+
+                                                <div style="height: 1px; background: rgba(255,255,255,0.05); margin: 16px 0;"></div>
+
+                                                <!-- STEGO V2 -->
+                                                <div class="dsp-row-flex" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                                                    <span class="dsp-control-title" style="font-size: 0.8rem; font-weight: 800; color: #e2e8f0; display: flex; align-items: center; gap: 8px;">
+                                                        Steganographic Audio Layer
+                                                        <button type="button" onclick="window.toggleSliderLock('sliderStegoV2', this)" class="slider-lock-btn" style="background: none; border: none; color: #ef4444; cursor: pointer; font-size: 0.8rem; padding: 2px 4px; display: inline-flex; align-items: center;" title="Buka Kunci">
+                                                            <i class="fa-solid fa-lock"></i>
+                                                        </button>
+                                                    </span>
+                                                    <span id="valStegoV2" style="color: #38bdf8; font-weight: 800; font-size: 0.8rem;">0%</span>
+                                                </div>
+                                                <input type="range" id="sliderStegoV2" class="dsp-slider" style="width: 100%; accent-color: #38bdf8; height: 4px; border-radius: 10px; outline: none; -webkit-appearance: none; background: rgba(255,255,255,0.1);" min="0" max="100" step="1" value="0" oninput="document.getElementById('valStegoV2').innerText = this.value + '%'" disabled>
+
+                                                <div style="height: 1px; background: rgba(255,255,255,0.05); margin: 16px 0;"></div>
+
+                                                <!-- VOID V2 -->
+                                                <div class="dsp-row-flex" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                                                    <span class="dsp-control-title" style="font-size: 0.8rem; font-weight: 800; color: #e2e8f0; display: flex; align-items: center; gap: 8px;">
+                                                        Dimensional Void Reflector
+                                                        <button type="button" onclick="window.toggleSliderLock('sliderVoidV2', this)" class="slider-lock-btn" style="background: none; border: none; color: #ef4444; cursor: pointer; font-size: 0.8rem; padding: 2px 4px; display: inline-flex; align-items: center;" title="Buka Kunci">
+                                                            <i class="fa-solid fa-lock"></i>
+                                                        </button>
+                                                    </span>
+                                                    <span id="valVoidV2" style="color: #38bdf8; font-weight: 800; font-size: 0.8rem;">0%</span>
+                                                </div>
+                                                <input type="range" id="sliderVoidV2" class="dsp-slider" style="width: 100%; accent-color: #38bdf8; height: 4px; border-radius: 10px; outline: none; -webkit-appearance: none; background: rgba(255,255,255,0.1);" min="0" max="100" step="1" value="0" oninput="document.getElementById('valVoidV2').innerText = this.value + '%'" disabled>
                                             </div>
                                         </div>
                                     </div>
@@ -2595,7 +2637,7 @@
                                 };
 
                                 window.applyV2Preset = function(val) {
-                                    const setV2Values = (speed, pitch, reverb, toggles) => {
+                                    const setV2Values = (speed, pitch, reverb, timbre, stego, voidVal, toggles) => {
                                         document.getElementById('kreaverseSpeed').value = speed; 
                                         document.getElementById('valKreaverseSpeedText').innerText = parseFloat(speed).toFixed(2) + 'x';
                                         
@@ -2604,6 +2646,15 @@
                                         
                                         document.getElementById('sliderReverbV2').value = reverb; 
                                         document.getElementById('valReverbV2').innerText = reverb + '%';
+
+                                        document.getElementById('sliderTimbreV2').value = timbre; 
+                                        document.getElementById('valTimbreV2').innerText = timbre + '%';
+
+                                        document.getElementById('sliderStegoV2').value = stego; 
+                                        document.getElementById('valStegoV2').innerText = stego + '%';
+
+                                        document.getElementById('sliderVoidV2').value = voidVal; 
+                                        document.getElementById('valVoidV2').innerText = voidVal + '%';
                                         
                                         const v2Ids = ['chkPhase', 'chkWarp', 'chkFormant', 'chkHarmonics', 'chkSpatial', 'chkMasking', 'chkObfuscator', 'chkFlux', 'chkMirage', 'chkNullifier', 'chkLayering', 'chkTransient', 'chkChroma', 'chkMicroReverse', 'chkRingMod', 'chkNuke'];
                                         
@@ -2617,22 +2668,21 @@
 
                                     switch(val) {
                                         case 'manual':
-                                            // Biarkan user mengatur sendiri
                                             break;
                                         case 'bypass_100': 
-                                            // Aman: Pitch 0, Speed 1.0, tapi semua efek nyala
-                                            setV2Values(1.00, 0, 10, [true, true, true, true, true, true, true, true, true, true, true, true, true, false, true, true]); 
+                                            // AMAN 100%: Pitch 0, Speed 1.0. Stego dinaikkan ke 85% untuk membutakan AI tanpa merusak nada.
+                                            setV2Values(1.00, 0, 10, 59, 85, 49, [true, true, true, true, true, true, true, true, true, true, true, true, true, false, true, true]); 
                                             break;
                                         case 'bypass_extreme': 
-                                            // Extreme: Pitch +1, Speed 1.03, semua efek nyala (Pasti tembus, tapi nada berubah)
-                                            setV2Values(1.03, 1, 15, [true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true]); 
+                                            // EXTREME: Pitch +1, Speed 1.03. Stego 95%. (Pasti tembus, tapi nada berubah)
+                                            setV2Values(1.03, 1, 15, 65, 95, 60, [true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true]); 
                                             break;
                                     }
                                 };
 
                                 // Fungsi Kunci & Buka Kunci Slider V2 (UX Anti-Geser - Master Lock)
                                 window.toggleV2MasterLock = function() {
-                                    const sliders = ['kreaverseSpeed', 'pitchSlider', 'sliderReverbV2'];
+                                    const sliders = ['kreaverseSpeed', 'pitchSlider', 'sliderReverbV2', 'sliderTimbreV2', 'sliderStegoV2', 'sliderVoidV2'];
                                     const btn = document.getElementById('v2MasterLockBtn');
                                     if (!btn) return;
 
@@ -8056,6 +8106,42 @@ async function processKreaverseAudio(file, isPreview = false, progressCallback) 
         
         if (isMasterOn) {
             
+            // --- INJEKSI SLIDER V2 (TIMBRE, STEGO, VOID) ---
+            const v2Timbre = parseInt(safeGetVal('sliderTimbreV2', '0')) || 0;
+            const v2Stego = parseInt(safeGetVal('sliderStegoV2', '0')) || 0;
+            const v2Void = parseInt(safeGetVal('sliderVoidV2', '0')) || 0;
+
+            if (v2Timbre > 0) {
+                const lpFilter = offlineCtx.createBiquadFilter(); lpFilter.type = 'lowpass';
+                lpFilter.frequency.value = 24000 - (v2Timbre * 200);
+                lastNode.connect(lpFilter); lastNode = lpFilter;
+            }
+
+            if (v2Void > 0) {
+                const delay = offlineCtx.createDelay(); delay.delayTime.value = 0.15; 
+                const delayGain = offlineCtx.createGain(); delayGain.gain.value = (v2Void / 100) * 0.02; 
+                const voidMix = offlineCtx.createGain();
+                lastNode.connect(voidMix);
+                lastNode.connect(delay); delay.connect(delayGain); delayGain.connect(voidMix);
+                lastNode = voidMix;
+            }
+
+            if (v2Stego > 0) {
+                const noiseLen = offlineCtx.sampleRate * 2; 
+                const noiseBuf = offlineCtx.createBuffer(1, noiseLen, offlineCtx.sampleRate);
+                const output = noiseBuf.getChannelData(0); 
+                for (let i = 0; i < noiseLen; i++) output[i] = Math.random() * 2 - 1;
+                const noiseSrc = offlineCtx.createBufferSource(); 
+                noiseSrc.buffer = noiseBuf; noiseSrc.loop = true;
+                const noiseFilter = offlineCtx.createBiquadFilter();
+                noiseFilter.type = 'bandpass'; noiseFilter.frequency.value = 1000; noiseFilter.Q.value = 0.5;
+                const noiseGain = offlineCtx.createGain(); 
+                noiseGain.gain.value = (v2Stego / 100) * 0.15; 
+                noiseSrc.connect(noiseFilter); noiseFilter.connect(noiseGain); noiseGain.connect(offlineCtx.destination);
+                noiseSrc.start(0);
+            }
+            // ----------------------------------------------
+
             // LAYER 1: UPGRADED TEMPORAL FLUX ENGINE (ANTI-FFT MATCH)
             const isWarpChecked = document.getElementById('chkWarp') && document.getElementById('chkWarp').checked;
             const isFluxChecked = document.getElementById('chkFlux') && document.getElementById('chkFlux').checked;
