@@ -4512,6 +4512,26 @@
         const db = getFirestore(app);
         const rtdb = getDatabase(app);
 
+        // --- AUTO INJECT FIREBASE TOKEN UNTUK KEAMANAN BACKEND ---
+        const originalFetch = window.fetch;
+        window.fetch = async function() {
+            let [resource, config] = arguments;
+            if (typeof resource === 'string' && resource.includes('/api/habirmx')) {
+                config = config || {};
+                config.headers = config.headers || {};
+                if (auth && auth.currentUser) {
+                    try {
+                        const token = await auth.currentUser.getIdToken();
+                        config.headers['Authorization'] = `Bearer ${token}`;
+                    } catch (e) {
+                        console.warn("Gagal mengambil token:", e);
+                    }
+                }
+            }
+            return originalFetch(resource, config);
+        };
+        // ---------------------------------------------------------
+
         // --- SISTEM MAINTENANCE GLOBAL ---
         window.isMaintenanceModeActive = false;
 
