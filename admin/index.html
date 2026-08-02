@@ -863,6 +863,7 @@
                                 <button class="tab-sort-btn" onclick="window.filterEngine('video')">Video</button>
                                 <button class="tab-sort-btn" onclick="window.filterEngine('image')">Image</button>
                             </div>
+                            <button class="btn btn-sm" style="background: rgba(0,122,255,0.12); color: #007AFF; border: 1px solid rgba(0,122,255,0.3);" onclick="window.openWorkflowTutorialModal()"><i class="fa-solid fa-route"></i> Tutorial Alur Kerja</button>
                             <button class="btn btn-sm" style="background: rgba(175,82,222,0.12); color: #AF52DE; border: 1px solid rgba(175,82,222,0.3);" onclick="window.openBriefingPromptModal()"><i class="fa-solid fa-wand-magic-sparkles"></i> Copy Briefing AI Baru</button>
                             <button class="btn btn-sm btn-success" onclick="window.addApiProvider()"><i class="fa-solid fa-plus"></i> Tambah Provider</button>
                         </div>
@@ -3451,15 +3452,86 @@ window.copyBriefingPromptToClipboard = function() {
     });
 };
 
+window.openWorkflowTutorialModal = function() {
+    let modal = document.getElementById('workflow-tutorial-modal');
+    if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'workflow-tutorial-modal';
+        modal.className = 'bottom-sheet-overlay';
+        modal.onclick = (e) => { if(e.target === modal) modal.classList.remove('open'); };
+        modal.innerHTML = `
+            <div class="bottom-sheet-container" style="max-width: 600px; text-align: left; max-height: 85vh; overflow-y: auto;">
+                <div class="sheet-header">
+                    <span class="sheet-title"><i class="fa-solid fa-route" style="color:#007AFF; margin-right:8px;"></i> Panduan Alur Kerja Pembuatan Tool Baru</span>
+                    <button class="sheet-close-btn" onclick="document.getElementById('workflow-tutorial-modal').classList.remove('open')">&times;</button>
+                </div>
+                
+                <div style="display: flex; flex-direction: column; gap: 16px; line-height: 1.6; font-size: 0.88rem; color: var(--text);">
+                    
+                    <div style="background: rgba(0, 122, 255, 0.06); border-left: 4px solid #007AFF; padding: 14px; border-radius: 0 12px 12px 0;">
+                        <strong style="color: #007AFF; font-size: 0.95rem; display: block; margin-bottom: 4px;"><i class="fa-solid fa-sitemap"></i> Konsep Utama: 1 Backend untuk Semua Media AI</strong>
+                        <p style="font-size: 0.82rem; color: var(--text-sec); margin: 0;">Sistem Kreaverse AI Anda sudah dirancang <b>Universal (Multi-Media)</b>. Satu backend Vercel (<code>/api/habirmx</code>) & Dashboard Admin ini mampu melayani tool <b>Musik AI (Suno)</b>, <b>Video AI (Kling/Luma)</b>, <b>Gambar AI (Flux/Midjourney)</b>, maupun <b>Chat/LLM (Gemini/Claude)</b> tanpa perlu membuat backend baru!</p>
+                    </div>
+
+                    <!-- STEP 1 -->
+                    <div style="background: #FAFAFC; border: 1px solid var(--border); padding: 16px; border-radius: 16px;">
+                        <div style="font-weight: 800; font-size: 0.95rem; color: var(--text); margin-bottom: 8px; display: flex; align-items: center; gap: 8px;">
+                            <span style="background: #007AFF; color: #fff; width: 26px; height: 26px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 0.8rem;">1</span>
+                            Buka Menu 'Copy Briefing AI Baru'
+                        </div>
+                        <p style="font-size: 0.82rem; color: var(--text-sec); margin-bottom: 8px;">Klik tombol ungu <b>"Copy Briefing AI Baru"</b> di header panel ini. Masukkan Nama Tool (misal: <i>Habi Video Kling AI</i>) dan Nama File Frontend (misal: <i>video.html</i>), lalu klik <b>Salin Prompt Briefing</b>.</p>
+                    </div>
+
+                    <!-- STEP 2 -->
+                    <div style="background: #FAFAFC; border: 1px solid var(--border); padding: 16px; border-radius: 16px;">
+                        <div style="font-weight: 800; font-size: 0.95rem; color: var(--text); margin-bottom: 8px; display: flex; align-items: center; gap: 8px;">
+                            <span style="background: #007AFF; color: #fff; width: 26px; height: 26px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 0.8rem;">2</span>
+                            Paste Briefing ke Chat AI (Coding Assistant)
+                        </div>
+                        <p style="font-size: 0.82rem; color: var(--text-sec); margin-bottom: 8px;">Paste hasil salinan tersebut ke ChatGPT, Claude, atau Gemini. AI akan otomatis membuatkan kode tunggal utuh HTML/JS (misal: <code>video.html</code>) yang secara otomatis terhubung ke Backend Vercel Anda tanpa perlu koding manual.</p>
+                    </div>
+
+                    <!-- STEP 3 -->
+                    <div style="background: #FAFAFC; border: 1px solid var(--border); padding: 16px; border-radius: 16px;">
+                        <div style="font-weight: 800; font-size: 0.95rem; color: var(--text); margin-bottom: 8px; display: flex; align-items: center; gap: 8px;">
+                            <span style="background: #007AFF; color: #fff; width: 26px; height: 26px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 0.8rem;">3</span>
+                            Atur Provider AI di Dashboard Admin
+                        </div>
+                        <p style="font-size: 0.82rem; color: var(--text-sec); margin-bottom: 8px;">Jika tool baru Anda membutuhkan API khusus (misal: Kling AI untuk Video atau Suno/KIE untuk Musik):</p>
+                        <ul style="margin-left: 20px; font-size: 0.8rem; color: var(--text-sec); display: flex; flex-direction: column; gap: 4px;">
+                            <li>Pilih Tab yang sesuai: <b>Video</b> / <b>Audio</b> / <b>Image</b> / <b>Chat/LLM</b>.</li>
+                            <li>Daftarkan Provider & API Key-nya di panel bawah.</li>
+                        </ul>
+                    </div>
+
+                    <!-- STEP 4 -->
+                    <div style="background: #FAFAFC; border: 1px solid var(--border); padding: 16px; border-radius: 16px;">
+                        <div style="font-weight: 800; font-size: 0.95rem; color: var(--text); margin-bottom: 8px; display: flex; align-items: center; gap: 8px;">
+                            <span style="background: #34C759; color: #fff; width: 26px; height: 26px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 0.8rem;"><i class="fa-solid fa-check"></i></span>
+                            Selesai & Langsung Bekerja!
+                        </div>
+                        <p style="font-size: 0.82rem; color: var(--text-sec); margin: 0;">Simpan file <code>video.html</code> tersebut ke GitHub/Vercel Anda. Tool baru langsung siap dipakai oleh pengguna, dengan pemotongan kredit & proteksi API Key otomatis dikelola oleh server!</p>
+                    </div>
+
+                </div>
+
+                <button class="btn btn-primary" onclick="document.getElementById('workflow-tutorial-modal').classList.remove('open')" style="width: 100%; margin-top: 20px; font-weight: 800;"><i class="fa-solid fa-circle-check"></i> Mengerti, Tutup Panduan</button>
+            </div>
+        `;
+        document.body.appendChild(modal);
+    }
+    modal.classList.add('open');
+};
+
 window.addApiProvider = function() {
     document.getElementById('prov-mode').value = 'add';
     document.getElementById('provider-modal-title').innerHTML = '<i class="fa-solid fa-plus" style="color:var(--accent); margin-right:8px;"></i> Tambah Provider API';
-    
+
     clearAllProviderInputs();
 
     switchProviderTab('audio'); // Default ke Audio
     document.getElementById('provider-modal').classList.add('visible');
-}
+};
 
 window.editLyricshotProvider = function(val) {
     const p = customApiProviders.find(item => item.value === val);
