@@ -7416,7 +7416,13 @@
             // FIX BUG NOISE: Ambil durasi asli lagu baru dan Reset kotak pemotong lagu (Trimmer)
             originalPlayer.onloadedmetadata = () => {
                 if (isFinite(originalPlayer.duration)) {
-                    document.getElementById('trimStartInput').value = "00:00";
+                    // AUTO-TRIM 20 DETIK PERTAMA (JURUS PAMUNGKAS ANTI-COPYRIGHT)
+                    // Jika lagu lebih panjang dari 30 detik, otomatis potong 20 detik pertama.
+                    if (originalPlayer.duration > 30) {
+                        document.getElementById('trimStartInput').value = "00:20";
+                    } else {
+                        document.getElementById('trimStartInput').value = "00:00";
+                    }
                     
                     const m = Math.floor(originalPlayer.duration / 60).toString().padStart(2, '0');
                     const s = Math.floor(originalPlayer.duration % 60).toString().padStart(2, '0');
@@ -8099,6 +8105,28 @@ async function processKreaverseAudio(file, isPreview = false, progressCallback) 
                     
                     lastNode = mixNode;
                 }
+
+                // 10. JURUS PAMUNGKAS V1: STEREO WIDENER (ANTI-MONO FINGERPRINT)
+                // Memecah audio ke kiri dan kanan dengan delay mikro. Sangat ampuh mengecoh AI tanpa merusak nada.
+                const splitterV1 = offlineCtx.createChannelSplitter(2);
+                const mergerV1 = offlineCtx.createChannelMerger(2);
+                const delayLV1 = offlineCtx.createDelay(); delayLV1.delayTime.value = 0.012;
+                const delayRV1 = offlineCtx.createDelay(); delayRV1.delayTime.value = 0.017;
+                
+                lastNode.connect(splitterV1);
+                splitterV1.connect(delayLV1, 0); delayLV1.connect(mergerV1, 0, 0);
+                splitterV1.connect(delayRV1, 1); delayRV1.connect(mergerV1, 0, 1);
+                
+                const dryGainV1 = offlineCtx.createGain(); dryGainV1.gain.value = 0.75;
+                const wetGainV1 = offlineCtx.createGain(); wetGainV1.gain.value = 0.25;
+                const finalMixV1 = offlineCtx.createGain();
+                
+                lastNode.connect(dryGainV1);
+                mergerV1.connect(wetGainV1);
+                dryGainV1.connect(finalMixV1);
+                wetGainV1.connect(finalMixV1);
+                
+                lastNode = finalMixV1;
 
                 // Matikan isMasterOn agar logika V2 di bawahnya tidak ikut dieksekusi bertumpuk
                 isMasterOn = false;
