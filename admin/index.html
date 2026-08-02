@@ -863,6 +863,7 @@
                                 <button class="tab-sort-btn" onclick="window.filterEngine('video')">Video</button>
                                 <button class="tab-sort-btn" onclick="window.filterEngine('image')">Image</button>
                             </div>
+                            <button class="btn btn-sm" style="background: rgba(175,82,222,0.12); color: #AF52DE; border: 1px solid rgba(175,82,222,0.3);" onclick="window.openBriefingPromptModal()"><i class="fa-solid fa-wand-magic-sparkles"></i> Copy Briefing AI Baru</button>
                             <button class="btn btn-sm btn-success" onclick="window.addApiProvider()"><i class="fa-solid fa-plus"></i> Tambah Provider</button>
                         </div>
                     </div>
@@ -3351,6 +3352,104 @@ function clearAllProviderInputs() {
     document.getElementById('prov-path-llm').value = '';
     document.getElementById('prov-payload-llm').value = '';
 }
+
+window.openBriefingPromptModal = function() {
+    let modal = document.getElementById('briefing-prompt-modal');
+    if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'briefing-prompt-modal';
+        modal.className = 'bottom-sheet-overlay';
+        modal.onclick = (e) => { if(e.target === modal) modal.classList.remove('open'); };
+        modal.innerHTML = `
+            <div class="bottom-sheet-container" style="max-width: 540px; text-align: left;">
+                <div class="sheet-header">
+                    <span class="sheet-title"><i class="fa-solid fa-wand-magic-sparkles" style="color:#AF52DE; margin-right:8px;"></i> Briefing AI untuk Tool Baru</span>
+                    <button class="sheet-close-btn" onclick="document.getElementById('briefing-prompt-modal').classList.remove('open')">&times;</button>
+                </div>
+                <p style="font-size:0.8rem; color:var(--text-sec); margin-bottom:16px; line-height:1.5;">Ketikkan detail tool baru yang ingin Anda buat. Sistem akan otomatis menyusun prompt briefing resmi agar Chat AI membuatkan kodenya tanpa error.</p>
+                
+                <div style="display:flex; flex-direction:column; gap:12px; margin-bottom:16px;">
+                    <div>
+                        <label style="font-size:0.8rem; font-weight:700; margin-bottom:4px;">Nama Tool Baru</label>
+                        <input type="text" id="bfToolName" placeholder="Contoh: Habi Lirik Karaoke" value="Habi Lirik Karaoke" oninput="window.updateBriefingPromptText()">
+                    </div>
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+                        <div>
+                            <label style="font-size:0.8rem; font-weight:700; margin-bottom:4px;">Nama File Frontend Baru</label>
+                            <input type="text" id="bfFileName" placeholder="Contoh: karaoke.html" value="karaoke.html" oninput="window.updateBriefingPromptText()">
+                        </div>
+                        <div>
+                            <label style="font-size:0.8rem; font-weight:700; margin-bottom:4px;">Tool ID (Firestore Key)</label>
+                            <input type="text" id="bfToolId" placeholder="Contoh: karaoke_sync" value="karaoke_sync" oninput="window.updateBriefingPromptText()">
+                        </div>
+                    </div>
+                </div>
+
+                <label style="font-size:0.8rem; font-weight:700; margin-bottom:4px; display:block;">Hasil Prompt Briefing (Siap Kirim ke Chat AI):</label>
+                <textarea id="bfPromptResult" rows="8" readonly style="width:100%; font-family:monospace; font-size:0.78rem; background:#FAFAFC; border:1px solid var(--border); border-radius:12px; padding:12px; color:var(--text); margin-bottom:16px; resize:vertical;"></textarea>
+
+                <div style="display:flex; gap:10px;">
+                    <button type="button" onclick="document.getElementById('briefing-prompt-modal').classList.remove('open')" class="btn" style="flex:1; background:#EAEAEA;">Tutup</button>
+                    <button type="button" onclick="window.copyBriefingPromptToClipboard()" class="btn" style="flex:1; background:#AF52DE; color:#fff; font-weight:800;"><i class="fa-solid fa-copy"></i> Salin Prompt Briefing</button>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(modal);
+    }
+    window.updateBriefingPromptText();
+    modal.classList.add('open');
+};
+
+window.updateBriefingPromptText = function() {
+    const name = document.getElementById('bfToolName').value.trim() || 'Habi Tool Baru';
+    const file = document.getElementById('bfFileName').value.trim() || 'tool_baru.html';
+    const id = document.getElementById('bfToolId').value.trim() || 'tool_id_baru';
+
+    const promptText = `BRIEFING ARSITEKTUR KREAVERSE AI (MANDATORY ARCHITECTURE):
+
+Saya ingin membuat aplikasi web/tool baru dengan rincian:
+- Nama Tool: ${name}
+- Nama File Frontend Baru: ${file}
+- Tool ID (Firestore Key): ${id}
+
+ATURAN KERJA & ARSITEKTUR (WAJIB DITURUTI 100%):
+
+1. FRONTEND ONLY & NO-CODE BACKEND:
+   - Buat seluruh kode frontend dalam file tunggal bernama: ${file} (HTML + CSS + Vanilla JS).
+   - DILARANG memasukkan API Key, Service Account, atau membuat backend/serverless function baru.
+   - DILARANG melakukan pemotongan kredit di client-side.
+
+2. INTEGRASI DENGAN BACKEND GATEWAY YANG SUDAH ADA:
+   - Kirim semua request pemrosesan AI via HTTP POST ke endpoint gateway terpusat yang sudah aktif:
+     Endpoint: /api/habirmx
+   - Format JSON Payload:
+     {
+       "action": "magic_wand",
+       "toolId": "${id}",
+       "email": userEmail,
+       "inputText": userInputText,
+       "providerId": "auto_pool",
+       "modelId": "auto_pool"
+     }
+
+3. TAMPILAN & FITUR FRONTEND:
+   - Buat tampilan UI modern, responsive, mobile-friendly (Plus Jakarta Sans & FontAwesome).
+   - Integrasikan dengan Firebase Auth (kreaverse_logged_in) untuk cek status login user.
+   - Sediakan tombol "Proses AI", loader saat memproses, dan tempat menampilkan hasil dari AI.
+
+Silakan buatkan kode utuh lengkap untuk file ${file}!`;
+
+    document.getElementById('bfPromptResult').value = promptText;
+};
+
+window.copyBriefingPromptToClipboard = function() {
+    const area = document.getElementById('bfPromptResult');
+    area.select();
+    navigator.clipboard.writeText(area.value).then(() => {
+        if (typeof showToast === 'function') showToast("Prompt Briefing disalin!", "success");
+        document.getElementById('briefing-prompt-modal').classList.remove('open');
+    });
+};
 
 window.addApiProvider = function() {
     document.getElementById('prov-mode').value = 'add';
