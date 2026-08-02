@@ -497,6 +497,15 @@
     let repoTree = [], selDelFolder = '', currentSearchTarget = null;
     let globalUndoCode = ''; 
 
+    // Helper untuk mencegah kode JS render berantakan di UI
+    function escapeHTML(str) {
+        return str.replace(/&/g, '&amp;')
+                  .replace(/</g, '&lt;')
+                  .replace(/>/g, '&gt;')
+                  .replace(/"/g, '&quot;')
+                  .replace(/'/g, '&#039;');
+    }
+
     // PROTOKOL KETAT PENULISAN & REVISI KODE (DARI PENGGUNA)
     const STRICT_AI_PROTOCOL = `**PROTOKOL KETAT PENULISAN & REVISI KODE (WAJIB DIIKUTI 100%):**
 
@@ -1000,23 +1009,12 @@ KODE BARU:
         `;
         if (aiPrompt) {
             html += `
-                <textarea id="errAiCopy" style="width:100%; height:120px; margin-top:0.3rem; border-radius:4px; padding:0.3rem; font-size:0.7rem; color:#000; border:none;" readonly>${aiPrompt}</textarea>
+                <textarea id="errAiCopy" style="width:100%; height:120px; margin-top:0.3rem; border-radius:4px; padding:0.3rem; font-size:0.7rem; color:#000; border:none;" readonly>${escapeHTML(aiPrompt)}</textarea>
                 <button onclick="navigator.clipboard.writeText(document.getElementById('errAiCopy').value); toast('Pesan disalin! Kirim ke AI', 'success');" style="margin-top:0.3rem; width:100%; padding:0.4rem; background:white; color:var(--danger); font-weight:bold; border:none; border-radius:4px; cursor:pointer;">📋 Copy Pesan & Kirim ke AI</button>
             `;
         }
         html += `</div>`;
         statusBox.innerHTML = html;
-        statusBox.style.background = 'transparent';
-    }
-
-    function showStatusWarning(title, desc) {
-        const statusBox = document.getElementById('aiRevisiStatus');
-        statusBox.innerHTML = `
-            <div style="background:#ff9800; color:white; padding:0.8rem; border-radius:8px; border-left:4px solid #e65100;">
-                <strong style="font-size:0.9rem;">⚠️ ${title}</strong>
-                <p style="font-size:0.75rem; margin:0.4rem 0;">${desc}</p>
-            </div>
-        `;
         statusBox.style.background = 'transparent';
     }
 
@@ -1132,11 +1130,12 @@ KODE BARU:
         const suggestion = findSuggestion(editor.value, oldCode);
         
         if (suggestion) {
+            // Mencegah kode HTML/JS dari 'suggestion' merusak tampilan
             statusBox.innerHTML = `
                 <div style="background:#ff9800; color:white; padding:0.8rem; border-radius:8px; border-left:4px solid #e65100;">
                     <strong style="font-size:0.9rem;">⚠️ Kode persis tidak ditemukan!</strong>
                     <p style="font-size:0.75rem; margin:0.4rem 0;">Sistem menemukan kode serupa tanpa komentar palsu AI. Apakah ini yang Anda maksud?</p>
-                    <textarea id="suggestedCode" style="width:100%; height:80px; margin-top:0.3rem; font-size:0.7rem; color:black; border-radius:4px; padding:0.3rem;" readonly>${suggestion}</textarea>
+                    <textarea id="suggestedCode" style="width:100%; height:80px; margin-top:0.3rem; font-size:0.7rem; color:black; border-radius:4px; padding:0.3rem;" readonly>${escapeHTML(suggestion)}</textarea>
                     <button onclick="acceptSuggestion()" style="width:100%; margin-top:0.4rem; padding:0.5rem; background:white; color:#ff9800; font-weight:bold; border:none; border-radius:4px; cursor:pointer;">✨ Ya, Gunakan Kode Ini!</button>
                 </div>
             `;
@@ -1180,7 +1179,9 @@ KODE BARU:
         const updatedContent = fullContent.substring(0, match.start) + newCode + fullContent.substring(match.end + 1);
 
         const checkBracketBalance = (str) => {
-            const cleanStr = str.replace(/\/\*[\s\S]*?\*\/|([^\\:]|^)\/\/.*$/gm, ''); 
+            // Hapus komentar dan isi string (kutip) agar tidak dianggap bracket nyasar
+            const cleanStr = str.replace(/\/\*[\s\S]*?\*\/|([^\\:]|^)\/\/.*$/gm, '')
+                                .replace(/(['"`])(?:(?=(\\?))\2.)*?\1/g, ''); 
             const stack = [];
             const pairs = { '}': '{', ')': '(', ']': '[' };
             for (let char of cleanStr) {
@@ -1200,7 +1201,7 @@ KODE BARU:
         return { success: true, updatedContent, warning, match };
     }
 
-    // ==================== EKSEKUSI REVISI AI (DENGAN BLOKIR ERROR & PROTOKOL KETAT) ====================
+    // ==================== EKSEKUSI REVISI AI (DENGAN BLOKIR ERROR TOTAL) ====================
     function executeAIRevisi() {
       const oldCode = document.getElementById('aiOldCode').value;
       const newCode = document.getElementById('aiNewCode').value;
@@ -1221,7 +1222,6 @@ KODE BARU:
       }
 
       const match = safeCheck.match;
-
       const oldCodeNorm = oldCode.replace(/\s+/g, '');
       const newCodeNorm = newCode.replace(/\s+/g, '');
       
@@ -1247,31 +1247,29 @@ KODE BARU:
 
       const checkAndProceed = () => {
           if (safeCheck.warning) {
-              const bracketPrompt = STRICT_AI_PROTOCOL + `\n1. PERBAIKI KESALAHAN SINTAKSIS: Potongan KODE BARU yang kamu berikan sebelumnya memiliki tanda kurung {}, [], atau () yang TIDAK SEIMBANG sehingga memicu SyntaxError saat dideploy di Vercel. Tolong berikan versi kode baru yang struktur tanda kurungnya seimbang, lengkap, utuh, dan ikuti protokol ketat di atas!`;
+              const bracketPrompt = STRICT_AI_PROTOCOL + `\n1. KESALAHAN SINTAKS/KURUNG: Potongan KODE BARU yang kamu berikan memiliki tanda kurung {}, [], atau () yang TIDAK SEIMBANG. Ini akan memicu Fatal Error / Syntax Error pada website (terutama backend/API). Tolong periksa dan berikan versi KODE BARU yang tanda kurungnya seimbang sempurna!`;
               
+              // Tampilan Merah (Bahaya) dan Pemblokiran Total (TIDAK ADA TOMBOL PAKSA)
               statusBox.innerHTML = `
-                <div style="background:#ff9800; color:white; padding:0.9rem; border-radius:8px; border-left:4px solid #e65100; box-shadow: 0 4px 12px rgba(255,152,0,0.2);">
-                    <strong style="font-size:0.9rem;">⚠️ STRUKTUR KURUNG/SIKU TIDAK SEIMBANG</strong>
-                    <p style="font-size:0.75rem; margin:0.4rem 0;">Sistem mendeteksi bahwa tanda kurung <b>{}</b>, <b>[]</b>, atau <b>()</b> pada Kode Baru Anda tidak seimbang. Jika diteruskan, website berpotensi mengalami error saat dijalankan.</p>
+                <div style="background:var(--danger); color:white; padding:0.9rem; border-radius:8px; border-left:4px solid #b71c1c; box-shadow: 0 4px 12px rgba(229,57,53,0.3);">
+                    <strong style="font-size:0.9rem;">❌ BLOKIR OTOMATIS: SINTAKS ERROR</strong>
+                    <p style="font-size:0.75rem; margin:0.4rem 0;">Sistem mendeteksi tanda kurung <b>{}</b>, <b>[]</b>, atau <b>()</b> pada Kode Baru Anda tidak seimbang. <b>Tindakan diblokir permanen</b> untuk mencegah website Anda mengalami error fatal!</p>
                     
-                    <textarea id="bracketAiPrompt" style="width:100%; height:110px; margin-top:0.3rem; border-radius:6px; padding:0.4rem; font-size:0.7rem; color:#000; border:none; resize:none;" readonly>${bracketPrompt}</textarea>
+                    <textarea id="bracketAiPrompt" style="width:100%; height:110px; margin-top:0.3rem; border-radius:6px; padding:0.4rem; font-size:0.7rem; color:#000; border:none; resize:none;" readonly>${escapeHTML(bracketPrompt)}</textarea>
                     
                     <div style="display:flex; gap:0.4rem; margin-top:0.5rem;">
-                        <button onclick="navigator.clipboard.writeText(document.getElementById('bracketAiPrompt').value); toast('Pesan disalin! Kirim ke AI', 'success');" style="flex:1; padding:0.5rem; background:white; color:#ff9800; font-weight:bold; border:none; border-radius:6px; cursor:pointer; font-size:0.75rem; box-shadow: 0 2px 6px rgba(0,0,0,0.15);">📋 Salin Pesan untuk AI</button>
-                        <button id="forceApplyBtn" style="flex:1; padding:0.5rem; background:var(--danger); color:white; font-weight:bold; border:none; border-radius:6px; cursor:pointer; font-size:0.75rem; box-shadow: 0 2px 6px rgba(0,0,0,0.15);">🔥 Tetap Paksa Terapkan</button>
+                        <button onclick="navigator.clipboard.writeText(document.getElementById('bracketAiPrompt').value); toast('Pesan disalin! Kirim ke AI', 'success');" style="width:100%; padding:0.6rem; background:white; color:var(--danger); font-weight:bold; border:none; border-radius:6px; cursor:pointer; font-size:0.8rem; box-shadow: 0 2px 6px rgba(0,0,0,0.15);">📋 Salin Pesan untuk Minta AI Perbaiki</button>
                     </div>
                 </div>`;
-              
-              document.getElementById('forceApplyBtn').onclick = () => {
-                  proceedReplace();
-              };
+                
+              // Fungsi Terhenti di sini. Tidak melanjutkan proses penyisipan kode.
           } else {
               proceedReplace();
           }
       };
 
       if (newCodeNorm.length > (oldCodeNorm.length * 3) + 500) {
-        confirm("⚠️ BAHAYA DUPLIKAT KODE!<br><br>KODE BARU sangat panjang dibandingkan KODE LAMA. Ini berisiko memicu kode ganda.<br><br>Tetap paksa ganti sebagian?", () => { checkAndProceed(); });
+        confirm("⚠️ BAHAYA DUPLIKAT KODE!<br><br>KODE BARU sangat panjang dibandingkan KODE LAMA. Ini berisiko memicu kode ganda.<br><br>Lanjutkan penggantian kode ini?", () => { checkAndProceed(); });
       } 
       else if (oldCodeNorm.length > (newCodeNorm.length * 1.5) + 100) {
         const oldLines = oldCode.split('\n').length;
