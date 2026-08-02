@@ -799,6 +799,7 @@ ATURAN MUTLAK:
                         let providerUrl = `${currentProvider.baseUrl}${endpointPath}`;
 
                         let finalStylePrompt = prompt || "";
+                        if (finalStylePrompt.length > 600) finalStylePrompt = finalStylePrompt.substring(0, 600);
                         let finalLyrics = lyrics || "";
                         const selectedGender = vocalGender || (options && options.vocalGender) || "not_specified";
 
@@ -944,6 +945,8 @@ ATURAN MUTLAK:
                         finalOutputError = "Semua server AI saat ini sedang penuh atau dalam masa pemeliharaan. Sistem sedang mengalihkan rute, silakan coba lagi dalam beberapa menit.";
                     } else if (lowerErr.includes('not found') || lowerErr.includes('voice')) {
                         finalOutputError = "Karakter suara tidak ditemukan di server. Silakan buat ulang suara Anda.";
+                    } else if (lowerErr.includes('length') || lowerErr.includes('exceed') || lowerErr.includes('too long') || lowerErr.includes('1000')) {
+                        finalOutputError = "Gagal: Teks Prompt atau Style Musik terlalu panjang. Silakan kurangi beberapa kata.";
                     } else {
                         finalOutputError = "Server AI sedang sibuk memproses antrean. Silakan coba lagi beberapa saat.";
                     }
