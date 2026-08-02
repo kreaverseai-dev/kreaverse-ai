@@ -11498,23 +11498,18 @@ window.startDspBypassAndUpload = async function() {
         let mstPauseTime = 0;
 
         window.closeMstModal = function() {
-            if (mstLiveSource) {
-                try { mstLiveSource.stop(); } catch(e) {}
-                mstLiveSource.disconnect();
-                mstLiveSource = null;
+            const liveAudio = document.getElementById('mstLiveAudioPlayer');
+            if (liveAudio) {
+                liveAudio.pause();
+                liveAudio.src = '';
             }
             if (mstLiveAudioCtx && mstLiveAudioCtx.state !== 'closed') {
                 mstLiveAudioCtx.close();
                 mstLiveAudioCtx = null;
             }
-            
-            // OPTIMASI MEMORI: Kosongkan ArrayBuffer raksasa dan Node Audio
-            mstOfflineArrayBuffer = null;
             mstLiveNodes = {}; 
-            
             cancelAnimationFrame(mstLiveAnimFrame);
             mstIsPlaying = false;
-            mstPauseTime = 0;
             document.getElementById('masteringProModal').classList.remove('show');
         };
 
@@ -12059,29 +12054,96 @@ window.startDspBypassAndUpload = async function() {
 
             overlay.classList.add('show');
 
-            // --- REAL-TIME LIVE PREVIEW ENGINE ---
+            // --- STREAMING LIVE PREVIEW ENGINE (MOBILE COMPATIBLE) ---
             const playBtn = document.getElementById('mstPlayBtn');
             const timeEl = document.getElementById('mstLiveTime');
             
             const rawUrl = docData.url;
-            const encodedUrl = encodeURIComponent(rawUrl);
-            const proxies = [
-                { name: "Direct", url: rawUrl },
-                { name: "Proxy Alpha", url: `https://api.codetabs.com/v1/proxy?quest=${rawUrl}` },
-                { name: "Proxy Gamma", url: `https://kreaverse-proxy.kreaverse-ai.workers.dev/?targetUrl=${encodedUrl}` }
-            ];
+            const proxyAudioUrl = `https://kreaverse-proxy.kreaverse-ai.workers.dev/?targetUrl=${encodeURIComponent(rawUrl)}`;
 
-            let fetchSuccess = false;
-            for (const proxy of proxies) {
+            let liveAudioEl = document.getElementById('mstLiveAudioPlayer');
+            if (!liveAudioEl) {
+                liveAudioEl = document.createElement('audio');
+                liveAudioEl.id = 'mstLiveAudioPlayer';
+                liveAudioEl.crossOrigin = 'anonymous';
+                document.body.appendChild(liveAudioEl);
+            }
+
+            liveAudioEl.src = proxyAudioUrl;
+            liveAudioEl.preload = 'metadata';
+
+            fetch(proxyAudioUrl).then(r => r.arrayBuffer()).then(ab => { mstOfflineArrayBuffer = ab; }).catch(e => console.warn(e));
+
+            playBtn.innerHTML = '<i class="fa-solid fa-play" style="margin-left: 3px;"></i>';
+
+            liveAudioEl.onloadedmetadata = () => {
+                timeEl.innerText = `0:00 / ${formatTime(liveAudioEl.duration)}`;
+            };
+
+            liveAudioEl.ontimeupdate = () => {
+                if (isFinite(liveAudioEl.duration)) {
+                    timeEl.innerText = `${formatTime(liveAudioEl.currentTime)} / ${formatTime(liveAudioEl.duration)}`;
+                }
+            };
+
+            liveAudioEl.onended = () => {
+                playBtn.innerHTML = '<i class="fa-solid fa-play" style="margin-left: 3px;"></i>';
+            };
+
+            function setupLiveMasteringNodes() {
+                if (mstLiveAudioCtx) return;
                 try {
-                    const res = await fetch(proxy.url);
-                    if (res.ok) {
-                        const contentType = res.headers.get('content-type') || '';
-                        if (!contentType.includes('text/html')) {
-                            mstOfflineArrayBuffer = await res.arrayBuffer(); // Save for offline render
-                            
-                            mstLiveAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
-                            const audioBuffer = await mstLiveAudioCtx.decodeAudioData(mstOfflineArrayBuffer.slice(0));
+                    mstLiveAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                    const sourceNode = mstLiveAudioCtx.createMediaElementSource(liveAudioEl);
+
+                    const bypassGain = mstLiveAudioCtx.createGain();
+                    bypassGain.gain.value = window.currentABMode === 'raw' ? 1.0 : 0.0;
+
+                    const inGain = mstLiveAudioCtx.createGain();
+                    const lowEQ = mstLiveAudioCtx.createBiquadFilter(); lowEQ.type = 'lowshelf'; lowEQ.frequency.value = 60;
+                    const midEQ = mstLiveAudioCtx.createBiquadFilter(); midEQ.type = 'peaking'; midEQ.frequency.value = 2500; midEQ.Q.value = 1.2;
+                    const highEQ = mstLiveAudioCtx.createBiquadFilter(); highEQ.type = 'highshelf'; highEQ.frequency.value = 10000;
+                    const comp = mstLiveAudioCtx.createDynamicsCompressor(); comp.threshold.value = -12; comp.ratio.value = 3.0;
+                    const limiter = mstLiveAudioCtx.createDynamicsCompressor(); limiter.threshold.value = -1.0; limiter.ratio.value = 20.0;
+                    const masterGain = mstLiveAudioCtx.createGain();
+                    masterGain.gain.value = window.currentABMode === 'raw' ? 0.0 : 1.0;
+
+                    sourceNode.connect(bypassGain);
+                    bypassGain.connect(mstLiveAudioCtx.destination);
+
+                    sourceNode.connect(inGain);
+                    inGain.connect(lowEQ);
+                    lowEQ.connect(midEQ);
+                    midEQ.connect(highEQ);
+                    highEQ.connect(comp);
+                    comp.connect(limiter);
+                    limiter.connect(masterGain);
+                    masterGain.connect(mstLiveAudioCtx.destination);
+
+                    mstLiveNodes = { bypassGain, inGain, lowEQ, midEQ, highEQ, comp, limiter, masterGain };
+                } catch(e) { console.warn(e); }
+            }
+
+            playBtn.onclick = async () => {
+                setupLiveMasteringNodes();
+                if (mstLiveAudioCtx && mstLiveAudioCtx.state === 'suspended') {
+                    await mstLiveAudioCtx.resume();
+                }
+
+                if (liveAudioEl.paused) {
+                    liveAudioEl.play().then(() => {
+                        playBtn.innerHTML = '<i class="fa-solid fa-pause"></i>';
+                    }).catch(err => {
+                        liveAudioEl.src = rawUrl;
+                        liveAudioEl.play().then(() => {
+                            playBtn.innerHTML = '<i class="fa-solid fa-pause"></i>';
+                        });
+                    });
+                } else {
+                    liveAudioEl.pause();
+                    playBtn.innerHTML = '<i class="fa-solid fa-play" style="margin-left: 3px;"></i>';
+                }
+            };
                             
                             // Fungsi Play/Pause untuk AudioBufferSourceNode
                             const playLiveAudio = () => {
@@ -12250,14 +12312,14 @@ window.startDspBypassAndUpload = async function() {
                                             btnRaw.classList.remove('active-raw');
                                         }
                                     }
-                                    if (mstLiveAudioCtx && mstLiveNodes) {
+                                    if (mstLiveNodes && mstLiveNodes.bypassGain && mstLiveNodes.masterGain && mstLiveAudioCtx) {
                                         const t = mstLiveAudioCtx.currentTime;
                                         if (mode === 'raw') {
-                                            if (mstLiveNodes.masterOutGain) mstLiveNodes.masterOutGain.gain.setTargetAtTime(0, t, 0.05);
-                                            if (mstLiveNodes.rawOutGain) mstLiveNodes.rawOutGain.gain.setTargetAtTime(1, t, 0.05);
+                                            mstLiveNodes.bypassGain.gain.setTargetAtTime(1.0, t, 0.03);
+                                            mstLiveNodes.masterGain.gain.setTargetAtTime(0.0, t, 0.03);
                                         } else {
-                                            if (mstLiveNodes.masterOutGain) mstLiveNodes.masterOutGain.gain.setTargetAtTime(1, t, 0.05);
-                                            if (mstLiveNodes.rawOutGain) mstLiveNodes.rawOutGain.gain.setTargetAtTime(0, t, 0.05);
+                                            mstLiveNodes.bypassGain.gain.setTargetAtTime(0.0, t, 0.03);
+                                            mstLiveNodes.masterGain.gain.setTargetAtTime(1.0, t, 0.03);
                                         }
                                     }
                                 };
