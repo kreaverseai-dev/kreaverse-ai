@@ -10914,11 +10914,10 @@ window.startDspBypassAndUpload = async function() {
                 const data = await response.json();
                 if (!response.ok) throw new Error(data.error || "Gagal menghubungi API gateway");
 
+                // [KEAMANAN DIPERBAIKI]: Pemotongan saldo dihapus dari Frontend.
+                // Biarkan Backend (/api/habirmx) yang memotong saldo di database untuk mencegah eksploitasi.
                 if (!isAdmin && currentUserData && currentUserData.tier !== 'max_lifetime' && currentUserData.tier !== 'max_monthly' && currentUserData.tier !== 'max') {
-                    const currentKredit = currentUserData.kredit !== undefined ? currentUserData.kredit : (currentUserData.dailyQuota || 0);
-                    const newKredit = Math.max(0, currentKredit - 50);
-                    await updateDoc(doc(db, "users", currentUserData.id), { kredit: newKredit });
-                    showIphoneToast("Kredit Terpakai", `50 Kredit dipotong. Sisa saldo: ${newKredit} Kredit.`, "fa-coins");
+                    showIphoneToast("Memproses", "Permintaan dikirim ke server...", "fa-cloud-arrow-up");
                 }
 
                 let modelLabelText = modelId;
@@ -11015,10 +11014,8 @@ window.startDspBypassAndUpload = async function() {
                                         error: finalErrorMsg
                                     });
                                 }
-                                if (!isAdmin && currentUserData) {
-                                    const currentKredit = currentUserData.kredit !== undefined ? currentUserData.kredit : (currentUserData.dailyQuota || 0);
-                                    updateDoc(doc(db, "users", currentUserData.id), { kredit: currentKredit + 50 }).catch(e=>e);
-                                }
+                                // [KEAMANAN DIPERBAIKI]: Refund saldo dihapus dari Frontend.
+                                // Backend harus mendeteksi kegagalan dan mengembalikan saldo secara otomatis.
                             }
                             
                             if (pollCount >= maxPolls) {
@@ -11039,12 +11036,8 @@ window.startDspBypassAndUpload = async function() {
                 document.getElementById('miniLibraryContainer').scrollIntoView({ behavior: 'smooth' });
 
             } catch (err) {
-                if (!isAdmin && currentUserData && currentUserData.tier !== 'max_lifetime' && currentUserData.tier !== 'max_monthly' && currentUserData.tier !== 'max') {
-                    const currentKredit = currentUserData.kredit !== undefined ? currentUserData.kredit : (currentUserData.dailyQuota || 0);
-                    const refundedKredit = currentKredit + 50; 
-                    updateDoc(doc(db, "users", currentUserData.id), { kredit: refundedKredit }).catch(e=>e);
-                    setTimeout(() => showIphoneToast("Refund Sukses", "Generate gagal. 50 Kredit telah dikembalikan.", "fa-rotate-left"), 1000);
-                }
+                // [KEAMANAN DIPERBAIKI]: Celah Refund eksploitasi ditutup.
+                // Frontend hanya menampilkan pesan error. Backend yang bertanggung jawab atas refund.
 
                 let displayError = err.message;
                 if (!isAdmin && (displayError.toLowerCase().includes('habis') || displayError.toLowerCase().includes('insufficient') || displayError.toLowerCase().includes('api'))) {
