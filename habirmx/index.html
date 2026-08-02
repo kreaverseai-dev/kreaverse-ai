@@ -11577,6 +11577,21 @@ window.startDspBypassAndUpload = async function() {
                     .mst-bottom-tabs { display: flex; background: #ffffff; padding: 10px 20px; border-top: 1px solid #e2e8f0; }
                     .mst-tab-btn { flex: 1; background: none; border: none; padding: 12px; font-size: 0.95rem; font-weight: 800; color: #0f172a; cursor: pointer; border-radius: 12px; transition: 0.2s; }
                     .mst-tab-btn.active { background: #ffffff; color: #06b6d4; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+                    
+                    /* CSS A/B TESTING V6 PRO */
+                    .ab-card { background: #0f172a; border-radius: 20px; padding: 20px; margin-bottom: 16px; border: 1px solid #1e293b; color: #fff; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
+                    .ab-header { font-size: 0.7rem; font-weight: 900; color: #38bdf8; letter-spacing: 1px; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; text-transform: uppercase; }
+                    .ab-toggle-row { display: flex; background: #1e293b; border-radius: 12px; padding: 4px; margin-bottom: 16px; border: 1px solid #334155; }
+                    .ab-btn { flex: 1; background: transparent; border: none; color: #94a3b8; padding: 12px 10px; font-size: 0.8rem; font-weight: 800; border-radius: 8px; cursor: pointer; transition: 0.3s; display: flex; align-items: center; justify-content: center; gap: 8px; }
+                    .ab-btn.active-v6 { background: linear-gradient(135deg, #8b5cf6, #d946ef); color: #fff; box-shadow: 0 4px 15px rgba(217, 70, 239, 0.3); }
+                    .ab-btn.active-raw { background: #475569; color: #fff; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
+                    .ab-vis-container { height: 70px; background: #000; border-radius: 12px; margin-bottom: 16px; overflow: hidden; position: relative; border: 1px solid #334155; }
+                    .ab-controls { display: flex; align-items: center; gap: 16px; }
+                    .ab-play { width: 46px; height: 46px; border-radius: 50%; background: #38bdf8; color: #0f172a; border: none; font-size: 1.2rem; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.2s; box-shadow: 0 4px 15px rgba(56, 189, 248, 0.3); flex-shrink: 0; }
+                    .ab-play:active { transform: scale(0.95); }
+                    .ab-info { flex: 1; min-width: 0; }
+                    .ab-title { font-size: 0.9rem; font-weight: 800; color: #f8fafc; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 4px; }
+                    .ab-time { font-size: 0.75rem; color: #94a3b8; font-family: monospace; font-weight: 600; }
                 `;
                 document.head.appendChild(style);
 
@@ -11589,16 +11604,29 @@ window.startDspBypassAndUpload = async function() {
                         </div>
                         
                         <div class="mst-body" id="mstBodyAuto">
-                            <!-- LIVE PREVIEW CARD (REAL-TIME) -->
-                            <div class="mst-card" style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); padding: 16px; display: flex; align-items: center; justify-content: space-between;">
-                                <div style="display: flex; align-items: center; gap: 12px; flex: 1; min-width: 0;">
-                                    <button id="mstPlayBtn" style="width: 44px; height: 44px; border-radius: 50%; background: #10b981; border: none; color: #fff; font-size: 1.2rem; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 10px rgba(16, 185, 129, 0.3); flex-shrink: 0;"><i class="fa-solid fa-spinner fa-spin"></i></button>
-                                    <div style="flex: 1; min-width: 0;">
-                                        <div id="mstAudioName" style="font-size: 0.85rem; font-weight: 800; color: #0f172a; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Memuat audio...</div>
-                                        <div id="mstLiveTime" style="font-size: 0.75rem; color: #10b981; font-weight: 600;">Menyiapkan audio...</div>
+                            <!-- A/B TESTING CARD (V6 PRO) -->
+                            <div class="ab-card" id="abTestingCard">
+                                <div class="ab-header">
+                                    <i class="fa-solid fa-headphones"></i> Dengarkan Perbedaannya
+                                    <span style="background: rgba(56,189,248,0.15); color: #38bdf8; padding: 2px 6px; border-radius: 4px; font-size: 0.6rem; margin-left: auto;">V6 PRO ENGINE</span>
+                                </div>
+                                
+                                <div class="ab-toggle-row">
+                                    <button class="ab-btn" id="btnRawSuno" onclick="window.toggleABMastering('raw')">Raw Suno</button>
+                                    <button class="ab-btn active-v6" id="btnV6Pro" onclick="window.toggleABMastering('v6')"><i class="fa-solid fa-wand-magic-sparkles"></i> Dimasterkan V6 Pro</button>
+                                </div>
+                                
+                                <div class="ab-vis-container">
+                                    <canvas id="abVisualizer" width="400" height="70" style="width: 100%; height: 100%; display: block;"></canvas>
+                                </div>
+                                
+                                <div class="ab-controls">
+                                    <button id="mstPlayBtn" class="ab-play"><i class="fa-solid fa-spinner fa-spin"></i></button>
+                                    <div class="ab-info">
+                                        <div class="ab-title" id="mstAudioName">Memuat audio...</div>
+                                        <div class="ab-time" id="mstLiveTime">0:00 / 0:00</div>
                                     </div>
                                 </div>
-                                <div style="font-size: 0.65rem; color: #10b981; font-weight: 800; background: rgba(16,185,129,0.2); padding: 4px 8px; border-radius: 6px; flex-shrink: 0; margin-left: 10px;">LIVE DSP</div>
                             </div>
                             
                             <!-- NEW: SMART AI ANALYZER -->
@@ -12186,13 +12214,74 @@ window.startDspBypassAndUpload = async function() {
                                 mstLiveNodes.wetGain.connect(mstLiveNodes.makeUp);
                                 
                                 mstLiveNodes.makeUp.connect(mstLiveNodes.limiter);
-                                mstLiveNodes.limiter.connect(mstLiveAudioCtx.destination);
+                                
+                                // --- A/B TESTING ROUTING LOGIC ---
+                                mstLiveNodes.masterOutGain = mstLiveAudioCtx.createGain();
+                                mstLiveNodes.masterOutGain.gain.value = 1.0; 
+                                mstLiveNodes.limiter.connect(mstLiveNodes.masterOutGain);
+                                mstLiveNodes.masterOutGain.connect(mstLiveAudioCtx.destination);
+
+                                mstLiveNodes.rawOutGain = mstLiveAudioCtx.createGain();
+                                mstLiveNodes.rawOutGain.gain.value = 0.0; 
+                                mstLiveSource.connect(mstLiveNodes.rawOutGain); 
+                                mstLiveNodes.rawOutGain.connect(mstLiveAudioCtx.destination);
+
+                                mstLiveNodes.analyser = mstLiveAudioCtx.createAnalyser();
+                                mstLiveNodes.analyser.fftSize = 1024;
+                                mstLiveNodes.masterOutGain.connect(mstLiveNodes.analyser);
+                                mstLiveNodes.rawOutGain.connect(mstLiveNodes.analyser);
 
                                 window.updateLiveNodes(); 
                                 
                                 mstLiveSource.start(0, mstPauseTime);
                                 mstStartTime = mstLiveAudioCtx.currentTime - mstPauseTime;
                                 mstIsPlaying = true;
+                                
+                                window.toggleABMastering = function(mode) {
+                                    if (!mstLiveAudioCtx) return;
+                                    const btnRaw = document.getElementById('btnRawSuno');
+                                    const btnV6 = document.getElementById('btnV6Pro');
+                                    const t = mstLiveAudioCtx.currentTime;
+                                    if (mode === 'raw') {
+                                        btnRaw.classList.add('active-raw'); btnV6.classList.remove('active-v6');
+                                        if (mstLiveNodes.masterOutGain) mstLiveNodes.masterOutGain.gain.setTargetAtTime(0, t, 0.05);
+                                        if (mstLiveNodes.rawOutGain) mstLiveNodes.rawOutGain.gain.setTargetAtTime(1, t, 0.05);
+                                        window.currentABMode = 'raw';
+                                    } else {
+                                        btnV6.classList.add('active-v6'); btnRaw.classList.remove('active-raw');
+                                        if (mstLiveNodes.masterOutGain) mstLiveNodes.masterOutGain.gain.setTargetAtTime(1, t, 0.05);
+                                        if (mstLiveNodes.rawOutGain) mstLiveNodes.rawOutGain.gain.setTargetAtTime(0, t, 0.05);
+                                        window.currentABMode = 'v6';
+                                    }
+                                };
+                                window.currentABMode = 'v6';
+
+                                function drawABVisualizer() {
+                                    if (!mstIsPlaying || !mstLiveNodes.analyser) return;
+                                    const canvas = document.getElementById('abVisualizer');
+                                    if (!canvas) return;
+                                    const ctx = canvas.getContext('2d');
+                                    const bufferLength = mstLiveNodes.analyser.frequencyBinCount;
+                                    const dataArray = new Uint8Array(bufferLength);
+                                    mstLiveAnimFrame = requestAnimationFrame(drawABVisualizer);
+                                    mstLiveNodes.analyser.getByteTimeDomainData(dataArray);
+                                    ctx.fillStyle = '#000000';
+                                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+                                    ctx.lineWidth = 2;
+                                    ctx.strokeStyle = window.currentABMode === 'v6' ? '#06b6d4' : '#64748b';
+                                    ctx.beginPath();
+                                    const sliceWidth = canvas.width * 1.0 / bufferLength;
+                                    let x = 0;
+                                    for (let i = 0; i < bufferLength; i++) {
+                                        const v = dataArray[i] / 128.0;
+                                        const y = v * canvas.height / 2;
+                                        if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+                                        x += sliceWidth;
+                                    }
+                                    ctx.lineTo(canvas.width, canvas.height / 2);
+                                    ctx.stroke();
+                                }
+                                drawABVisualizer();
                             };
 
                             playBtn.innerHTML = '<i class="fa-solid fa-play" style="margin-left: 3px;"></i>';
