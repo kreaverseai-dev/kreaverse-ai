@@ -11636,35 +11636,48 @@ window.startDspBypassAndUpload = async function() {
 
                                 <div class="mst-grid-2">
                                     <div>
-                                        <span class="mst-label">Genre Engine</span>
+                                        <span class="mst-label">Genre Engine (Auto-EQ)</span>
                                         <div class="mst-custom-select">
                                             <div class="mst-custom-trigger" onclick="window.toggleMstDrop('genreDrop')">
                                                 <span id="mstGenreLabel">Pop / Balanced</span> <i class="fa-solid fa-chevron-down"></i>
                                             </div>
                                             <div class="mst-custom-options hidden" id="genreDrop">
+                                                <div style="font-size: 0.65rem; color: #94a3b8; font-weight: 800; padding: 4px 10px; background: #f8fafc;">POPULAR</div>
                                                 <div class="mst-custom-option selected" onclick="window.selectMstOption('Genre', 'pop', 'Pop / Balanced')">Pop / Balanced</div>
-                                                <div class="mst-custom-option" onclick="window.selectMstOption('Genre', 'dj', 'DJ / EDM')">DJ / EDM</div>
-                                                <div class="mst-custom-option" onclick="window.selectMstOption('Genre', 'dangdut', 'Dangdut / Koplo')">Dangdut / Koplo</div>
-                                                <div class="mst-custom-option" onclick="window.selectMstOption('Genre', 'sholawat', 'Sholawat / Religi')">Sholawat / Religi</div>
+                                                <div class="mst-custom-option" onclick="window.selectMstOption('Genre', 'acoustic', 'Acoustic / Folk')">Acoustic / Folk</div>
                                                 <div class="mst-custom-option" onclick="window.selectMstOption('Genre', 'rock', 'Rock / Metal')">Rock / Metal</div>
+                                                <div class="mst-custom-option" onclick="window.selectMstOption('Genre', 'rnb', 'R&B / Soul')">R&B / Soul</div>
+                                                
+                                                <div style="font-size: 0.65rem; color: #94a3b8; font-weight: 800; padding: 4px 10px; background: #f8fafc; margin-top: 4px;">LOCAL & RELIGI</div>
+                                                <div class="mst-custom-option" onclick="window.selectMstOption('Genre', 'dangdut', 'Dangdut / Koplo')">Dangdut / Koplo</div>
+                                                <div class="mst-custom-option" onclick="window.selectMstOption('Genre', 'dj_horeg', 'DJ Horeg / BassBoost')">DJ Horeg / BassBoost</div>
+                                                <div class="mst-custom-option" onclick="window.selectMstOption('Genre', 'sholawat', 'Sholawat / Religi')">Sholawat / Religi</div>
+                                                <div class="mst-custom-option" onclick="window.selectMstOption('Genre', 'dj_sholawat', 'DJ Sholawat')">DJ Sholawat</div>
+                                                <div class="mst-custom-option" onclick="window.selectMstOption('Genre', 'reggae', 'Reggae / Ska')">Reggae / Ska</div>
+                                                
+                                                <div style="font-size: 0.65rem; color: #94a3b8; font-weight: 800; padding: 4px 10px; background: #f8fafc; margin-top: 4px;">ELECTRONIC & CINEMATIC</div>
+                                                <div class="mst-custom-option" onclick="window.selectMstOption('Genre', 'dj', 'EDM / House')">EDM / House</div>
+                                                <div class="mst-custom-option" onclick="window.selectMstOption('Genre', 'phonk', 'Phonk / Trap')">Phonk / Trap</div>
+                                                <div class="mst-custom-option" onclick="window.selectMstOption('Genre', 'lofi', 'Lo-Fi / Chill')">Lo-Fi / Chill</div>
                                                 <div class="mst-custom-option" onclick="window.selectMstOption('Genre', 'cinematic', 'Cinematic / Epic')">Cinematic / Epic</div>
                                             </div>
                                         </div>
                                         <input type="hidden" id="mstGenreVal" value="pop">
                                     </div>
                                     <div>
-                                        <span class="mst-label">Dynamics</span>
+                                        <span class="mst-label">Dynamics (Auto-Linked)</span>
                                         <div class="mst-custom-select">
                                             <div class="mst-custom-trigger" onclick="window.toggleMstDrop('dynDrop')">
-                                                <span id="mstDynLabel">Loud (Punchy)</span> <i class="fa-solid fa-chevron-down"></i>
+                                                <span id="mstDynLabel">Balanced</span> <i class="fa-solid fa-chevron-down"></i>
                                             </div>
                                             <div class="mst-custom-options hidden" id="dynDrop">
-                                                <div class="mst-custom-option selected" onclick="window.selectMstOption('Dyn', 'loud', 'Loud (Punchy)')">Loud (Punchy)</div>
-                                                <div class="mst-custom-option" onclick="window.selectMstOption('Dyn', 'balanced', 'Balanced')">Balanced</div>
-                                                <div class="mst-custom-option" onclick="window.selectMstOption('Dyn', 'clean', 'Clean (Acoustic)')">Clean (Acoustic)</div>
+                                                <div class="mst-custom-option" onclick="window.selectMstOption('Dyn', 'extreme', 'Extreme (Horeg/Phonk)')">Extreme (Horeg/Phonk)</div>
+                                                <div class="mst-custom-option" onclick="window.selectMstOption('Dyn', 'loud', 'Loud (EDM/Rock)')">Loud (EDM/Rock)</div>
+                                                <div class="mst-custom-option selected" onclick="window.selectMstOption('Dyn', 'balanced', 'Balanced (Pop/Dangdut)')">Balanced (Pop/Dangdut)</div>
+                                                <div class="mst-custom-option" onclick="window.selectMstOption('Dyn', 'clean', 'Clean (Acoustic/Religi)')">Clean (Acoustic/Religi)</div>
                                             </div>
                                         </div>
-                                        <input type="hidden" id="mstDynVal" value="loud">
+                                        <input type="hidden" id="mstDynVal" value="balanced">
                                     </div>
                                 </div>
                             </div>
@@ -11850,8 +11863,79 @@ window.startDspBypassAndUpload = async function() {
                         if(o.innerText === label) o.classList.add('selected');
                         else o.classList.remove('selected');
                     });
+
+                    // AUTO-LINK GENRE KE DYNAMICS
+                    if (type === 'Genre') {
+                        let targetDyn = 'balanced';
+                        let targetDynLabel = 'Balanced (Pop/Dangdut)';
+                        
+                        if (['dj_horeg', 'phonk'].includes(val)) {
+                            targetDyn = 'extreme'; targetDynLabel = 'Extreme (Horeg/Phonk)';
+                        } else if (['dj', 'rock', 'dj_sholawat'].includes(val)) {
+                            targetDyn = 'loud'; targetDynLabel = 'Loud (EDM/Rock)';
+                        } else if (['acoustic', 'sholawat', 'lofi'].includes(val)) {
+                            targetDyn = 'clean'; targetDynLabel = 'Clean (Acoustic/Religi)';
+                        }
+                        
+                        document.getElementById('mstDynVal').value = targetDyn;
+                        document.getElementById('mstDynLabel').innerText = targetDynLabel;
+                        
+                        const dynOpts = document.getElementById('dynDrop').querySelectorAll('.mst-custom-option');
+                        dynOpts.forEach(o => {
+                            if(o.innerText === targetDynLabel) o.classList.add('selected');
+                            else o.classList.remove('selected');
+                        });
+                    }
                     
                     window.updateLiveNodes(); // Update sound in real-time
+                };
+
+                // FUNGSI DETEKSI BPM (TEMPO)
+                window.analyzeBPM = async function(audioBuffer) {
+                    const offlineCtx = new OfflineAudioContext(1, audioBuffer.length, audioBuffer.sampleRate);
+                    const source = offlineCtx.createBufferSource();
+                    source.buffer = audioBuffer;
+
+                    // Filter hanya suara Kick Drum (Low Freq) untuk deteksi ketukan
+                    const filter = offlineCtx.createBiquadFilter();
+                    filter.type = 'lowpass';
+                    filter.frequency.value = 150;
+
+                    source.connect(filter);
+                    filter.connect(offlineCtx.destination);
+                    source.start(0);
+
+                    const renderedBuffer = await offlineCtx.startRendering();
+                    const data = renderedBuffer.getChannelData(0);
+                    
+                    let peaks = [];
+                    let threshold = 0.8; // Cari puncak suara terkeras
+                    
+                    for (let i = 0; i < data.length; i++) {
+                        if (data[i] > threshold) {
+                            peaks.push(i);
+                            i += offlineCtx.sampleRate / 4; // Skip 250ms agar tidak dobel hitung
+                        }
+                    }
+
+                    if (peaks.length < 2) return 120; // Fallback default
+
+                    let intervals = [];
+                    for (let i = 1; i < peaks.length; i++) {
+                        intervals.push(peaks[i] - peaks[i - 1]);
+                    }
+
+                    // Cari interval yang paling sering muncul (Modus)
+                    intervals.sort((a, b) => a - b);
+                    const medianInterval = intervals[Math.floor(intervals.length / 2)];
+                    
+                    let bpm = (60 * offlineCtx.sampleRate) / medianInterval;
+                    
+                    // Normalisasi BPM agar masuk akal (antara 60 - 180)
+                    while (bpm < 60) bpm *= 2;
+                    while (bpm > 180) bpm /= 2;
+                    
+                    return Math.round(bpm);
                 };
 
                 // Close dropdowns if clicked outside
@@ -12115,30 +12199,39 @@ window.startDspBypassAndUpload = async function() {
                             timeEl.innerText = "Siap diputar (Real-time)";
                             fetchSuccess = true;
 
-                            // SIMULASI SMART AI TEMPO ANALYZER
-                            setTimeout(() => {
+                            // REAL SMART AI TEMPO ANALYZER
+                            window.analyzeBPM(audioBuffer).then(bpm => {
                                 const statusEl = document.getElementById('mstTempoStatus');
                                 const btnNormalize = document.getElementById('btnNormalizeTempo');
-                                const isTooFast = Math.random() > 0.3; // 70% deteksi cepat otomatis
                                 
-                                if (isTooFast) {
-                                    if(statusEl) {
-                                        statusEl.innerHTML = '<i class="fa-solid fa-bolt"></i> Terlalu Cepat';
-                                        statusEl.style.color = '#ef4444';
-                                        statusEl.style.background = 'rgba(239, 68, 68, 0.15)';
-                                        statusEl.style.borderColor = 'rgba(239, 68, 68, 0.3)';
-                                    }
-                                    if(btnNormalize) btnNormalize.style.display = 'block';
+                                let statusHtml = '';
+                                let isAbnormal = false;
+                                window.suggestedPlaybackRate = 1.0;
+
+                                if (bpm > 150) {
+                                    statusHtml = `<i class="fa-solid fa-bolt"></i> Sangat Cepat (${bpm} BPM)`;
+                                    statusEl.style.color = '#ef4444'; statusEl.style.background = 'rgba(239, 68, 68, 0.15)'; statusEl.style.borderColor = 'rgba(239, 68, 68, 0.3)';
+                                    isAbnormal = true;
+                                    window.suggestedPlaybackRate = 0.92; // Perlambat sedikit
+                                } else if (bpm < 80) {
+                                    statusHtml = `<i class="fa-solid fa-turtle"></i> Sangat Lambat (${bpm} BPM)`;
+                                    statusEl.style.color = '#f59e0b'; statusEl.style.background = 'rgba(245, 158, 11, 0.15)'; statusEl.style.borderColor = 'rgba(245, 158, 11, 0.3)';
+                                    isAbnormal = true;
+                                    window.suggestedPlaybackRate = 1.08; // Percepat sedikit
                                 } else {
-                                    if(statusEl) {
-                                        statusEl.innerHTML = '<i class="fa-solid fa-check-double"></i> Tempo Normal';
-                                        statusEl.style.color = '#10b981';
-                                        statusEl.style.background = 'rgba(16, 185, 129, 0.15)';
-                                        statusEl.style.borderColor = 'rgba(16, 185, 129, 0.3)';
-                                    }
-                                    if(btnNormalize) btnNormalize.style.display = 'none';
+                                    statusHtml = `<i class="fa-solid fa-check-double"></i> Normal (${bpm} BPM)`;
+                                    statusEl.style.color = '#10b981'; statusEl.style.background = 'rgba(16, 185, 129, 0.15)'; statusEl.style.borderColor = 'rgba(16, 185, 129, 0.3)';
                                 }
-                            }, 1500);
+
+                                if(statusEl) statusEl.innerHTML = statusHtml;
+                                
+                                if (isAbnormal && btnNormalize) {
+                                    btnNormalize.style.display = 'block';
+                                    btnNormalize.innerHTML = `<i class="fa-solid fa-wand-magic-sparkles"></i> Normalkan Kecepatan (Aman untuk Vokal)`;
+                                } else if (btnNormalize) {
+                                    btnNormalize.style.display = 'none';
+                                }
+                            });
 
                             window.applySmartTempo = function() {
                                 window.isTempoNormalized = true;
@@ -12152,7 +12245,7 @@ window.startDspBypassAndUpload = async function() {
                                     playBtn.onclick();
                                     setTimeout(() => playBtn.onclick(), 50);
                                 }
-                                showIphoneToast("Smart Tempo", "Kecepatan lagu diturunkan tanpa merusak suara vokal.", "fa-wand-magic-sparkles");
+                                showIphoneToast("Smart Tempo", "Kecepatan lagu berhasil disesuaikan.", "fa-wand-magic-sparkles");
                             };
                             
                             playBtn.onclick = () => {
@@ -12216,18 +12309,30 @@ window.startDspBypassAndUpload = async function() {
                     const lufs = document.getElementById('mstLufsVal') ? document.getElementById('mstLufsVal').value : 'spotify';
                     
                     eqMid = -1.5; eqLow = 5.5; eqHigh = 2.5; eqLMid = 1.5; eqHMid = -2.5; 
+                    
+                    // GENRE AWARE EQ (M/S STEREO EQ APPROXIMATION)
                     switch(genre) {
-                        case 'dj': eqLow += 1.5; eqHigh += 1.0; eqLMid += 0.5; break;
-                        case 'dangdut': eqLow += 1.0; eqMid += 0.5; eqHigh += 0.5; break;
-                        case 'sholawat': eqLMid += 1.0; eqMid -= 0.5; eqHigh += 1.0; break;
-                        case 'rock': eqLow += 1.0; eqHMid += 1.0; eqHigh += 0.5; break;
-                        case 'cinematic': eqLow += 1.5; eqLMid += 1.0; eqHigh += 0.5; break;
-                        case 'pop': eqLow += 1.0; eqHigh += 0.5; break;
+                        case 'dj_horeg': eqLow += 6.0; eqLMid -= 1.0; eqHigh += 2.0; break; // Bass gila-gilaan
+                        case 'dj': eqLow += 3.5; eqHigh += 2.0; eqLMid += 0.5; break;
+                        case 'dangdut': eqLow += 2.5; eqMid += 1.5; eqHigh += 1.5; break; // Kendang & Suling naik
+                        case 'sholawat': eqLMid += 2.0; eqMid += 1.0; eqHigh += 1.5; break; // Vokal dominan
+                        case 'dj_sholawat': eqLow += 3.0; eqMid += 1.0; eqHigh += 2.0; break;
+                        case 'reggae': eqLow += 2.0; eqLMid += 1.5; eqHMid += 1.0; break; // Bass & Skank guitar
+                        case 'rock': eqLow += 1.5; eqHMid += 2.0; eqHigh += 1.0; break;
+                        case 'phonk': eqLow += 4.0; eqMid -= 2.0; eqHigh += 3.0; break; // Scooped mid, heavy bass
+                        case 'acoustic': eqLow -= 1.0; eqMid += 1.5; eqHigh += 2.0; break;
+                        case 'rnb': eqLow += 2.5; eqLMid += 1.0; eqHigh += 1.5; break;
+                        case 'lofi': eqLow += 1.5; eqHigh -= 3.0; eqHMid -= 1.0; break; // High cut untuk efek vintage
+                        case 'cinematic': eqLow += 2.5; eqLMid += 1.5; eqHigh += 1.0; break;
+                        case 'pop': eqLow += 1.5; eqHigh += 1.0; break;
                     }
+
+                    // DYNAMIC COMPRESSION & TRANSIENT SHAPING
                     switch(dyn) {
-                        case 'loud': cTh = -16; cRat = 4.0; cGain = 3.5; break; 
-                        case 'balanced': cTh = -12; cRat = 3.0; cGain = 2.0; break;
-                        case 'clean': cTh = -8; cRat = 2.0; cGain = 1.0; break;
+                        case 'extreme': cTh = -20; cRat = 6.0; cAtt = 0.005; cRel = 0.1; cGain = 5.0; break; // Pumping effect
+                        case 'loud': cTh = -16; cRat = 4.0; cAtt = 0.01; cRel = 0.15; cGain = 3.5; break; 
+                        case 'balanced': cTh = -12; cRat = 3.0; cAtt = 0.02; cRel = 0.2; cGain = 2.0; break;
+                        case 'clean': cTh = -8; cRat = 2.0; cAtt = 0.03; cRel = 0.3; cGain = 1.0; break; // Transien aman
                     }
                     switch(lufs) {
                         case 'tiktok': limTh = -0.5; limGain = 4.5; break; 
