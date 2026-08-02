@@ -12238,20 +12238,27 @@ window.startDspBypassAndUpload = async function() {
                                 mstIsPlaying = true;
                                 
                                 window.toggleABMastering = function(mode) {
-                                    if (!mstLiveAudioCtx) return;
+                                    window.currentABMode = mode;
                                     const btnRaw = document.getElementById('btnRawSuno');
                                     const btnV6 = document.getElementById('btnV6Pro');
-                                    const t = mstLiveAudioCtx.currentTime;
-                                    if (mode === 'raw') {
-                                        btnRaw.classList.add('active-raw'); btnV6.classList.remove('active-v6');
-                                        if (mstLiveNodes.masterOutGain) mstLiveNodes.masterOutGain.gain.setTargetAtTime(0, t, 0.05);
-                                        if (mstLiveNodes.rawOutGain) mstLiveNodes.rawOutGain.gain.setTargetAtTime(1, t, 0.05);
-                                        window.currentABMode = 'raw';
-                                    } else {
-                                        btnV6.classList.add('active-v6'); btnRaw.classList.remove('active-raw');
-                                        if (mstLiveNodes.masterOutGain) mstLiveNodes.masterOutGain.gain.setTargetAtTime(1, t, 0.05);
-                                        if (mstLiveNodes.rawOutGain) mstLiveNodes.rawOutGain.gain.setTargetAtTime(0, t, 0.05);
-                                        window.currentABMode = 'v6';
+                                    if (btnRaw && btnV6) {
+                                        if (mode === 'raw') {
+                                            btnRaw.classList.add('active-raw');
+                                            btnV6.classList.remove('active-v6');
+                                        } else {
+                                            btnV6.classList.add('active-v6');
+                                            btnRaw.classList.remove('active-raw');
+                                        }
+                                    }
+                                    if (mstLiveAudioCtx && mstLiveNodes) {
+                                        const t = mstLiveAudioCtx.currentTime;
+                                        if (mode === 'raw') {
+                                            if (mstLiveNodes.masterOutGain) mstLiveNodes.masterOutGain.gain.setTargetAtTime(0, t, 0.05);
+                                            if (mstLiveNodes.rawOutGain) mstLiveNodes.rawOutGain.gain.setTargetAtTime(1, t, 0.05);
+                                        } else {
+                                            if (mstLiveNodes.masterOutGain) mstLiveNodes.masterOutGain.gain.setTargetAtTime(1, t, 0.05);
+                                            if (mstLiveNodes.rawOutGain) mstLiveNodes.rawOutGain.gain.setTargetAtTime(0, t, 0.05);
+                                        }
                                     }
                                 };
                                 window.currentABMode = 'v6';
