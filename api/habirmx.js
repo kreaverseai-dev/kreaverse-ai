@@ -152,9 +152,15 @@ function extractErrorString(obj) {
 }
 
 module.exports = async (req, res) => {
-    res.setHeader('Access-Control-Allow-Origin', '*');
+    const allowedOrigins = ['https://flixa-ai.biz.id', 'https://kreaverse-ai.biz.id', 'http://localhost:3000'];
+    const origin = req.headers.origin;
+    if (allowedOrigins.includes(origin)) {
+        res.setHeader('Access-Control-Allow-Origin', origin);
+    } else {
+        res.setHeader('Access-Control-Allow-Origin', 'https://flixa-ai.biz.id');
+    }
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
     res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
     res.setHeader('Pragma', 'no-cache');
     res.setHeader('Expires', '0');
@@ -170,7 +176,21 @@ module.exports = async (req, res) => {
         }
         if (!body) body = {};
 
-        const { action, email, providerId, modelId, title, prompt, instrumental, lyrics, audioUrl, options, llmType, inputText, vocalGender, currentMode } = body;
+        const authHeader = req.headers.authorization;
+        let verifiedEmail = null;
+
+        if (authHeader && authHeader.startsWith('Bearer ')) {
+            const idToken = authHeader.split('Bearer ')[1];
+            try {
+                const decodedToken = await admin.auth().verifyIdToken(idToken);
+                verifiedEmail = decodedToken.email;
+            } catch (error) {
+                console.warn("Token invalid");
+            }
+        }
+
+        const { action, providerId, modelId, title, prompt, instrumental, lyrics, audioUrl, options, llmType, inputText, vocalGender, currentMode } = body;
+        const email = verifiedEmail || body.email;
 
         // ============================================================
         // ROUTE 1A: DETEKSI LIRIK (ASR WHISPER + AUTO-CLEANUP LLM)
@@ -646,6 +666,19 @@ ATURAN MUTLAK:
             if (!audioUrl) return res.status(400).json({ error: 'Audio URL wajib diisi.' });
 
             try {
+                const parsedUrl = new URL(audioUrl);
+                if (parsedUrl.protocol !== 'https:') {
+                    return res.status(403).json({ error: 'Hanya URL HTTPS yang diizinkan.' });
+                }
+                const hostname = parsedUrl.hostname;
+                if (hostname === 'localhost' || hostname === '127.0.0.1' || hostname.startsWith('10.') || hostname.startsWith('192.168.') || hostname.startsWith('169.254.')) {
+                    return res.status(403).json({ error: 'Akses ke jaringan internal diblokir.' });
+                }
+            } catch (e) {
+                return res.status(400).json({ error: 'URL Audio tidak valid.' });
+            }
+
+            try {
                 // Backend Vercel mendownload langsung dari server sumber (Kebal CORS)
                 const audioFetch = await fetch(audioUrl);
                 if (!audioFetch.ok) throw new Error("Gagal mengunduh audio dari server sumber.");
@@ -676,6 +709,17 @@ ATURAN MUTLAK:
 
             if (userData.expiry && userData.expiry < Date.now() && userData.tier !== 'max_lifetime') return res.status(403).json({ error: 'Masa aktif paket premium Anda telah kedaluwarsa!' });
             if (userData.dailyQuota > 0 && userData.generateCount >= userData.dailyQuota) return res.status(403).json({ error: 'Batas kuota harian pembuatan lagu Anda telah habis!' });
+
+            const isAdmin = userData.role === 'admin';
+            const isMaxTier = ['max_lifetime', 'max_monthly', 'max'].includes(userData.tier);
+
+            if (!isAdmin && !isMaxTier) {
+                const currentKredit = userData.kredit !== undefined ? userData.kredit : (userData.dailyQuota || 0);
+                if (currentKredit < 50) {
+                    return res.status(403).json({ error: 'Saldo tidak cukup. Anda membutuhkan minimal 50 kredit.' });
+                }
+                await userDoc.ref.update({ kredit: FieldValue.increment(-50) });
+            }
 
             const providersDoc = await db.collection("settings").doc("api_providers").get();
             const allProviders = providersDoc.data().list || [];
