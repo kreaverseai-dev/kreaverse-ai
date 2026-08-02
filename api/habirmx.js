@@ -898,16 +898,26 @@ ATURAN MUTLAK:
                         const lowerErr = lastErrorMessage.toLowerCase();
                         
                         // FITUR AUTO-KILL API KEY JIKA SALDO HABIS
-                        if (lowerErr.includes('insufficient') || lowerErr.includes('balance') || lowerErr.includes('credit') || lowerErr.includes('quota') || lowerErr.includes('fund') || lowerErr.includes('limit') || lowerErr.includes('available') || lowerErr.includes('need at least') || lowerErr.includes('not enough')) {
+                        const isPermanentDeath = lowerErr.includes('insufficient') || lowerErr.includes('balance') || lowerErr.includes('credit') || lowerErr.includes('quota') || lowerErr.includes('fund') || lowerErr.includes('need at least') || lowerErr.includes('not enough');
+                        const isRateLimit = lowerErr.includes('429') || lowerErr.includes('too many requests') || lowerErr.includes('rate limit');
+
+                        if (isPermanentDeath) {
                             try {
                                 await db.collection("api_keys").doc(keyDoc.id).update({ status: "mati" });
                                 await db.collection("system_logs").add({
                                     type: "warning", host: currentProvider.value, request: "AUTO_KILL_KEY",
-                                    message: `API Key otomatis dimatikan karena saldo habis. Pesan: ${lastErrorMessage}`, timestamp: Date.now()
+                                    message: `API Key otomatis dimatikan (Saldo Habis). Pesan: ${lastErrorMessage}`, timestamp: Date.now()
                                 });
                             } catch(e) {}
-                            
-                            continue; // <--- LANJUT COBA KEY / PROVIDER LAIN
+                            continue;
+                        } else if (isRateLimit) {
+                            try {
+                                await db.collection("api_keys").doc(keyDoc.id).update({ 
+                                    status: "suspended",
+                                    suspendUntil: Date.now() + (60 * 1000)
+                                });
+                            } catch(e) {}
+                            continue;
                         } else {
                             await db.collection("system_logs").add({
                                 type: "error", host: currentProvider.value, request: isAutoPool ? "GENERATE_MUSIC_FAILOVER" : "GENERATE_MUSIC_STRICT",
@@ -1048,10 +1058,19 @@ ATURAN MUTLAK:
                 }
                 
                 if (resData.code === 413 || resData.code === 400 || resData.code === 403 || lowerErr.includes('artist name') || lowerErr.includes('copyright') || lowerErr.includes('fail') || lowerErr.includes('error') || lowerErr.includes('reject') || lowerErr.includes('tags') || lowerErr.includes('matches an existing') || lowerErr.includes('catalog') || lowerErr.includes('insufficient') || lowerErr.includes('balance') || isKieFailed) {
-                    if (email) {
+                    if (email && taskId) {
                         try {
-                            const refundQuery = await db.collection("users").where("email", "==", email).get();
-                            if (!refundQuery.empty) await refundQuery.docs[0].ref.update({ generateCount: FieldValue.increment(-1), kredit: FieldValue.increment(50) });
+                            const refundLockRef = db.collection("credit_refunds").doc(taskId);
+                            await db.runTransaction(async (transaction) => {
+                                const lockDoc = await transaction.get(refundLockRef);
+                                if (!lockDoc.exists) {
+                                    const refundQuery = await db.collection("users").where("email", "==", email).get();
+                                    if (!refundQuery.empty) {
+                                        transaction.update(refundQuery.docs[0].ref, { generateCount: FieldValue.increment(-1), kredit: FieldValue.increment(50) });
+                                    }
+                                    transaction.set(refundLockRef, { email, taskId, reason: translatedError, refundedAt: Date.now() });
+                                }
+                            });
                         } catch (refundErr) {}
                     }
                     return res.status(200).json({ status: "failed", audioUrl: null, reason: translatedError, raw: resData });
@@ -1177,10 +1196,19 @@ ATURAN MUTLAK:
                 
                 await db.collection("system_logs").add({ type: "error", host: activeProvider.value, request: "POLLING_FAILED", message: `Tugas ${taskId} dibatalkan oleh mesin AI.`, details: typeof failReason === 'string' ? failReason : JSON.stringify(failReason), rawError: JSON.stringify(resData, null, 2), timestamp: Date.now() });
                 
-                if (email) {
+                if (email && taskId) {
                     try {
-                        const refundQuery = await db.collection("users").where("email", "==", email).get();
-                        if (!refundQuery.empty) await refundQuery.docs[0].ref.update({ generateCount: FieldValue.increment(-1), kredit: FieldValue.increment(50) });
+                        const refundLockRef = db.collection("credit_refunds").doc(taskId);
+                        await db.runTransaction(async (transaction) => {
+                            const lockDoc = await transaction.get(refundLockRef);
+                            if (!lockDoc.exists) {
+                                const refundQuery = await db.collection("users").where("email", "==", email).get();
+                                if (!refundQuery.empty) {
+                                    transaction.update(refundQuery.docs[0].ref, { generateCount: FieldValue.increment(-1), kredit: FieldValue.increment(50) });
+                                }
+                                transaction.set(refundLockRef, { email, taskId, reason: failReason, refundedAt: Date.now() });
+                            }
+                        });
                     } catch (refundErr) { }
                 }
             }
