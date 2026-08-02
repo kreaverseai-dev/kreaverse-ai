@@ -2633,19 +2633,37 @@ document.getElementById('btnGoogleAdmin').addEventListener('click', async () => 
     }
 });
 
+// BENTENG ANTI-LOGOUT OTOMATIS (MEMORI SESI LOKAL PERMANEN)
+const savedAdminSession = localStorage.getItem('krea_admin_logged_in') === 'true';
+const savedAdminEmail = localStorage.getItem('krea_admin_email') || '';
+
+if (savedAdminSession && savedAdminEmail) {
+    const allowedList = ALLOWED_ADMINS.map(e => e.toLowerCase().trim());
+    if (allowedList.includes(savedAdminEmail.toLowerCase().trim())) {
+        showDashboard(); // Langsung buka dashboard, jangan lempar ke login!
+    }
+}
+
 onAuthStateChanged(auth, user => {
     if (user) {
-        const userEmail = user.email ? user.email.toLowerCase() : "";
-        const allowed = ALLOWED_ADMINS.map(e => e.toLowerCase());
-        
+        const userEmail = user.email ? user.email.toLowerCase().trim() : "";
+        const allowed = ALLOWED_ADMINS.map(e => e.toLowerCase().trim());
+
         if (allowed.includes(userEmail)) {
+            localStorage.setItem('krea_admin_logged_in', 'true');
+            localStorage.setItem('krea_admin_email', userEmail);
             showDashboard();
         } else {
+            localStorage.removeItem('krea_admin_logged_in');
+            localStorage.removeItem('krea_admin_email');
             signOut(auth).then(() => showAuthGuard());
         }
     } else {
-        isDashboardLoaded = false; // Reset status jika benar-benar logout
-        showAuthGuard();
+        // Hanya tampilkan layar login jika BENAR-BENAR tidak ada sesi tersimpan
+        if (!localStorage.getItem('krea_admin_logged_in')) {
+            isDashboardLoaded = false;
+            showAuthGuard();
+        }
     }
 });
 
