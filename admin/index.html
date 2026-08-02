@@ -2633,17 +2633,6 @@ document.getElementById('btnGoogleAdmin').addEventListener('click', async () => 
     }
 });
 
-// BENTENG ANTI-LOGOUT OTOMATIS (MEMORI SESI LOKAL PERMANEN)
-const savedAdminSession = localStorage.getItem('krea_admin_logged_in') === 'true';
-const savedAdminEmail = localStorage.getItem('krea_admin_email') || '';
-
-if (savedAdminSession && savedAdminEmail) {
-    const allowedList = ALLOWED_ADMINS.map(e => e.toLowerCase().trim());
-    if (allowedList.includes(savedAdminEmail.toLowerCase().trim())) {
-        showDashboard(); // Langsung buka dashboard, jangan lempar ke login!
-    }
-}
-
 onAuthStateChanged(auth, user => {
     if (user) {
         const userEmail = user.email ? user.email.toLowerCase().trim() : "";
@@ -2659,11 +2648,10 @@ onAuthStateChanged(auth, user => {
             signOut(auth).then(() => showAuthGuard());
         }
     } else {
-        // Hanya tampilkan layar login jika BENAR-BENAR tidak ada sesi tersimpan
-        if (!localStorage.getItem('krea_admin_logged_in')) {
-            isDashboardLoaded = false;
-            showAuthGuard();
-        }
+        localStorage.removeItem('krea_admin_logged_in');
+        localStorage.removeItem('krea_admin_email');
+        isDashboardLoaded = false;
+        showAuthGuard();
     }
 });
 
