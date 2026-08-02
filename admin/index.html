@@ -3106,62 +3106,6 @@ document.getElementById('formGoogleUser').addEventListener('submit', async e => 
         }
     });
 
-document.getElementById('formGoogleUser').addEventListener('submit', async e => {
-        e.preventDefault();
-        
-        if (gwAccountsGlobal.length === 0) {
-            showToast("Tambahkan minimal 1 Akun Admin Workspace terlebih dahulu!", "warning");
-            return;
-        }
-
-        const firstName = document.getElementById('gwFirstName').value.trim();
-        const lastName = document.getElementById('gwLastName').value.trim();
-        const username = document.getElementById('gwUsername').value.trim();
-        const domain = document.getElementById('gwDomain').value.replace('@', '').trim();
-        const email = `${username}@${domain}`;
-        const password = document.getElementById('gwPassword').value;
-        
-        let durationVal = document.getElementById('gwDuration').value;
-        let finalDurationMinutes = 1440; // Default 1 hari
-        if (durationVal === 'custom') {
-            finalDurationMinutes = parseInt(document.getElementById('gwCustomDuration').value) || 15;
-        } else {
-            finalDurationMinutes = parseInt(durationVal) * 1440;
-        }
-        
-        if (password.length < 8) {
-            showToast("Password minimal harus 8 karakter!", "warning");
-            return;
-        }
-
-        const btn = e.target.querySelector('button[type="submit"]');
-        btn.disabled = true;
-        btn.innerHTML = `<div class="loading-spinner sm"></div> Memproses...`;
-
-        try {
-            const res = await fetch('/api/google-workspace?action=create', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ firstName, lastName, email, password, duration: finalDurationMinutes })
-            });
-            
-            const result = await res.json();
-            if (res.ok && result.success) {
-                showToast(`Akun Google ${email} berhasil dibuat!`, "success");
-                document.getElementById('formGoogleUser').reset();
-                await createLog({ type: 'success', host: 'Admin', request: 'CREATE_GW_USER', message: `Berhasil membuat akun Google Workspace: ${email}` });
-            } else {
-                showToast(result.message || "Gagal membuat akun Google", "danger");
-                await createLog({ type: 'error', host: 'Admin', request: 'CREATE_GW_USER_FAIL', message: `Gagal membuat akun Google ${email}: ${result.message || ''}` });
-            }
-        } catch (err) {
-            showToast("Gagal terhubung ke API pembuatan user", "danger");
-        } finally {
-            btn.disabled = false;
-            btn.innerHTML = `<i class="fa-solid fa-user-plus"></i> Buat Akun Google Workspace / Cloud Identity`;
-        }
-    });
-
 // ============================================================
 // LOGS SYSTEM (VERCEL STYLE)
 // ============================================================
@@ -4633,7 +4577,12 @@ function updatePromoPreview() {
     if (!text) { preview.innerText = "Preview pengumuman akan tampil di sini..."; preview.style.background = "#F4F5F7"; preview.style.color = "var(--text-sec)"; return; }
     const colors = { info: ['rgba(0,122,255,0.1)', 'var(--info)'], promo: ['rgba(52,199,89,0.1)', 'var(--success)'], gangguan: ['rgba(255,59,48,0.1)', 'var(--danger)'], update: ['rgba(175,82,222,0.1)', '#AF52DE'] };
     
-    const icons = { info: 'ÃÂÃÂ°ÃÂÃÂÃÂÃÂÃÂÃÂ¡', promo: 'ÃÂÃÂ°ÃÂÃÂÃÂÃÂÃÂÃÂ', gangguan: 'ÃÂÃÂ¢ÃÂÃÂÃÂÃÂ ÃÂÃÂ¯ÃÂÃÂ¸ÃÂÃÂ', update: 'ÃÂÃÂ¢ÃÂÃÂÃÂÃÂ¨' };
+    const icons = { 
+        info: '<i class="fa-solid fa-circle-info"></i>', 
+        promo: '<i class="fa-solid fa-gift"></i>', 
+        gangguan: '<i class="fa-solid fa-triangle-exclamation"></i>', 
+        update: '<i class="fa-solid fa-wand-magic-sparkles"></i>' 
+    };
     
     preview.style.background = colors[type][0]; preview.style.color = colors[type][1];    
     preview.innerHTML = `${icons[type]} ${text} ${status === 'nonaktif' ? '<span style="opacity:0.5;">(Tersembunyi)</span>' : ''}`;
