@@ -14317,5 +14317,32 @@ window.startDspBypassAndUpload = async function() {
         if (bannerTimer) clearTimeout(bannerTimer);
     };
 </script>
+<script>
+// OVERRIDE A/B TOGGLE
+window.toggleABMastering = function(mode) {
+    window.currentABMode = mode;
+    const btnRaw = document.getElementById('btnRawSuno');
+    const btnV6 = document.getElementById('btnV6Pro');
+    if (btnRaw && btnV6) {
+        if (mode === 'raw') {
+            btnRaw.classList.add('active-raw');
+            btnV6.classList.remove('active-v6');
+        } else {
+            btnRaw.classList.remove('active-raw');
+            btnV6.classList.add('active-v6');
+        }
+    }
+    if (window.mstLiveNodes && window.mstLiveAudioCtx) {
+        const t = window.mstLiveAudioCtx.currentTime;
+        if (mode === 'raw') {
+            if (window.mstLiveNodes.bypassGain) window.mstLiveNodes.bypassGain.gain.setTargetAtTime(1.0, t, 0.03);
+            if (window.mstLiveNodes.masterGain) window.mstLiveNodes.masterGain.gain.setTargetAtTime(0.0, t, 0.03);
+        } else {
+            if (window.mstLiveNodes.bypassGain) window.mstLiveNodes.bypassGain.gain.setTargetAtTime(0.0, t, 0.03);
+            if (window.mstLiveNodes.masterGain) window.mstLiveNodes.masterGain.gain.setTargetAtTime(1.0, t, 0.03);
+        }
+    }
+};
+</script>
 </body>
 </html>
