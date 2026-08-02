@@ -12285,8 +12285,35 @@ window.startDspBypassAndUpload = async function() {
                             };
 
                             playBtn.innerHTML = '<i class="fa-solid fa-play" style="margin-left: 3px;"></i>';
-                            timeEl.innerText = "Siap diputar (Real-time)";
+                            timeEl.innerText = "0:00 / " + formatTime(audioBuffer.duration);
                             fetchSuccess = true;
+
+                            // FUNGSI PLAY/PAUSE YANG HILANG DIKEMBALIKAN
+                            playBtn.onclick = () => {
+                                if(mstLiveAudioCtx.state === 'suspended') mstLiveAudioCtx.resume();
+                                
+                                if(!mstIsPlaying) {
+                                    playLiveAudio();
+                                    playBtn.innerHTML = '<i class="fa-solid fa-pause"></i>';
+                                    
+                                    function updateTime() {
+                                        if(mstIsPlaying) {
+                                            const currentPos = (mstLiveAudioCtx.currentTime - mstStartTime) % audioBuffer.duration;
+                                            const m = Math.floor(currentPos / 60);
+                                            const s = Math.floor(currentPos % 60).toString().padStart(2, '0');
+                                            timeEl.innerText = `${m}:${s} / ${formatTime(audioBuffer.duration)}`;
+                                            mstLiveAnimFrame = requestAnimationFrame(updateTime);
+                                        }
+                                    }
+                                    updateTime();
+                                } else {
+                                    mstPauseTime = (mstLiveAudioCtx.currentTime - mstStartTime) % audioBuffer.duration;
+                                    mstLiveSource.stop();
+                                    mstIsPlaying = false;
+                                    playBtn.innerHTML = '<i class="fa-solid fa-play" style="margin-left: 3px;"></i>';
+                                    cancelAnimationFrame(mstLiveAnimFrame);
+                                }
+                            };
 
                             // REAL SMART AI TEMPO ANALYZER
                             window.analyzeBPM(audioBuffer).then(bpm => {
