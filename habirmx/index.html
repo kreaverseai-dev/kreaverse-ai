@@ -8175,32 +8175,37 @@ async function processKreaverseAudio(file, isPreview = false, progressCallback) 
                 });
             }
 
-            // LAYER 3: DYNAMIC CONSTELLATION DESTROYER (NOTCH SWEEPER)
+            // LAYER 3: SPECTROGRAM FORMANT SHIFTER (ANTI-VOCAL MATCH)
             const isFormantChecked = document.getElementById('chkFormant') && document.getElementById('chkFormant').checked;
             if (isFormantChecked) {
-                const peakDestroyer = offlineCtx.createBiquadFilter();
-                peakDestroyer.type = 'notch';
-                peakDestroyer.Q.value = 4.0; 
+                // REVISI EXTREME: Mengubah karakter suara penyanyi (Formant) secara dinamis.
+                // Ini akan membuat Suno AI gagal mengenali siapa penyanyi aslinya.
+                const formantFilter = offlineCtx.createBiquadFilter();
+                formantFilter.type = 'peaking';
+                formantFilter.Q.value = 2.5;
+                formantFilter.gain.value = 8.0; // Boost frekuensi formant
                 
-                // REVISI: Step diperhalus (0.5) dan kecepatan ayunan diperlambat drastis (0.5)
-                for (let t = 0; t < finalDuration; t += 0.5) {
-                    const sweepFreq = 1000 + (Math.sin(t * 0.5) * 800) + (Math.random() * 400); 
-                    peakDestroyer.frequency.linearRampToValueAtTime(sweepFreq, t + 0.5);
+                for (let t = 0; t < finalDuration; t += 0.2) {
+                    // Ayunkan frekuensi formant antara 800Hz - 2500Hz (Area vokal manusia)
+                    const sweepFreq = 1600 + (Math.sin(t * 2.0) * 800); 
+                    formantFilter.frequency.linearRampToValueAtTime(sweepFreq, t + 0.2);
                 }
-                lastNode.connect(peakDestroyer);
-                lastNode = peakDestroyer;
+                lastNode.connect(formantFilter);
+                lastNode = formantFilter;
             }
 
-            // LAYER 4: HARMONIC SATURATION (DIRT INJECTOR)
+            // LAYER 4: HARMONIC DISTORTION & MELODY SCRAMBLER
             const isHarmonicsChecked = document.getElementById('chkHarmonics') && document.getElementById('chkHarmonics').checked;
             if (isHarmonicsChecked) {
+                // REVISI EXTREME: Menambahkan distorsi asimetris yang lebih agresif
+                // untuk menghancurkan "Melody Contour" (Alur Melodi) yang dibaca AI.
                 function makeAsymmetricSaturationCurve() {
                     const n_samples = 44100;
                     const curve = new Float32Array(n_samples);
                     for (let i = 0; i < n_samples; ++i) {
                         let x = (i * 2) / n_samples - 1;
-                        // Distorsi sedikit dinaikkan untuk menambah harmonik palsu yang mengecoh AI
-                        curve[i] = Math.tanh(x * 1.8) + (0.08 * Math.sin(x * Math.PI * 1.2));
+                        // Distorsi dinaikkan drastis (dari 1.8 ke 3.5)
+                        curve[i] = Math.tanh(x * 3.5) + (0.15 * Math.sin(x * Math.PI * 1.5));
                     }
                     return curve;
                 }
