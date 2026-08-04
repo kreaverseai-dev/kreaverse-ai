@@ -606,95 +606,6 @@ window.processKreaverseAudio = async function(file, isPreview = false, progressC
 };
 
 // ============================================================
-// VOICE RECORDER EFFECTS (STUDIO VOCAL)
-// ============================================================
-window.applyStudioEffectsToBlob = async function(blob, genderFilter, progressCallback) {
-    const arrayBuffer = await blob.arrayBuffer();
-    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    const audioBuffer = await audioCtx.decodeAudioData(arrayBuffer);
-    
-    const offlineCtx = new OfflineAudioContext(audioBuffer.numberOfChannels, audioBuffer.length, audioBuffer.sampleRate);
-    const source = offlineCtx.createBufferSource();
-    source.buffer = audioBuffer;
-    
-    if (genderFilter === 'raw') {
-        source.connect(offlineCtx.destination);
-        source.start(0);
-        const renderedBuffer = await offlineCtx.startRendering();
-        return await window.encodeAudioBufferToMp3(renderedBuffer, progressCallback);
-    }
-
-    source.preservesPitch = false;
-
-    if (genderFilter === 'male') source.playbackRate.value = 0.85; 
-    else if (genderFilter === 'female') source.playbackRate.value = 1.35; 
-    else source.playbackRate.value = 1.0;  
-
-    function makeSoftGateCurve(threshold) {
-        const n_samples = 44100; const curve = new Float32Array(n_samples);
-        for (let i = 0; i < n_samples; ++i) {
-            const x = i * 2 / n_samples - 1;
-            if (Math.abs(x) < threshold) curve[i] = x * Math.pow(Math.abs(x) / threshold, 2); 
-            else curve[i] = x;
-        }
-        return curve;
-    }
-    const noiseGate = offlineCtx.createWaveShaper();
-    noiseGate.curve = makeSoftGateCurve(0.008); 
-    noiseGate.oversample = '4x';
-
-    function makeDistortionCurve(amount) {
-        const k = typeof amount === 'number' ? amount : 50;
-        const n_samples = 44100; const curve = new Float32Array(n_samples); const deg = Math.PI / 180;
-        for (let i = 0; i < n_samples; ++i) {
-            const x = i * 2 / n_samples - 1;
-            curve[i] = (3 + k) * x * 20 * deg / (Math.PI + k * Math.abs(x));
-        }
-        return curve;
-    }
-    const saturation = offlineCtx.createWaveShaper();
-    saturation.curve = makeDistortionCurve(2); 
-    saturation.oversample = '4x';
-
-    const hpf = offlineCtx.createBiquadFilter(); hpf.type = 'highpass'; hpf.frequency.value = 40;
-    const chestEQ = offlineCtx.createBiquadFilter(); chestEQ.type = 'peaking'; chestEQ.frequency.value = 180; chestEQ.Q.value = 0.8; chestEQ.gain.value = 5.5;
-    const antiNasalEQ = offlineCtx.createBiquadFilter(); antiNasalEQ.type = 'peaking'; antiNasalEQ.frequency.value = 1200; antiNasalEQ.Q.value = 1.5; antiNasalEQ.gain.value = -7.5;
-    const airEQ = offlineCtx.createBiquadFilter(); airEQ.type = 'highshelf'; airEQ.frequency.value = 8000; airEQ.gain.value = 5.0;
-
-    const compressor = offlineCtx.createDynamicsCompressor();
-    compressor.threshold.value = -18; compressor.knee.value = 10; compressor.ratio.value = 4; compressor.attack.value = 0.005; compressor.release.value = 0.1;
-
-    const length = offlineCtx.sampleRate * 2.2; 
-    const impulse = offlineCtx.createBuffer(2, length, offlineCtx.sampleRate);
-    for (let i = 0; i < 2; i++) {
-        const channelData = impulse.getChannelData(i);
-        for (let j = 0; j < length; j++) channelData[j] = (Math.random() * 2 - 1) * Math.pow(1 - j / length, 5);
-    }
-    const convolver = offlineCtx.createConvolver(); convolver.buffer = impulse;
-
-    const preDelay = offlineCtx.createDelay(); preDelay.delayTime.value = 0.04;
-    const reverbHPF = offlineCtx.createBiquadFilter(); reverbHPF.type = 'highpass'; reverbHPF.frequency.value = 600;
-
-    const dryGain = offlineCtx.createGain(); dryGain.gain.value = 1.0;
-    const wetGain = offlineCtx.createGain(); wetGain.gain.value = 0.45; 
-    
-    const limiter = offlineCtx.createDynamicsCompressor();
-    limiter.threshold.value = -0.5; limiter.knee.value = 0.0; limiter.ratio.value = 20.0; limiter.attack.value = 0.001; limiter.release.value = 0.05;
-
-    const makeUpGain = offlineCtx.createGain(); makeUpGain.gain.value = 1.5; 
-
-    source.connect(noiseGate); noiseGate.connect(saturation); saturation.connect(hpf); hpf.connect(chestEQ); chestEQ.connect(antiNasalEQ); antiNasalEQ.connect(airEQ); airEQ.connect(compressor);
-    compressor.connect(dryGain);
-    compressor.connect(preDelay); preDelay.connect(reverbHPF); reverbHPF.connect(convolver); convolver.connect(wetGain);
-    dryGain.connect(makeUpGain); wetGain.connect(makeUpGain);
-    makeUpGain.connect(limiter); limiter.connect(offlineCtx.destination);
-    
-    source.start(0);
-    const renderedBuffer = await offlineCtx.startRendering();
-    return await window.encodeAudioBufferToMp3(renderedBuffer, progressCallback);
-};
-
-// ============================================================
 // VISUALIZER (OSCILLOSCOPE)
 // ============================================================
 window.audioContextForVis = null;
@@ -710,12 +621,14 @@ window.initVisualizer = function() {
         const origAudio = document.getElementById('originalAudioPlayer');
         const bypAudio = document.getElementById('bypassedAudioPlayer');
         
-        const source1 = window.audioContextForVis.createMediaElementSource(origAudio);
-        const source2 = window.audioContextForVis.createMediaElementSource(bypAudio);
-        
-        source1.connect(window.analyserNode);
-        source2.connect(window.analyserNode);
-        window.analyserNode.connect(window.audioContextForVis.destination);
+        if(origAudio && bypAudio) {
+            const source1 = window.audioContextForVis.createMediaElementSource(origAudio);
+            const source2 = window.audioContextForVis.createMediaElementSource(bypAudio);
+            
+            source1.connect(window.analyserNode);
+            source2.connect(window.analyserNode);
+            window.analyserNode.connect(window.audioContextForVis.destination);
+        }
     }
     
     if(window.audioContextForVis.state === 'suspended') {
@@ -761,51 +674,4 @@ window.initVisualizer = function() {
     
     if(window.animationFrameId) cancelAnimationFrame(window.animationFrameId);
     draw();
-};
-
-// ============================================================
-// SMART TEMPO ANALYZER
-// ============================================================
-window.analyzeBPM = async function(audioBuffer) {
-    const offlineCtx = new OfflineAudioContext(1, audioBuffer.length, audioBuffer.sampleRate);
-    const source = offlineCtx.createBufferSource();
-    source.buffer = audioBuffer;
-
-    const filter = offlineCtx.createBiquadFilter();
-    filter.type = 'lowpass';
-    filter.frequency.value = 150;
-
-    source.connect(filter);
-    filter.connect(offlineCtx.destination);
-    source.start(0);
-
-    const renderedBuffer = await offlineCtx.startRendering();
-    const data = renderedBuffer.getChannelData(0);
-    
-    let peaks = [];
-    let threshold = 0.8; 
-    
-    for (let i = 0; i < data.length; i++) {
-        if (data[i] > threshold) {
-            peaks.push(i);
-            i += offlineCtx.sampleRate / 4; 
-        }
-    }
-
-    if (peaks.length < 2) return 120; 
-
-    let intervals = [];
-    for (let i = 1; i < peaks.length; i++) {
-        intervals.push(peaks[i] - peaks[i - 1]);
-    }
-
-    intervals.sort((a, b) => a - b);
-    const medianInterval = intervals[Math.floor(intervals.length / 2)];
-    
-    let bpm = (60 * offlineCtx.sampleRate) / medianInterval;
-    
-    while (bpm < 60) bpm *= 2;
-    while (bpm > 180) bpm /= 2;
-    
-    return Math.round(bpm);
 };
