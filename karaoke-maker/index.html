@@ -565,15 +565,45 @@
             showLoader("Menganalisis Audio", "Tahap 1/3: Mengunggah lagu secara rahasia untuk Bypass AI...", "fa-cloud-arrow-up");
 
             try {
-                // TAHAP 1: UPLOAD KE SERVER SEMENTARA (BYPASS VERCEL 4.5MB LIMIT)
-                const formData = new FormData();
-                formData.append('file', file);
-
-                const uploadRes = await fetch('https://tmpfiles.org/api/v1/upload', { method: 'POST', body: formData });
-                const uploadData = await uploadRes.json();
-                if (!uploadRes.ok || uploadData.status !== 'success') throw new Error("Gagal mengunggah ke tmpfiles.");
+                // TAHAP 1: UPLOAD KE CLOUDINARY KREAVERSE (DIRECT MEDIA LINK)
+                showLoader("Mengunggah Audio", "Tahap 1/3: Menyimpan lagu ke Cloudinary...", "fa-cloud-arrow-up");
                 
-                const directAudioUrl = uploadData.data.url.replace('tmpfiles.org/', 'tmpfiles.org/dl/');
+                let directAudioUrl = "";
+                
+                try {
+                    // Mengambil data akun Cloudinary dari Firestore Kreaverse via REST API
+                    const dbRes = await fetch('https://firestore.googleapis.com/v1/projects/kreaverse-ai0107/databases/(default)/documents/cloudinary_accounts');
+                    const dbData = await dbRes.json();
+                    
+                    if (!dbData.documents || dbData.documents.length === 0) throw new Error("Akun Cloudinary tidak ditemukan.");
+                    
+                    // Ambil akun pertama yang tersedia
+                    const cloudFields = dbData.documents[0].fields;
+                    const cloudName = cloudFields.cloudName.stringValue;
+                    const uploadPreset = cloudFields.uploadPreset.stringValue;
+
+                    const formData = new FormData();
+                    formData.append('file', file);
+                    formData.append('upload_preset', uploadPreset);
+
+                    const uploadRes = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/auto/upload`, { 
+                        method: 'POST', 
+                        body: formData 
+                    });
+                    const uploadData = await uploadRes.json();
+                    
+                    if (!uploadRes.ok) throw new Error("Gagal mengunggah ke Cloudinary.");
+                    directAudioUrl = uploadData.secure_url; // Ini adalah Direct Link MP3
+                    
+                } catch (cloudErr) {
+                    console.log("Fallback Cloudinary:", cloudErr);
+                    // Fallback aman jika REST API Cloudinary terblokir
+                    const fallbackData = new FormData();
+                    fallbackData.append('files[]', file);
+                    const fbRes = await fetch('https://uguu.se/upload.php', { method: 'POST', body: fallbackData });
+                    const fbJson = await fbRes.json();
+                    directAudioUrl = fbJson.files[0].url; // Direct link alternatif
+                }
 
                 // TAHAP 2: DETEKSI LIRIK (SPEECH TO TEXT)
                 showLoader("Mendengarkan Lirik", "Tahap 2/3: Mengekstrak suara penyanyi menjadi teks...", "fa-ear-listen");
