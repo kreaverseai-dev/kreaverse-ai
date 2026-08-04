@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kreaverse - Karaoke Lyric Video Editor</title>
+    <!-- Google Fonts (Menyediakan 30+ Font) -->
+    <link href="https://fonts.googleapis.com/css2?family=Anton&family=Bebas+Neue&family=Caveat&family=Chewy&family=Comfortaa&family=Creepster&family=Dancing+Script&family=Fredoka+One&family=Great+Vibes&family=Indie+Flower&family=Josefin+Sans&family=Kalam&family=Lobster&family=Montserrat&family=Oswald&family=Pacifico&family=Permanent+Marker&family=Playfair+Display&family=Press+Start+2P&family=Quicksand&family=Righteous&family=Roboto&family=Rubik&family=Satisfy&family=Shadows+Into+Light&family=Teko&family=Ubuntu&family=Vampiro+One&family=Varela+Round&family=Zilla+Slab&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #121212; --panel-bg: #1e1e1e; --text: #ffffff; --primary: #007bff;
+        }
+        body { margin: 0; font-family: 'Roboto', sans-serif; background-color: var(--bg-color); color: var(--text); display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+        
+        /* Layout Mobile Friendly */
+        .header { padding: 10px; background: #000; text-align: center; font-weight: bold; }
+        .workspace { display: flex; flex-direction: column; flex: 1; overflow-y: auto; }
+        
+        /* Preview Player (Poin 11 & 7) */
+        .preview-container { display: flex; justify-content: center; align-items: center; background: #000; padding: 10px; min-height: 40vh; }
+        .canvas-wrapper { position: relative; width: 100%; max-width: 400px; aspect-ratio: 9/16; background: #333; box-shadow: 0 0 10px rgba(0,0,0,0.5); }
+        canvas { width: 100%; height: 100%; object-fit: cover; }
+        
+        /* Player Controls */
+        .controls { display: flex; justify-content: center; gap: 15px; padding: 10px; background: var(--panel-bg); }
+        button { background: var(--primary); color: white; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer; font-weight: bold; }
+        button:active { transform: scale(0.95); }
+        button:disabled { background: #555; cursor: not-allowed; }
+        
+        /* Tab Panels (Settings) */
+        .panels { padding: 15px; background: var(--panel-bg); flex: 1; overflow-y: auto; }
+        .setting-group { margin-bottom: 15px; border-bottom: 1px solid #333; padding-bottom: 10px; }
+        .setting-group h3 { margin: 0 0 10px 0; font-size: 14px; color: #aaa; }
+        select, input[type="color"], input[type="range"], input[type="file"] { width: 100%; margin-bottom: 10px; background: #222; color: white; border: 1px solid #444; padding: 5px; }
+        
+        /* Progress Bar (Poin 10) */
+        .progress-container { display: none; width: 100%; background: #333; border-radius: 5px; margin-top: 10px; }
+        .progress-bar { height: 10px; background: #4caf50; width: 0%; border-radius: 5px; transition: width 0.3s; }
+    </style>
+</head>
+<body>
+
+    <div class="header">🎤 Kreaverse Karaoke Maker</div>
+
+    <div class="workspace">
+        <!-- Preview Area -->
+        <div class="preview-container">
+            <div class="canvas-wrapper" id="aspect-ratio-wrapper">
+                <canvas id="videoCanvas" width="1080" height="1920"></canvas>
+            </div>
+        </div>
+
+        <!-- Controls (Poin 11) -->
+        <div class="controls">
+            <button id="btnPlayPause">▶ Play</button>
+            <span id="currentTimeDisplay">00:00</span> / <span id="durationDisplay">00:00</span>
+        </div>
+
+        <div class="panels">
+            <!-- Media Upload (Poin 1, 2) -->
+            <div class="setting-group">
+                <h3>1. Media & Resolusi</h3>
+                <label>Resolusi (Poin 7):</label>
+                <select id="resolutionSelect">
+                    <option value="9/16">TikTok/Reels/Shorts (9:16)</option>
+                    <option value="16/9">YouTube (16:9)</option>
+                    <option value="1/1">Instagram Square (1:1)</option>
+                </select>
+                <label>Audio Lagu:</label>
+                <input type="file" id="audioUpload" accept="audio/*">
+                <label>Background (Gambar/Video / Opsional):</label>
+                <input type="file" id="bgUpload" accept="image/*,video/*">
+                <label>Warna Background Solid:</label>
+                <input type="color" id="bgColor" value="#000000">
+            </div>
+
+            <!-- Lyric Settings (Poin 4, 5, 6) -->
+            <div class="setting-group">
+                <h3>2. Desain Lirik</h3>
+                <label>Font (30+ Pilihan):</label>
+                <select id="fontSelect">
+                    <option style="font-family: 'Roboto'" value="Roboto">Roboto</option>
+                    <option style="font-family: 'Anton'" value="Anton">Anton</option>
+                    <option style="font-family: 'Lobster'" value="Lobster">Lobster</option>
+                    <option style="font-family: 'Pacifico'" value="Pacifico">Pacifico</option>
+                    <option style="font-family: 'Bebas Neue'" value="Bebas Neue">Bebas Neue</option>
+                    <option style="font-family: 'Teko'" value="Teko">Teko</option>
+                    <option style="font-family: 'Oswald'" value="Oswald">Oswald</option>
+                    <option style="font-family: 'Dancing Script'" value="Dancing Script">Dancing Script</option>
+                    <!-- Anda bisa tambahkan sisa list font Google disini -->
+                </select>
+                <div style="display: flex; gap: 10px;">
+                    <div style="flex: 1;">
+                        <label>Warna Pasif:</label>
+                        <input type="color" id="lyricColor" value="#ffffff">
+                    </div>
+                    <div style="flex: 1;">
+                        <label>Warna Nyala (Karaoke):</label>
+                        <input type="color" id="lyricActiveColor" value="#ffff00">
+                    </div>
+                </div>
+                <label>Posisi Lirik (Tengah/Bawah):</label>
+                <select id="lyricPosition">
+                    <option value="center">Tengah (Center)</option>
+                    <option value="bottom">Bawah (Bottom)</option>
+                </select>
+                <label>Ukuran Font:</label>
+                <input type="range" id="fontSize" min="20" max="150" value="60">
+            </div>
+
+            <!-- Animasi (Poin 3) -->
+            <div class="setting-group">
+                <h3>3. Animasi</h3>
+                <select id="animationSelect">
+                    <option value="fade">Fade In</option>
+                    <option value="pop">Pop Up</option>
+                    <option value="typewriter">Mesin Tik</option>
+                    <option value="karaoke">Karaoke (Warna Berjalan)</option>
+                </select>
+            </div>
+
+            <!-- Sync Lyric (Poin 12, 13) -->
+            <div class="setting-group">
+                <h3>4. Sync Lirik (Manual/LRC)</h3>
+                <p style="font-size: 12px; color: #888;">*Fitur AI deteksi suara menyusul. Gunakan manual sync / format LRC untuk saat ini.</p>
+                <textarea id="lyricInput" rows="5" style="width: 100%; background: #222; color: white;" placeholder="Paste lirik format LRC disini...&#10;[00:15.20] Contoh lirik baris pertama..."></textarea>
+                <button id="btnSync">Update Lirik</button>
+            </div>
+
+            <!-- Export & Save (Poin 8, 9, 10) -->
+            <div class="setting-group">
+                <h3>5. Simpan & Export</h3>
+                <div style="display: flex; gap: 10px;">
+                    <button id="btnSaveProject" style="background: #28a745;">💾 Simpan Project (Lokal)</button>
+                    <button id="btnExport" style="background: #dc3545;">🎬 Export Video (Ringan)</button>
+                </div>
+                <div class="progress-container" id="progressContainer">
+                    <div style="font-size: 12px; text-align: center; margin-bottom: 5px;">Merekam Video... Harap jangan tutup tab.</div>
+                    <div class="progress-bar" id="progressBar"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Logika JavaScript Dasar -->
+    <script>
+        // Inisialisasi Element
+        const canvas = document.getElementById('videoCanvas');
+        const ctx = canvas.getContext('2d');
+        const audio = new Audio();
+        let bgMedia = null; // Bisa gambar atau video element
+        let isPlaying = false;
+        let animationFrameId;
+
+        // Data State Project (Poin 9)
+        let projectData = {
+            lyrics: [],
+            font: 'Roboto',
+            color: '#ffffff',
+            activeColor: '#ffff00',
+            size: 60,
+            position: 'center',
+            resolution: '9/16'
+        };
+
+        // --- Poin 7: Resolusi ---
+        document.getElementById('resolutionSelect').addEventListener('change', (e) => {
+            const ratio = e.target.value.split('/');
+            const wrapper = document.getElementById('aspect-ratio-wrapper');
+            wrapper.style.aspectRatio = `${ratio[0]}/${ratio[1]}`;
+            
+            if(e.target.value === '9/16') { canvas.width = 1080; canvas.height = 1920; }
+            else if(e.target.value === '16/9') { canvas.width = 1920; canvas.height = 1080; }
+            else { canvas.width = 1080; canvas.height = 1080; }
+            drawFrame(); // Update preview
+        });
+
+        // --- Poin 1 & 2: Upload Audio & Background ---
+        document.getElementById('audioUpload').addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if(file) audio.src = URL.createObjectURL(file);
+        });
+
+        document.getElementById('bgUpload').addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if(file) {
+                if(file.type.startsWith('image/')) {
+                    bgMedia = new Image();
+                    bgMedia.src = URL.createObjectURL(file);
+                    bgMedia.onload = drawFrame;
+                } else if(file.type.startsWith('video/')) {
+                    bgMedia = document.createElement('video');
+                    bgMedia.src = URL.createObjectURL(file);
+                    bgMedia.loop = true;
+                    bgMedia.muted = true;
+                    bgMedia.play();
+                }
+            }
+        });
+
+        // --- Poin 11: Play/Pause Controls ---
+        document.getElementById('btnPlayPause').addEventListener('click', () => {
+            if(audio.src) {
+                if(isPlaying) {
+                    audio.pause();
+                    if(bgMedia && bgMedia.tagName === 'VIDEO') bgMedia.pause();
+                    cancelAnimationFrame(animationFrameId);
+                    document.getElementById('btnPlayPause').innerText = '▶ Play';
+                } else {
+                    audio.play();
+                    if(bgMedia && bgMedia.tagName === 'VIDEO') bgMedia.play();
+                    renderLoop();
+                    document.getElementById('btnPlayPause').innerText = '⏸ Pause';
+                }
+                isPlaying = !isPlaying;
+            } else {
+                alert('Silahkan upload audio terlebih dahulu!');
+            }
+        });
+
+        // --- Core Rendering Loop ---
+        function renderLoop() {
+            drawFrame();
+            // Update waktu display
+            document.getElementById('currentTimeDisplay').innerText = formatTime(audio.currentTime);
+            if(isPlaying) animationFrameId = requestAnimationFrame(renderLoop);
+        }
+
+        function drawFrame() {
+            // 1. Gambar Background Solid (Poin 2)
+            ctx.fillStyle = document.getElementById('bgColor').value;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // 2. Gambar Background Media (Gambar/Video)
+            if(bgMedia) {
+                // Menyesuaikan rasio gambar/video memenuhi canvas (object-fit: cover logic)
+                const scale = Math.max(canvas.width / bgMedia.width, canvas.height / bgMedia.height) || Math.max(canvas.width / bgMedia.videoWidth, canvas.height / bgMedia.videoHeight);
+                const x = (canvas.width / 2) - ((bgMedia.width || bgMedia.videoWidth) / 2) * scale;
+                const y = (canvas.height / 2) - ((bgMedia.height || bgMedia.videoHeight) / 2) * scale;
+                ctx.drawImage(bgMedia, x, y, (bgMedia.width || bgMedia.videoWidth) * scale, (bgMedia.height || bgMedia.videoHeight) * scale);
+                
+                // Tambahkan efek gelap agar lirik terbaca
+                ctx.fillStyle = 'rgba(0,0,0,0.4)';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+            }
+
+            // 3. Gambar Lirik (Poin 4, 5, 6)
+            drawLyrics(audio.currentTime);
+        }
+
+        // --- Poin 12 & 13: Logika Lirik ---
+        function drawLyrics(currentTime) {
+            const fontName = document.getElementById('fontSelect').value;
+            const fontSize = document.getElementById('fontSize').value;
+            const pos = document.getElementById('lyricPosition').value;
+            const text = "Contoh Lirik Berjalan..."; // Di versi asli, ambil dari array LRC yang aktif
+
+            ctx.font = `bold ${fontSize}px '${fontName}'`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            
+            const x = canvas.width / 2;
+            const y = pos === 'center' ? canvas.height / 2 : canvas.height - (canvas.height * 0.15);
+
+            // Teks Bayangan/Garis luar agar jelas
+            ctx.lineWidth = 8;
+            ctx.strokeStyle = 'black';
+            ctx.strokeText(text, x, y);
+
+            // Warna Teks
+            ctx.fillStyle = document.getElementById('lyricColor').value;
+            ctx.fillText(text, x, y);
+        }
+
+        // --- Poin 8 & 10: Export Video (Ringan untuk HP 3GB RAM) ---
+        // Menggunakan MediaRecorder untuk merekam Canvas
+        document.getElementById('btnExport').addEventListener('click', () => {
+            if(!audio.src) return alert('Upload audio dulu!');
+            
+            const progressContainer = document.getElementById('progressContainer');
+            const progressBar = document.getElementById('progressBar');
+            progressContainer.style.display = 'block';
+            progressBar.style.width = '0%';
+
+            // Reset ke awal
+            audio.currentTime = 0;
+            if(bgMedia && bgMedia.tagName === 'VIDEO') bgMedia.currentTime = 0;
+            
+            const stream = canvas.captureStream(30); // 30 FPS
+            // Gabungkan audio dari file dengan video dari canvas
+            const audioCtx = new AudioContext();
+            const dest = audioCtx.createMediaStreamDestination();
+            const source = audioCtx.createMediaElementSource(audio);
+            source.connect(dest);
+            source.connect(audioCtx.destination); // Dengar saat render
+            
+            const combinedStream = new MediaStream([
+                ...stream.getVideoTracks(),
+                ...dest.stream.getAudioTracks()
+            ]);
+
+            const recorder = new MediaRecorder(combinedStream, { mimeType: 'video/webm' });
+            const chunks = [];
+
+            recorder.ondataavailable = e => chunks.push(e.data);
+            recorder.onstop = () => {
+                const blob = new Blob(chunks, { type: 'video/webm' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'Kreaverse_Karaoke.webm';
+                a.click();
+                progressContainer.style.display = 'none';
+                alert('Video berhasil disimpan!');
+            };
+
+            // Mulai Merekam
+            recorder.start();
+            audio.play();
+            if(bgMedia && bgMedia.tagName === 'VIDEO') bgMedia.play();
+            renderLoop();
+
+            // Progress Bar (Berjalan sesuai durasi lagu)
+            const updateProgress = setInterval(() => {
+                if(audio.duration) {
+                    const percent = (audio.currentTime / audio.duration) * 100;
+                    progressBar.style.width = percent + '%';
+                }
+                if(audio.ended) {
+                    clearInterval(updateProgress);
+                    recorder.stop();
+                    isPlaying = false;
+                    document.getElementById('btnPlayPause').innerText = '▶ Play';
+                }
+            }, 500);
+        });
+
+        // --- Poin 9: Fitur Simpan Project (Local Storage) ---
+        document.getElementById('btnSaveProject').addEventListener('click', () => {
+            projectData.font = document.getElementById('fontSelect').value;
+            projectData.resolution = document.getElementById('resolutionSelect').value;
+            localStorage.setItem('kreaverse_karaoke_project', JSON.stringify(projectData));
+            alert('Project berhasil disimpan di browser HP Anda!');
+        });
+
+        // Utils
+        function formatTime(seconds) {
+            if(isNaN(seconds)) return "00:00";
+            const m = Math.floor(seconds / 60).toString().padStart(2, '0');
+            const s = Math.floor(seconds % 60).toString().padStart(2, '0');
+            return `${m}:${s}`;
+        }
+        audio.addEventListener('loadedmetadata', () => {
+            document.getElementById('durationDisplay').innerText = formatTime(audio.duration);
+        });
+
+        // Initial draw
+        document.getElementById('fontSelect').addEventListener('change', drawFrame);
+        document.getElementById('bgColor').addEventListener('change', drawFrame);
+        drawFrame();
+    </script>
+</body>
+</html>
