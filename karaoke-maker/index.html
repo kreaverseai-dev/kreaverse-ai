@@ -218,9 +218,14 @@
                 </div>
 
                 <!-- API Gateway Integration Button (Architecture Requirement #2) -->
-                <button id="btnProsesAI" class="btn btn-ai">
-                    <i class="fa-solid fa-sparkles"></i> Rapikan Lirik dengan AI (Gateway)
-                </button>
+                <div style="display: flex; gap: 10px; flex-direction: column;">
+                    <button id="btnDeteksiSuara" class="btn btn-ai" style="background: linear-gradient(135deg, #f59e0b, #ef4444);">
+                        <i class="fa-solid fa-ear-listen"></i> Dengar Lagu & Tulis Lirik (AI)
+                    </button>
+                    <button id="btnProsesAI" class="btn btn-save">
+                        <i class="fa-solid fa-align-left"></i> Rapikan Teks Lirik Saja
+                    </button>
+                </div>
                 
                 <div id="aiLoader" style="display: none; text-align: center; margin-top: 15px; color: var(--primary); font-size: 0.9rem;">
                     <i class="fa-solid fa-circle-notch spinner"></i> Memproses AI via Gateway...
@@ -309,27 +314,42 @@
 
     <!-- CORE LOGIC: Frontend Only & MediaRecorder Export -->
     <script>
-        // --- 1. AUTHENTICATION CHECK (Architecture Requirement #1 & #3) ---
+        // --- 1. AUTHENTICATION CHECK (REVISI PINTAR) ---
         let userEmail = "";
         function checkAuth() {
-            try {
-                // Sesuai sistem Kreaverse umum
-                const rawAuth = localStorage.getItem('kreaverse_logged_in');
-                if (!rawAuth) throw new Error("Not logged in");
-                
-                // Coba parse jika formatnya JSON, jika tidak anggap string biasa
-                let authData;
-                try { authData = JSON.parse(rawAuth); } catch (e) { authData = { email: rawAuth }; }
-                
-                if (authData && (authData.email || authData.uid)) {
-                    userEmail = authData.email || "user@kreaverse.ai";
-                    document.getElementById('userEmailDisplay').innerText = userEmail;
-                } else {
-                    throw new Error("Invalid Auth Data");
+            let foundEmail = localStorage.getItem('userEmail') || localStorage.getItem('kreaverse_logged_in');
+            
+            if (!foundEmail) {
+                for (let i = 0; i < localStorage.length; i++) {
+                    let key = localStorage.key(i);
+                    if (key.includes('firebase:authUser')) {
+                        try {
+                            let authData = JSON.parse(localStorage.getItem(key));
+                            if (authData && authData.email) foundEmail = authData.email;
+                        } catch(e) {}
+                    }
                 }
-            } catch (err) {
-                document.getElementById('authOverlay').style.display = 'flex';
             }
+
+            if (foundEmail) {
+                userEmail = foundEmail;
+                document.getElementById('userEmailDisplay').innerText = userEmail;
+                document.getElementById('authOverlay').style.display = 'none';
+            } else {
+                const overlay = document.getElementById('authOverlay');
+                overlay.style.display = 'flex';
+                overlay.innerHTML = `
+                    <i class="fa-solid fa-unlock-keyhole" style="font-size: 3rem; color: var(--primary); margin-bottom: 15px;"></i>
+                    <h2>Verifikasi Sesi</h2>
+                    <p style="color: var(--text-muted); margin-bottom: 15px;">Silakan masukkan email Anda untuk melanjutkan.</p>
+                    <input type="email" id="fallbackEmail" placeholder="Masukkan Email Kreaverse Anda..." style="padding: 12px; width: 90%; max-width: 300px; border-radius: 8px; border: 1px solid var(--primary); background: var(--bg-dark); color: white; margin-bottom: 15px;">
+                    <button onclick="saveManualEmail()" class="btn-login" style="border: none; cursor: pointer; width: 90%; max-width: 300px;">Lanjutkan</button>
+                `;
+            }
+        }
+        window.saveManualEmail = function() {
+            const em = document.getElementById('fallbackEmail').value;
+            if (em.includes('@')) { localStorage.setItem('userEmail', em); checkAuth(); } else { alert('Format email salah!'); }
         }
         checkAuth();
 
@@ -721,6 +741,65 @@
                 } catch(e) {}
             }
             drawFrame();
+        });
+
+    // --- FITUR BARU: DETEKSI SUARA KE LIRIK (SPEECH-TO-TEXT) ---
+        document.getElementById('btnDeteksiSuara').addEventListener('click', async () => {
+            const audioInput = document.getElementById('audioInput');
+            if (!audioInput.files || audioInput.files.length === 0) {
+                return alert("Silakan upload file Audio/Lagu terlebih dahulu di Panel 1!");
+            }
+
+            const btn = document.getElementById('btnDeteksiSuara');
+            const loader = document.getElementById('aiLoader');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-spinner spinner"></i> Mendengarkan...';
+            loader.style.display = 'block';
+
+            try {
+                const file = audioInput.files[0];
+                if (file.size > 4 * 1024 * 1024) alert("Peringatan: Ukuran lagu > 4MB. Proses AI mungkin butuh waktu lebih lama atau terpotong.");
+
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                
+                reader.onload = async () => {
+                    const base64Audio = reader.result;
+                    const payload = {
+                        action: "detect_lyrics",
+                        toolId: "lyric-maker_sync",
+                        email: userEmail,
+                        audioUrl: base64Audio 
+                    };
+
+                    try {
+                        const response = await fetch('/api/habirmx', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(payload)
+                        });
+                        const data = await response.json();
+                        if (!response.ok) throw new Error(data.error || "Gagal deteksi suara");
+
+                        if (data.success && data.result) {
+                            document.getElementById('lyricInput').value = data.result;
+                            parseLRC();
+                            drawFrame();
+                            alert("Sukses! AI berhasil menulis lirik.");
+                        }
+                    } catch (err) { alert(`Error AI API: ${err.message}`); } 
+                    finally {
+                        btn.disabled = false;
+                        btn.innerHTML = '<i class="fa-solid fa-ear-listen"></i> Dengar Lagu & Tulis Lirik (AI)';
+                        loader.style.display = 'none';
+                    }
+                };
+            } catch (error) {
+                alert(`Error internal: ${error.message}`);
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fa-solid fa-ear-listen"></i> Dengar Lagu & Tulis Lirik (AI)';
+                loader.style.display = 'none';
+            }
         });
 
     </script>
