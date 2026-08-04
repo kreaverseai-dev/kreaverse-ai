@@ -15,7 +15,7 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 
-// Jadikan variabel Firebase GLOBAL agar bisa dibaca oleh file JS lainnya
+// Jadikan variabel Firebase GLOBAL
 window.auth = getAuth(app);
 window.db = getFirestore(app);
 window.rtdb = getDatabase(app);
@@ -26,6 +26,12 @@ window.currentUserData = null;
 window.isAdmin = false;
 window.isLoggedIn = localStorage.getItem('kreaverse_logged_in') === 'true';
 window.userEmail = localStorage.getItem('kreaverse_user_email');
+
+// Ekspor fungsi Firebase ke window
+window.doc = doc; window.collection = collection; window.getDocs = getDocs; window.addDoc = addDoc;
+window.onSnapshot = onSnapshot; window.updateDoc = updateDoc; window.query = query; window.where = where;
+window.deleteDoc = deleteDoc; window.getDoc = getDoc; window.ref = ref; window.set = set;
+window.onValue = onValue; window.onDisconnect = onDisconnect; window.rtdbTimestamp = rtdbTimestamp;
 
 // Auto Inject Token untuk Keamanan Backend
 const originalFetch = window.fetch;
@@ -44,20 +50,47 @@ window.fetch = async function() {
     return originalFetch(resource, config);
 };
 
-// Ekspor fungsi Firebase ke window agar bisa dipakai di file lain
-window.doc = doc;
-window.collection = collection;
-window.getDocs = getDocs;
-window.addDoc = addDoc;
-window.onSnapshot = onSnapshot;
-window.updateDoc = updateDoc;
-window.query = query;
-window.where = where;
-window.deleteDoc = deleteDoc;
-window.getDoc = getDoc;
-window.ref = ref;
-window.set = set;
-window.onValue = onValue;
-window.onDisconnect = onDisconnect;
-window.rtdbTimestamp = rtdbTimestamp;
-window.onAuthStateChanged = onAuthStateChanged;
+// PENYALA MESIN UTAMA (Cek Login & Panggil Data)
+onAuthStateChanged(window.auth, (user) => {
+    if (user) {
+        window.currentUser = user;
+        window.isLoggedIn = true;
+        window.userEmail = user.email;
+        localStorage.setItem('kreaverse_logged_in', 'true');
+        localStorage.setItem('kreaverse_user_email', user.email);
+        
+        // Panggil fungsi untuk memuat Model AI dan Library Lagu
+        if(typeof window.loadDynamicModels === 'function') window.loadDynamicModels();
+        if(typeof window.initLibraryAndProgress === 'function') window.initLibraryAndProgress();
+        
+        // Ambil data user dari Firestore
+        const userQuery = query(collection(window.db, "users"), where("email", "==", user.email.toLowerCase()));
+        onSnapshot(userQuery, (snap) => {
+            snap.forEach(docSnap => {
+                window.currentUserData = { id: docSnap.id, ...docSnap.data() };
+                if (window.currentUserData.role === 'admin') window.isAdmin = true;
+                
+                // Update UI Saldo/Kredit
+                const walletContainer = document.getElementById('walletWidgetContainer');
+                if (walletContainer) {
+                    const kredit = window.currentUserData.kredit !== undefined ? window.currentUserData.kredit : (window.currentUserData.dailyQuota || 0);
+                    walletContainer.innerHTML = `
+                        <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 16px; padding: 16px; text-align: left; box-shadow: 0 8px 20px rgba(0,0,0,0.04);">
+                            <div style="font-weight: 800; font-size: 0.9rem; color: #0f172a; margin-bottom: 8px;">Saldo Anda</div>
+                            <div style="font-size: 1.4rem; font-weight: 900; color: #0f172a; font-family: monospace;">${kredit.toLocaleString('id-ID')} Kredit</div>
+                        </div>
+                    `;
+                }
+            });
+        });
+    } else {
+        window.currentUser = null;
+        window.isLoggedIn = false;
+        window.isAdmin = false;
+        localStorage.removeItem('kreaverse_logged_in');
+        localStorage.removeItem('kreaverse_user_email');
+        
+        // Tetap muat model AI meskipun belum login agar tombol bisa diklik
+        if(typeof window.loadDynamicModels === 'function') window.loadDynamicModels();
+    }
+});
