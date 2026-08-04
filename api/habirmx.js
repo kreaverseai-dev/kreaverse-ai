@@ -208,9 +208,16 @@ module.exports = async (req, res) => {
                 if (whisperKeysQuery.empty) throw new Error("API Key untuk Whisper tidak ditemukan atau mati.");
                 const whisperKey = whisperKeysQuery.docs.sort((a, b) => (a.data().priority || 1) - (b.data().priority || 1))[0].data().key;
 
-                const audioFetch = await fetch(audioUrl);
-                if (!audioFetch.ok) throw new Error("Gagal mengunduh audio referensi untuk ditranskripsi.");
-                const audioBlob = await audioFetch.blob();
+                let audioBlob;
+                if (audioUrl.startsWith('data:')) {
+                    const arr = audioUrl.split(',');
+                    const bstr = Buffer.from(arr[1], 'base64');
+                    audioBlob = new Blob([bstr], { type: 'audio/mp3' });
+                } else {
+                    const audioFetch = await fetch(audioUrl);
+                    if (!audioFetch.ok) throw new Error("Gagal mengunduh audio referensi untuk ditranskripsi.");
+                    audioBlob = await audioFetch.blob();
+                }
 
                 const formData = new FormData();
                 formData.append("file", audioBlob, "audio.mp3");
