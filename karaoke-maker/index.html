@@ -605,11 +605,17 @@
                     directAudioUrl = fbJson.files[0].url; // Direct link alternatif
                 }
 
-                // TAHAP 2: DETEKSI LIRIK (SPEECH TO TEXT)
-                showLoader("Mendengarkan Lirik", "Tahap 2/3: Mengekstrak suara penyanyi menjadi teks...", "fa-ear-listen");
+                // TAHAP 2: DETEKSI LIRIK (MULTIMODAL AI)
+                showLoader("Mendengarkan Lirik", "Tahap 2/3: AI Multimodal sedang mendengarkan lagu...", "fa-ear-listen");
                 
+                // Menggunakan rute magic_wand dengan auto_pool agar backend 
+                // otomatis mencari model LLM yang support Audio (seperti Gemini)
                 const detectPayload = {
-                    action: "detect_lyrics",
+                    action: "magic_wand",
+                    providerId: "auto_pool",
+                    modelId: "auto_pool",
+                    llmType: "detect_lyrics",
+                    inputText: "Tolong dengarkan lagu ini dan tuliskan liriknya secara VERBATIM (persis seperti aslinya) dari awal sampai akhir tanpa terjemahan.",
                     toolId: "lyric-maker_sync",
                     email: userEmail,
                     audioUrl: directAudioUrl 
