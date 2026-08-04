@@ -3,361 +3,726 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kreaverse - Karaoke Lyric Video Editor</title>
-    <!-- Google Fonts (Menyediakan 30+ Font) -->
-    <link href="https://fonts.googleapis.com/css2?family=Anton&family=Bebas+Neue&family=Caveat&family=Chewy&family=Comfortaa&family=Creepster&family=Dancing+Script&family=Fredoka+One&family=Great+Vibes&family=Indie+Flower&family=Josefin+Sans&family=Kalam&family=Lobster&family=Montserrat&family=Oswald&family=Pacifico&family=Permanent+Marker&family=Playfair+Display&family=Press+Start+2P&family=Quicksand&family=Righteous&family=Roboto&family=Rubik&family=Satisfy&family=Shadows+Into+Light&family=Teko&family=Ubuntu&family=Vampiro+One&family=Varela+Round&family=Zilla+Slab&display=swap" rel="stylesheet">
+    <title>Kreaverse AI - Lyric Video Maker</title>
+    
+    <!-- Fonts & Icons -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Anton&family=Bebas+Neue&family=Caveat&family=Dancing+Script&family=Lobster&family=Montserrat:wght@700&family=Oswald:wght@700&family=Pacifico&family=Permanent+Marker&family=Playfair+Display:ital,wght@1,700&family=Righteous&family=Teko:wght@600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
     <style>
         :root {
-            --bg-color: #121212; --panel-bg: #1e1e1e; --text: #ffffff; --primary: #007bff;
+            --bg-dark: #0f1115;
+            --bg-card: #1a1d24;
+            --primary: #6366f1;
+            --primary-hover: #4f46e5;
+            --text-main: #f3f4f6;
+            --text-muted: #9ca3af;
+            --border: #2d3139;
+            --danger: #ef4444;
+            --success: #10b981;
         }
-        body { margin: 0; font-family: 'Roboto', sans-serif; background-color: var(--bg-color); color: var(--text); display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
         
-        /* Layout Mobile Friendly */
-        .header { padding: 10px; background: #000; text-align: center; font-weight: bold; }
-        .workspace { display: flex; flex-direction: column; flex: 1; overflow-y: auto; }
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Top Navigation */
+        .navbar {
+            background: var(--bg-card);
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border);
+            z-index: 10;
+        }
+        .navbar h1 { font-size: 1.2rem; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+        .navbar h1 i { color: var(--primary); }
+
+        /* Auth Overlay */
+        #authOverlay {
+            position: fixed; inset: 0; background: rgba(15, 17, 21, 0.95);
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            z-index: 9999; text-align: center; padding: 20px;
+        }
+        #authOverlay h2 { margin-bottom: 10px; font-size: 1.5rem; }
+        #authOverlay p { color: var(--text-muted); margin-bottom: 20px; }
+        .btn-login { background: var(--primary); color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 600; }
+
+        /* Main Workspace Layout */
+        .workspace {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        /* Preview Player */
+        .preview-section {
+            background: #000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            min-height: 40vh;
+            border-bottom: 1px solid var(--border);
+            position: relative;
+        }
+        .canvas-wrapper {
+            position: relative;
+            width: 100%;
+            max-width: 350px;
+            aspect-ratio: 9/16;
+            background: #111;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            border-radius: 8px;
+            overflow: hidden;
+            transition: aspect-ratio 0.3s ease;
+        }
+        canvas { width: 100%; height: 100%; display: block; object-fit: cover; }
         
-        /* Preview Player (Poin 11 & 7) */
-        .preview-container { display: flex; justify-content: center; align-items: center; background: #000; padding: 10px; min-height: 40vh; }
-        .canvas-wrapper { position: relative; width: 100%; max-width: 400px; aspect-ratio: 9/16; background: #333; box-shadow: 0 0 10px rgba(0,0,0,0.5); }
-        canvas { width: 100%; height: 100%; object-fit: cover; }
+        .player-controls {
+            position: absolute; bottom: 15px; left: 50%; transform: translateX(-50%);
+            background: rgba(0,0,0,0.7); backdrop-filter: blur(5px);
+            padding: 10px 20px; border-radius: 30px; display: flex; gap: 15px; align-items: center;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .player-controls button { background: none; border: none; color: white; font-size: 1.2rem; cursor: pointer; }
+        .player-controls .time { font-size: 0.85rem; font-family: monospace; font-weight: 600; }
+
+        /* Settings Panels */
+        .settings-section { padding: 20px; padding-bottom: 100px; }
+        .panel { background: var(--bg-card); border-radius: 12px; padding: 20px; margin-bottom: 15px; border: 1px solid var(--border); }
+        .panel-title { font-size: 1rem; font-weight: 600; margin-bottom: 15px; display: flex; align-items: center; gap: 8px; color: var(--primary); }
         
-        /* Player Controls */
-        .controls { display: flex; justify-content: center; gap: 15px; padding: 10px; background: var(--panel-bg); }
-        button { background: var(--primary); color: white; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer; font-weight: bold; }
-        button:active { transform: scale(0.95); }
-        button:disabled { background: #555; cursor: not-allowed; }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 8px; font-size: 0.85rem; color: var(--text-muted); font-weight: 500; }
         
-        /* Tab Panels (Settings) */
-        .panels { padding: 15px; background: var(--panel-bg); flex: 1; overflow-y: auto; }
-        .setting-group { margin-bottom: 15px; border-bottom: 1px solid #333; padding-bottom: 10px; }
-        .setting-group h3 { margin: 0 0 10px 0; font-size: 14px; color: #aaa; }
-        select, input[type="color"], input[type="range"], input[type="file"] { width: 100%; margin-bottom: 10px; background: #222; color: white; border: 1px solid #444; padding: 5px; }
+        .form-control {
+            width: 100%; padding: 12px; background: var(--bg-dark); color: white;
+            border: 1px solid var(--border); border-radius: 8px; font-family: inherit; font-size: 0.9rem;
+        }
+        .form-control:focus { outline: none; border-color: var(--primary); }
         
-        /* Progress Bar (Poin 10) */
-        .progress-container { display: none; width: 100%; background: #333; border-radius: 5px; margin-top: 10px; }
-        .progress-bar { height: 10px; background: #4caf50; width: 0%; border-radius: 5px; transition: width 0.3s; }
+        .row-2 { display: flex; gap: 10px; }
+        .row-2 > div { flex: 1; }
+
+        /* Buttons */
+        .btn {
+            width: 100%; padding: 12px; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;
+            display: flex; justify-content: center; align-items: center; gap: 8px; font-family: inherit;
+            transition: all 0.2s; color: white;
+        }
+        .btn-ai { background: linear-gradient(135deg, #8b5cf6, #3b82f6); }
+        .btn-ai:hover { opacity: 0.9; }
+        .btn-export { background: var(--success); font-size: 1rem; }
+        .btn-save { background: var(--bg-dark); border: 1px solid var(--border); }
+        
+        /* Floating Export Bar */
+        .floating-action {
+            position: fixed; bottom: 0; left: 0; right: 0; background: var(--bg-card);
+            padding: 15px 20px; border-top: 1px solid var(--border); display: flex; gap: 10px; z-index: 100;
+        }
+
+        /* Progress Loader */
+        .progress-box { display: none; margin-top: 15px; background: var(--bg-dark); padding: 15px; border-radius: 8px; text-align: center; border: 1px solid var(--primary); }
+        .progress-bar-wrap { width: 100%; height: 8px; background: var(--border); border-radius: 10px; margin-top: 10px; overflow: hidden; }
+        .progress-bar { height: 100%; background: var(--primary); width: 0%; transition: width 0.3s; }
+        
+        /* Spinner */
+        .spinner { animation: spin 1s linear infinite; }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
     </style>
 </head>
 <body>
 
-    <div class="header">🎤 Kreaverse Karaoke Maker</div>
+    <!-- Auth Overlay (Architecture Requirement #3) -->
+    <div id="authOverlay" style="display: none;">
+        <i class="fa-solid fa-lock" style="font-size: 3rem; color: var(--primary); margin-bottom: 15px;"></i>
+        <h2>Akses Ditolak</h2>
+        <p>Silakan login ke Kreaverse AI terlebih dahulu untuk menggunakan fitur Lyric Maker.</p>
+        <a href="/login" class="btn-login">Menuju Halaman Login</a>
+    </div>
 
-    <div class="workspace">
-        <!-- Preview Area -->
-        <div class="preview-container">
-            <div class="canvas-wrapper" id="aspect-ratio-wrapper">
-                <canvas id="videoCanvas" width="1080" height="1920"></canvas>
-            </div>
-        </div>
-
-        <!-- Controls (Poin 11) -->
-        <div class="controls">
-            <button id="btnPlayPause">▶ Play</button>
-            <span id="currentTimeDisplay">00:00</span> / <span id="durationDisplay">00:00</span>
-        </div>
-
-        <div class="panels">
-            <!-- Media Upload (Poin 1, 2) -->
-            <div class="setting-group">
-                <h3>1. Media & Resolusi</h3>
-                <label>Resolusi (Poin 7):</label>
-                <select id="resolutionSelect">
-                    <option value="9/16">TikTok/Reels/Shorts (9:16)</option>
-                    <option value="16/9">YouTube (16:9)</option>
-                    <option value="1/1">Instagram Square (1:1)</option>
-                </select>
-                <label>Audio Lagu:</label>
-                <input type="file" id="audioUpload" accept="audio/*">
-                <label>Background (Gambar/Video / Opsional):</label>
-                <input type="file" id="bgUpload" accept="image/*,video/*">
-                <label>Warna Background Solid:</label>
-                <input type="color" id="bgColor" value="#000000">
-            </div>
-
-            <!-- Lyric Settings (Poin 4, 5, 6) -->
-            <div class="setting-group">
-                <h3>2. Desain Lirik</h3>
-                <label>Font (30+ Pilihan):</label>
-                <select id="fontSelect">
-                    <option style="font-family: 'Roboto'" value="Roboto">Roboto</option>
-                    <option style="font-family: 'Anton'" value="Anton">Anton</option>
-                    <option style="font-family: 'Lobster'" value="Lobster">Lobster</option>
-                    <option style="font-family: 'Pacifico'" value="Pacifico">Pacifico</option>
-                    <option style="font-family: 'Bebas Neue'" value="Bebas Neue">Bebas Neue</option>
-                    <option style="font-family: 'Teko'" value="Teko">Teko</option>
-                    <option style="font-family: 'Oswald'" value="Oswald">Oswald</option>
-                    <option style="font-family: 'Dancing Script'" value="Dancing Script">Dancing Script</option>
-                    <!-- Anda bisa tambahkan sisa list font Google disini -->
-                </select>
-                <div style="display: flex; gap: 10px;">
-                    <div style="flex: 1;">
-                        <label>Warna Pasif:</label>
-                        <input type="color" id="lyricColor" value="#ffffff">
-                    </div>
-                    <div style="flex: 1;">
-                        <label>Warna Nyala (Karaoke):</label>
-                        <input type="color" id="lyricActiveColor" value="#ffff00">
-                    </div>
-                </div>
-                <label>Posisi Lirik (Tengah/Bawah):</label>
-                <select id="lyricPosition">
-                    <option value="center">Tengah (Center)</option>
-                    <option value="bottom">Bawah (Bottom)</option>
-                </select>
-                <label>Ukuran Font:</label>
-                <input type="range" id="fontSize" min="20" max="150" value="60">
-            </div>
-
-            <!-- Animasi (Poin 3) -->
-            <div class="setting-group">
-                <h3>3. Animasi</h3>
-                <select id="animationSelect">
-                    <option value="fade">Fade In</option>
-                    <option value="pop">Pop Up</option>
-                    <option value="typewriter">Mesin Tik</option>
-                    <option value="karaoke">Karaoke (Warna Berjalan)</option>
-                </select>
-            </div>
-
-            <!-- Sync Lyric (Poin 12, 13) -->
-            <div class="setting-group">
-                <h3>4. Sync Lirik (Manual/LRC)</h3>
-                <p style="font-size: 12px; color: #888;">*Fitur AI deteksi suara menyusul. Gunakan manual sync / format LRC untuk saat ini.</p>
-                <textarea id="lyricInput" rows="5" style="width: 100%; background: #222; color: white;" placeholder="Paste lirik format LRC disini...&#10;[00:15.20] Contoh lirik baris pertama..."></textarea>
-                <button id="btnSync">Update Lirik</button>
-            </div>
-
-            <!-- Export & Save (Poin 8, 9, 10) -->
-            <div class="setting-group">
-                <h3>5. Simpan & Export</h3>
-                <div style="display: flex; gap: 10px;">
-                    <button id="btnSaveProject" style="background: #28a745;">💾 Simpan Project (Lokal)</button>
-                    <button id="btnExport" style="background: #dc3545;">🎬 Export Video (Ringan)</button>
-                </div>
-                <div class="progress-container" id="progressContainer">
-                    <div style="font-size: 12px; text-align: center; margin-bottom: 5px;">Merekam Video... Harap jangan tutup tab.</div>
-                    <div class="progress-bar" id="progressBar"></div>
-                </div>
-            </div>
+    <div class="navbar">
+        <h1><i class="fa-solid fa-microphone-lines"></i> Kreaverse Lyric Maker</h1>
+        <div style="font-size: 0.8rem; background: var(--bg-dark); padding: 5px 10px; border-radius: 20px;">
+            <i class="fa-solid fa-bolt" style="color: #fbbf24;"></i> <span id="userEmailDisplay">Memuat...</span>
         </div>
     </div>
 
-    <!-- Logika JavaScript Dasar -->
+    <div class="workspace">
+        
+        <!-- Section 1: Preview & Player -->
+        <div class="preview-section">
+            <div class="canvas-wrapper" id="canvasWrapper">
+                <canvas id="videoCanvas" width="1080" height="1920"></canvas>
+            </div>
+            
+            <div class="player-controls">
+                <button id="btnPlay"><i class="fa-solid fa-play"></i></button>
+                <button id="btnStop"><i class="fa-solid fa-stop"></i></button>
+                <div class="time"><span id="currTime">00:00</span> / <span id="totTime">00:00</span></div>
+            </div>
+        </div>
+
+        <div class="settings-section">
+            
+            <!-- Panel 1: Media & Dimensi -->
+            <div class="panel">
+                <div class="panel-title"><i class="fa-solid fa-photo-film"></i> 1. Media & Resolusi</div>
+                
+                <div class="form-group">
+                    <label>Resolusi Video Target</label>
+                    <select id="resSelect" class="form-control">
+                        <option value="9/16">TikTok / Reels / Shorts (9:16)</option>
+                        <option value="16/9">YouTube (16:9)</option>
+                        <option value="1/1">Instagram Square (1:1)</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label>Upload Audio / Lagu (Wajib)</label>
+                    <input type="file" id="audioInput" accept="audio/*" class="form-control" style="padding: 9px;">
+                </div>
+
+                <div class="form-group">
+                    <label>Background (Video / Gambar) - Opsional</label>
+                    <input type="file" id="bgInput" accept="video/*, image/*" class="form-control" style="padding: 9px;">
+                </div>
+                
+                <div class="form-group">
+                    <label>Atau Warna Background Solid</label>
+                    <input type="color" id="bgColor" value="#0f1115" class="form-control" style="height: 45px; padding: 5px;">
+                </div>
+            </div>
+
+            <!-- Panel 2: AI Magic & Lirik -->
+            <div class="panel">
+                <div class="panel-title"><i class="fa-solid fa-wand-magic-sparkles"></i> 2. Deteksi & Edit Lirik AI</div>
+                
+                <div class="form-group">
+                    <label>Lirik Sinkronisasi (Format LRC / Teks Biasa)</label>
+                    <textarea id="lyricInput" class="form-control" rows="6" placeholder="Paste lirik format LRC disini atau klik Proses AI untuk merapikan teks...&#10;[00:12.50] Contoh lirik baris pertama..."></textarea>
+                </div>
+
+                <!-- API Gateway Integration Button (Architecture Requirement #2) -->
+                <button id="btnProsesAI" class="btn btn-ai">
+                    <i class="fa-solid fa-sparkles"></i> Rapikan Lirik dengan AI (Gateway)
+                </button>
+                
+                <div id="aiLoader" style="display: none; text-align: center; margin-top: 15px; color: var(--primary); font-size: 0.9rem;">
+                    <i class="fa-solid fa-circle-notch spinner"></i> Memproses AI via Gateway...
+                </div>
+            </div>
+
+            <!-- Panel 3: Desain & Tipografi -->
+            <div class="panel">
+                <div class="panel-title"><i class="fa-solid fa-palette"></i> 3. Desain Teks Lirik</div>
+                
+                <div class="row-2">
+                    <div class="form-group">
+                        <label>Font Lirik</label>
+                        <select id="fontSelect" class="form-control">
+                            <option value="Plus Jakarta Sans">Plus Jakarta Sans</option>
+                            <option value="Anton">Anton</option>
+                            <option value="Bebas Neue">Bebas Neue</option>
+                            <option value="Oswald">Oswald</option>
+                            <option value="Montserrat">Montserrat</option>
+                            <option value="Righteous">Righteous</option>
+                            <option value="Teko">Teko</option>
+                            <option value="Playfair Display">Playfair Display</option>
+                            <option value="Caveat">Caveat</option>
+                            <option value="Dancing Script">Dancing Script</option>
+                            <option value="Lobster">Lobster</option>
+                            <option value="Pacifico">Pacifico</option>
+                            <option value="Permanent Marker">Permanent Marker</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Posisi Lirik</label>
+                        <select id="posSelect" class="form-control">
+                            <option value="center">Tengah Layar</option>
+                            <option value="bottom">Bawah Layar</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="row-2">
+                    <div class="form-group">
+                        <label>Warna Dasar</label>
+                        <input type="color" id="colorBase" value="#ffffff" class="form-control" style="height: 45px; padding: 5px;">
+                    </div>
+                    <div class="form-group">
+                        <label>Warna Karaoke (Aktif)</label>
+                        <input type="color" id="colorActive" value="#facc15" class="form-control" style="height: 45px; padding: 5px;">
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label>Ukuran Font (<span id="sizeVal">60</span>px)</label>
+                    <input type="range" id="sizeInput" min="20" max="150" value="60" class="form-control">
+                </div>
+                
+                <div class="form-group">
+                    <label>Gaya Animasi</label>
+                    <select id="animSelect" class="form-control">
+                        <option value="karaoke">Karaoke (Warna Menyapu)</option>
+                        <option value="pop">Pop Up per Baris</option>
+                        <option value="fade">Fade In</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Panel 4: Progress Export -->
+            <div id="exportProgressBox" class="progress-box">
+                <i class="fa-solid fa-video" style="font-size: 1.5rem; margin-bottom: 10px;"></i>
+                <div style="font-weight: 600;">Mengekspor Video...</div>
+                <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 5px;">
+                    Menggunakan Engine Render HP Lokal. Jangan tutup tab ini!
+                </div>
+                <div class="progress-bar-wrap">
+                    <div class="progress-bar" id="exportProgressBar"></div>
+                </div>
+                <div id="exportPercent" style="margin-top: 10px; font-weight: bold;">0%</div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Floating Actions -->
+    <div class="floating-action">
+        <button id="btnSaveProj" class="btn btn-save"><i class="fa-solid fa-floppy-disk"></i> Simpan Draft</button>
+        <button id="btnExport" class="btn btn-export"><i class="fa-solid fa-download"></i> Render Video</button>
+    </div>
+
+    <!-- CORE LOGIC: Frontend Only & MediaRecorder Export -->
     <script>
-        // Inisialisasi Element
+        // --- 1. AUTHENTICATION CHECK (Architecture Requirement #1 & #3) ---
+        let userEmail = "";
+        function checkAuth() {
+            try {
+                // Sesuai sistem Kreaverse umum
+                const rawAuth = localStorage.getItem('kreaverse_logged_in');
+                if (!rawAuth) throw new Error("Not logged in");
+                
+                // Coba parse jika formatnya JSON, jika tidak anggap string biasa
+                let authData;
+                try { authData = JSON.parse(rawAuth); } catch (e) { authData = { email: rawAuth }; }
+                
+                if (authData && (authData.email || authData.uid)) {
+                    userEmail = authData.email || "user@kreaverse.ai";
+                    document.getElementById('userEmailDisplay').innerText = userEmail;
+                } else {
+                    throw new Error("Invalid Auth Data");
+                }
+            } catch (err) {
+                document.getElementById('authOverlay').style.display = 'flex';
+            }
+        }
+        checkAuth();
+
+        // --- 2. GLOBAL VARIABLES & STATE ---
         const canvas = document.getElementById('videoCanvas');
         const ctx = canvas.getContext('2d');
         const audio = new Audio();
-        let bgMedia = null; // Bisa gambar atau video element
+        let bgMedia = null;
         let isPlaying = false;
         let animationFrameId;
-
-        // Data State Project (Poin 9)
-        let projectData = {
-            lyrics: [],
-            font: 'Roboto',
-            color: '#ffffff',
-            activeColor: '#ffff00',
-            size: 60,
-            position: 'center',
-            resolution: '9/16'
-        };
-
-        // --- Poin 7: Resolusi ---
-        document.getElementById('resolutionSelect').addEventListener('change', (e) => {
-            const ratio = e.target.value.split('/');
-            const wrapper = document.getElementById('aspect-ratio-wrapper');
-            wrapper.style.aspectRatio = `${ratio[0]}/${ratio[1]}`;
-            
-            if(e.target.value === '9/16') { canvas.width = 1080; canvas.height = 1920; }
-            else if(e.target.value === '16/9') { canvas.width = 1920; canvas.height = 1080; }
+        
+        let parsedLyrics = []; // Format: { start: sec, text: "str" }
+        
+        // --- 3. UI EVENT LISTENERS ---
+        document.getElementById('resSelect').addEventListener('change', (e) => {
+            const val = e.target.value;
+            document.getElementById('canvasWrapper').style.aspectRatio = val;
+            if (val === '9/16') { canvas.width = 1080; canvas.height = 1920; }
+            else if (val === '16/9') { canvas.width = 1920; canvas.height = 1080; }
             else { canvas.width = 1080; canvas.height = 1080; }
-            drawFrame(); // Update preview
+            drawFrame();
         });
 
-        // --- Poin 1 & 2: Upload Audio & Background ---
-        document.getElementById('audioUpload').addEventListener('change', (e) => {
-            const file = e.target.files[0];
-            if(file) audio.src = URL.createObjectURL(file);
+        document.getElementById('sizeInput').addEventListener('input', (e) => {
+            document.getElementById('sizeVal').innerText = e.target.value;
+            drawFrame();
         });
 
-        document.getElementById('bgUpload').addEventListener('change', (e) => {
+        const updateTriggerIds = ['fontSelect', 'posSelect', 'colorBase', 'colorActive', 'bgColor', 'lyricInput'];
+        updateTriggerIds.forEach(id => {
+            document.getElementById(id).addEventListener('change', () => {
+                if(id === 'lyricInput') parseLRC();
+                drawFrame();
+            });
+        });
+
+        // Load Audio
+        document.getElementById('audioInput').addEventListener('change', (e) => {
             const file = e.target.files[0];
-            if(file) {
-                if(file.type.startsWith('image/')) {
-                    bgMedia = new Image();
-                    bgMedia.src = URL.createObjectURL(file);
-                    bgMedia.onload = drawFrame;
-                } else if(file.type.startsWith('video/')) {
-                    bgMedia = document.createElement('video');
-                    bgMedia.src = URL.createObjectURL(file);
-                    bgMedia.loop = true;
-                    bgMedia.muted = true;
-                    bgMedia.play();
-                }
+            if (file) {
+                audio.src = URL.createObjectURL(file);
+                audio.onloadedmetadata = () => {
+                    document.getElementById('totTime').innerText = formatTime(audio.duration);
+                };
             }
         });
 
-        // --- Poin 11: Play/Pause Controls ---
-        document.getElementById('btnPlayPause').addEventListener('click', () => {
-            if(audio.src) {
-                if(isPlaying) {
-                    audio.pause();
-                    if(bgMedia && bgMedia.tagName === 'VIDEO') bgMedia.pause();
-                    cancelAnimationFrame(animationFrameId);
-                    document.getElementById('btnPlayPause').innerText = '▶ Play';
-                } else {
-                    audio.play();
-                    if(bgMedia && bgMedia.tagName === 'VIDEO') bgMedia.play();
-                    renderLoop();
-                    document.getElementById('btnPlayPause').innerText = '⏸ Pause';
-                }
-                isPlaying = !isPlaying;
+        // Load Background (Gambar / Video)
+        document.getElementById('bgInput').addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            
+            if (file.type.startsWith('video/')) {
+                bgMedia = document.createElement('video');
+                bgMedia.src = URL.createObjectURL(file);
+                bgMedia.loop = true;
+                bgMedia.muted = true;
+                bgMedia.play();
             } else {
-                alert('Silahkan upload audio terlebih dahulu!');
+                bgMedia = new Image();
+                bgMedia.src = URL.createObjectURL(file);
+                bgMedia.onload = () => drawFrame();
             }
         });
 
-        // --- Core Rendering Loop ---
+        // Playback Controls
+        document.getElementById('btnPlay').addEventListener('click', togglePlay);
+        document.getElementById('btnStop').addEventListener('click', () => {
+            audio.pause();
+            audio.currentTime = 0;
+            if (bgMedia && bgMedia.tagName === 'VIDEO') { bgMedia.pause(); bgMedia.currentTime = 0; }
+            isPlaying = false;
+            document.getElementById('btnPlay').innerHTML = '<i class="fa-solid fa-play"></i>';
+            drawFrame();
+            updateTimeDisplay();
+        });
+
+        function togglePlay() {
+            if (!audio.src) return alert("Silakan upload audio terlebih dahulu!");
+            if (isPlaying) {
+                audio.pause();
+                if (bgMedia && bgMedia.tagName === 'VIDEO') bgMedia.pause();
+                cancelAnimationFrame(animationFrameId);
+                document.getElementById('btnPlay').innerHTML = '<i class="fa-solid fa-play"></i>';
+            } else {
+                audio.play();
+                if (bgMedia && bgMedia.tagName === 'VIDEO') bgMedia.play();
+                renderLoop();
+                document.getElementById('btnPlay').innerHTML = '<i class="fa-solid fa-pause"></i>';
+            }
+            isPlaying = !isPlaying;
+        }
+
+        function formatTime(sec) {
+            if(isNaN(sec)) return "00:00";
+            let m = Math.floor(sec / 60).toString().padStart(2, '0');
+            let s = Math.floor(sec % 60).toString().padStart(2, '0');
+            return `${m}:${s}`;
+        }
+
+        function updateTimeDisplay() {
+            document.getElementById('currTime').innerText = formatTime(audio.currentTime);
+        }
+
+        // --- 4. LRC PARSER ---
+        function parseLRC() {
+            const text = document.getElementById('lyricInput').value;
+            const lines = text.split('\n');
+            parsedLyrics = [];
+            const timeRegex = /\[(\d{2}):(\d{2}\.\d{2,3})\](.*)/;
+            
+            lines.forEach(line => {
+                const match = timeRegex.exec(line);
+                if (match) {
+                    const m = parseInt(match[1]);
+                    const s = parseFloat(match[2]);
+                    const txt = match[3].trim();
+                    if(txt) parsedLyrics.push({ start: (m * 60) + s, text: txt });
+                }
+            });
+            // Jika tidak ada format waktu, jadikan placeholder 1 baris
+            if (parsedLyrics.length === 0 && text.trim().length > 0) {
+                parsedLyrics.push({ start: 0, text: "Gunakan AI untuk Sync Lirik!" });
+            }
+        }
+
+        // --- 5. CANVAS RENDER ENGINE (Very Lightweight for 3GB RAM) ---
         function renderLoop() {
             drawFrame();
-            // Update waktu display
-            document.getElementById('currentTimeDisplay').innerText = formatTime(audio.currentTime);
-            if(isPlaying) animationFrameId = requestAnimationFrame(renderLoop);
+            updateTimeDisplay();
+            if (isPlaying) animationFrameId = requestAnimationFrame(renderLoop);
         }
 
         function drawFrame() {
-            // 1. Gambar Background Solid (Poin 2)
+            // Background Layer
             ctx.fillStyle = document.getElementById('bgColor').value;
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-            // 2. Gambar Background Media (Gambar/Video)
-            if(bgMedia) {
-                // Menyesuaikan rasio gambar/video memenuhi canvas (object-fit: cover logic)
-                const scale = Math.max(canvas.width / bgMedia.width, canvas.height / bgMedia.height) || Math.max(canvas.width / bgMedia.videoWidth, canvas.height / bgMedia.videoHeight);
-                const x = (canvas.width / 2) - ((bgMedia.width || bgMedia.videoWidth) / 2) * scale;
-                const y = (canvas.height / 2) - ((bgMedia.height || bgMedia.videoHeight) / 2) * scale;
-                ctx.drawImage(bgMedia, x, y, (bgMedia.width || bgMedia.videoWidth) * scale, (bgMedia.height || bgMedia.videoHeight) * scale);
-                
-                // Tambahkan efek gelap agar lirik terbaca
-                ctx.fillStyle = 'rgba(0,0,0,0.4)';
-                ctx.fillRect(0, 0, canvas.width, canvas.height);
+            if (bgMedia) {
+                const bw = bgMedia.videoWidth || bgMedia.width;
+                const bh = bgMedia.videoHeight || bgMedia.height;
+                if(bw && bh) {
+                    const scale = Math.max(canvas.width / bw, canvas.height / bh);
+                    const x = (canvas.width / 2) - (bw / 2) * scale;
+                    const y = (canvas.height / 2) - (bh / 2) * scale;
+                    ctx.drawImage(bgMedia, x, y, bw * scale, bh * scale);
+                    
+                    // Dark Overlay for lyric readability
+                    ctx.fillStyle = 'rgba(0,0,0,0.5)';
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+                }
             }
 
-            // 3. Gambar Lirik (Poin 4, 5, 6)
-            drawLyrics(audio.currentTime);
+            // Lyric Engine
+            const currentTime = audio.currentTime;
+            if (parsedLyrics.length > 0) {
+                // Cari lirik yang aktif saat ini
+                let activeIdx = -1;
+                for (let i = 0; i < parsedLyrics.length; i++) {
+                    if (currentTime >= parsedLyrics[i].start) {
+                        activeIdx = i;
+                    } else break;
+                }
+
+                if (activeIdx !== -1) {
+                    const fontFam = document.getElementById('fontSelect').value;
+                    const fontSz = parseInt(document.getElementById('sizeInput').value);
+                    const pos = document.getElementById('posSelect').value;
+                    const baseCol = document.getElementById('colorBase').value;
+                    const activeCol = document.getElementById('colorActive').value;
+                    const anim = document.getElementById('animSelect').value;
+                    
+                    const activeLine = parsedLyrics[activeIdx];
+                    let nextStart = activeIdx < parsedLyrics.length - 1 ? parsedLyrics[activeIdx+1].start : audio.duration || 999;
+                    let lineDuration = nextStart - activeLine.start;
+                    let progress = (currentTime - activeLine.start) / lineDuration;
+                    if(progress > 1) progress = 1;
+
+                    ctx.font = `bold ${fontSz}px '${fontFam}'`;
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.lineWidth = Math.max(4, fontSz * 0.1); // Dynamic stroke
+                    ctx.strokeStyle = '#000000';
+                    
+                    const drawX = canvas.width / 2;
+                    const drawY = pos === 'center' ? canvas.height / 2 : canvas.height - (canvas.height * 0.2);
+
+                    // Animation Logic
+                    if (anim === 'fade') {
+                        ctx.globalAlpha = Math.min(progress * 3, 1);
+                        ctx.strokeText(activeLine.text, drawX, drawY);
+                        ctx.fillStyle = baseCol;
+                        ctx.fillText(activeLine.text, drawX, drawY);
+                        ctx.globalAlpha = 1.0;
+                    } 
+                    else if (anim === 'karaoke') {
+                        // Background text (Belum dinyanyikan)
+                        ctx.strokeText(activeLine.text, drawX, drawY);
+                        ctx.fillStyle = baseCol;
+                        ctx.fillText(activeLine.text, drawX, drawY);
+
+                        // Highlight text (Berjalan)
+                        const textWidth = ctx.measureText(activeLine.text).width;
+                        const startX = drawX - (textWidth/2);
+                        const clipWidth = textWidth * progress;
+
+                        ctx.save();
+                        ctx.beginPath();
+                        ctx.rect(startX - 10, drawY - fontSz, clipWidth + 10, fontSz * 2);
+                        ctx.clip();
+                        
+                        ctx.strokeText(activeLine.text, drawX, drawY);
+                        ctx.fillStyle = activeCol;
+                        ctx.fillText(activeLine.text, drawX, drawY);
+                        ctx.restore();
+                    }
+                    else { // pop
+                        ctx.strokeText(activeLine.text, drawX, drawY);
+                        ctx.fillStyle = baseCol;
+                        ctx.fillText(activeLine.text, drawX, drawY);
+                    }
+                }
+            }
         }
 
-        // --- Poin 12 & 13: Logika Lirik ---
-        function drawLyrics(currentTime) {
-            const fontName = document.getElementById('fontSelect').value;
-            const fontSize = document.getElementById('fontSize').value;
-            const pos = document.getElementById('lyricPosition').value;
-            const text = "Contoh Lirik Berjalan..."; // Di versi asli, ambil dari array LRC yang aktif
+        // --- 6. AI GATEWAY INTEGRATION (Architecture Requirement #2) ---
+        document.getElementById('btnProsesAI').addEventListener('click', async () => {
+            const rawText = document.getElementById('lyricInput').value;
+            if (!rawText.trim()) return alert("Masukkan teks lirik mentah terlebih dahulu untuk dirapikan AI!");
 
-            ctx.font = `bold ${fontSize}px '${fontName}'`;
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'middle';
+            const btn = document.getElementById('btnProsesAI');
+            const loader = document.getElementById('aiLoader');
+            btn.style.display = 'none';
+            loader.style.display = 'block';
+
+            // WAJIB SESUAI FORMAT ARCHITECTURE BRIEFING + llmType
+            const payload = {
+                action: "magic_wand",
+                toolId: "lyric-maker_sync",
+                email: userEmail,
+                inputText: rawText,
+                providerId: "auto_pool",
+                modelId: "auto_pool",
+                llmType: "lyrics" // Dibutuhkan backend api/habirmx.js
+            };
+
+            try {
+                const response = await fetch('/api/habirmx', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const data = await response.json();
+                if (!response.ok) throw new Error(data.error || "Gagal memproses AI");
+
+                // Masukkan hasil AI ke textarea
+                if (data.success && data.result) {
+                    document.getElementById('lyricInput').value = data.result;
+                    parseLRC();
+                    drawFrame();
+                    alert("Lirik berhasil dirapikan oleh AI!");
+                }
+            } catch (err) {
+                alert(`Error AI Gateway: ${err.message}`);
+            } finally {
+                btn.style.display = 'flex';
+                loader.style.display = 'none';
+            }
+        });
+
+        // --- 7. HARDWARE ACCELERATED VIDEO EXPORT (Ringan untuk HP RAM 3GB) ---
+        document.getElementById('btnExport').addEventListener('click', async () => {
+            if (!audio.src) return alert("Wajib upload audio untuk merender video!");
+            if (parsedLyrics.length === 0) parseLRC();
+
+            const progBox = document.getElementById('exportProgressBox');
+            const progBar = document.getElementById('exportProgressBar');
+            const progTxt = document.getElementById('exportPercent');
             
-            const x = canvas.width / 2;
-            const y = pos === 'center' ? canvas.height / 2 : canvas.height - (canvas.height * 0.15);
+            progBox.style.display = 'block';
+            document.getElementById('btnExport').disabled = true;
 
-            // Teks Bayangan/Garis luar agar jelas
-            ctx.lineWidth = 8;
-            ctx.strokeStyle = 'black';
-            ctx.strokeText(text, x, y);
-
-            // Warna Teks
-            ctx.fillStyle = document.getElementById('lyricColor').value;
-            ctx.fillText(text, x, y);
-        }
-
-        // --- Poin 8 & 10: Export Video (Ringan untuk HP 3GB RAM) ---
-        // Menggunakan MediaRecorder untuk merekam Canvas
-        document.getElementById('btnExport').addEventListener('click', () => {
-            if(!audio.src) return alert('Upload audio dulu!');
-            
-            const progressContainer = document.getElementById('progressContainer');
-            const progressBar = document.getElementById('progressBar');
-            progressContainer.style.display = 'block';
-            progressBar.style.width = '0%';
-
-            // Reset ke awal
+            // Reset semua ke awal
             audio.currentTime = 0;
             if(bgMedia && bgMedia.tagName === 'VIDEO') bgMedia.currentTime = 0;
+
+            // Setup MediaRecorder
+            const stream = canvas.captureStream(30); // 30 FPS Fix
             
-            const stream = canvas.captureStream(30); // 30 FPS
-            // Gabungkan audio dari file dengan video dari canvas
+            // Audio Routing (Menggabungkan audio file ke dalam stream video canvas)
+            const AudioContext = window.AudioContext || window.webkitAudioContext;
             const audioCtx = new AudioContext();
             const dest = audioCtx.createMediaStreamDestination();
             const source = audioCtx.createMediaElementSource(audio);
             source.connect(dest);
-            source.connect(audioCtx.destination); // Dengar saat render
+            source.connect(audioCtx.destination); // Feedback suara
             
             const combinedStream = new MediaStream([
                 ...stream.getVideoTracks(),
                 ...dest.stream.getAudioTracks()
             ]);
 
-            const recorder = new MediaRecorder(combinedStream, { mimeType: 'video/webm' });
+            const options = { mimeType: 'video/webm' };
+            let recorder;
+            try {
+                recorder = new MediaRecorder(combinedStream, options);
+            } catch (e) {
+                recorder = new MediaRecorder(combinedStream); // Fallback browser
+            }
+            
             const chunks = [];
-
-            recorder.ondataavailable = e => chunks.push(e.data);
+            recorder.ondataavailable = e => { if (e.data.size > 0) chunks.push(e.data); };
+            
             recorder.onstop = () => {
                 const blob = new Blob(chunks, { type: 'video/webm' });
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 a.href = url;
-                a.download = 'Kreaverse_Karaoke.webm';
+                a.download = `Kreaverse_LyricVideo_${Date.now()}.webm`;
                 a.click();
-                progressContainer.style.display = 'none';
-                alert('Video berhasil disimpan!');
+                
+                progBox.style.display = 'none';
+                document.getElementById('btnExport').disabled = false;
+                isPlaying = false;
+                document.getElementById('btnPlay').innerHTML = '<i class="fa-solid fa-play"></i>';
+                alert("Sukses! Video berhasil dirender dan diunduh.");
             };
 
-            // Mulai Merekam
             recorder.start();
             audio.play();
             if(bgMedia && bgMedia.tagName === 'VIDEO') bgMedia.play();
             renderLoop();
+            isPlaying = true;
+            document.getElementById('btnPlay').innerHTML = '<i class="fa-solid fa-pause"></i>';
 
-            // Progress Bar (Berjalan sesuai durasi lagu)
-            const updateProgress = setInterval(() => {
-                if(audio.duration) {
-                    const percent = (audio.currentTime / audio.duration) * 100;
-                    progressBar.style.width = percent + '%';
+            // Progress Update
+            const progInterval = setInterval(() => {
+                if (audio.duration) {
+                    let p = (audio.currentTime / audio.duration) * 100;
+                    progBar.style.width = `${p}%`;
+                    progTxt.innerText = `${Math.floor(p)}%`;
                 }
-                if(audio.ended) {
-                    clearInterval(updateProgress);
+                if (audio.ended) {
+                    clearInterval(progInterval);
                     recorder.stop();
-                    isPlaying = false;
-                    document.getElementById('btnPlayPause').innerText = '▶ Play';
                 }
             }, 500);
         });
 
-        // --- Poin 9: Fitur Simpan Project (Local Storage) ---
-        document.getElementById('btnSaveProject').addEventListener('click', () => {
-            projectData.font = document.getElementById('fontSelect').value;
-            projectData.resolution = document.getElementById('resolutionSelect').value;
-            localStorage.setItem('kreaverse_karaoke_project', JSON.stringify(projectData));
-            alert('Project berhasil disimpan di browser HP Anda!');
+        // --- 8. SIMPAN PROJECT LOKAL (Draft) ---
+        document.getElementById('btnSaveProj').addEventListener('click', () => {
+            const draft = {
+                res: document.getElementById('resSelect').value,
+                bgCol: document.getElementById('bgColor').value,
+                lyrics: document.getElementById('lyricInput').value,
+                font: document.getElementById('fontSelect').value,
+                pos: document.getElementById('posSelect').value,
+                colB: document.getElementById('colorBase').value,
+                colA: document.getElementById('colorActive').value,
+                size: document.getElementById('sizeInput').value,
+                anim: document.getElementById('animSelect').value
+            };
+            localStorage.setItem('kreaverse_lyric_draft', JSON.stringify(draft));
+            alert("Draft berhasil disimpan di browser (HP) Anda.");
         });
 
-        // Utils
-        function formatTime(seconds) {
-            if(isNaN(seconds)) return "00:00";
-            const m = Math.floor(seconds / 60).toString().padStart(2, '0');
-            const s = Math.floor(seconds % 60).toString().padStart(2, '0');
-            return `${m}:${s}`;
-        }
-        audio.addEventListener('loadedmetadata', () => {
-            document.getElementById('durationDisplay').innerText = formatTime(audio.duration);
+        // Auto Load Draft jika ada
+        window.addEventListener('DOMContentLoaded', () => {
+            const saved = localStorage.getItem('kreaverse_lyric_draft');
+            if (saved) {
+                try {
+                    const d = JSON.parse(saved);
+                    if(d.res) document.getElementById('resSelect').value = d.res;
+                    if(d.bgCol) document.getElementById('bgColor').value = d.bgCol;
+                    if(d.lyrics) document.getElementById('lyricInput').value = d.lyrics;
+                    if(d.font) document.getElementById('fontSelect').value = d.font;
+                    if(d.pos) document.getElementById('posSelect').value = d.pos;
+                    if(d.colB) document.getElementById('colorBase').value = d.colB;
+                    if(d.colA) document.getElementById('colorActive').value = d.colA;
+                    if(d.size) {
+                        document.getElementById('sizeInput').value = d.size;
+                        document.getElementById('sizeVal').innerText = d.size;
+                    }
+                    if(d.anim) document.getElementById('animSelect').value = d.anim;
+                    
+                    document.getElementById('resSelect').dispatchEvent(new Event('change'));
+                    parseLRC();
+                } catch(e) {}
+            }
+            drawFrame();
         });
 
-        // Initial draw
-        document.getElementById('fontSelect').addEventListener('change', drawFrame);
-        document.getElementById('bgColor').addEventListener('change', drawFrame);
-        drawFrame();
     </script>
 </body>
 </html>
