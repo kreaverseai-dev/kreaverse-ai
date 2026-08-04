@@ -753,49 +753,62 @@
             const btn = document.getElementById('btnDeteksiSuara');
             const loader = document.getElementById('aiLoader');
             btn.disabled = true;
-            btn.innerHTML = '<i class="fa-solid fa-spinner spinner"></i> Mendengarkan...';
+            btn.innerHTML = '<i class="fa-solid fa-spinner spinner"></i> Mengunggah & Mendengarkan AI...';
             loader.style.display = 'block';
 
             try {
                 const file = audioInput.files[0];
-                if (file.size > 4 * 1024 * 1024) alert("Peringatan: Ukuran lagu > 4MB. Proses AI mungkin butuh waktu lebih lama atau terpotong.");
 
-                const reader = new FileReader();
-                reader.readAsDataURL(file);
+                // 1. UPLOAD KE SERVER SEMENTARA (Bypass Limit 4.5MB Vercel)
+                const formData = new FormData();
+                formData.append('file', file);
+
+                const uploadRes = await fetch('https://tmpfiles.org/api/v1/upload', {
+                    method: 'POST',
+                    body: formData
+                });
                 
-                reader.onload = async () => {
-                    const base64Audio = reader.result;
-                    const payload = {
-                        action: "detect_lyrics",
-                        toolId: "lyric-maker_sync",
-                        email: userEmail,
-                        audioUrl: base64Audio 
-                    };
+                const uploadData = await uploadRes.json();
+                if (!uploadRes.ok || uploadData.status !== 'success') {
+                    throw new Error("Gagal mengunggah file ke server sementara.");
+                }
 
-                    try {
-                        const response = await fetch('/api/habirmx', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify(payload)
-                        });
-                        const data = await response.json();
-                        if (!response.ok) throw new Error(data.error || "Gagal deteksi suara");
+                // Ubah link view menjadi link direct download
+                const directAudioUrl = uploadData.data.url.replace('tmpfiles.org/', 'tmpfiles.org/dl/');
 
-                        if (data.success && data.result) {
-                            document.getElementById('lyricInput').value = data.result;
-                            parseLRC();
-                            drawFrame();
-                            alert("Sukses! AI berhasil menulis lirik.");
-                        }
-                    } catch (err) { alert(`Error AI API: ${err.message}`); } 
-                    finally {
-                        btn.disabled = false;
-                        btn.innerHTML = '<i class="fa-solid fa-ear-listen"></i> Dengar Lagu & Tulis Lirik (AI)';
-                        loader.style.display = 'none';
-                    }
+                // 2. KIRIM HANYA URL KE VERCEL (Sangat ringan, anti error 413)
+                const payload = {
+                    action: "detect_lyrics",
+                    toolId: "lyric-maker_sync",
+                    email: userEmail,
+                    audioUrl: directAudioUrl 
                 };
+
+                const response = await fetch('/api/habirmx', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                // Cek jika Vercel mengembalikan HTML Error (Server Sibuk/Down)
+                const contentType = response.headers.get("content-type");
+                if (contentType && contentType.indexOf("application/json") === -1) {
+                    const errorText = await response.text();
+                    throw new Error("Koneksi Vercel terganggu: " + errorText.substring(0, 30));
+                }
+
+                const data = await response.json();
+                if (!response.ok) throw new Error(data.error || "Gagal memproses lirik AI");
+
+                if (data.success && data.result) {
+                    document.getElementById('lyricInput').value = data.result;
+                    parseLRC();
+                    drawFrame();
+                    alert("Sukses! AI berhasil menulis lirik.");
+                }
             } catch (error) {
-                alert(`Error internal: ${error.message}`);
+                alert(`Error AI: ${error.message}`);
+            } finally {
                 btn.disabled = false;
                 btn.innerHTML = '<i class="fa-solid fa-ear-listen"></i> Dengar Lagu & Tulis Lirik (AI)';
                 loader.style.display = 'none';
