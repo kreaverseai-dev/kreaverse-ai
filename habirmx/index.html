@@ -2397,10 +2397,25 @@
     </div>
 
     <!-- KABEL PENGHUBUNG KE FOLDER JS -->
-    <script type="module" src="./js/firebase-config.js"></script>
-    <script src="./js/audio-engine.js" defer></script>
-    <script src="./js/api-handler.js" defer></script>
-    <script src="./js/ui-controller.js" defer></script>
+    <script type="module" src="js/firebase-config.js"></script>
+    <script src="js/audio-engine.js" defer></script>
+    <script src="js/api-handler.js" defer></script>
+    <script src="js/ui-controller.js" defer></script>
+
+    <!-- PEMICU MANUAL AGAR TIDAK STUCK MEMUAT -->
+    <script>
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                // Paksa muat model AI dan aktifkan tombol
+                if(typeof window.loadDynamicModels === 'function') {
+                    window.loadDynamicModels();
+                }
+                if(typeof window.toggleCustomFields === 'function') {
+                    window.toggleCustomFields();
+                }
+            }, 800); // Tunggu 0.8 detik agar semua file JS selesai dimuat
+        });
+    </script>
 
     <!-- Vercel Web Analytics -->
     <script>
