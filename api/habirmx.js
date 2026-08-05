@@ -311,11 +311,23 @@ TUGAS ANDA:
                 const whisperKey = whisperKeysQuery.docs.sort((a, b) => (a.data().priority || 1) - (b.data().priority || 1))[0].data().key;
 
                 const audioFetch = await fetch(audioUrl);
-                if (!audioFetch.ok) throw new Error("Gagal mengunduh audio referensi.");
-                const audioBlob = await audioFetch.blob();
+if (!audioFetch.ok) throw new Error("Gagal mengunduh audio referensi.");
 
-                const formData = new FormData();
-                formData.append("file", audioBlob, "audio.mp3");
+// 1. Deteksi tipe file asli agar server Groq tidak bingung/crash
+const contentType = audioFetch.headers.get('content-type') || 'audio/mpeg';
+let ext = 'mp3';
+if (contentType.includes('wav')) ext = 'wav';
+else if (contentType.includes('m4a') || contentType.includes('mp4')) ext = 'm4a';
+else if (contentType.includes('ogg')) ext = 'ogg';
+else if (contentType.includes('webm')) ext = 'webm';
+
+// 2. Gunakan ArrayBuffer lalu ubah ke Blob (Lebih stabil di Node.js)
+const arrayBuffer = await audioFetch.arrayBuffer();
+const audioBlob = new Blob([arrayBuffer], { type: contentType });
+
+const formData = new FormData();
+// 3. Kirim dengan ekstensi yang benar
+formData.append("file", audioBlob, `audio.${ext}`);
                 formData.append("model", "whisper-large-v3"); // Gunakan V3 murni agar sinkronisasi sangat akurat
                 formData.append("temperature", "0.0");
                 formData.append("response_format", "verbose_json");
