@@ -745,17 +745,37 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
         import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyAO8JV4jkJmbHChYvjUCS7wqfVbKr94tHM",
+            authDomain: "kreaverse-ai0107.firebaseapp.com",
             projectId: "kreaverse-ai0107"
         };
         
         const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
         const db = getFirestore(app);
+
+        // Pantau sesi login agar Firestore memberikan izin akses (Permission Granted)
+        let isAuthReady = false;
+        onAuthStateChanged(auth, (user) => {
+            isAuthReady = true;
+        });
 
         // Fungsi global agar bisa dipanggil dari script utama tanpa error
         window.getCloudinaryKreaverse = async function() {
+            // Tunggu maksimal 3 detik sampai Firebase Auth selesai memverifikasi login Anda
+            let attempts = 0;
+            while (!isAuthReady && attempts < 30) {
+                await new Promise(r => setTimeout(r, 100));
+                attempts++;
+            }
+
+            if (!auth.currentUser) {
+                throw new Error("Sesi Firebase belum aktif. Harap Refresh halaman ini.");
+            }
+
             const snap = await getDocs(collection(db, "cloudinary_accounts"));
             let accounts = [];
             snap.forEach(doc => accounts.push(doc.data()));
