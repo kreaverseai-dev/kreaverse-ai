@@ -462,8 +462,12 @@
                 if (match) {
                     const m = parseInt(match[1]);
                     const s = parseFloat(match[2]);
-                    const txt = match[3].trim();
-                    if(txt && txt !== "[Instrumental]") parsedLyrics.push({ start: (m * 60) + s, text: txt });
+                    let txt = match[3].trim();
+                    
+                    // LOGIKA PINTAR: Abaikan tag struktur lagu seperti [Verse 1], [Chorus], dll
+                    if (txt.startsWith('[') && txt.endsWith(']')) return;
+                    
+                    if(txt) parsedLyrics.push({ start: (m * 60) + s, text: txt });
                 }
             });
             if (parsedLyrics.length === 0 && text.trim().length > 0) {
@@ -498,11 +502,22 @@
             if (parsedLyrics.length > 0) {
                 let activeIdx = -1;
                 for (let i = 0; i < parsedLyrics.length; i++) {
-                    if (currentTime >= parsedLyrics[i].start - 0.1) activeIdx = i; // Kasih offset dikit biar pas
+                    // Hapus offset -0.1 agar lirik tidak mencuri start duluan
+                    if (currentTime >= parsedLyrics[i].start) activeIdx = i; 
                     else break;
                 }
 
                 if (activeIdx !== -1) {
+                    const activeLine = parsedLyrics[activeIdx];
+                    let nextStart = activeIdx < parsedLyrics.length - 1 ? parsedLyrics[activeIdx+1].start : audio.duration || 999;
+                    let gapToNext = nextStart - activeLine.start;
+
+                    // FITUR AUTO-HIDE: Jika jarak ke lirik berikutnya lebih dari 7 detik (instrumen panjang),
+                    // dan lirik saat ini sudah tampil lebih dari 5 detik, sembunyikan liriknya!
+                    if (gapToNext > 7 && (currentTime - activeLine.start) > 5) {
+                        return; // Hentikan proses gambar (layar jadi bersih)
+                    }
+
                     const fontFam = document.getElementById('fontSelect').value;
                     const fontSz = parseInt(document.getElementById('sizeInput').value);
                     const pos = document.getElementById('posSelect').value;
@@ -510,12 +525,14 @@
                     const activeCol = document.getElementById('colorActive').value;
                     const anim = document.getElementById('animSelect').value;
                     
-                    const activeLine = parsedLyrics[activeIdx];
-                    let nextStart = activeIdx < parsedLyrics.length - 1 ? parsedLyrics[activeIdx+1].start : audio.duration || 999;
-                    let lineDuration = nextStart - activeLine.start;
+                    // LOGIKA PINTAR ANIMASI: Hitung kecepatan berdasarkan jumlah huruf
+                    // Rata-rata orang menyanyi 1 huruf = 0.12 detik
+                    let estimatedSingTime = Math.max(1.5, activeLine.text.length * 0.12);
                     
-                    // Progress nyanyian (diperhalus)
-                    let progress = (currentTime - activeLine.start) / (lineDuration * 0.8); // 80% dari durasi lirik agar beres sebelum ganti
+                    // Durasi animasi adalah yang terkecil antara tebakan waktu nyanyi ATAU jarak ke lirik berikutnya
+                    let animDuration = Math.min(estimatedSingTime, gapToNext * 0.85);
+                    
+                    let progress = (currentTime - activeLine.start) / animDuration;
                     if(progress > 1) progress = 1;
                     if(progress < 0) progress = 0;
 
