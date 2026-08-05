@@ -209,6 +209,16 @@
                         <i class="fa-solid fa-wand-magic-sparkles"></i> Deteksi & Sync Otomatis (AI)
                     </button>
                 </div>
+
+                <!-- FITUR BARU: SIMPAN & MUAT PROYEK -->
+                <div class="row-2" style="margin-bottom: 10px;">
+                    <button class="btn" style="background: rgba(16, 185, 129, 0.15); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.4);" onclick="saveProject()">
+                        <i class="fa-solid fa-floppy-disk"></i> Simpan Lirik
+                    </button>
+                    <button class="btn" style="background: rgba(59, 130, 246, 0.15); color: #3b82f6; border: 1px solid rgba(59, 130, 246, 0.4);" onclick="loadProject()">
+                        <i class="fa-solid fa-folder-open"></i> Muat Lirik
+                    </button>
+                </div>
                 
                 <div class="form-group">
                     <label style="display: flex; justify-content: space-between;">
@@ -417,7 +427,11 @@
 
         function togglePlay() {
             if (!audio.src) return alert("Upload Audio di Tab Media!");
-            if (isPlaying) {
+            
+            // UBAH STATUS DI AWAL AGAR ANIMASI TIDAK MATI
+            isPlaying = !isPlaying; 
+            
+            if (!isPlaying) {
                 audio.pause(); if (bgMedia && bgMedia.tagName === 'VIDEO') bgMedia.pause();
                 cancelAnimationFrame(animationFrameId);
                 document.getElementById('btnPlay').innerHTML = '<i class="fa-solid fa-play"></i>';
@@ -426,7 +440,6 @@
                 renderLoop();
                 document.getElementById('btnPlay').innerHTML = '<i class="fa-solid fa-pause"></i>';
             }
-            isPlaying = !isPlaying;
         }
 
         function formatTime(sec) {
@@ -738,6 +751,48 @@
                 }
             }, 500);
         });
+
+    // --- 7. FITUR SIMPAN & MUAT PROYEK (ANTI HILANG KREDIT) ---
+        window.saveProject = function() {
+            const projectData = {
+                lyrics: document.getElementById('lyricInput').value,
+                font: document.getElementById('fontSelect').value,
+                pos: document.getElementById('posSelect').value,
+                anim: document.getElementById('animSelect').value,
+                colorBase: document.getElementById('colorBase').value,
+                colorActive: document.getElementById('colorActive').value,
+                size: document.getElementById('sizeInput').value
+            };
+            localStorage.setItem('kreaverse_karaoke_project', JSON.stringify(projectData));
+            alert("✅ Lirik dan Pengaturan Desain berhasil disimpan ke memori HP!");
+        };
+
+        window.loadProject = function() {
+            const savedData = localStorage.getItem('kreaverse_karaoke_project');
+            if (savedData) {
+                try {
+                    const projectData = JSON.parse(savedData);
+                    if (projectData.lyrics) document.getElementById('lyricInput').value = projectData.lyrics;
+                    if (projectData.font) document.getElementById('fontSelect').value = projectData.font;
+                    if (projectData.pos) document.getElementById('posSelect').value = projectData.pos;
+                    if (projectData.anim) document.getElementById('animSelect').value = projectData.anim;
+                    if (projectData.colorBase) document.getElementById('colorBase').value = projectData.colorBase;
+                    if (projectData.colorActive) document.getElementById('colorActive').value = projectData.colorActive;
+                    if (projectData.size) {
+                        document.getElementById('sizeInput').value = projectData.size;
+                        document.getElementById('sizeVal').innerText = projectData.size;
+                    }
+                    
+                    parseLRC(); 
+                    drawFrame(); 
+                    alert("📂 Proyek berhasil dimuat!\n\nSilakan upload ulang file Audio/Lagu di Tab Media untuk mulai memutar.");
+                } catch (e) {
+                    alert("Gagal memuat proyek.");
+                }
+            } else {
+                alert("Tidak ada proyek yang tersimpan sebelumnya.");
+            }
+        };
 
     </script>
 
