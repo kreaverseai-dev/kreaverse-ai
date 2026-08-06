@@ -663,6 +663,11 @@
 
     // --- ON LOAD APP (MEMBERSIHKAN BUG NAN SECARA OTOMATIS) ---
     window.onload = () => {
+        // Minta izin notifikasi saat web dibuka
+        if ("Notification" in window && Notification.permission === "default") {
+            Notification.requestPermission();
+        }
+        
         loadSaldo();
         const savedOrders = localStorage.getItem('listPesananAktif');
         if (savedOrders) {
