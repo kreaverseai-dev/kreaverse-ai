@@ -1,37 +1,40 @@
-// File: api/codeotp.js
-
 export default async function handler(req, res) {
-  // Pastikan hanya menerima method POST dari frontend Anda
+  // 1. Cek Method
   if (req.method !== 'POST') {
     return res.status(405).json({ status: false, message: 'Method not allowed' });
   }
 
-  // Ambil API Key dari Environment Variables Vercel
+  // 2. Ambil API Key
   const apiKey = process.env.CODEOTP_API_KEY;
   
-  // Ambil endpoint tujuan dan data dari frontend
+  // Jika API Key kosong (karena belum redeploy), tampilkan error ini ke layar
+  if (!apiKey) {
+    return res.status(500).json({ status: false, message: 'API Key belum terbaca. Silakan Redeploy Vercel Anda!' });
+  }
+
   const { endpoint, payload } = req.body;
 
   try {
-    // Asumsi Base URL API CodeOTP adalah https://www.codeotp.id/api
-    // (Jika salah, Anda bisa menyesuaikan URL ini)
+    // 3. Siapkan data (Kita selipkan api_key di dalam body untuk jaga-jaga)
+    const bodyData = payload || {};
+    bodyData.api_key = apiKey; 
+
+    // 4. Tembak API CodeOTP
     const response = await fetch(`https://www.codeotp.id/api${endpoint}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        // Biasanya API Key dikirim via Header Authorization atau x-api-key
-        'Authorization': `Bearer ${apiKey}`, 
-        'Accept': 'application/json'
+        'Authorization': `Bearer ${apiKey}` // Kita kirim di Header juga
       },
-      // Jika ada payload (seperti server_id, price_id), kirimkan. Jika tidak, kirim kosong.
-      body: payload ? JSON.stringify(payload) : undefined 
+      body: JSON.stringify(bodyData)
     });
 
+    // 5. Ambil balasan dari CodeOTP dan kembalikan ke web Anda
     const data = await response.json();
-    
-    // Kembalikan respon dari CodeOTP ke frontend Anda
     res.status(200).json(data);
+    
   } catch (error) {
-    res.status(500).json({ status: false, message: 'Gagal terhubung ke server OTP' });
+    // Jika website CodeOTP down atau URL salah
+    res.status(500).json({ status: false, message: 'Gagal menghubungi CodeOTP: ' + error.message });
   }
 }
