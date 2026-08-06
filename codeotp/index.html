@@ -575,8 +575,8 @@
             const expTime = parseExpiredDate(expStr);
             const dist = expTime - new Date().getTime();
 
-            if (dist <= 0) {
-                // HAPUS OTOMATIS JIKA WAKTU HABIS (0)
+            // FIX: Hapus Otomatis jika waktu habis (0) ATAU data rusak (NaN)
+            if (dist <= 0 || isNaN(dist)) {
                 const idOrderYgHabis = el.getAttribute('data-id');
                 hapusPesananDariLayar(idOrderYgHabis);
             } else {
