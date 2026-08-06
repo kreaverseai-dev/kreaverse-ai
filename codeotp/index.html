@@ -186,14 +186,14 @@
         
         <div class="form-group">
             <label>1. Pilih Server</label>
-            <select class="form-control" id="select-server">
+            <select class="form-control" id="select-server" onchange="pilihServer()">
                 <option value="">Memuat server...</option>
             </select>
         </div>
 
         <div class="form-group">
             <label>2. Pilih Negara</label>
-            <select class="form-control" id="select-negara" disabled>
+            <select class="form-control" id="select-negara" onchange="pilihNegara()" disabled>
                 <option value="">Pilih server terlebih dahulu</option>
             </select>
         </div>
@@ -250,9 +250,11 @@
 
     // --- FUNGSI BUKA MODAL ORDER ---
     let layananAktif = "";
+    let layananIdAktif = null; // Menyimpan ID layanan
     
     async function bukaLayanan(namaLayanan, iconUrl) {
         layananAktif = namaLayanan;
+        layananIdAktif = null;
         
         // Set UI Modal
         document.getElementById('sheet-layanan-name').innerText = namaLayanan;
@@ -262,11 +264,12 @@
         document.getElementById('sheet-overlay').classList.add('active');
         document.getElementById('order-sheet').classList.add('active');
 
-        // Reset Dropdown
+        // Reset Dropdown & Harga
         const selectServer = document.getElementById('select-server');
         selectServer.innerHTML = '<option value="">Memuat server...</option>';
         document.getElementById('select-negara').innerHTML = '<option value="">Pilih server terlebih dahulu</option>';
         document.getElementById('select-negara').disabled = true;
+        document.getElementById('price-container').innerHTML = 'Daftar harga akan muncul di sini...';
 
         // Panggil API Server
         const result = await callCodeOTP('/v1/server', 'POST');
@@ -278,6 +281,102 @@
         } else {
             selectServer.innerHTML = '<option value="">Gagal memuat server</option>';
         }
+    }
+
+    // --- SAAT SERVER DIPILIH ---
+    async function pilihServer() {
+        const serverId = document.getElementById('select-server').value;
+        const selectNegara = document.getElementById('select-negara');
+        const priceContainer = document.getElementById('price-container');
+        
+        if (!serverId) {
+            selectNegara.innerHTML = '<option value="">Pilih server terlebih dahulu</option>';
+            selectNegara.disabled = true;
+            priceContainer.innerHTML = 'Daftar harga akan muncul di sini...';
+            return;
+        }
+
+        selectNegara.innerHTML = '<option value="">Memuat negara...</option>';
+        selectNegara.disabled = true;
+        priceContainer.innerHTML = 'Mencari layanan...';
+
+        // 1. Cari ID Layanan berdasarkan nama (misal: "Shopee") di server ini
+        const resLayanan = await callCodeOTP('/v1/layanan', 'POST', { server_id: serverId });
+        if (resLayanan.status && resLayanan.data) {
+            const layanan = resLayanan.data.find(l => l.name.toLowerCase() === layananAktif.toLowerCase());
+            if (layanan) {
+                layananIdAktif = layanan.id;
+            } else {
+                selectNegara.innerHTML = '<option value="">Layanan tidak tersedia</option>';
+                priceContainer.innerHTML = `<span style="color:red;">Layanan ${layananAktif} tidak ada di server ini.</span>`;
+                return;
+            }
+        }
+
+        // 2. Ambil daftar Negara
+        const resNegara = await callCodeOTP('/v1/negara', 'POST', { 
+            server_id: serverId, 
+            layanan_id: layananIdAktif 
+        });
+
+        if (resNegara.status && resNegara.data) {
+            selectNegara.innerHTML = '<option value="">-- Pilih Negara --</option>';
+            resNegara.data.forEach(negara => {
+                selectNegara.innerHTML += `<option value="${negara.id}">${negara.name}</option>`;
+            });
+            selectNegara.disabled = false;
+            priceContainer.innerHTML = 'Silakan pilih negara untuk melihat harga.';
+        } else {
+            selectNegara.innerHTML = '<option value="">Gagal memuat negara</option>';
+            priceContainer.innerHTML = 'Gagal memuat data negara.';
+        }
+    }
+
+    // --- SAAT NEGARA DIPILIH ---
+    async function pilihNegara() {
+        const serverId = document.getElementById('select-server').value;
+        const negaraId = document.getElementById('select-negara').value;
+        const priceContainer = document.getElementById('price-container');
+
+        if (!negaraId) {
+            priceContainer.innerHTML = 'Silakan pilih negara untuk melihat harga.';
+            return;
+        }
+
+        priceContainer.innerHTML = 'Memuat harga...';
+
+        const resHarga = await callCodeOTP('/v1/harga', 'POST', {
+            server_id: serverId,
+            negara_id: negaraId,
+            layanan_id: layananIdAktif
+        });
+
+        if (resHarga.status && resHarga.data && resHarga.data.length > 0) {
+            let htmlHarga = '<div style="text-align:left; margin-top:10px;"><strong>Pilih Operator:</strong><br>';
+            resHarga.data.forEach(harga => {
+                const rp = new Intl.NumberFormat('id-ID').format(harga.price);
+                htmlHarga += `
+                <div style="display:flex; justify-content:space-between; align-items:center; padding:10px; border:1px solid #eee; border-radius:8px; margin-top:8px; background:#fff;">
+                    <div>
+                        <div style="font-weight:bold; color:#333; font-size:14px;">${harga.operator_name}</div>
+                        <div style="font-size:11px; color:#888;">Stok: ${harga.stock} | Sukses: ${harga.success_rate * 100}%</div>
+                    </div>
+                    <div>
+                        <div style="color:#ee4d2d; font-weight:bold; margin-bottom:5px;">Rp ${rp}</div>
+                        <button onclick="beliOTP(${harga.operator_id}, ${harga.price})" style="background:#ee4d2d; color:#fff; border:none; padding:5px 15px; border-radius:4px; font-size:12px; cursor:pointer;">Beli</button>
+                    </div>
+                </div>`;
+            });
+            htmlHarga += '</div>';
+            priceContainer.innerHTML = htmlHarga;
+        } else {
+            priceContainer.innerHTML = '<span style="color:red;">Harga/Stok tidak tersedia untuk negara ini.</span>';
+        }
+    }
+
+    // --- FUNGSI BELI (TOMBOL BELI DIKLIK) ---
+    function beliOTP(operatorId, harga) {
+        alert("Fitur Beli ditekan! Operator ID: " + operatorId + " | Harga: Rp " + harga + ". Tahap selanjutnya memanggil API /v1/pesanan");
     }
 
     function tutupLayanan() {
