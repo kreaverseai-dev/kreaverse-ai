@@ -362,10 +362,11 @@
         selectNegara.disabled = true;
         priceContainer.innerHTML = 'Mencari layanan...';
 
-        // 1. Cari ID Layanan berdasarkan nama (misal: "Shopee") di server ini
-        const resLayanan = await callCodeOTP('/v1/layanan', 'POST', { server_id: serverId });
+        // 1. Cari ID Layanan (Gunakan parseInt agar API menerima sebagai Angka)
+        const resLayanan = await callCodeOTP('/v1/layanan', 'POST', { server_id: parseInt(serverId) });
         if (resLayanan.status && resLayanan.data) {
-            const layanan = resLayanan.data.find(l => l.name.toLowerCase() === layananAktif.toLowerCase());
+            // Gunakan includes agar lebih fleksibel (misal "Shopee" cocok dengan "Shopee OTP")
+            const layanan = resLayanan.data.find(l => l.name.toLowerCase().includes(layananAktif.toLowerCase()));
             if (layanan) {
                 layananIdAktif = layanan.id;
             } else {
@@ -375,10 +376,10 @@
             }
         }
 
-        // 2. Ambil daftar Negara
+        // 2. Ambil daftar Negara (Gunakan parseInt)
         const resNegara = await callCodeOTP('/v1/negara', 'POST', { 
-            server_id: serverId, 
-            layanan_id: layananIdAktif 
+            server_id: parseInt(serverId), 
+            layanan_id: parseInt(layananIdAktif) 
         });
 
         if (resNegara.status && resNegara.data) {
@@ -407,10 +408,11 @@
 
         priceContainer.innerHTML = 'Memuat harga...';
 
+        // Gunakan parseInt agar API menerima sebagai Angka
         const resHarga = await callCodeOTP('/v1/harga', 'POST', {
-            server_id: serverId,
-            negara_id: negaraId,
-            layanan_id: layananIdAktif
+            server_id: parseInt(serverId),
+            negara_id: parseInt(negaraId),
+            layanan_id: parseInt(layananIdAktif)
         });
 
         if (resHarga.status && resHarga.data && resHarga.data.length > 0) {
@@ -438,54 +440,63 @@
 
     // --- FUNGSI BELI (TOMBOL BELI DIKLIK) ---
     function beliOTP(operatorId, harga) {
-        const pesanKonfirmasi = `Beli OTP seharga Rp ${harga}?`;
+        // Tampilkan konfirmasi langsung di dalam kotak (Inline), bukan popup!
+        const container = document.getElementById('price-container');
+        container.innerHTML = `
+            <div style="text-align:center; padding:20px; background:#fff3cd; border-radius:10px; border:1px solid #ffeeba; margin-top:10px;">
+                <h3 style="margin-bottom:10px; color:#856404; font-size:16px;">Konfirmasi Pembelian</h3>
+                <p style="color:#856404; margin-bottom:15px; font-size:14px;">Beli OTP seharga <b>Rp ${harga}</b>?</p>
+                <div style="display:flex; gap:10px; justify-content:center;">
+                    <button onclick="pilihNegara()" style="flex:1; padding:10px; border:1px solid #ccc; background:#fff; border-radius:8px; cursor:pointer; font-weight:bold; color:#333;">Batal</button>
+                    <button onclick="eksekusiBeli('${operatorId}')" style="flex:1; padding:10px; border:none; background:#ee4d2d; color:#fff; border-radius:8px; cursor:pointer; font-weight:bold;">Ya, Beli</button>
+                </div>
+            </div>
+        `;
+    }
 
-        // Fungsi inti untuk memproses pesanan
-        const eksekusiBeli = async () => {
-            if ("Notification" in window && Notification.permission !== "granted") {
-                Notification.requestPermission();
-            }
+    async function eksekusiBeli(operatorId) {
+        if ("Notification" in window && Notification.permission !== "granted") {
+            Notification.requestPermission();
+        }
 
-            document.getElementById('price-container').innerHTML = '<div style="text-align:center; padding:20px;">Memproses pesanan... ⏳</div>';
+        const container = document.getElementById('price-container');
+        container.innerHTML = '<div style="text-align:center; padding:20px; font-weight:bold; color:#ee4d2d;">Memproses pesanan... ⏳</div>';
 
-            const serverId = document.getElementById('select-server').value;
+        // WAJIB: Ubah semua ID menjadi Angka (Integer)
+        const serverId = parseInt(document.getElementById('select-server').value);
+        const layananId = parseInt(layananIdAktif);
+        const priceId = parseInt(operatorId);
 
-            const resOrder = await callCodeOTP('/v1/pesanan', 'POST', { 
-                server_id: serverId,
-                layanan_id: layananIdAktif,
-                price_id: operatorId 
-            });
-            
-            if (resOrder.status && resOrder.data) {
-                tutupLayanan();
-                localStorage.setItem('pesananAktif', JSON.stringify(resOrder.data));
-                tampilkanPesanan(resOrder.data);
-                pindahHalaman('pesanan'); 
-                loadSaldo(); 
-            } else {
-                let errorMsg = resOrder.message;
-                if (resOrder.data && typeof resOrder.data === 'object') {
-                    errorMsg += " (Cek Server/Layanan)";
-                }
-                
-                // Fallback jika showToast gagal
-                if (typeof showToast === 'function') {
-                    showToast("Gagal: " + errorMsg);
-                } else {
-                    alert("Gagal: " + errorMsg);
-                }
-                document.getElementById('price-container').innerHTML = '<span style="color:red;">Gagal membuat pesanan. Silakan coba lagi.</span>';
-            }
-        };
+        if (!layananId) {
+            container.innerHTML = '<div style="color:red; text-align:center; padding:20px;"><b>Gagal:</b> ID Layanan tidak ditemukan. Coba pilih server lain.</div>';
+            return;
+        }
 
-        // Cek apakah custom modal tersedia, jika tidak gunakan confirm bawaan
-        const modalConfirm = document.getElementById('confirm-modal');
-        if (typeof showConfirm === 'function' && modalConfirm) {
-            showConfirm(pesanKonfirmasi, eksekusiBeli);
+        const resOrder = await callCodeOTP('/v1/pesanan', 'POST', { 
+            server_id: serverId,
+            layanan_id: layananId,
+            price_id: priceId 
+        });
+        
+        if (resOrder.status && resOrder.data) {
+            tutupLayanan();
+            localStorage.setItem('pesananAktif', JSON.stringify(resOrder.data));
+            tampilkanPesanan(resOrder.data);
+            pindahHalaman('pesanan'); 
+            loadSaldo(); 
         } else {
-            if (confirm(pesanKonfirmasi)) {
-                eksekusiBeli();
+            // Jika gagal, tampilkan error dengan jelas di dalam kotak
+            let errorMsg = resOrder.message;
+            if (resOrder.data && typeof resOrder.data === 'object') {
+                errorMsg += "<br><small style='color:#666;'>" + JSON.stringify(resOrder.data) + "</small>";
             }
+            container.innerHTML = `
+                <div style="color:red; text-align:center; padding:20px; background:#ffe6e6; border-radius:10px; margin-top:10px;">
+                    <b style="font-size:16px;">Gagal Memesan</b><br><br>
+                    <span style="font-size:12px;">${errorMsg}</span><br><br>
+                    <button onclick="pilihNegara()" style="padding:8px 20px; background:#fff; border:1px solid red; color:red; border-radius:5px; cursor:pointer; font-weight:bold;">Kembali</button>
+                </div>
+            `;
         }
     }
 
