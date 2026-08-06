@@ -408,7 +408,6 @@
 
         priceContainer.innerHTML = 'Memuat harga...';
 
-        // Gunakan parseInt agar API menerima sebagai Angka
         const resHarga = await callCodeOTP('/v1/harga', 'POST', {
             server_id: parseInt(serverId),
             negara_id: parseInt(negaraId),
@@ -419,15 +418,23 @@
             let htmlHarga = '<div style="text-align:left; margin-top:10px;"><strong>Pilih Operator:</strong><br>';
             resHarga.data.forEach(harga => {
                 const rp = new Intl.NumberFormat('id-ID').format(harga.price);
+                
+                // PERBAIKAN: Kita deteksi otomatis ID mana yang dipakai oleh server (bisa id, price_id, atau operator_id)
+                const idHargaYgBenar = harga.id || harga.price_id || harga.operator_id;
+                
+                // Mencegah error jika operator_name kosong
+                const namaOperator = harga.operator_name || harga.name || 'Operator';
+                const successRate = harga.success_rate ? (parseFloat(harga.success_rate) * 100).toFixed(0) : 0;
+
                 htmlHarga += `
                 <div style="display:flex; justify-content:space-between; align-items:center; padding:10px; border:1px solid #eee; border-radius:8px; margin-top:8px; background:#fff;">
                     <div>
-                        <div style="font-weight:bold; color:#333; font-size:14px;">${harga.operator_name}</div>
-                        <div style="font-size:11px; color:#888;">Stok: ${harga.stock} | Sukses: ${harga.success_rate * 100}%</div>
+                        <div style="font-weight:bold; color:#333; font-size:14px;">${namaOperator}</div>
+                        <div style="font-size:11px; color:#888;">Stok: ${harga.stock} | Sukses: ${successRate}%</div>
                     </div>
                     <div>
                         <div style="color:#ee4d2d; font-weight:bold; margin-bottom:5px;">Rp ${rp}</div>
-                        <button onclick="beliOTP('${harga.operator_id}', '${harga.price}')" style="background:#ee4d2d; color:#fff; border:none; padding:5px 15px; border-radius:4px; font-size:12px; cursor:pointer;">Beli</button>
+                        <button onclick="beliOTP('${idHargaYgBenar}', '${harga.price}')" style="background:#ee4d2d; color:#fff; border:none; padding:5px 15px; border-radius:4px; font-size:12px; cursor:pointer;">Beli</button>
                     </div>
                 </div>`;
             });
@@ -439,8 +446,7 @@
     }
 
     // --- FUNGSI BELI (TOMBOL BELI DIKLIK) ---
-    function beliOTP(operatorId, harga) {
-        // Tampilkan konfirmasi langsung di dalam kotak (Inline), bukan popup!
+    function beliOTP(idHarga, harga) {
         const container = document.getElementById('price-container');
         container.innerHTML = `
             <div style="text-align:center; padding:20px; background:#fff3cd; border-radius:10px; border:1px solid #ffeeba; margin-top:10px;">
@@ -448,13 +454,13 @@
                 <p style="color:#856404; margin-bottom:15px; font-size:14px;">Beli OTP seharga <b>Rp ${harga}</b>?</p>
                 <div style="display:flex; gap:10px; justify-content:center;">
                     <button onclick="pilihNegara()" style="flex:1; padding:10px; border:1px solid #ccc; background:#fff; border-radius:8px; cursor:pointer; font-weight:bold; color:#333;">Batal</button>
-                    <button onclick="eksekusiBeli('${operatorId}')" style="flex:1; padding:10px; border:none; background:#ee4d2d; color:#fff; border-radius:8px; cursor:pointer; font-weight:bold;">Ya, Beli</button>
+                    <button onclick="eksekusiBeli('${idHarga}')" style="flex:1; padding:10px; border:none; background:#ee4d2d; color:#fff; border-radius:8px; cursor:pointer; font-weight:bold;">Ya, Beli</button>
                 </div>
             </div>
         `;
     }
 
-    async function eksekusiBeli(operatorId) {
+    async function eksekusiBeli(idHarga) {
         if ("Notification" in window && Notification.permission !== "granted") {
             Notification.requestPermission();
         }
@@ -462,10 +468,9 @@
         const container = document.getElementById('price-container');
         container.innerHTML = '<div style="text-align:center; padding:20px; font-weight:bold; color:#ee4d2d;">Memproses pesanan... ⏳</div>';
 
-        // WAJIB: Ubah semua ID menjadi Angka (Integer)
         const serverId = parseInt(document.getElementById('select-server').value);
         const layananId = parseInt(layananIdAktif);
-        const priceId = parseInt(operatorId);
+        const priceId = parseInt(idHarga); // Memastikan yang dikirim adalah ID Harga yang benar
 
         if (!layananId) {
             container.innerHTML = '<div style="color:red; text-align:center; padding:20px;"><b>Gagal:</b> ID Layanan tidak ditemukan. Coba pilih server lain.</div>';
@@ -478,22 +483,27 @@
             price_id: priceId 
         });
         
-        if (resOrder.status && resOrder.data) {
+        if (resOrder.status && resOrder.data && resOrder.data.order_id) { // Ditambah cek order_id
             tutupLayanan();
             localStorage.setItem('pesananAktif', JSON.stringify(resOrder.data));
             tampilkanPesanan(resOrder.data);
             pindahHalaman('pesanan'); 
             loadSaldo(); 
         } else {
-            // Jika gagal, tampilkan error dengan jelas di dalam kotak
-            let errorMsg = resOrder.message;
-            if (resOrder.data && typeof resOrder.data === 'object') {
-                errorMsg += "<br><small style='color:#666;'>" + JSON.stringify(resOrder.data) + "</small>";
+            // Mempercantik pesan error agar tidak muncul format JSON kasar seperti di gambar
+            let errorText = resOrder.message || "Terjadi kesalahan server";
+            
+            // Jika ada detail error dari validasi, kita ambil pesannya
+            if (resOrder.data) {
+                if (resOrder.data.price_id) errorText = "Mohon maaf, layanan sedang gangguan (ID Harga tidak valid dari pusat).";
+                else if (resOrder.data.server_id) errorText = resOrder.data.server_id[0];
+                else if (resOrder.data.layanan_id) errorText = resOrder.data.layanan_id[0];
             }
+
             container.innerHTML = `
                 <div style="color:red; text-align:center; padding:20px; background:#ffe6e6; border-radius:10px; margin-top:10px;">
                     <b style="font-size:16px;">Gagal Memesan</b><br><br>
-                    <span style="font-size:12px;">${errorMsg}</span><br><br>
+                    <span style="font-size:13px;">${errorText}</span><br><br>
                     <button onclick="pilihNegara()" style="padding:8px 20px; background:#fff; border:1px solid red; color:red; border-radius:5px; cursor:pointer; font-weight:bold;">Kembali</button>
                 </div>
             `;
