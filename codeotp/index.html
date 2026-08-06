@@ -146,10 +146,15 @@
         <div style="padding: 15px; background: #fff; border-bottom: 1px solid #eee; font-weight: bold; color: #ee4d2d;">
             📋 Pesanan Aktif
         </div>
-        <div class="empty-state">
-            <div style="font-size: 40px; margin-bottom: 10px;">📭</div>
-            <h3>Belum ada pesanan</h3>
-            <p style="font-size: 12px; margin-top: 5px;">Pesan OTP di menu Beranda sekarang!</p>
+        <div id="pesanan-container">
+            <div class="empty-state" id="pesanan-kosong">
+                <div style="font-size: 40px; margin-bottom: 10px;">📭</div>
+                <h3>Belum ada pesanan</h3>
+                <p style="font-size: 12px; margin-top: 5px;">Pesan OTP di menu Beranda sekarang!</p>
+            </div>
+            <div id="pesanan-aktif" style="display: none; padding: 15px;">
+                <!-- Card Pesanan akan muncul di sini otomatis -->
+            </div>
         </div>
     </div>
 
@@ -375,8 +380,94 @@
     }
 
     // --- FUNGSI BELI (TOMBOL BELI DIKLIK) ---
-    function beliOTP(operatorId, harga) {
-        alert("Fitur Beli ditekan! Operator ID: " + operatorId + " | Harga: Rp " + harga + ". Tahap selanjutnya memanggil API /v1/pesanan");
+    async function beliOTP(operatorId, harga) {
+        const konfirmasi = confirm(`Beli OTP seharga Rp ${harga}?`);
+        if (!konfirmasi) return;
+
+        document.getElementById('price-container').innerHTML = '<div style="text-align:center; padding:20px;">Memproses pesanan... ⏳</div>';
+
+        // Panggil API Buat Pesanan
+        const resOrder = await callCodeOTP('/v1/pesanan', 'POST', { price_id: operatorId });
+        
+        if (resOrder.status && resOrder.data) {
+            tutupLayanan();
+            tampilkanPesanan(resOrder.data);
+            pindahHalaman('pesanan'); // Otomatis pindah ke tab Pesanan
+            loadSaldo(); // Update saldo setelah beli
+        } else {
+            alert("Gagal: " + resOrder.message);
+            document.getElementById('price-container').innerHTML = '<span style="color:red;">Gagal membuat pesanan. Silakan coba lagi.</span>';
+        }
+    }
+
+    // --- TAMPILKAN PESANAN AKTIF ---
+    let intervalCekSMS = null;
+
+    function tampilkanPesanan(data) {
+        document.getElementById('pesanan-kosong').style.display = 'none';
+        const pesananAktif = document.getElementById('pesanan-aktif');
+        pesananAktif.style.display = 'block';
+
+        pesananAktif.innerHTML = `
+            <div style="background: #fff; padding: 15px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); border: 1px solid #eee;">
+                <div style="display: flex; justify-content: space-between; border-bottom: 1px solid #eee; padding-bottom: 10px; margin-bottom: 10px;">
+                    <span style="font-size: 12px; color: #888;">ID: ${data.order_id}</span>
+                    <span style="font-size: 12px; font-weight: bold; color: #f6a700;" id="status-${data.order_id}">Menunggu SMS... ⏳</span>
+                </div>
+                <div style="text-align: center; margin: 20px 0;">
+                    <div style="font-size: 12px; color: #888; margin-bottom: 5px;">Nomor HP Anda:</div>
+                    <div style="font-size: 24px; font-weight: bold; color: #333; letter-spacing: 1px;">+${data.phone}</div>
+                </div>
+                <div style="text-align: center; margin: 20px 0; background: #f9f9f9; padding: 15px; border-radius: 8px; border: 1px dashed #ccc;">
+                    <div style="font-size: 12px; color: #888; margin-bottom: 5px;">Kode OTP:</div>
+                    <div id="sms-${data.order_id}" style="font-size: 28px; font-weight: bold; color: #ee4d2d; letter-spacing: 3px;">
+                        <span style="font-size: 14px; color: #999; letter-spacing: normal;">Sedang menunggu...</span>
+                    </div>
+                </div>
+                <div style="display: flex; gap: 10px;">
+                    <button onclick="updateStatus('${data.order_id}', 'cancel')" style="flex: 1; background: #fff; color: #ee4d2d; border: 1px solid #ee4d2d; padding: 10px; border-radius: 5px; font-weight: bold; cursor: pointer;">Batalkan</button>
+                    <button onclick="cekSMS('${data.order_id}')" style="flex: 1; background: #ee4d2d; color: #fff; border: none; padding: 10px; border-radius: 5px; font-weight: bold; cursor: pointer;">Cek SMS Manual</button>
+                </div>
+            </div>
+        `;
+
+        // Auto cek SMS tiap 5 detik
+        if (intervalCekSMS) clearInterval(intervalCekSMS);
+        intervalCekSMS = setInterval(() => cekSMS(data.order_id, true), 5000);
+    }
+
+    // --- CEK SMS ---
+    async function cekSMS(orderId, isAuto = false) {
+        const resSMS = await callCodeOTP('/v1/pesanan/sms', 'POST', { order_id: orderId });
+        
+        if (resSMS.status && resSMS.data) {
+            if (resSMS.data.sms_code) {
+                document.getElementById(`sms-${orderId}`).innerText = resSMS.data.sms_code;
+                document.getElementById(`status-${orderId}`).innerText = "✅ Selesai";
+                document.getElementById(`status-${orderId}`).style.color = "#25D366";
+                if (intervalCekSMS) clearInterval(intervalCekSMS); // Hentikan auto-cek jika SMS sudah masuk
+            } else if (!isAuto) {
+                alert("SMS belum masuk, silakan tunggu sebentar lagi.");
+            }
+        }
+    }
+
+    // --- UPDATE STATUS (CANCEL) ---
+    async function updateStatus(orderId, action) {
+        const konfirmasi = confirm(`Yakin ingin membatalkan pesanan ini? Saldo akan dikembalikan.`);
+        if (!konfirmasi) return;
+
+        const resUpdate = await callCodeOTP('/v1/pesanan/update-status', 'POST', { order_id: orderId, action: action });
+        
+        if (resUpdate.status) {
+            alert(`Pesanan berhasil dibatalkan.`);
+            if (intervalCekSMS) clearInterval(intervalCekSMS);
+            document.getElementById('pesanan-aktif').style.display = 'none';
+            document.getElementById('pesanan-kosong').style.display = 'block';
+            loadSaldo(); // Refresh saldo karena saldo dikembalikan
+        } else {
+            alert("Gagal membatalkan: " + resUpdate.message);
+        }
     }
 
     function tutupLayanan() {
