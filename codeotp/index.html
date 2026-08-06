@@ -425,7 +425,7 @@
                     </div>
                     <div>
                         <div style="color:#ee4d2d; font-weight:bold; margin-bottom:5px;">Rp ${rp}</div>
-                        <button onclick="beliOTP(${harga.operator_id}, ${harga.price})" style="background:#ee4d2d; color:#fff; border:none; padding:5px 15px; border-radius:4px; font-size:12px; cursor:pointer;">Beli</button>
+                        <button onclick="beliOTP('${harga.operator_id}', '${harga.price}')" style="background:#ee4d2d; color:#fff; border:none; padding:5px 15px; border-radius:4px; font-size:12px; cursor:pointer;">Beli</button>
                     </div>
                 </div>`;
             });
@@ -438,7 +438,10 @@
 
     // --- FUNGSI BELI (TOMBOL BELI DIKLIK) ---
     function beliOTP(operatorId, harga) {
-        showConfirm(`Beli OTP seharga Rp ${harga}?`, async function() {
+        const pesanKonfirmasi = `Beli OTP seharga Rp ${harga}?`;
+
+        // Fungsi inti untuk memproses pesanan
+        const eksekusiBeli = async () => {
             if ("Notification" in window && Notification.permission !== "granted") {
                 Notification.requestPermission();
             }
@@ -464,10 +467,26 @@
                 if (resOrder.data && typeof resOrder.data === 'object') {
                     errorMsg += " (Cek Server/Layanan)";
                 }
-                showToast("Gagal: " + errorMsg);
+                
+                // Fallback jika showToast gagal
+                if (typeof showToast === 'function') {
+                    showToast("Gagal: " + errorMsg);
+                } else {
+                    alert("Gagal: " + errorMsg);
+                }
                 document.getElementById('price-container').innerHTML = '<span style="color:red;">Gagal membuat pesanan. Silakan coba lagi.</span>';
             }
-        });
+        };
+
+        // Cek apakah custom modal tersedia, jika tidak gunakan confirm bawaan
+        const modalConfirm = document.getElementById('confirm-modal');
+        if (typeof showConfirm === 'function' && modalConfirm) {
+            showConfirm(pesanKonfirmasi, eksekusiBeli);
+        } else {
+            if (confirm(pesanKonfirmasi)) {
+                eksekusiBeli();
+            }
+        }
     }
 
     // --- TAMPILKAN PESANAN AKTIF ---
