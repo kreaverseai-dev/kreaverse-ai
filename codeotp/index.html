@@ -298,15 +298,21 @@
         document.getElementById('nav-' + halaman).classList.add('active');
     }
 
-    // --- FUNGSI TANGGAL EXPIRED ROBUST (Untuk iOS/Android) ---
+    // --- FUNGSI TANGGAL EXPIRED ROBUST (Untuk iOS/Android/Anti-NaN) ---
     function parseExpiredDate(dateString) {
-        if(!dateString) return new Date().getTime() + (15 * 60000); // Default +15 menit jika kosong
-        // Parsing manual agar jalan di semua HP (Format: 2026-04-08 20:00:00)
-        const parts = dateString.split(/[- :]/);
-        if(parts.length >= 6) {
-            return new Date(parts[0], parts[1]-1, parts[2], parts[3], parts[4], parts[5]).getTime();
+        if (!dateString || dateString === "undefined" || dateString === "null") {
+            return new Date().getTime() + (20 * 60000); 
         }
-        return new Date(dateString.replace(' ', 'T')).getTime(); // Fallback standar
+        try {
+            const parts = dateString.split(/[- :T]/);
+            if (parts.length >= 6) {
+                const d = new Date(parts[0], parts[1]-1, parts[2], parts[3], parts[4], parts[5]).getTime();
+                if (!isNaN(d)) return d;
+            }
+            const dt = new Date(dateString.replace(' ', 'T')).getTime();
+            if (!isNaN(dt)) return dt;
+        } catch (e) {}
+        return new Date().getTime() + (20 * 60000); // Fallback 20 menit
     }
 
     // --- FUNGSI API ---
@@ -332,6 +338,7 @@
     // --- FUNGSI ORDER BAWAH ---
     let layananAktif = "";
     let layananIdAktif = null; 
+    let iconLayananAktif = "";
     
     async function bukaLayanan(namaLayanan, iconUrl) {
         layananAktif = namaLayanan;
@@ -437,15 +444,21 @@
         const resOrder = await callCodeOTP('/v1/pesanan', 'POST', { server_id: serverId, layanan_id: parseInt(layananIdAktif), price_id: parseInt(idHarga) });
         
         if (resOrder.status && resOrder.data && resOrder.data.order_id) { 
-            // Menyimpan ke Array (Bisa banyak pesanan)
             let newOrder = resOrder.data;
             newOrder.nama_layanan = layananAktif;
             newOrder.icon_layanan = iconLayananAktif;
-            newOrder.status_lokal = 'waiting'; // waiting, success, canceled
+            newOrder.status_lokal = 'waiting'; 
+
+            if (!newOrder.expired_at) {
+                const d = new Date();
+                d.setMinutes(d.getMinutes() + 20); 
+                const yr = d.getFullYear(), mt = String(d.getMonth()+1).padStart(2,'0'), dt = String(d.getDate()).padStart(2,'0');
+                const hr = String(d.getHours()).padStart(2,'0'), mn = String(d.getMinutes()).padStart(2,'0'), sc = String(d.getSeconds()).padStart(2,'0');
+                newOrder.expired_at = `${yr}-${mt}-${dt} ${hr}:${mn}:${sc}`;
+            }
             
-            myOrders.unshift(newOrder); // Taruh di paling atas
+            myOrders.unshift(newOrder); 
             simpanKeLocal();
-            
             tutupLayanan();
             renderSemuaPesanan();
             pindahHalaman('pesanan'); 
@@ -490,12 +503,10 @@
             const namaApp = data.nama_layanan || "Layanan OTP";
             const iconApp = data.icon_layanan || "https://upload.wikimedia.org/wikipedia/commons/f/fe/Shopee.svg";
             
-            // Setel status badge
             let statusBadge = `<div class="oc-status status-waiting" id="badge-${data.order_id}">Menunggu SMS... ⏳</div>`;
             if(data.status_lokal === 'success') statusBadge = `<div class="oc-status status-success">✅ Selesai</div>`;
             if(data.status_lokal === 'canceled') statusBadge = `<div class="oc-status status-canceled">❌ Dibatalkan</div>`;
 
-            // Tampilan Kode OTP (Menunggu vs Sudah ada)
             let otpTextHTML = `<span style="font-size: 14px; color: #999; letter-spacing: normal;">Sedang menunggu...</span>`;
             let copyOtpStyle = `display: none;`;
             if (data.status_lokal === 'success' && data.sms_code) {
@@ -505,7 +516,6 @@
                 otpTextHTML = `<span style="font-size: 14px; color: #721c24; letter-spacing: normal;">Pesanan Batal</span>`;
             }
 
-            // Tampilan Tombol Action
             let actionButtons = ``;
             if (data.status_lokal === 'waiting') {
                 actionButtons = `
@@ -516,7 +526,6 @@
                 actionButtons = `<button class="btn-close" onclick="hapusPesananDariLayar('${data.order_id}')">Tutup / Hapus dari Layar</button>`;
             }
 
-            // HTML Kartu Utama
             const cardHTML = `
                 <div class="order-card" id="card-${data.order_id}">
                     <div class="oc-header">
@@ -560,16 +569,16 @@
     setInterval(() => {
         document.querySelectorAll('.timer-element').forEach(el => {
             const status = el.getAttribute('data-status');
-            if (status !== 'waiting') { el.innerText = "-"; return; } // Jika sukses/batal, hilangkan timer
+            if (status !== 'waiting') { el.innerText = "-"; return; } 
             
             const expStr = el.getAttribute('data-expire');
             const expTime = parseExpiredDate(expStr);
             const dist = expTime - new Date().getTime();
 
             if (dist <= 0) {
-                el.innerText = "KADALUARSA";
-                el.style.color = "red";
-                // Kita anggap dibatalkan secara lokal, biarkan sistem cek SMS memastikannya
+                // HAPUS OTOMATIS JIKA WAKTU HABIS (0)
+                const idOrderYgHabis = el.getAttribute('data-id');
+                hapusPesananDariLayar(idOrderYgHabis);
             } else {
                 const m = Math.floor((dist % (1000 * 60 * 60)) / (1000 * 60));
                 const s = Math.floor((dist % (1000 * 60)) / 1000);
@@ -590,9 +599,14 @@
                     order.sms_code = resSMS.data.sms_code;
                     butuhRender = true;
                     if (window.Notification && Notification.permission === "granted") { new Notification("✅ OTP Masuk!", { body: `Layanan: ${order.nama_layanan}\nKode: ${order.sms_code}` }); }
-                } else if (!resSMS.status && (resSMS.message || "").toLowerCase().includes("tidak ditemukan")) {
-                    order.status_lokal = 'canceled'; // Dibatalkan oleh server / expired
-                    butuhRender = true;
+                } else if (!resSMS.status) {
+                    const msgError = (resSMS.message || "").toLowerCase();
+                    // HAPUS OTOMATIS JIKA API MENJAWAB EXPIRED/TIDAK DITEMUKAN/BATAL
+                    if (msgError.includes("tidak ditemukan") || msgError.includes("expired") || msgError.includes("kadaluarsa") || msgError.includes("batal")) {
+                        myOrders.splice(i, 1);
+                        i--; 
+                        butuhRender = true;
+                    }
                 }
             }
         }
@@ -604,16 +618,20 @@
         showToast("Mengecek pesan dari pusat...");
         const resSMS = await callCodeOTP('/v1/pesanan/sms', 'POST', { order_id: orderId });
         let targetOrder = myOrders.find(o => o.order_id === orderId);
+        if(!targetOrder) return;
         
         if (resSMS.status && resSMS.data && resSMS.data.sms_code) {
             targetOrder.status_lokal = 'success';
             targetOrder.sms_code = resSMS.data.sms_code;
             simpanKeLocal(); renderSemuaPesanan(); showToast("✅ OTP Masuk!");
-        } else if (!resSMS.status && (resSMS.message || "").toLowerCase().includes("tidak ditemukan")) {
-            targetOrder.status_lokal = 'canceled';
-            simpanKeLocal(); renderSemuaPesanan(); showToast("Pesanan kadaluarsa/dibatalkan pusat.");
-        } else {
-            showToast("SMS belum masuk, silakan tunggu.");
+        } else if (!resSMS.status) {
+            const msgError = (resSMS.message || "").toLowerCase();
+            if (msgError.includes("tidak ditemukan") || msgError.includes("expired") || msgError.includes("batal")) {
+                hapusPesananDariLayar(orderId);
+                showToast("Pesanan otomatis dihapus karena kadaluarsa/dibatalkan server.");
+            } else {
+                showToast("SMS belum masuk, silakan tunggu.");
+            }
         }
     }
 
@@ -622,12 +640,18 @@
         showConfirm(`Yakin ingin membatalkan pesanan ini? Saldo akan dikembalikan.`, async function() {
             const resUpdate = await callCodeOTP('/v1/pesanan/update-status', 'POST', { order_id: orderId, action: action });
             if (resUpdate.status) {
-                let targetOrder = myOrders.find(o => o.order_id === orderId);
-                targetOrder.status_lokal = 'canceled';
-                simpanKeLocal(); renderSemuaPesanan(); loadSaldo();
+                hapusPesananDariLayar(orderId);
+                loadSaldo();
                 showToast(`Pesanan berhasil dibatalkan.`);
             } else {
-                showToast("Gagal membatalkan: " + (resUpdate.message || "Error server"));
+                const errorApi = (resUpdate.message || "").toLowerCase();
+                // Jika pesanan sudah terlanjur expired saat ditekan tombol batal
+                if(errorApi.includes("expired") || errorApi.includes("tidak ditemukan")) {
+                    hapusPesananDariLayar(orderId);
+                    showToast("Pesanan dihapus. (Sudah kadaluarsa di server pusat)");
+                } else {
+                    showToast("Gagal membatalkan: " + resUpdate.message);
+                }
             }
         });
     }
@@ -637,12 +661,23 @@
         document.getElementById('order-sheet').classList.remove('active');
     }
 
-    // --- ON LOAD APP ---
+    // --- ON LOAD APP (MEMBERSIHKAN BUG NAN SECARA OTOMATIS) ---
     window.onload = () => {
         loadSaldo();
         const savedOrders = localStorage.getItem('listPesananAktif');
         if (savedOrders) {
-            try { myOrders = JSON.parse(savedOrders); renderSemuaPesanan(); } 
+            try { 
+                let parsed = JSON.parse(savedOrders); 
+                const now = new Date().getTime();
+                // Filter: Hanya pertahankan yang waktunya belum habis, dan bukan bug NaN
+                myOrders = parsed.filter(o => {
+                    if (o.status_lokal !== 'waiting') return true;
+                    const exp = parseExpiredDate(o.expired_at);
+                    return exp > now; 
+                });
+                simpanKeLocal();
+                renderSemuaPesanan(); 
+            } 
             catch(e) { localStorage.removeItem('listPesananAktif'); }
         }
     };
