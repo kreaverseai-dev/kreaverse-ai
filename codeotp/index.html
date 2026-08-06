@@ -12,11 +12,16 @@
         /* BINGKAI APLIKASI */
         .app-container { width: 100%; max-width: 480px; background-color: #fff; min-height: 100vh; position: relative; padding-bottom: 60px; box-shadow: 0 0 10px rgba(0,0,0,0.1); overflow-x: hidden; }
 
-        /* HEADER ORANYE KHAS SHOPEE */
+        /* HEADER */
         .header { background: linear-gradient(-180deg,#f53d2d,#f63); padding: 12px 15px; display: flex; align-items: center; gap: 15px; position: sticky; top: 0; z-index: 100; }
         .search-bar { background: #fff; border-radius: 3px; padding: 8px 10px; flex: 1; display: flex; align-items: center; color: #ee4d2d; font-size: 14px; }
         .search-bar span { color: #888; margin-left: 8px; }
         .header-icons { color: white; font-size: 22px; display: flex; gap: 15px; }
+
+        /* HALAMAN (PAGES) */
+        .page { display: none; animation: fadeIn 0.3s; }
+        .page.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
         /* DOMPET / SALDO */
         .wallet-section { display: flex; padding: 12px; background: #fff; border-bottom: 6px solid #f5f5f5; }
@@ -26,11 +31,10 @@
         .wallet-value { font-size: 13px; color: #ee4d2d; font-weight: bold; }
         .wallet-desc { font-size: 10px; color: #888; }
 
-        /* MENU GRID DENGAN LOGO ASLI */
+        /* MENU GRID */
         .menu-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px 10px; padding: 15px; background: #fff; }
         .menu-item { display: flex; flex-direction: column; align-items: center; text-align: center; font-size: 11px; color: #333; cursor: pointer; }
         .menu-icon { width: 45px; height: 45px; border-radius: 15px; background: #f5f5f5; display: flex; justify-content: center; align-items: center; margin-bottom: 5px; border: 1px solid #eee; overflow: hidden; }
-        /* Ukuran gambar logo agar pas di dalam kotak */
         .menu-icon img { width: 28px; height: 28px; object-fit: contain; }
         
         /* BANNER PROMO */
@@ -43,13 +47,26 @@
         .nav-item.active { color: #ee4d2d; }
         .nav-icon { font-size: 20px; margin-bottom: 3px; }
 
-        /* POPUP DISKON */
-        .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 999; display: flex; justify-content: center; align-items: center; }
-        .popup { background: transparent; text-align: center; position: relative; width: 80%; max-width: 300px; }
-        .popup-img { width: 100%; background: linear-gradient(180deg, #ffea00, #ff5722); padding: 30px 20px; border-radius: 15px; color: white; box-shadow: 0 5px 15px rgba(0,0,0,0.3); border: 3px solid white; }
-        .popup-title { font-size: 30px; font-weight: 900; line-height: 1; text-shadow: 2px 2px 0 #d84315; margin-bottom: 10px; }
-        .popup-btn { background: #003c8f; color: white; padding: 10px 20px; border-radius: 20px; font-weight: bold; border: none; width: 100%; font-size: 16px; margin-top: 15px; cursor: pointer; }
-        .close-btn { position: absolute; top: -15px; right: -15px; background: white; color: #333; width: 30px; height: 30px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-weight: bold; cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+        /* CUSTOM BOTTOM SHEET MODAL (Pengganti Alert) */
+        .sheet-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 999; display: none; opacity: 0; transition: opacity 0.3s; }
+        .sheet-overlay.active { display: block; opacity: 1; }
+        
+        .bottom-sheet { position: fixed; bottom: -100%; left: 50%; transform: translateX(-50%); width: 100%; max-width: 480px; background: #fff; border-radius: 20px 20px 0 0; z-index: 1000; transition: bottom 0.3s ease-in-out; padding: 20px; box-shadow: 0 -5px 15px rgba(0,0,0,0.1); max-height: 85vh; overflow-y: auto; }
+        .bottom-sheet.active { bottom: 0; }
+        
+        .sheet-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 1px solid #eee; padding-bottom: 10px; }
+        .sheet-title { font-size: 16px; font-weight: bold; display: flex; align-items: center; gap: 10px; }
+        .sheet-close { font-size: 20px; color: #999; cursor: pointer; font-weight: bold; }
+        
+        /* FORM ORDER DALAM MODAL */
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; font-size: 12px; color: #666; margin-bottom: 5px; }
+        .form-control { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; outline: none; background: #f9f9f9; }
+        .form-control:focus { border-color: #ee4d2d; background: #fff; }
+        
+        /* HALAMAN PESANAN */
+        .empty-state { text-align: center; padding: 50px 20px; color: #888; }
+        .empty-state img { width: 100px; opacity: 0.5; margin-bottom: 15px; }
     </style>
 </head>
 <body>
@@ -66,130 +83,151 @@
         </div>
     </div>
 
-    <!-- WALLET / SALDO -->
-    <div class="wallet-section">
-        <div class="wallet-item">
-            <div class="wallet-title">💳 Saldo OTP</div>
-            <div class="wallet-value" id="saldo-display">Memuat...</div>
-            <div class="wallet-desc" id="nama-display">Tunggu sebentar</div>
+    <!-- ================= HALAMAN BERANDA ================= -->
+    <div id="page-beranda" class="page active">
+        <!-- WALLET / SALDO -->
+        <div class="wallet-section">
+            <div class="wallet-item">
+                <div class="wallet-title">💳 Saldo OTP</div>
+                <div class="wallet-value" id="saldo-display">Memuat...</div>
+                <div class="wallet-desc" id="nama-display">Tunggu sebentar</div>
+            </div>
+            <div class="wallet-item">
+                <div class="wallet-title">🪙 Koin Reward</div>
+                <div class="wallet-value" style="color: #f6a700;">150</div>
+                <div class="wallet-desc">Klaim tiap hari!</div>
+            </div>
         </div>
-        <div class="wallet-item">
-            <div class="wallet-title">🪙 Koin Reward</div>
-            <div class="wallet-value" style="color: #f6a700;">150</div>
-            <div class="wallet-desc">Klaim tiap hari!</div>
+
+        <!-- MENU GRID LAYANAN -->
+        <div class="menu-grid">
+            <div class="menu-item" onclick="bukaLayanan('WhatsApp', 'https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg')">
+                <div class="menu-icon"><img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" alt="WhatsApp"></div>
+                WhatsApp
+            </div>
+            <div class="menu-item" onclick="bukaLayanan('Telegram', 'https://upload.wikimedia.org/wikipedia/commons/8/82/Telegram_logo.svg')">
+                <div class="menu-icon"><img src="https://upload.wikimedia.org/wikipedia/commons/8/82/Telegram_logo.svg" alt="Telegram"></div>
+                Telegram
+            </div>
+            <div class="menu-item" onclick="bukaLayanan('Instagram', 'https://upload.wikimedia.org/wikipedia/commons/e/e7/Instagram_logo_2016.svg')">
+                <div class="menu-icon"><img src="https://upload.wikimedia.org/wikipedia/commons/e/e7/Instagram_logo_2016.svg" alt="Instagram"></div>
+                Instagram
+            </div>
+            <div class="menu-item" onclick="bukaLayanan('Gojek', 'https://upload.wikimedia.org/wikipedia/commons/9/99/Gojek_logo_2019.svg')">
+                <div class="menu-icon"><img src="https://upload.wikimedia.org/wikipedia/commons/9/99/Gojek_logo_2019.svg" alt="Gojek"></div>
+                Gojek
+            </div>
+            <div class="menu-item" onclick="bukaLayanan('Shopee', 'https://upload.wikimedia.org/wikipedia/commons/f/fe/Shopee.svg')">
+                <div class="menu-icon"><img src="https://upload.wikimedia.org/wikipedia/commons/f/fe/Shopee.svg" alt="Shopee"></div>
+                Shopee
+            </div>
+            <div class="menu-item" onclick="bukaLayanan('Facebook', 'https://upload.wikimedia.org/wikipedia/commons/5/51/Facebook_f_logo_%282019%29.svg')">
+                <div class="menu-icon"><img src="https://upload.wikimedia.org/wikipedia/commons/5/51/Facebook_f_logo_%282019%29.svg" alt="Facebook"></div>
+                Facebook
+            </div>
+            <div class="menu-item" onclick="bukaLayanan('YouTube', 'https://upload.wikimedia.org/wikipedia/commons/0/09/YouTube_full-color_icon_%282017%29.svg')">
+                <div class="menu-icon"><img src="https://upload.wikimedia.org/wikipedia/commons/0/09/YouTube_full-color_icon_%282017%29.svg" alt="YouTube"></div>
+                YouTube
+            </div>
+            <div class="menu-item">
+                <div class="menu-icon" style="font-size: 20px;">⚙️</div>
+                Lainnya
+            </div>
+        </div>
+
+        <!-- BANNER -->
+        <div class="banner-container">
+            <div class="banner">🔥 DISKON OTP 50% HARI INI!</div>
         </div>
     </div>
 
-    <!-- MENU GRID LAYANAN (MENGGUNAKAN LOGO ASLI) -->
-    <div class="menu-grid">
-        <div class="menu-item" onclick="bukaLayanan('WhatsApp')">
-            <div class="menu-icon">
-                <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" alt="WhatsApp">
-            </div>
-            WhatsApp
+    <!-- ================= HALAMAN PESANAN ================= -->
+    <div id="page-pesanan" class="page">
+        <div style="padding: 15px; background: #fff; border-bottom: 1px solid #eee; font-weight: bold; color: #ee4d2d;">
+            📋 Pesanan Aktif
         </div>
-        <div class="menu-item" onclick="bukaLayanan('Telegram')">
-            <div class="menu-icon">
-                <img src="https://upload.wikimedia.org/wikipedia/commons/8/82/Telegram_logo.svg" alt="Telegram">
-            </div>
-            Telegram
-        </div>
-        <div class="menu-item" onclick="bukaLayanan('Instagram')">
-            <div class="menu-icon">
-                <img src="https://upload.wikimedia.org/wikipedia/commons/e/e7/Instagram_logo_2016.svg" alt="Instagram">
-            </div>
-            Instagram
-        </div>
-        <div class="menu-item" onclick="bukaLayanan('Gojek')">
-            <div class="menu-icon">
-                <img src="https://upload.wikimedia.org/wikipedia/commons/9/99/Gojek_logo_2019.svg" alt="Gojek">
-            </div>
-            Gojek
-        </div>
-        <div class="menu-item" onclick="bukaLayanan('Shopee')">
-            <div class="menu-icon">
-                <img src="https://upload.wikimedia.org/wikipedia/commons/f/fe/Shopee.svg" alt="Shopee">
-            </div>
-            Shopee
-        </div>
-        <div class="menu-item" onclick="bukaLayanan('Facebook')">
-            <div class="menu-icon">
-                <img src="https://upload.wikimedia.org/wikipedia/commons/5/51/Facebook_f_logo_%282019%29.svg" alt="Facebook">
-            </div>
-            Facebook
-        </div>
-        <div class="menu-item" onclick="bukaLayanan('YouTube')">
-            <div class="menu-icon">
-                <img src="https://upload.wikimedia.org/wikipedia/commons/0/09/YouTube_full-color_icon_%282017%29.svg" alt="YouTube">
-            </div>
-            YouTube
-        </div>
-        <div class="menu-item">
-            <div class="menu-icon" style="font-size: 20px;">
-                ⚙️
-            </div>
-            Lainnya
+        <div class="empty-state">
+            <div style="font-size: 40px; margin-bottom: 10px;">📭</div>
+            <h3>Belum ada pesanan</h3>
+            <p style="font-size: 12px; margin-top: 5px;">Pesan OTP di menu Beranda sekarang!</p>
         </div>
     </div>
 
-    <!-- BANNER -->
-    <div class="banner-container">
-        <div class="banner">
-            🔥 DISKON OTP 50% HARI INI!
-        </div>
-    </div>
-
-    <!-- BOTTOM NAVIGATION -->
+    <!-- ================= BOTTOM NAVIGATION ================= -->
     <div class="bottom-nav">
-        <div class="nav-item active">
+        <div class="nav-item active" id="nav-beranda" onclick="pindahHalaman('beranda')">
             <div class="nav-icon">🏠</div>
             Beranda
         </div>
-        <div class="nav-item">
+        <div class="nav-item" id="nav-pesanan" onclick="pindahHalaman('pesanan')">
             <div class="nav-icon">📋</div>
             Pesanan
         </div>
-        <div class="nav-item">
+        <div class="nav-item" onclick="alert('Fitur Notifikasi segera hadir')">
             <div class="nav-icon">🔔</div>
             Notifikasi
         </div>
-        <div class="nav-item">
+        <div class="nav-item" onclick="alert('Fitur Profil segera hadir')">
             <div class="nav-icon">👤</div>
             Saya
         </div>
     </div>
 
-    <!-- POPUP DISKON -->
-    <div class="overlay" id="promo-popup">
-        <div class="popup">
-            <div class="close-btn" onclick="tutupPopup()">X</div>
-            <div class="popup-img">
-                <div style="font-size: 14px; margin-bottom: 5px;">% Spesial Pengguna Baru</div>
-                <div class="popup-title">DISKON<br>DAHSYAT<br>100%</div>
-                <button class="popup-btn" onclick="tutupPopup()">PAKAI SEKARANG</button>
+    <!-- ================= BOTTOM SHEET MODAL (ORDER) ================= -->
+    <div class="sheet-overlay" id="sheet-overlay" onclick="tutupLayanan()"></div>
+    <div class="bottom-sheet" id="order-sheet">
+        <div class="sheet-header">
+            <div class="sheet-title">
+                <img id="sheet-icon" src="" width="24" height="24" style="object-fit: contain;">
+                Pesan OTP <span id="sheet-layanan-name" style="color: #ee4d2d;"></span>
             </div>
+            <div class="sheet-close" onclick="tutupLayanan()">✕</div>
+        </div>
+        
+        <div class="form-group">
+            <label>1. Pilih Server</label>
+            <select class="form-control" id="select-server">
+                <option value="">Memuat server...</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>2. Pilih Negara</label>
+            <select class="form-control" id="select-negara" disabled>
+                <option value="">Pilih server terlebih dahulu</option>
+            </select>
+        </div>
+
+        <div id="price-container" style="margin-top: 20px; text-align: center; font-size: 12px; color: #888;">
+            Daftar harga akan muncul di sini...
         </div>
     </div>
 
 </div>
 
 <script>
-    // Fungsi Tutup Popup
-    function tutupPopup() {
-        document.getElementById('promo-popup').style.display = 'none';
+    // --- FUNGSI NAVIGASI BAWAH ---
+    function pindahHalaman(halaman) {
+        // Sembunyikan semua halaman
+        document.getElementById('page-beranda').classList.remove('active');
+        document.getElementById('page-pesanan').classList.remove('active');
+        
+        // Hapus warna aktif di menu bawah
+        document.getElementById('nav-beranda').classList.remove('active');
+        document.getElementById('nav-pesanan').classList.remove('active');
+
+        // Tampilkan halaman yang dipilih
+        document.getElementById('page-' + halaman).classList.add('active');
+        document.getElementById('nav-' + halaman).classList.add('active');
     }
 
-    // Fungsi Panggil API Vercel (Backend Anda)
+    // --- FUNGSI API ---
     async function callCodeOTP(endpoint, method = 'POST', payload = {}) {
         try {
             const response = await fetch('/api/codeotp', {
-                method: 'POST', // Ke Vercel tetap POST
+                method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ 
-                    endpoint: endpoint,
-                    apiMethod: method, // Beritahu Vercel untuk pakai POST ke CodeOTP
-                    payload: payload
-                })
+                body: JSON.stringify({ endpoint: endpoint, apiMethod: method, payload: payload })
             });
             return await response.json();
         } catch (error) {
@@ -197,11 +235,9 @@
         }
     }
 
-    // Ambil Saldo Asli dari CodeOTP
+    // --- LOAD SALDO ---
     async function loadSaldo() {
-        // SESUAI DOKUMENTASI: Gunakan POST untuk ambil profil
         const result = await callCodeOTP('/v1/profil', 'POST'); 
-        
         if (result.status && result.data) {
             const saldoFormat = new Intl.NumberFormat('id-ID').format(result.data.balance || 0);
             document.getElementById('saldo-display').innerText = 'Rp ' + saldoFormat;
@@ -209,15 +245,44 @@
         } else {
             document.getElementById('saldo-display').innerText = 'Rp 0';
             document.getElementById('nama-display').innerText = 'Gagal muat API';
-            console.error("Error dari API:", result.message);
         }
     }
 
-    // Fungsi sementara saat logo diklik
-    function bukaLayanan(namaLayanan) {
-        // Nanti di sini kita buat logika untuk memanggil API /v1/server dan /v1/layanan
-        console.log("Membuka layanan: " + namaLayanan);
-        alert("Anda memilih " + namaLayanan + ". Tahap selanjutnya adalah memanggil API /v1/server dan /v1/harga.");
+    // --- FUNGSI BUKA MODAL ORDER ---
+    let layananAktif = "";
+    
+    async function bukaLayanan(namaLayanan, iconUrl) {
+        layananAktif = namaLayanan;
+        
+        // Set UI Modal
+        document.getElementById('sheet-layanan-name').innerText = namaLayanan;
+        document.getElementById('sheet-icon').src = iconUrl;
+        
+        // Tampilkan Modal
+        document.getElementById('sheet-overlay').classList.add('active');
+        document.getElementById('order-sheet').classList.add('active');
+
+        // Reset Dropdown
+        const selectServer = document.getElementById('select-server');
+        selectServer.innerHTML = '<option value="">Memuat server...</option>';
+        document.getElementById('select-negara').innerHTML = '<option value="">Pilih server terlebih dahulu</option>';
+        document.getElementById('select-negara').disabled = true;
+
+        // Panggil API Server
+        const result = await callCodeOTP('/v1/server', 'POST');
+        if (result.status && result.data) {
+            selectServer.innerHTML = '<option value="">-- Pilih Server --</option>';
+            result.data.forEach(server => {
+                selectServer.innerHTML += `<option value="${server.id}">${server.name}</option>`;
+            });
+        } else {
+            selectServer.innerHTML = '<option value="">Gagal memuat server</option>';
+        }
+    }
+
+    function tutupLayanan() {
+        document.getElementById('sheet-overlay').classList.remove('active');
+        document.getElementById('order-sheet').classList.remove('active');
     }
 
     // Jalankan saat web dibuka
