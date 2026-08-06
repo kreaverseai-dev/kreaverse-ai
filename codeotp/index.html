@@ -391,6 +391,10 @@
         
         if (resOrder.status && resOrder.data) {
             tutupLayanan();
+            
+            // SIMPAN KE MEMORI HP (LOCAL STORAGE)
+            localStorage.setItem('pesananAktif', JSON.stringify(resOrder.data));
+            
             tampilkanPesanan(resOrder.data);
             pindahHalaman('pesanan'); // Otomatis pindah ke tab Pesanan
             loadSaldo(); // Update saldo setelah beli
@@ -445,9 +449,21 @@
                 document.getElementById(`sms-${orderId}`).innerText = resSMS.data.sms_code;
                 document.getElementById(`status-${orderId}`).innerText = "✅ Selesai";
                 document.getElementById(`status-${orderId}`).style.color = "#25D366";
-                if (intervalCekSMS) clearInterval(intervalCekSMS); // Hentikan auto-cek jika SMS sudah masuk
+                if (intervalCekSMS) clearInterval(intervalCekSMS);
+                
+                // HAPUS DARI MEMORI KARENA SUDAH SELESAI
+                localStorage.removeItem('pesananAktif'); 
             } else if (!isAuto) {
                 alert("SMS belum masuk, silakan tunggu sebentar lagi.");
+            }
+        } else {
+            // Jika API membalas error (misal: order expired/kadaluarsa)
+            if (resSMS.message && resSMS.message.toLowerCase().includes('tidak ditemukan')) {
+                if (intervalCekSMS) clearInterval(intervalCekSMS);
+                localStorage.removeItem('pesananAktif'); // Hapus dari memori
+                document.getElementById('pesanan-aktif').style.display = 'none';
+                document.getElementById('pesanan-kosong').style.display = 'block';
+                if (!isAuto) alert("Pesanan sudah kadaluarsa atau dibatalkan oleh server.");
             }
         }
     }
@@ -464,6 +480,10 @@
             if (intervalCekSMS) clearInterval(intervalCekSMS);
             document.getElementById('pesanan-aktif').style.display = 'none';
             document.getElementById('pesanan-kosong').style.display = 'block';
+            
+            // HAPUS DARI MEMORI KARENA DIBATALKAN
+            localStorage.removeItem('pesananAktif'); 
+            
             loadSaldo(); // Refresh saldo karena saldo dikembalikan
         } else {
             alert("Gagal membatalkan: " + resUpdate.message);
@@ -478,6 +498,16 @@
     // Jalankan saat web dibuka
     window.onload = () => {
         loadSaldo();
+        
+        // Cek apakah ada pesanan yang belum selesai di memori HP
+        const savedOrder = localStorage.getItem('pesananAktif');
+        if (savedOrder) {
+            const dataOrder = JSON.parse(savedOrder);
+            tampilkanPesanan(dataOrder); // Munculkan lagi di layar
+            
+            // Opsional: Langsung arahkan ke halaman pesanan agar user tahu
+            // pindahHalaman('pesanan'); 
+        }
     };
 </script>
 
