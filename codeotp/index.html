@@ -232,6 +232,14 @@
     </div>
 
     <!-- ================= BOTTOM SHEET MODAL (ORDER) ================= -->
+    <style>
+        .custom-grid { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 5px; }
+        .grid-btn { flex: 1 1 calc(50% - 8px); background: #f9f9f9; border: 1px solid #ddd; padding: 10px; border-radius: 8px; font-size: 13px; color: #333; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: 0.2s; }
+        .grid-btn:active { transform: scale(0.95); }
+        .grid-btn.active { background: #fff0ed; border-color: #ee4d2d; color: #ee4d2d; font-weight: bold; }
+        .op-logo { width: 28px; height: 28px; object-fit: contain; border-radius: 4px; }
+        .op-card { display: flex; justify-content: space-between; align-items: center; padding: 12px; border: 1px solid #eee; border-radius: 10px; margin-top: 10px; background: #fff; text-align: left; box-shadow: 0 2px 5px rgba(0,0,0,0.02); }
+    </style>
     <div class="sheet-overlay" id="sheet-overlay" onclick="tutupLayanan()"></div>
     <div class="bottom-sheet" id="order-sheet">
         <div class="sheet-header">
@@ -241,8 +249,15 @@
             </div>
             <div class="sheet-close" onclick="tutupLayanan()">✕</div>
         </div>
-        <div class="form-group"><label>1. Pilih Server</label><select class="form-control" id="select-server" onchange="pilihServer()"><option value="">Memuat server...</option></select></div>
-        <div class="form-group"><label>2. Pilih Negara</label><input type="text" id="search-negara" class="form-control" placeholder="🔍 Cari negara..." onkeyup="filterNegara()" style="display:none; margin-bottom: 8px;"><select class="form-control" id="select-negara" onchange="pilihNegara()" disabled><option value="">Pilih server terlebih dahulu</option></select></div>
+        <div class="form-group">
+            <label>1. Pilih Server</label>
+            <div id="grid-server" class="custom-grid" data-selected="">Memuat server...</div>
+        </div>
+        <div class="form-group">
+            <label>2. Pilih Negara</label>
+            <input type="text" id="search-negara" class="form-control" placeholder="🔍 Cari negara (Cth: Indo)..." onkeyup="filterNegara()" style="display:none; margin-bottom: 10px;">
+            <div id="grid-negara" class="custom-grid" style="max-height: 180px; overflow-y: auto;">Pilih server terlebih dahulu</div>
+        </div>
         <div id="price-container" style="margin-top: 20px; text-align: center; font-size: 12px; color: #888;">Daftar harga akan muncul di sini...</div>
     </div>
 </div>
@@ -338,11 +353,24 @@
     // --- FUNGSI ORDER BAWAH ---
     let layananAktif = "";
     let layananIdAktif = null; 
-    // Variabel iconLayananAktif dihapus dari sini untuk mencegah error duplikat
+    let negaraIdAktif = null;
+
+    function getOperatorLogo(namaOperator) {
+        const op = namaOperator.toLowerCase();
+        if (op.includes('telkomsel') || op.includes('tsel')) return 'https://upload.wikimedia.org/wikipedia/commons/b/b4/Telkomsel_2021_icon.svg';
+        if (op.includes('indosat') || op.includes('isat')) return 'https://upload.wikimedia.org/wikipedia/commons/9/9d/Logo_Indosat_Ooredoo_Hutchison.svg';
+        if (op.includes('three') || op.includes('tri') || op === '3') return 'https://upload.wikimedia.org/wikipedia/commons/4/40/Three_logo.svg';
+        if (op.includes('axis')) return 'https://upload.wikimedia.org/wikipedia/commons/8/83/Axis_logo_2015.svg';
+        if (op.includes('smartfren')) return 'https://upload.wikimedia.org/wikipedia/commons/e/eb/Smartfren_Logo.svg';
+        if (op.includes('xl')) return 'https://upload.wikimedia.org/wikipedia/en/5/55/XL_Axiata_logo_2016.svg';
+        if (op.includes('by.u') || op.includes('byu')) return 'https://upload.wikimedia.org/wikipedia/commons/1/10/By.U_logo.svg';
+        return 'https://upload.wikimedia.org/wikipedia/commons/d/d5/Globe_icon.svg'; // Default logo internet
+    }
     
     async function bukaLayanan(namaLayanan, iconUrl) {
         layananAktif = namaLayanan;
         layananIdAktif = null;
+        negaraIdAktif = null;
         iconLayananAktif = iconUrl;
         
         document.getElementById('sheet-layanan-name').innerText = namaLayanan;
@@ -350,29 +378,32 @@
         document.getElementById('sheet-overlay').classList.add('active');
         document.getElementById('order-sheet').classList.add('active');
 
-        const selectServer = document.getElementById('select-server');
-        selectServer.innerHTML = '<option value="">Memuat server...</option>';
-        document.getElementById('select-negara').innerHTML = '<option value="">Pilih server terlebih dahulu</option>';
-        document.getElementById('select-negara').disabled = true;
+        const gridServer = document.getElementById('grid-server');
+        gridServer.innerHTML = 'Memuat server...';
+        gridServer.dataset.selected = "";
+        document.getElementById('grid-negara').innerHTML = 'Pilih server terlebih dahulu';
         document.getElementById('search-negara').style.display = 'none';
         document.getElementById('search-negara').value = '';
         document.getElementById('price-container').innerHTML = 'Daftar harga akan muncul di sini...';
 
         const result = await callCodeOTP('/v1/server', 'POST');
         if (result.status && result.data) {
-            selectServer.innerHTML = '<option value="">-- Pilih Server --</option>';
-            result.data.forEach(server => { selectServer.innerHTML += `<option value="${server.id}">${server.name}</option>`; });
-        } else { selectServer.innerHTML = '<option value="">Gagal memuat server</option>'; }
+            gridServer.innerHTML = '';
+            result.data.forEach(server => { 
+                gridServer.innerHTML += `<div class="grid-btn" id="btn-server-${server.id}" onclick="pilihServer('${server.id}')">🖥️ ${server.name}</div>`; 
+            });
+        } else { gridServer.innerHTML = 'Gagal memuat server'; }
     }
 
-    async function pilihServer() {
-        const serverId = document.getElementById('select-server').value;
-        const selectNegara = document.getElementById('select-negara');
+    async function pilihServer(serverId) {
+        document.querySelectorAll('#grid-server .grid-btn').forEach(el => el.classList.remove('active'));
+        document.getElementById('btn-server-' + serverId).classList.add('active');
+        document.getElementById('grid-server').dataset.selected = serverId;
+
+        const gridNegara = document.getElementById('grid-negara');
         const priceContainer = document.getElementById('price-container');
         
-        if (!serverId) { selectNegara.innerHTML = '<option value="">Pilih server</option>'; selectNegara.disabled = true; document.getElementById('search-negara').style.display = 'none'; priceContainer.innerHTML = ''; return; }
-
-        selectNegara.innerHTML = '<option value="">Memuat negara...</option>'; selectNegara.disabled = true;
+        gridNegara.innerHTML = 'Memuat negara...';
         priceContainer.innerHTML = 'Mencari layanan & negara...';
 
         const resLayanan = await callCodeOTP('/v1/layanan', 'POST', { server_id: parseInt(serverId) });
@@ -384,36 +415,60 @@
 
         const resNegara = await callCodeOTP('/v1/negara', 'POST', { server_id: parseInt(serverId), layanan_id: parseInt(layananIdAktif) });
         if (resNegara.status && resNegara.data) {
-            selectNegara.innerHTML = '<option value="">-- Pilih Negara --</option>';
-            resNegara.data.forEach(negara => { selectNegara.innerHTML += `<option value="${negara.id}">${getBendera(negara.name)} ${negara.name}</option>`; });
-            selectNegara.disabled = false;
+            gridNegara.innerHTML = '';
+            resNegara.data.forEach(negara => { 
+                gridNegara.innerHTML += `<div class="grid-btn item-negara" id="btn-negara-${negara.id}" onclick="pilihNegara('${negara.id}')">${getBendera(negara.name)} ${negara.name}</div>`; 
+            });
             document.getElementById('search-negara').style.display = 'block';
             priceContainer.innerHTML = 'Silakan pilih negara untuk melihat harga.';
         }
     }
 
-    async function pilihNegara() {
-        const serverId = document.getElementById('select-server').value;
-        const negaraId = document.getElementById('select-negara').value;
-        const priceContainer = document.getElementById('price-container');
+    function filterNegara() {
+        let input = document.getElementById('search-negara').value.toLowerCase();
+        let items = document.querySelectorAll('.item-negara');
+        items.forEach(item => {
+            let text = item.innerText.toLowerCase();
+            item.style.display = text.includes(input) ? '' : 'none';
+        });
+    }
 
-        if (!negaraId) return;
+    async function pilihNegara(negaraId) {
+        negaraIdAktif = negaraId;
+        const serverId = document.getElementById('grid-server').dataset.selected;
+        
+        document.querySelectorAll('#grid-negara .grid-btn').forEach(el => el.classList.remove('active'));
+        if(document.getElementById('btn-negara-' + negaraId)) {
+            document.getElementById('btn-negara-' + negaraId).classList.add('active');
+        }
+
+        const priceContainer = document.getElementById('price-container');
         priceContainer.innerHTML = 'Memuat harga...';
 
         const resHarga = await callCodeOTP('/v1/harga', 'POST', { server_id: parseInt(serverId), negara_id: parseInt(negaraId), layanan_id: parseInt(layananIdAktif) });
         if (resHarga.status && resHarga.data && resHarga.data.length > 0) {
-            priceContainer.innerHTML = '<div style="text-align:left; margin-top:10px; font-weight:bold; margin-bottom: 5px;">Pilih Operator:</div>';
+            priceContainer.innerHTML = '<div style="text-align:left; margin-top:10px; font-weight:bold; margin-bottom: 5px; color:#333;">Pilih Operator:</div>';
             resHarga.data.forEach(harga => {
                 const rp = new Intl.NumberFormat('id-ID').format(harga.price);
                 const idHargaYgBenar = harga.id || harga.price_id || harga.operator_id;
                 const namaOperator = harga.operator_name || harga.name || 'Operator';
                 const successRate = harga.success_rate ? (parseFloat(harga.success_rate) * 100).toFixed(0) : 0;
+                const logoOp = getOperatorLogo(namaOperator);
 
                 const div = document.createElement('div');
-                div.style = "display:flex; justify-content:space-between; align-items:center; padding:10px; border:1px solid #eee; border-radius:8px; margin-top:8px; background:#fff; text-align:left;";
+                div.className = 'op-card';
                 div.innerHTML = `
-                    <div><div style="font-weight:bold; color:#333; font-size:14px;">${namaOperator}</div><div style="font-size:11px; color:#888;">Stok: ${parseInt(harga.stock)} | Sukses: ${successRate}%</div></div>
-                    <div style="text-align:right;"><div style="color:#ee4d2d; font-weight:bold; margin-bottom:5px;">Rp ${rp}</div><button style="background:#ee4d2d; color:#fff; border:none; padding:5px 15px; border-radius:4px; font-size:12px; cursor:pointer;" onclick="beliOTP('${idHargaYgBenar}', '${harga.price}')">Beli</button></div>
+                    <div style="display:flex; align-items:center; gap:12px;">
+                        <img src="${logoOp}" class="op-logo">
+                        <div>
+                            <div style="font-weight:bold; color:#333; font-size:14px;">${namaOperator}</div>
+                            <div style="font-size:11px; color:#888;">Stok: ${parseInt(harga.stock)} | Sukses: ${successRate}%</div>
+                        </div>
+                    </div>
+                    <div style="text-align:right;">
+                        <div style="color:#ee4d2d; font-weight:bold; margin-bottom:5px; font-size:14px;">Rp ${rp}</div>
+                        <button style="background:#ee4d2d; color:#fff; border:none; padding:6px 16px; border-radius:6px; font-size:12px; cursor:pointer; font-weight:bold;" onclick="beliOTP('${idHargaYgBenar}', '${harga.price}')">Beli</button>
+                    </div>
                 `;
                 priceContainer.appendChild(div);
             });
@@ -426,7 +481,7 @@
                 <h3 style="margin-bottom:10px; color:#856404; font-size:16px;">Konfirmasi Pembelian</h3>
                 <p style="color:#856404; margin-bottom:15px; font-size:14px;">Beli OTP <b>${layananAktif}</b> seharga <b>Rp ${harga}</b>?</p>
                 <div style="display:flex; gap:10px; justify-content:center;">
-                    <button onclick="pilihNegara()" style="flex:1; padding:10px; border:1px solid #ccc; background:#fff; border-radius:8px; font-weight:bold;">Batal</button>
+                    <button onclick="pilihNegara(negaraIdAktif)" style="flex:1; padding:10px; border:1px solid #ccc; background:#fff; border-radius:8px; font-weight:bold;">Batal</button>
                     <button onclick="eksekusiBeli('${idHarga}')" style="flex:1; padding:10px; border:none; background:#ee4d2d; color:#fff; border-radius:8px; font-weight:bold;">Ya, Beli</button>
                 </div>
             </div>
@@ -439,7 +494,7 @@
         const container = document.getElementById('price-container');
         container.innerHTML = '<div style="text-align:center; padding:20px; font-weight:bold; color:#ee4d2d;">Memproses pesanan... ⏳</div>';
 
-        const serverId = parseInt(document.getElementById('select-server').value);
+        const serverId = parseInt(document.getElementById('grid-server').dataset.selected);
         
         const resOrder = await callCodeOTP('/v1/pesanan', 'POST', { server_id: serverId, layanan_id: parseInt(layananIdAktif), price_id: parseInt(idHarga) });
         
@@ -468,7 +523,7 @@
             if (errorText.toLowerCase().includes("provider error") || errorText.toLowerCase().includes("stok")) {
                 errorText = "Maaf, stok nomor ini sedang kosong dari pusat. Silakan coba operator/server lain.";
             }
-            container.innerHTML = `<div style="color:red; text-align:center; padding:20px; background:#ffe6e6; border-radius:10px; margin-top:10px;"><b style="font-size:16px;">Gagal Memesan</b><br><br><span style="font-size:13px;">${errorText}</span><br><br><button onclick="pilihNegara()" style="padding:8px 20px; background:#fff; border:1px solid red; color:red; border-radius:5px; font-weight:bold;">Kembali</button></div>`;
+            container.innerHTML = `<div style="color:red; text-align:center; padding:20px; background:#ffe6e6; border-radius:10px; margin-top:10px;"><b style="font-size:16px;">Gagal Memesan</b><br><br><span style="font-size:13px;">${errorText}</span><br><br><button onclick="pilihNegara(negaraIdAktif)" style="padding:8px 20px; background:#fff; border:1px solid red; color:red; border-radius:5px; font-weight:bold;">Kembali</button></div>`;
         }
     }
 
