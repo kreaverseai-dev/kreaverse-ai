@@ -161,6 +161,25 @@
         </div>
     </div>
 
+    <!-- ================= HALAMAN NOTIFIKASI ================= -->
+    <div id="page-notifikasi" class="page">
+        <div style="padding: 15px; background: #fff; border-bottom: 1px solid #eee; font-weight: bold; color: #ee4d2d;">🔔 Notifikasi</div>
+        <div class="empty-state">
+            <div style="font-size: 40px; margin-bottom: 10px;">🔕</div>
+            <h3>Belum ada notifikasi</h3>
+        </div>
+    </div>
+
+    <!-- ================= HALAMAN PROFIL ================= -->
+    <div id="page-profil" class="page">
+        <div style="padding: 15px; background: #fff; border-bottom: 1px solid #eee; font-weight: bold; color: #ee4d2d;">👤 Profil Saya</div>
+        <div style="padding: 20px; text-align: center; background: #fff; margin-top: 10px;">
+            <div style="width: 80px; height: 80px; background: #f5f5f5; border-radius: 50%; margin: 0 auto 10px; display: flex; justify-content: center; align-items: center; font-size: 30px; border: 2px solid #ee4d2d;">👩</div>
+            <h3 id="profil-nama-lengkap">Memuat...</h3>
+            <p style="color: #888; font-size: 12px; margin-top: 5px;">Member CodeOTP</p>
+        </div>
+    </div>
+
     <!-- ================= BOTTOM NAVIGATION ================= -->
     <div class="bottom-nav">
         <div class="nav-item active" id="nav-beranda" onclick="pindahHalaman('beranda')">
@@ -171,13 +190,27 @@
             <div class="nav-icon">📋</div>
             Pesanan
         </div>
-        <div class="nav-item" onclick="alert('Fitur Notifikasi segera hadir')">
+        <div class="nav-item" id="nav-notifikasi" onclick="pindahHalaman('notifikasi')">
             <div class="nav-icon">🔔</div>
             Notifikasi
         </div>
-        <div class="nav-item" onclick="alert('Fitur Profil segera hadir')">
+        <div class="nav-item" id="nav-profil" onclick="pindahHalaman('profil')">
             <div class="nav-icon">👤</div>
             Saya
+        </div>
+    </div>
+
+    <!-- ================= CUSTOM UI (TOAST & CONFIRM) ================= -->
+    <div id="custom-toast" style="position: fixed; bottom: 70px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.8); color: white; padding: 10px 20px; border-radius: 20px; font-size: 12px; z-index: 9999; display: none; white-space: nowrap; box-shadow: 0 4px 6px rgba(0,0,0,0.3);">Pesan</div>
+    
+    <div class="overlay" id="confirm-modal" style="display:none; z-index: 10000;">
+        <div class="popup" style="background:#fff; padding:20px; border-radius:15px; width:80%; max-width:300px; text-align:center;">
+            <h3 style="margin-bottom:10px; font-size:16px; color:#333;">Konfirmasi</h3>
+            <p id="confirm-msg" style="font-size:14px; color:#666; margin-bottom:20px;"></p>
+            <div style="display:flex; gap:10px;">
+                <button id="btn-cancel" style="flex:1; padding:10px; border:1px solid #ccc; background:#fff; border-radius:8px; font-weight:bold; color:#333;">Batal</button>
+                <button id="btn-ok" style="flex:1; padding:10px; border:none; background:#ee4d2d; color:#fff; border-radius:8px; font-weight:bold;">OK</button>
+            </div>
         </div>
     </div>
 
@@ -214,17 +247,38 @@
 </div>
 
 <script>
+    // --- CUSTOM UI FUNCTIONS ---
+    function showToast(msg) {
+        const toast = document.getElementById('custom-toast');
+        toast.innerText = msg;
+        toast.style.display = 'block';
+        setTimeout(() => { toast.style.display = 'none'; }, 3000);
+    }
+
+    function showConfirm(msg, onConfirm) {
+        document.getElementById('confirm-msg').innerText = msg;
+        document.getElementById('confirm-modal').style.display = 'flex';
+        
+        document.getElementById('btn-cancel').onclick = function() {
+            document.getElementById('confirm-modal').style.display = 'none';
+        };
+        
+        document.getElementById('btn-ok').onclick = function() {
+            document.getElementById('confirm-modal').style.display = 'none';
+            onConfirm();
+        };
+    }
+
     // --- FUNGSI NAVIGASI BAWAH ---
     function pindahHalaman(halaman) {
-        // Sembunyikan semua halaman
-        document.getElementById('page-beranda').classList.remove('active');
-        document.getElementById('page-pesanan').classList.remove('active');
-        
-        // Hapus warna aktif di menu bawah
-        document.getElementById('nav-beranda').classList.remove('active');
-        document.getElementById('nav-pesanan').classList.remove('active');
+        const pages = ['beranda', 'pesanan', 'notifikasi', 'profil'];
+        pages.forEach(p => {
+            const pageEl = document.getElementById('page-' + p);
+            const navEl = document.getElementById('nav-' + p);
+            if (pageEl) pageEl.classList.remove('active');
+            if (navEl) navEl.classList.remove('active');
+        });
 
-        // Tampilkan halaman yang dipilih
         document.getElementById('page-' + halaman).classList.add('active');
         document.getElementById('nav-' + halaman).classList.add('active');
     }
@@ -383,33 +437,37 @@
     }
 
     // --- FUNGSI BELI (TOMBOL BELI DIKLIK) ---
-    async function beliOTP(operatorId, harga) {
-        const konfirmasi = confirm(`Beli OTP seharga Rp ${harga}?`);
-        if (!konfirmasi) return;
+    function beliOTP(operatorId, harga) {
+        showConfirm(`Beli OTP seharga Rp ${harga}?`, async function() {
+            if ("Notification" in window && Notification.permission !== "granted") {
+                Notification.requestPermission();
+            }
 
-        // Minta izin notifikasi ke HP User
-        if ("Notification" in window && Notification.permission !== "granted") {
-            Notification.requestPermission();
-        }
+            document.getElementById('price-container').innerHTML = '<div style="text-align:center; padding:20px;">Memproses pesanan... ⏳</div>';
 
-        document.getElementById('price-container').innerHTML = '<div style="text-align:center; padding:20px;">Memproses pesanan... ⏳</div>';
+            const serverId = document.getElementById('select-server').value;
 
-        // Panggil API Buat Pesanan
-        const resOrder = await callCodeOTP('/v1/pesanan', 'POST', { price_id: operatorId });
-        
-        if (resOrder.status && resOrder.data) {
-            tutupLayanan();
+            const resOrder = await callCodeOTP('/v1/pesanan', 'POST', { 
+                server_id: serverId,
+                layanan_id: layananIdAktif,
+                price_id: operatorId 
+            });
             
-            // SIMPAN KE MEMORI HP (LOCAL STORAGE)
-            localStorage.setItem('pesananAktif', JSON.stringify(resOrder.data));
-            
-            tampilkanPesanan(resOrder.data);
-            pindahHalaman('pesanan'); // Otomatis pindah ke tab Pesanan
-            loadSaldo(); // Update saldo setelah beli
-        } else {
-            alert("Gagal: " + resOrder.message);
-            document.getElementById('price-container').innerHTML = '<span style="color:red;">Gagal membuat pesanan. Silakan coba lagi.</span>';
-        }
+            if (resOrder.status && resOrder.data) {
+                tutupLayanan();
+                localStorage.setItem('pesananAktif', JSON.stringify(resOrder.data));
+                tampilkanPesanan(resOrder.data);
+                pindahHalaman('pesanan'); 
+                loadSaldo(); 
+            } else {
+                let errorMsg = resOrder.message;
+                if (resOrder.data && typeof resOrder.data === 'object') {
+                    errorMsg += " (Cek Server/Layanan)";
+                }
+                showToast("Gagal: " + errorMsg);
+                document.getElementById('price-container').innerHTML = '<span style="color:red;">Gagal membuat pesanan. Silakan coba lagi.</span>';
+            }
+        });
     }
 
     // --- TAMPILKAN PESANAN AKTIF ---
@@ -476,47 +534,40 @@
                 document.getElementById(`status-${orderId}`).style.color = "#25D366";
                 if (intervalCekSMS) clearInterval(intervalCekSMS);
                 
-                // HAPUS DARI MEMORI KARENA SUDAH SELESAI
                 localStorage.removeItem('pesananAktif'); 
-
-                // KIRIM NOTIFIKASI KE HP
                 kirimNotifikasi("✅ OTP Berhasil Masuk!", `Kode OTP Anda: ${resSMS.data.sms_code}`);
-                
+                showToast("OTP Berhasil Masuk!");
             } else if (!isAuto) {
-                alert("SMS belum masuk, silakan tunggu sebentar lagi.");
+                showToast("SMS belum masuk, silakan tunggu sebentar.");
             }
         } else {
-            // Jika API membalas error (misal: order expired/kadaluarsa)
             if (resSMS.message && resSMS.message.toLowerCase().includes('tidak ditemukan')) {
                 if (intervalCekSMS) clearInterval(intervalCekSMS);
-                localStorage.removeItem('pesananAktif'); // Hapus dari memori
+                localStorage.removeItem('pesananAktif'); 
                 document.getElementById('pesanan-aktif').style.display = 'none';
                 document.getElementById('pesanan-kosong').style.display = 'block';
-                if (!isAuto) alert("Pesanan sudah kadaluarsa atau dibatalkan oleh server.");
+                if (!isAuto) showToast("Pesanan kadaluarsa/dibatalkan server.");
             }
         }
     }
 
     // --- UPDATE STATUS (CANCEL) ---
-    async function updateStatus(orderId, action) {
-        const konfirmasi = confirm(`Yakin ingin membatalkan pesanan ini? Saldo akan dikembalikan.`);
-        if (!konfirmasi) return;
-
-        const resUpdate = await callCodeOTP('/v1/pesanan/update-status', 'POST', { order_id: orderId, action: action });
-        
-        if (resUpdate.status) {
-            alert(`Pesanan berhasil dibatalkan.`);
-            if (intervalCekSMS) clearInterval(intervalCekSMS);
-            document.getElementById('pesanan-aktif').style.display = 'none';
-            document.getElementById('pesanan-kosong').style.display = 'block';
+    function updateStatus(orderId, action) {
+        showConfirm(`Yakin ingin membatalkan pesanan ini? Saldo akan dikembalikan.`, async function() {
+            const resUpdate = await callCodeOTP('/v1/pesanan/update-status', 'POST', { order_id: orderId, action: action });
             
-            // HAPUS DARI MEMORI KARENA DIBATALKAN
-            localStorage.removeItem('pesananAktif'); 
-            
-            loadSaldo(); // Refresh saldo karena saldo dikembalikan
-        } else {
-            alert("Gagal membatalkan: " + resUpdate.message);
-        }
+            if (resUpdate.status) {
+                showToast(`Pesanan berhasil dibatalkan.`);
+                if (intervalCekSMS) clearInterval(intervalCekSMS);
+                document.getElementById('pesanan-aktif').style.display = 'none';
+                document.getElementById('pesanan-kosong').style.display = 'block';
+                
+                localStorage.removeItem('pesananAktif'); 
+                loadSaldo(); 
+            } else {
+                showToast("Gagal membatalkan: " + resUpdate.message);
+            }
+        });
     }
 
     function tutupLayanan() {
