@@ -2,116 +2,198 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard OTP Saya</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Shopee OTP</title>
     <style>
-        body { font-family: Arial, sans-serif; padding: 20px; line-height: 1.6; }
-        button { padding: 8px 12px; cursor: pointer; margin-top: 5px; }
-        input { padding: 8px; margin-right: 10px; }
-        .error { color: red; font-weight: bold; }
-        .success { color: green; font-weight: bold; }
+        /* RESET & FONT */
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; }
+        body { background-color: #f5f5f5; color: #333; display: flex; justify-content: center; }
+        
+        /* BINGKAI APLIKASI (Agar di PC tetap seukuran HP) */
+        .app-container { width: 100%; max-width: 480px; background-color: #fff; min-height: 100vh; position: relative; padding-bottom: 60px; box-shadow: 0 0 10px rgba(0,0,0,0.1); overflow-x: hidden; }
+
+        /* HEADER ORANYE KHAS SHOPEE */
+        .header { background: linear-gradient(-180deg,#f53d2d,#f63); padding: 12px 15px; display: flex; align-items: center; gap: 15px; position: sticky; top: 0; z-index: 100; }
+        .search-bar { background: #fff; border-radius: 3px; padding: 8px 10px; flex: 1; display: flex; align-items: center; color: #ee4d2d; font-size: 14px; }
+        .search-bar span { color: #888; margin-left: 8px; }
+        .header-icons { color: white; font-size: 22px; display: flex; gap: 15px; }
+
+        /* DOMPET / SALDO (Mirip ShopeePay) */
+        .wallet-section { display: flex; padding: 12px; background: #fff; border-bottom: 6px solid #f5f5f5; }
+        .wallet-item { flex: 1; display: flex; flex-direction: column; padding: 0 10px; border-right: 1px solid #eee; }
+        .wallet-item:last-child { border-right: none; }
+        .wallet-title { font-size: 12px; color: #333; display: flex; align-items: center; gap: 5px; margin-bottom: 4px; font-weight: bold; }
+        .wallet-value { font-size: 13px; color: #ee4d2d; font-weight: bold; }
+        .wallet-desc { font-size: 10px; color: #888; }
+
+        /* MENU GRID (Mirip menu Pulsa, Keuangan, dll) */
+        .menu-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px 10px; padding: 15px; background: #fff; }
+        .menu-item { display: flex; flex-direction: column; align-items: center; text-align: center; font-size: 11px; color: #333; cursor: pointer; }
+        .menu-icon { width: 45px; height: 45px; border-radius: 15px; background: #f5f5f5; display: flex; justify-content: center; align-items: center; font-size: 24px; margin-bottom: 5px; border: 1px solid #eee; }
+        
+        /* BANNER PROMO */
+        .banner-container { padding: 10px; background: #fff; }
+        .banner { width: 100%; height: 120px; background: linear-gradient(45deg, #ff7337, #ff253a); border-radius: 5px; display: flex; justify-content: center; align-items: center; color: white; font-weight: bold; font-size: 20px; text-shadow: 1px 1px 2px rgba(0,0,0,0.5); }
+
+        /* BOTTOM NAVIGATION (Menu Bawah) */
+        .bottom-nav { position: fixed; bottom: 0; width: 100%; max-width: 480px; background: #fff; display: flex; justify-content: space-around; padding: 8px 0; border-top: 1px solid #ddd; z-index: 100; }
+        .nav-item { display: flex; flex-direction: column; align-items: center; font-size: 10px; color: #999; cursor: pointer; }
+        .nav-item.active { color: #ee4d2d; }
+        .nav-icon { font-size: 20px; margin-bottom: 3px; }
+
+        /* POPUP DISKON (Mirip gambar ke-2 Anda) */
+        .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 999; display: flex; justify-content: center; align-items: center; }
+        .popup { background: transparent; text-align: center; position: relative; width: 80%; max-width: 300px; }
+        .popup-img { width: 100%; background: linear-gradient(180deg, #ffea00, #ff5722); padding: 30px 20px; border-radius: 15px; color: white; box-shadow: 0 5px 15px rgba(0,0,0,0.3); border: 3px solid white; }
+        .popup-title { font-size: 30px; font-weight: 900; line-height: 1; text-shadow: 2px 2px 0 #d84315; margin-bottom: 10px; }
+        .popup-btn { background: #003c8f; color: white; padding: 10px 20px; border-radius: 20px; font-weight: bold; border: none; width: 100%; font-size: 16px; margin-top: 15px; cursor: pointer; }
+        .close-btn { position: absolute; top: -15px; right: -15px; background: white; color: #333; width: 30px; height: 30px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-weight: bold; cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
     </style>
 </head>
 <body>
-    <h1>Dashboard OTP Saya</h1>
+
+<div class="app-container">
     
-    <!-- Menampilkan Profil & Saldo -->
-    <div id="profil-info"><i>Loading saldo...</i></div>
-    <button onclick="cekProfil()">Refresh Saldo</button>
+    <!-- HEADER -->
+    <div class="header">
+        <div class="search-bar">
+            🔍 <span>Cari Layanan OTP (Contoh: WhatsApp)...</span>
+        </div>
+        <div class="header-icons">
+            🛒 💬
+        </div>
+    </div>
 
-    <hr>
+    <!-- WALLET / SALDO -->
+    <div class="wallet-section">
+        <div class="wallet-item">
+            <div class="wallet-title">💳 Saldo OTP</div>
+            <div class="wallet-value" id="saldo-display">Rp ...</div>
+            <div class="wallet-desc" id="nama-display">Loading...</div>
+        </div>
+        <div class="wallet-item">
+            <div class="wallet-title">🪙 Koin Reward</div>
+            <div class="wallet-value" style="color: #f6a700;">150</div>
+            <div class="wallet-desc">Klaim tiap hari!</div>
+        </div>
+    </div>
 
-    <!-- Form Beli Nomor -->
-    <h3>Beli Nomor Cepat</h3>
-    <input type="number" id="input-price-id" placeholder="Masukkan Price ID (Contoh: 12)">
-    <button onclick="buatPesanan()">Beli Nomor Sekarang</button>
+    <!-- MENU GRID LAYANAN -->
+    <div class="menu-grid">
+        <div class="menu-item" onclick="alert('Fitur WhatsApp segera hadir!')">
+            <div class="menu-icon" style="color: #25D366;">💬</div>
+            WhatsApp
+        </div>
+        <div class="menu-item">
+            <div class="menu-icon" style="color: #0088cc;">✈️</div>
+            Telegram
+        </div>
+        <div class="menu-item">
+            <div class="menu-icon" style="color: #E1306C;">📸</div>
+            Instagram
+        </div>
+        <div class="menu-item">
+            <div class="menu-icon" style="color: #00aa13;">🏍️</div>
+            Gojek
+        </div>
+        <div class="menu-item">
+            <div class="menu-icon" style="color: #ee4d2d;">🛍️</div>
+            Shopee
+        </div>
+        <div class="menu-item">
+            <div class="menu-icon" style="color: #1877F2;">📘</div>
+            Facebook
+        </div>
+        <div class="menu-item">
+            <div class="menu-icon" style="color: #FF0000;">▶️</div>
+            YouTube
+        </div>
+        <div class="menu-item">
+            <div class="menu-icon" style="color: #ee4d2d;">⚙️</div>
+            Lihat Semua
+        </div>
+    </div>
 
-    <div id="hasil-pesanan" style="margin-top: 20px; font-weight: bold; color: blue;"></div>
-    <div id="status-sms" style="margin-top: 10px; color: green;"></div>
+    <!-- BANNER -->
+    <div class="banner-container">
+        <div class="banner">
+            🔥 DISKON OTP 50% HARI INI!
+        </div>
+    </div>
 
-    <!-- SCRIPT JAVASCRIPT DISATUKAN DI SINI -->
-    <script>
-        // Fungsi utama untuk menembak API Vercel (Backend)
-        async function callCodeOTP(endpoint, payload = null) {
-            try {
-                const response = await fetch('/api/codeotp', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ 
-                        endpoint: endpoint, 
-                        payload: payload 
-                    })
-                });
-                
-                // Jika Vercel error (misal file api/codeotp.js tidak ada / error 404 / 500)
-                if (!response.ok) {
-                    const errText = await response.text();
-                    throw new Error(`Sistem Error (${response.status}): ${errText}`);
-                }
-                
-                return await response.json();
-            } catch (error) {
-                console.error("Error Fetch:", error);
-                return { status: false, message: error.message };
-            }
+    <!-- BOTTOM NAVIGATION -->
+    <div class="bottom-nav">
+        <div class="nav-item active">
+            <div class="nav-icon">🏠</div>
+            Beranda
+        </div>
+        <div class="nav-item">
+            <div class="nav-icon">📋</div>
+            Pesanan
+        </div>
+        <div class="nav-item">
+            <div class="nav-icon">🔔</div>
+            Notifikasi
+        </div>
+        <div class="nav-item">
+            <div class="nav-icon">👤</div>
+            Saya
+        </div>
+    </div>
+
+    <!-- POPUP DISKON -->
+    <div class="overlay" id="promo-popup">
+        <div class="popup">
+            <div class="close-btn" onclick="tutupPopup()">X</div>
+            <div class="popup-img">
+                <div style="font-size: 14px; margin-bottom: 5px;">% Spesial Pengguna Baru</div>
+                <div class="popup-title">DISKON<br>DAHSYAT<br>100%</div>
+                <button class="popup-btn" onclick="tutupPopup()">PAKAI SEKARANG</button>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    // Fungsi Tutup Popup
+    function tutupPopup() {
+        document.getElementById('promo-popup').style.display = 'none';
+    }
+
+    // Fungsi Panggil API Vercel (Backend Anda)
+    async function callCodeOTP(endpoint) {
+        try {
+            const response = await fetch('/api/codeotp', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ endpoint: endpoint })
+            });
+            return await response.json();
+        } catch (error) {
+            return { status: false };
         }
+    }
 
-        // 1. Fungsi Cek Profil & Saldo
-        async function cekProfil() {
-            const infoDiv = document.getElementById('profil-info');
-            infoDiv.innerHTML = "<i>Sedang mengecek saldo ke server...</i>";
-            
-            const result = await callCodeOTP('/v1/profil');
-            
-            if (result.status) {
-                infoDiv.innerHTML = `<span class="success">Halo ${result.data.name}, Saldo Anda: Rp ${result.data.balance}</span>`;
-            } else {
-                infoDiv.innerHTML = `<span class="error">Gagal memuat saldo: ${result.message}</span>`;
-            }
+    // Ambil Saldo Asli dari CodeOTP
+    async function loadSaldo() {
+        const result = await callCodeOTP('/v1/profil');
+        if (result.status) {
+            // Format angka jadi Rupiah (contoh: 2140 -> 2.140)
+            const saldoFormat = new Intl.NumberFormat('id-ID').format(result.data.balance);
+            document.getElementById('saldo-display').innerText = 'Rp ' + saldoFormat;
+            document.getElementById('nama-display').innerText = result.data.name;
+        } else {
+            document.getElementById('saldo-display').innerText = 'Rp 0';
+            document.getElementById('nama-display').innerText = 'Gagal muat';
         }
+    }
 
-        // 2. Fungsi Buat Pesanan
-        async function buatPesanan() {
-            const priceId = document.getElementById('input-price-id').value;
-            if (!priceId) return alert("Masukkan Price ID dulu!");
+    // Jalankan saat web dibuka
+    window.onload = () => {
+        loadSaldo();
+    };
+</script>
 
-            document.getElementById('hasil-pesanan').innerText = "Sedang memesan nomor...";
-            document.getElementById('status-sms').innerText = "";
-            
-            const result = await callCodeOTP('/v1/pesanan', { price_id: parseInt(priceId) });
-
-            if (result.status) {
-                const orderData = result.data;
-                document.getElementById('hasil-pesanan').innerText = 
-                    `Berhasil! Nomor Anda: ${orderData.phone} (Order ID: ${orderData.order_id})`;
-                
-                // Mulai mengecek SMS
-                cekSmsBerkala(orderData.order_id);
-            } else {
-                document.getElementById('hasil-pesanan').innerHTML = `<span class="error">Gagal: ${result.message}</span>`;
-            }
-        }
-
-        // 3. Fungsi Cek SMS Otomatis
-        let intervalCekSms;
-        async function cekSmsBerkala(orderId) {
-            document.getElementById('status-sms').innerText = "Menunggu SMS masuk... ⏳";
-            
-            intervalCekSms = setInterval(async () => {
-                const result = await callCodeOTP('/v1/pesanan/sms', { order_id: orderId });
-                
-                if (result.status && result.data.status === "success") {
-                    document.getElementById('status-sms').innerText = 
-                        `🎉 SMS MASUK! Kode OTP Anda: ${result.data.sms_code}`;
-                    clearInterval(intervalCekSms); // Hentikan pengecekan
-                }
-            }, 5000); // Cek setiap 5 detik
-        }
-
-        // Jalankan cek profil otomatis saat halaman web selesai dimuat
-        window.onload = () => {
-            cekProfil();
-        };
-    </script>
 </body>
 </html>
