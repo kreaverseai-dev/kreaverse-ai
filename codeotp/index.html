@@ -8,10 +8,19 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>Shopee OTP</title>
     <style>
-        /* RESET & FONT */
+        /* RESET, FONT & ANTI-COPY (Agar mirip Aplikasi) */
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; }
-        body { background-color: #f5f5f5; color: #333; display: flex; justify-content: center; }
         
+        body { 
+            background-color: #f5f5f5; color: #333; display: flex; justify-content: center; 
+            -webkit-user-select: none; /* Safari */
+            -ms-user-select: none; /* IE 10 and IE 11 */
+            user-select: none; /* Standard syntax */
+        }
+        
+        /* Izinkan select teks HANYA pada input dan area OTP */
+        input, select, textarea, .allow-select { user-select: text; -webkit-user-select: text; }
+
         /* BINGKAI APLIKASI */
         .app-container { width: 100%; max-width: 480px; background-color: #fff; min-height: 100vh; position: relative; padding-bottom: 60px; box-shadow: 0 0 10px rgba(0,0,0,0.1); overflow-x: hidden; }
 
@@ -70,6 +79,10 @@
         /* HALAMAN PESANAN */
         .empty-state { text-align: center; padding: 50px 20px; color: #888; }
         .empty-state img { width: 100px; opacity: 0.5; margin-bottom: 15px; }
+
+        /* TOMBOL COPY */
+        .btn-copy { background: #f0f0f0; border: 1px solid #ddd; padding: 5px 10px; border-radius: 5px; font-size: 12px; cursor: pointer; color: #333; display: inline-flex; align-items: center; gap: 5px; }
+        .btn-copy:active { background: #e0e0e0; }
     </style>
 </head>
 <body>
@@ -203,7 +216,7 @@
     <!-- ================= CUSTOM UI (TOAST & CONFIRM) ================= -->
     <div id="custom-toast" style="position: fixed; bottom: 70px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.8); color: white; padding: 10px 20px; border-radius: 20px; font-size: 12px; z-index: 9999; display: none; white-space: nowrap; box-shadow: 0 4px 6px rgba(0,0,0,0.3);">Pesan</div>
     
-    <div class="overlay" id="confirm-modal" style="display:none; z-index: 10000;">
+    <div class="overlay" id="confirm-modal" style="display:none; z-index: 10000; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); align-items: center; justify-content: center;">
         <div class="popup" style="background:#fff; padding:20px; border-radius:15px; width:80%; max-width:300px; text-align:center;">
             <h3 style="margin-bottom:10px; font-size:16px; color:#333;">Konfirmasi</h3>
             <p id="confirm-msg" style="font-size:14px; color:#666; margin-bottom:20px;"></p>
@@ -234,6 +247,8 @@
 
         <div class="form-group">
             <label>2. Pilih Negara</label>
+            <!-- Fitur Pencarian Negara -->
+            <input type="text" id="search-negara" class="form-control" placeholder="🔍 Cari negara..." onkeyup="filterNegara()" style="display:none; margin-bottom: 8px;">
             <select class="form-control" id="select-negara" onchange="pilihNegara()" disabled>
                 <option value="">Pilih server terlebih dahulu</option>
             </select>
@@ -269,6 +284,40 @@
         };
     }
 
+    // --- FITUR COPY TEXT ---
+    function salinTeks(teks, tipe) {
+        navigator.clipboard.writeText(teks).then(() => {
+            showToast("📋 " + tipe + " berhasil disalin!");
+        }).catch(() => {
+            showToast("Gagal menyalin text");
+        });
+    }
+
+    // --- FUNGSI BENDERA NEGARA ---
+    function getBendera(namaNegara) {
+        const flags = {
+            "indonesia": "🇮🇩", "malaysia": "🇲🇾", "thailand": "🇹🇭", "vietnam": "🇻🇳",
+            "philippines": "🇵🇭", "singapore": "🇸🇬", "usa": "🇺🇸", "united kingdom": "🇬🇧",
+            "china": "🇨🇳", "japan": "🇯🇵", "korea": "🇰🇷", "india": "🇮🇳", "brazil": "🇧🇷",
+            "russia": "🇷🇺", "germany": "🇩🇪", "france": "🇫🇷", "spain": "🇪🇸", "italy": "🇮🇹"
+        };
+        const n = namaNegara.toLowerCase();
+        for (let key in flags) {
+            if (n.includes(key)) return flags[key];
+        }
+        return "🌐"; // Default bendera jika tidak ditemukan
+    }
+
+    // --- FUNGSI CARI NEGARA ---
+    function filterNegara() {
+        let input = document.getElementById('search-negara').value.toLowerCase();
+        let options = document.getElementById('select-negara').options;
+        for (let i = 1; i < options.length; i++) { 
+            let text = options[i].text.toLowerCase();
+            options[i].style.display = text.includes(input) ? '' : 'none';
+        }
+    }
+
     // --- FUNGSI NAVIGASI BAWAH ---
     function pindahHalaman(halaman) {
         const pages = ['beranda', 'pesanan', 'notifikasi', 'profil'];
@@ -291,7 +340,7 @@
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ endpoint: endpoint, apiMethod: method, payload: payload })
             });
-            return await response.json();
+            return await response.json(); 
         } catch (error) {
             return { status: false, message: error.message };
         }
@@ -312,33 +361,34 @@
 
     // --- FUNGSI BUKA MODAL ORDER ---
     let layananAktif = "";
-    let layananIdAktif = null; // Menyimpan ID layanan
+    let layananIdAktif = null; 
     
     async function bukaLayanan(namaLayanan, iconUrl) {
         layananAktif = namaLayanan;
         layananIdAktif = null;
         
-        // Set UI Modal
         document.getElementById('sheet-layanan-name').innerText = namaLayanan;
         document.getElementById('sheet-icon').src = iconUrl;
         
-        // Tampilkan Modal
         document.getElementById('sheet-overlay').classList.add('active');
         document.getElementById('order-sheet').classList.add('active');
 
-        // Reset Dropdown & Harga
         const selectServer = document.getElementById('select-server');
         selectServer.innerHTML = '<option value="">Memuat server...</option>';
         document.getElementById('select-negara').innerHTML = '<option value="">Pilih server terlebih dahulu</option>';
         document.getElementById('select-negara').disabled = true;
+        document.getElementById('search-negara').style.display = 'none'; // Sembunyikan pencarian dulu
+        document.getElementById('search-negara').value = '';
         document.getElementById('price-container').innerHTML = 'Daftar harga akan muncul di sini...';
 
-        // Panggil API Server
         const result = await callCodeOTP('/v1/server', 'POST');
         if (result.status && result.data) {
             selectServer.innerHTML = '<option value="">-- Pilih Server --</option>';
             result.data.forEach(server => {
-                selectServer.innerHTML += `<option value="${server.id}">${server.name}</option>`;
+                const opt = document.createElement('option');
+                opt.value = server.id;
+                opt.textContent = server.name;
+                selectServer.appendChild(opt);
             });
         } else {
             selectServer.innerHTML = '<option value="">Gagal memuat server</option>';
@@ -349,34 +399,39 @@
     async function pilihServer() {
         const serverId = document.getElementById('select-server').value;
         const selectNegara = document.getElementById('select-negara');
+        const searchNegara = document.getElementById('search-negara');
         const priceContainer = document.getElementById('price-container');
         
         if (!serverId) {
             selectNegara.innerHTML = '<option value="">Pilih server terlebih dahulu</option>';
             selectNegara.disabled = true;
+            searchNegara.style.display = 'none';
             priceContainer.innerHTML = 'Daftar harga akan muncul di sini...';
             return;
         }
 
         selectNegara.innerHTML = '<option value="">Memuat negara...</option>';
         selectNegara.disabled = true;
-        priceContainer.innerHTML = 'Mencari layanan...';
+        searchNegara.style.display = 'none';
+        priceContainer.innerHTML = 'Mencari layanan & negara...';
 
-        // 1. Cari ID Layanan (Gunakan parseInt agar API menerima sebagai Angka)
+        // 1. Cari ID Layanan
         const resLayanan = await callCodeOTP('/v1/layanan', 'POST', { server_id: parseInt(serverId) });
         if (resLayanan.status && resLayanan.data) {
-            // Gunakan includes agar lebih fleksibel (misal "Shopee" cocok dengan "Shopee OTP")
             const layanan = resLayanan.data.find(l => l.name.toLowerCase().includes(layananAktif.toLowerCase()));
             if (layanan) {
                 layananIdAktif = layanan.id;
             } else {
                 selectNegara.innerHTML = '<option value="">Layanan tidak tersedia</option>';
-                priceContainer.innerHTML = `<span style="color:red;">Layanan ${layananAktif} tidak ada di server ini.</span>`;
+                priceContainer.innerHTML = `<span style="color:red;">Layanan ${layananAktif} tidak tersedia di server ini.</span>`;
                 return;
             }
+        } else {
+            selectNegara.innerHTML = '<option value="">Gagal memuat layanan</option>';
+            return;
         }
 
-        // 2. Ambil daftar Negara (Gunakan parseInt)
+        // 2. Load Negara (Sertakan layanan_id agar server CodeOTP memfilter)
         const resNegara = await callCodeOTP('/v1/negara', 'POST', { 
             server_id: parseInt(serverId), 
             layanan_id: parseInt(layananIdAktif) 
@@ -385,9 +440,14 @@
         if (resNegara.status && resNegara.data) {
             selectNegara.innerHTML = '<option value="">-- Pilih Negara --</option>';
             resNegara.data.forEach(negara => {
-                selectNegara.innerHTML += `<option value="${negara.id}">${negara.name}</option>`;
+                const opt = document.createElement('option');
+                opt.value = negara.id;
+                const bendera = getBendera(negara.name);
+                opt.textContent = `${bendera} ${negara.name}`;
+                selectNegara.appendChild(opt);
             });
             selectNegara.disabled = false;
+            searchNegara.style.display = 'block'; // Tampilkan pencarian negara
             priceContainer.innerHTML = 'Silakan pilih negara untuk melihat harga.';
         } else {
             selectNegara.innerHTML = '<option value="">Gagal memuat negara</option>';
@@ -415,53 +475,62 @@
         });
 
         if (resHarga.status && resHarga.data && resHarga.data.length > 0) {
-            let htmlHarga = '<div style="text-align:left; margin-top:10px;"><strong>Pilih Operator:</strong><br>';
+            priceContainer.innerHTML = '';
+            
+            const title = document.createElement('div');
+            title.style = "text-align:left; margin-top:10px; font-weight:bold; margin-bottom: 5px;";
+            title.textContent = "Pilih Operator:";
+            priceContainer.appendChild(title);
+
             resHarga.data.forEach(harga => {
                 const rp = new Intl.NumberFormat('id-ID').format(harga.price);
-                
-                // PERBAIKAN: Kita deteksi otomatis ID mana yang dipakai oleh server (bisa id, price_id, atau operator_id)
                 const idHargaYgBenar = harga.id || harga.price_id || harga.operator_id;
-                
-                // Mencegah error jika operator_name kosong
                 const namaOperator = harga.operator_name || harga.name || 'Operator';
                 const successRate = harga.success_rate ? (parseFloat(harga.success_rate) * 100).toFixed(0) : 0;
 
-                htmlHarga += `
-                <div style="display:flex; justify-content:space-between; align-items:center; padding:10px; border:1px solid #eee; border-radius:8px; margin-top:8px; background:#fff;">
+                const div = document.createElement('div');
+                div.style = "display:flex; justify-content:space-between; align-items:center; padding:10px; border:1px solid #eee; border-radius:8px; margin-top:8px; background:#fff; text-align:left;";
+                
+                div.innerHTML = `
                     <div>
-                        <div style="font-weight:bold; color:#333; font-size:14px;">${namaOperator}</div>
-                        <div style="font-size:11px; color:#888;">Stok: ${harga.stock} | Sukses: ${successRate}%</div>
+                        <div style="font-weight:bold; color:#333; font-size:14px;" class="op-name"></div>
+                        <div style="font-size:11px; color:#888;">Stok: ${parseInt(harga.stock)} | Sukses: ${successRate}%</div>
                     </div>
-                    <div>
+                    <div style="text-align:right;">
                         <div style="color:#ee4d2d; font-weight:bold; margin-bottom:5px;">Rp ${rp}</div>
-                        <button onclick="beliOTP('${idHargaYgBenar}', '${harga.price}')" style="background:#ee4d2d; color:#fff; border:none; padding:5px 15px; border-radius:4px; font-size:12px; cursor:pointer;">Beli</button>
+                        <button class="btn-beli" style="background:#ee4d2d; color:#fff; border:none; padding:5px 15px; border-radius:4px; font-size:12px; cursor:pointer;">Beli</button>
                     </div>
-                </div>`;
+                `;
+                
+                div.querySelector('.op-name').textContent = namaOperator;
+                div.querySelector('.btn-beli').onclick = () => beliOTP(idHargaYgBenar, harga.price);
+                
+                priceContainer.appendChild(div);
             });
-            htmlHarga += '</div>';
-            priceContainer.innerHTML = htmlHarga;
         } else {
-            priceContainer.innerHTML = '<span style="color:red;">Harga/Stok tidak tersedia untuk negara ini.</span>';
+            priceContainer.innerHTML = '<span style="color:red;">Stok nomor untuk negara ini sedang kosong.</span>';
         }
     }
 
-    // --- FUNGSI BELI (TOMBOL BELI DIKLIK) ---
+    // --- FUNGSI BELI ---
     function beliOTP(idHarga, harga) {
         const container = document.getElementById('price-container');
         container.innerHTML = `
             <div style="text-align:center; padding:20px; background:#fff3cd; border-radius:10px; border:1px solid #ffeeba; margin-top:10px;">
                 <h3 style="margin-bottom:10px; color:#856404; font-size:16px;">Konfirmasi Pembelian</h3>
-                <p style="color:#856404; margin-bottom:15px; font-size:14px;">Beli OTP seharga <b>Rp ${harga}</b>?</p>
+                <p style="color:#856404; margin-bottom:15px; font-size:14px;">Beli OTP untuk <b>${layananAktif}</b> seharga <b>Rp ${harga}</b>?</p>
                 <div style="display:flex; gap:10px; justify-content:center;">
                     <button onclick="pilihNegara()" style="flex:1; padding:10px; border:1px solid #ccc; background:#fff; border-radius:8px; cursor:pointer; font-weight:bold; color:#333;">Batal</button>
-                    <button onclick="eksekusiBeli('${idHarga}')" style="flex:1; padding:10px; border:none; background:#ee4d2d; color:#fff; border-radius:8px; cursor:pointer; font-weight:bold;">Ya, Beli</button>
+                    <button id="btn-eksekusi" style="flex:1; padding:10px; border:none; background:#ee4d2d; color:#fff; border-radius:8px; cursor:pointer; font-weight:bold;">Ya, Beli</button>
                 </div>
             </div>
         `;
+        document.getElementById('btn-eksekusi').onclick = () => eksekusiBeli(idHarga);
     }
 
     async function eksekusiBeli(idHarga) {
-        if ("Notification" in window && Notification.permission !== "granted") {
+        // Minta Izin Notifikasi jika belum
+        if ("Notification" in window && Notification.permission !== "granted" && Notification.permission !== "denied") {
             Notification.requestPermission();
         }
 
@@ -470,12 +539,7 @@
 
         const serverId = parseInt(document.getElementById('select-server').value);
         const layananId = parseInt(layananIdAktif);
-        const priceId = parseInt(idHarga); // Memastikan yang dikirim adalah ID Harga yang benar
-
-        if (!layananId) {
-            container.innerHTML = '<div style="color:red; text-align:center; padding:20px;"><b>Gagal:</b> ID Layanan tidak ditemukan. Coba pilih server lain.</div>';
-            return;
-        }
+        const priceId = parseInt(idHarga); 
 
         const resOrder = await callCodeOTP('/v1/pesanan', 'POST', { 
             server_id: serverId,
@@ -483,83 +547,162 @@
             price_id: priceId 
         });
         
-        if (resOrder.status && resOrder.data && resOrder.data.order_id) { // Ditambah cek order_id
+        if (resOrder.status && resOrder.data && resOrder.data.order_id) { 
+            // Sisipkan nama aplikasi/layanan ke data sebelum disimpan
+            resOrder.data.nama_layanan = layananAktif; 
+
             tutupLayanan();
             localStorage.setItem('pesananAktif', JSON.stringify(resOrder.data));
             tampilkanPesanan(resOrder.data);
             pindahHalaman('pesanan'); 
             loadSaldo(); 
         } else {
-            // Mempercantik pesan error agar tidak muncul format JSON kasar seperti di gambar
             let errorText = resOrder.message || "Terjadi kesalahan server";
             
-            // Jika ada detail error dari validasi, kita ambil pesannya
-            if (resOrder.data) {
-                if (resOrder.data.price_id) errorText = "Mohon maaf, layanan sedang gangguan (ID Harga tidak valid dari pusat).";
+            // PERBAIKAN PESAN ERROR (Lebih Profesional)
+            const errStr = errorText.toLowerCase();
+            if (errStr.includes("provider error") || errStr.includes("tidak tersedia") || errStr.includes("stok")) {
+                errorText = "Maaf, stok nomor untuk operator ini sedang kosong dari pusat. Silakan coba operator atau server lain.";
+            } else if (resOrder.data) {
+                if (resOrder.data.price_id) errorText = "Mohon maaf, layanan sedang gangguan (ID Harga tidak valid).";
                 else if (resOrder.data.server_id) errorText = resOrder.data.server_id[0];
-                else if (resOrder.data.layanan_id) errorText = resOrder.data.layanan_id[0];
             }
 
             container.innerHTML = `
                 <div style="color:red; text-align:center; padding:20px; background:#ffe6e6; border-radius:10px; margin-top:10px;">
                     <b style="font-size:16px;">Gagal Memesan</b><br><br>
-                    <span style="font-size:13px;">${errorText}</span><br><br>
+                    <span style="font-size:13px;" id="err-text"></span><br><br>
                     <button onclick="pilihNegara()" style="padding:8px 20px; background:#fff; border:1px solid red; color:red; border-radius:5px; cursor:pointer; font-weight:bold;">Kembali</button>
                 </div>
             `;
+            document.getElementById('err-text').innerText = errorText;
         }
     }
 
     // --- TAMPILKAN PESANAN AKTIF ---
     let intervalCekSMS = null;
+    let intervalTimer = null;
 
     function tampilkanPesanan(data) {
         document.getElementById('pesanan-kosong').style.display = 'none';
         const pesananAktif = document.getElementById('pesanan-aktif');
         pesananAktif.style.display = 'block';
 
+        const phone = ("+" + data.phone).replace(/[^0-9+]/g, ''); 
+        const hargaFmt = new Intl.NumberFormat('id-ID').format(data.price || 0);
+        const namaApp = data.nama_layanan || "Layanan OTP";
+
         pesananAktif.innerHTML = `
             <div style="background: #fff; padding: 15px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); border: 1px solid #eee;">
-                <div style="display: flex; justify-content: space-between; border-bottom: 1px solid #eee; padding-bottom: 10px; margin-bottom: 10px;">
-                    <span style="font-size: 12px; color: #888;">ID: ${data.order_id}</span>
-                    <span style="font-size: 12px; font-weight: bold; color: #f6a700;" id="status-${data.order_id}">Menunggu SMS... ⏳</span>
-                </div>
-                <div style="text-align: center; margin: 20px 0;">
-                    <div style="font-size: 12px; color: #888; margin-bottom: 5px;">Nomor HP Anda:</div>
-                    <div style="font-size: 24px; font-weight: bold; color: #333; letter-spacing: 1px;">+${data.phone}</div>
-                </div>
-                <div style="text-align: center; margin: 20px 0; background: #f9f9f9; padding: 15px; border-radius: 8px; border: 1px dashed #ccc;">
-                    <div style="font-size: 12px; color: #888; margin-bottom: 5px;">Kode OTP:</div>
-                    <div id="sms-${data.order_id}" style="font-size: 28px; font-weight: bold; color: #ee4d2d; letter-spacing: 3px;">
-                        <span style="font-size: 14px; color: #999; letter-spacing: normal;">Sedang menunggu...</span>
+                
+                <!-- Detail Info -->
+                <div style="display: flex; justify-content: space-between; border-bottom: 1px solid #eee; padding-bottom: 10px; margin-bottom: 15px;">
+                    <div>
+                        <div style="font-weight: bold; color: #333; font-size: 14px;">📱 ${namaApp}</div>
+                        <div style="font-size: 11px; color: #888;">ID: <span class="txt-oid"></span></div>
+                    </div>
+                    <div style="text-align: right;">
+                        <div style="font-size: 14px; font-weight: bold; color: #ee4d2d;">Rp ${hargaFmt}</div>
+                        <div style="font-size: 11px; font-weight: bold; color: #f6a700;" id="status-tag">Menunggu SMS... ⏳</div>
                     </div>
                 </div>
+
+                <!-- Nomor HP & Tombol Copy -->
+                <div style="text-align: center; margin: 15px 0;">
+                    <div style="font-size: 12px; color: #888; margin-bottom: 5px;">Nomor HP Anda:</div>
+                    <div style="display: flex; justify-content: center; align-items: center; gap: 10px;">
+                        <div class="allow-select" style="font-size: 24px; font-weight: bold; color: #333; letter-spacing: 1px;">${phone}</div>
+                        <button class="btn-copy" onclick="salinTeks('${phone}', 'Nomor HP')">📋 Copy</button>
+                    </div>
+                </div>
+
+                <!-- Box OTP & Timer -->
+                <div style="text-align: center; margin: 20px 0; background: #f9f9f9; padding: 15px; border-radius: 8px; border: 1px dashed #ccc; position: relative;">
+                    <div style="font-size: 12px; color: #888; margin-bottom: 5px;">Kode OTP:</div>
+                    
+                    <div style="display: flex; justify-content: center; align-items: center; gap: 10px;">
+                        <div id="sms-box" class="allow-select" style="font-size: 28px; font-weight: bold; color: #ee4d2d; letter-spacing: 3px;">
+                            <span style="font-size: 14px; color: #999; letter-spacing: normal;">Sedang menunggu...</span>
+                        </div>
+                        <button id="btn-copy-otp" class="btn-copy" style="display:none;" onclick="salinOTP()">📋 Copy</button>
+                    </div>
+
+                    <div style="margin-top: 10px; font-size: 11px; color: #888;">Expired: <span id="timer-box" style="color:red; font-weight:bold;">Menghitung...</span></div>
+                </div>
+
                 <div style="display: flex; gap: 10px;">
-                    <button onclick="updateStatus('${data.order_id}', 'cancel')" style="flex: 1; background: #fff; color: #ee4d2d; border: 1px solid #ee4d2d; padding: 10px; border-radius: 5px; font-weight: bold; cursor: pointer;">Batalkan</button>
-                    <button onclick="cekSMS('${data.order_id}')" style="flex: 1; background: #ee4d2d; color: #fff; border: none; padding: 10px; border-radius: 5px; font-weight: bold; cursor: pointer;">Cek SMS Manual</button>
+                    <button id="btn-batalkan" style="flex: 1; background: #fff; color: #ee4d2d; border: 1px solid #ee4d2d; padding: 10px; border-radius: 5px; font-weight: bold; cursor: pointer;">Batalkan</button>
+                    <button id="btn-ceksms" style="flex: 1; background: #ee4d2d; color: #fff; border: none; padding: 10px; border-radius: 5px; font-weight: bold; cursor: pointer;">Cek SMS Manual</button>
                 </div>
             </div>
         `;
+        
+        pesananAktif.querySelector('.txt-oid').innerText = data.order_id;
+        pesananAktif.querySelector('#btn-batalkan').onclick = () => updateStatus(data.order_id, 'cancel');
+        pesananAktif.querySelector('#btn-ceksms').onclick = () => cekSMS(data.order_id, false);
 
-        // Auto cek SMS tiap 5 detik
+        // CLEAR INTERVAL LAMA AGAR TIDAK LEAK (DOBEL)
         if (intervalCekSMS) clearInterval(intervalCekSMS);
         intervalCekSMS = setInterval(() => cekSMS(data.order_id, true), 5000);
+
+        // Hitung Mundur Expired
+        if (intervalTimer) clearInterval(intervalTimer);
+        hitungMundurExpired(data.expired_at, data.order_id);
+    }
+
+    // --- FUNGSI TIMER EXPIRED ---
+    function hitungMundurExpired(waktuExpiredStr, orderId) {
+        if (!waktuExpiredStr) {
+            document.getElementById('timer-box').innerText = "-";
+            return;
+        }
+
+        const expiredDate = new Date(waktuExpiredStr.replace(' ', 'T')).getTime();
+
+        intervalTimer = setInterval(function() {
+            const now = new Date().getTime();
+            const distance = expiredDate - now;
+
+            if (distance < 0) {
+                clearInterval(intervalTimer);
+                document.getElementById('timer-box').innerText = "EXPIRED";
+                // Otomatis batal jika waktu habis
+                if(intervalCekSMS) clearInterval(intervalCekSMS);
+                document.getElementById('status-tag').innerText = "Kadaluarsa";
+                document.getElementById('status-tag').style.color = "red";
+                showToast("Pesanan telah kadaluarsa.");
+            } else {
+                const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+                document.getElementById('timer-box').innerText = `${minutes}m ${seconds}s`;
+            }
+        }, 1000);
+    }
+
+    // --- FUNGSI SALIN OTP KHUSUS ---
+    function salinOTP() {
+        const otpText = document.getElementById('sms-box').innerText;
+        salinTeks(otpText, 'Kode OTP');
     }
 
     // --- FUNGSI NOTIFIKASI HP ---
     function kirimNotifikasi(judul, pesan) {
         if (!("Notification" in window)) return;
+        
         if (Notification.permission === "granted") {
-            navigator.serviceWorker.ready.then(function(registration) {
-                registration.showNotification(judul, {
+            try {
+                new Notification(judul, {
                     body: pesan,
                     icon: "https://upload.wikimedia.org/wikipedia/commons/f/fe/Shopee.svg",
-                    vibrate: [200, 100, 200] // HP Bergetar
+                    vibrate: [200, 100, 200]
                 });
-            }).catch(function() {
-                // Fallback jika service worker tidak ada
-                new Notification(judul, { body: pesan });
-            });
+            } catch (error) {
+                if (navigator.serviceWorker) {
+                    navigator.serviceWorker.ready.then(function(registration) {
+                        registration.showNotification(judul, { body: pesan, vibrate: [200, 100, 200] });
+                    });
+                }
+            }
         }
     }
 
@@ -569,24 +712,39 @@
         
         if (resSMS.status && resSMS.data) {
             if (resSMS.data.sms_code) {
-                document.getElementById(`sms-${orderId}`).innerText = resSMS.data.sms_code;
-                document.getElementById(`status-${orderId}`).innerText = "✅ Selesai";
-                document.getElementById(`status-${orderId}`).style.color = "#25D366";
+                document.getElementById(`sms-box`).innerText = resSMS.data.sms_code;
+                
+                // Munculkan tombol copy OTP
+                document.getElementById('btn-copy-otp').style.display = 'inline-flex';
+
+                const statusTag = document.getElementById(`status-tag`);
+                statusTag.innerText = "✅ Selesai";
+                statusTag.style.color = "#25D366";
+                
                 if (intervalCekSMS) clearInterval(intervalCekSMS);
+                if (intervalTimer) clearInterval(intervalTimer);
+                document.getElementById('timer-box').innerText = "Selesai";
                 
                 localStorage.removeItem('pesananAktif'); 
-                kirimNotifikasi("✅ OTP Berhasil Masuk!", `Kode OTP Anda: ${resSMS.data.sms_code}`);
+                kirimNotifikasi("✅ OTP Masuk!", `Kode OTP Anda: ${resSMS.data.sms_code}`);
                 showToast("OTP Berhasil Masuk!");
             } else if (!isAuto) {
                 showToast("SMS belum masuk, silakan tunggu sebentar.");
             }
         } else {
-            if (resSMS.message && resSMS.message.toLowerCase().includes('tidak ditemukan')) {
+            const cancelKeywords = ['tidak ditemukan', 'expired', 'batal', 'kadaluarsa'];
+            const errMsg = resSMS.message ? resSMS.message.toLowerCase() : "";
+            const isCanceled = cancelKeywords.some(keyword => errMsg.includes(keyword));
+
+            if (isCanceled) {
                 if (intervalCekSMS) clearInterval(intervalCekSMS);
+                if (intervalTimer) clearInterval(intervalTimer);
                 localStorage.removeItem('pesananAktif'); 
                 document.getElementById('pesanan-aktif').style.display = 'none';
                 document.getElementById('pesanan-kosong').style.display = 'block';
-                if (!isAuto) showToast("Pesanan kadaluarsa/dibatalkan server.");
+                if (!isAuto) showToast("Pesanan telah kadaluarsa atau dibatalkan dari server.");
+            } else if (!isAuto) {
+                showToast("Error saat cek SMS: " + resSMS.message);
             }
         }
     }
@@ -599,13 +757,15 @@
             if (resUpdate.status) {
                 showToast(`Pesanan berhasil dibatalkan.`);
                 if (intervalCekSMS) clearInterval(intervalCekSMS);
+                if (intervalTimer) clearInterval(intervalTimer);
+                
                 document.getElementById('pesanan-aktif').style.display = 'none';
                 document.getElementById('pesanan-kosong').style.display = 'block';
                 
                 localStorage.removeItem('pesananAktif'); 
                 loadSaldo(); 
             } else {
-                showToast("Gagal membatalkan: " + resUpdate.message);
+                showToast("Gagal membatalkan: " + (resUpdate.message || "Error server"));
             }
         });
     }
@@ -617,16 +777,20 @@
 
     // Jalankan saat web dibuka
     window.onload = () => {
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/sw.js').catch(err => console.log('SW Setup Skip', err));
+        }
+
         loadSaldo();
         
-        // Cek apakah ada pesanan yang belum selesai di memori HP
         const savedOrder = localStorage.getItem('pesananAktif');
         if (savedOrder) {
-            const dataOrder = JSON.parse(savedOrder);
-            tampilkanPesanan(dataOrder); // Munculkan lagi di layar
-            
-            // Opsional: Langsung arahkan ke halaman pesanan agar user tahu
-            // pindahHalaman('pesanan'); 
+            try {
+                const dataOrder = JSON.parse(savedOrder);
+                tampilkanPesanan(dataOrder);
+            } catch(e) {
+                localStorage.removeItem('pesananAktif');
+            }
         }
     };
 </script>
