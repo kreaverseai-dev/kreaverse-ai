@@ -9,7 +9,7 @@
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; }
         body { background-color: #f5f5f5; color: #333; display: flex; justify-content: center; }
         
-        /* BINGKAI APLIKASI (Agar di PC tetap seukuran HP) */
+        /* BINGKAI APLIKASI */
         .app-container { width: 100%; max-width: 480px; background-color: #fff; min-height: 100vh; position: relative; padding-bottom: 60px; box-shadow: 0 0 10px rgba(0,0,0,0.1); overflow-x: hidden; }
 
         /* HEADER ORANYE KHAS SHOPEE */
@@ -18,7 +18,7 @@
         .search-bar span { color: #888; margin-left: 8px; }
         .header-icons { color: white; font-size: 22px; display: flex; gap: 15px; }
 
-        /* DOMPET / SALDO (Mirip ShopeePay) */
+        /* DOMPET / SALDO */
         .wallet-section { display: flex; padding: 12px; background: #fff; border-bottom: 6px solid #f5f5f5; }
         .wallet-item { flex: 1; display: flex; flex-direction: column; padding: 0 10px; border-right: 1px solid #eee; }
         .wallet-item:last-child { border-right: none; }
@@ -26,22 +26,24 @@
         .wallet-value { font-size: 13px; color: #ee4d2d; font-weight: bold; }
         .wallet-desc { font-size: 10px; color: #888; }
 
-        /* MENU GRID (Mirip menu Pulsa, Keuangan, dll) */
+        /* MENU GRID DENGAN LOGO ASLI */
         .menu-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px 10px; padding: 15px; background: #fff; }
         .menu-item { display: flex; flex-direction: column; align-items: center; text-align: center; font-size: 11px; color: #333; cursor: pointer; }
-        .menu-icon { width: 45px; height: 45px; border-radius: 15px; background: #f5f5f5; display: flex; justify-content: center; align-items: center; font-size: 24px; margin-bottom: 5px; border: 1px solid #eee; }
+        .menu-icon { width: 45px; height: 45px; border-radius: 15px; background: #f5f5f5; display: flex; justify-content: center; align-items: center; margin-bottom: 5px; border: 1px solid #eee; overflow: hidden; }
+        /* Ukuran gambar logo agar pas di dalam kotak */
+        .menu-icon img { width: 28px; height: 28px; object-fit: contain; }
         
         /* BANNER PROMO */
         .banner-container { padding: 10px; background: #fff; }
         .banner { width: 100%; height: 120px; background: linear-gradient(45deg, #ff7337, #ff253a); border-radius: 5px; display: flex; justify-content: center; align-items: center; color: white; font-weight: bold; font-size: 20px; text-shadow: 1px 1px 2px rgba(0,0,0,0.5); }
 
-        /* BOTTOM NAVIGATION (Menu Bawah) */
+        /* BOTTOM NAVIGATION */
         .bottom-nav { position: fixed; bottom: 0; width: 100%; max-width: 480px; background: #fff; display: flex; justify-content: space-around; padding: 8px 0; border-top: 1px solid #ddd; z-index: 100; }
         .nav-item { display: flex; flex-direction: column; align-items: center; font-size: 10px; color: #999; cursor: pointer; }
         .nav-item.active { color: #ee4d2d; }
         .nav-icon { font-size: 20px; margin-bottom: 3px; }
 
-        /* POPUP DISKON (Mirip gambar ke-2 Anda) */
+        /* POPUP DISKON */
         .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 999; display: flex; justify-content: center; align-items: center; }
         .popup { background: transparent; text-align: center; position: relative; width: 80%; max-width: 300px; }
         .popup-img { width: 100%; background: linear-gradient(180deg, #ffea00, #ff5722); padding: 30px 20px; border-radius: 15px; color: white; box-shadow: 0 5px 15px rgba(0,0,0,0.3); border: 3px solid white; }
@@ -57,7 +59,7 @@
     <!-- HEADER -->
     <div class="header">
         <div class="search-bar">
-            🔍 <span>Cari Layanan OTP (Contoh: WhatsApp)...</span>
+            🔍 <span>Cari Layanan OTP...</span>
         </div>
         <div class="header-icons">
             🛒 💬
@@ -68,8 +70,8 @@
     <div class="wallet-section">
         <div class="wallet-item">
             <div class="wallet-title">💳 Saldo OTP</div>
-            <div class="wallet-value" id="saldo-display">Rp ...</div>
-            <div class="wallet-desc" id="nama-display">Loading...</div>
+            <div class="wallet-value" id="saldo-display">Memuat...</div>
+            <div class="wallet-desc" id="nama-display">Tunggu sebentar</div>
         </div>
         <div class="wallet-item">
             <div class="wallet-title">🪙 Koin Reward</div>
@@ -78,39 +80,55 @@
         </div>
     </div>
 
-    <!-- MENU GRID LAYANAN -->
+    <!-- MENU GRID LAYANAN (MENGGUNAKAN LOGO ASLI) -->
     <div class="menu-grid">
-        <div class="menu-item" onclick="alert('Fitur WhatsApp segera hadir!')">
-            <div class="menu-icon" style="color: #25D366;">💬</div>
+        <div class="menu-item" onclick="bukaLayanan('WhatsApp')">
+            <div class="menu-icon">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" alt="WhatsApp">
+            </div>
             WhatsApp
         </div>
-        <div class="menu-item">
-            <div class="menu-icon" style="color: #0088cc;">✈️</div>
+        <div class="menu-item" onclick="bukaLayanan('Telegram')">
+            <div class="menu-icon">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/8/82/Telegram_logo.svg" alt="Telegram">
+            </div>
             Telegram
         </div>
-        <div class="menu-item">
-            <div class="menu-icon" style="color: #E1306C;">📸</div>
+        <div class="menu-item" onclick="bukaLayanan('Instagram')">
+            <div class="menu-icon">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/e/e7/Instagram_logo_2016.svg" alt="Instagram">
+            </div>
             Instagram
         </div>
-        <div class="menu-item">
-            <div class="menu-icon" style="color: #00aa13;">🏍️</div>
+        <div class="menu-item" onclick="bukaLayanan('Gojek')">
+            <div class="menu-icon">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/9/99/Gojek_logo_2019.svg" alt="Gojek">
+            </div>
             Gojek
         </div>
-        <div class="menu-item">
-            <div class="menu-icon" style="color: #ee4d2d;">🛍️</div>
+        <div class="menu-item" onclick="bukaLayanan('Shopee')">
+            <div class="menu-icon">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/f/fe/Shopee.svg" alt="Shopee">
+            </div>
             Shopee
         </div>
-        <div class="menu-item">
-            <div class="menu-icon" style="color: #1877F2;">📘</div>
+        <div class="menu-item" onclick="bukaLayanan('Facebook')">
+            <div class="menu-icon">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/5/51/Facebook_f_logo_%282019%29.svg" alt="Facebook">
+            </div>
             Facebook
         </div>
-        <div class="menu-item">
-            <div class="menu-icon" style="color: #FF0000;">▶️</div>
+        <div class="menu-item" onclick="bukaLayanan('YouTube')">
+            <div class="menu-icon">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/0/09/YouTube_full-color_icon_%282017%29.svg" alt="YouTube">
+            </div>
             YouTube
         </div>
         <div class="menu-item">
-            <div class="menu-icon" style="color: #ee4d2d;">⚙️</div>
-            Lihat Semua
+            <div class="menu-icon" style="font-size: 20px;">
+                ⚙️
+            </div>
+            Lainnya
         </div>
     </div>
 
@@ -162,31 +180,44 @@
     }
 
     // Fungsi Panggil API Vercel (Backend Anda)
-    async function callCodeOTP(endpoint) {
+    async function callCodeOTP(endpoint, method = 'POST', payload = {}) {
         try {
             const response = await fetch('/api/codeotp', {
-                method: 'POST',
+                method: 'POST', // Ke Vercel tetap POST
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ endpoint: endpoint })
+                body: JSON.stringify({ 
+                    endpoint: endpoint,
+                    apiMethod: method, // Beritahu Vercel untuk pakai POST ke CodeOTP
+                    payload: payload
+                })
             });
             return await response.json();
         } catch (error) {
-            return { status: false };
+            return { status: false, message: error.message };
         }
     }
 
     // Ambil Saldo Asli dari CodeOTP
     async function loadSaldo() {
-        const result = await callCodeOTP('/v1/profil');
-        if (result.status) {
-            // Format angka jadi Rupiah (contoh: 2140 -> 2.140)
-            const saldoFormat = new Intl.NumberFormat('id-ID').format(result.data.balance);
+        // SESUAI DOKUMENTASI: Gunakan POST untuk ambil profil
+        const result = await callCodeOTP('/v1/profil', 'POST'); 
+        
+        if (result.status && result.data) {
+            const saldoFormat = new Intl.NumberFormat('id-ID').format(result.data.balance || 0);
             document.getElementById('saldo-display').innerText = 'Rp ' + saldoFormat;
-            document.getElementById('nama-display').innerText = result.data.name;
+            document.getElementById('nama-display').innerText = result.data.name || 'Pengguna';
         } else {
             document.getElementById('saldo-display').innerText = 'Rp 0';
-            document.getElementById('nama-display').innerText = 'Gagal muat';
+            document.getElementById('nama-display').innerText = 'Gagal muat API';
+            console.error("Error dari API:", result.message);
         }
+    }
+
+    // Fungsi sementara saat logo diklik
+    function bukaLayanan(namaLayanan) {
+        // Nanti di sini kita buat logika untuk memanggil API /v1/server dan /v1/layanan
+        console.log("Membuka layanan: " + namaLayanan);
+        alert("Anda memilih " + namaLayanan + ". Tahap selanjutnya adalah memanggil API /v1/server dan /v1/harga.");
     }
 
     // Jalankan saat web dibuka
