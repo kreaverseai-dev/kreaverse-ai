@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>Beli OTP</title>
+</head>
+<body>
+    <h1>Dashboard OTP Saya</h1>
+    
+    <!-- Menampilkan Profil & Saldo -->
+    <div id="profil-info">Loading saldo...</div>
+    <button onclick="cekProfil()">Refresh Saldo</button>
+
+    <hr>
+
+    <!-- Contoh Tombol Beli Langsung (Asumsi Anda sudah tahu price_id nya) -->
+    <h3>Beli Nomor Cepat</h3>
+    <input type="number" id="input-price-id" placeholder="Masukkan Price ID (Contoh: 12)">
+    <button onclick="buatPesanan()">Beli Nomor Sekarang</button>
+
+    <div id="hasil-pesanan" style="margin-top: 20px; font-weight: bold; color: blue;"></div>
+    <div id="status-sms" style="margin-top: 10px; color: green;"></div>
+
+    <script src="script.js"></script>
+</body>
+</html>
