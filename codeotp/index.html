@@ -3,6 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#ee4d2d">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>Shopee OTP</title>
     <style>
         /* RESET & FONT */
@@ -384,6 +387,11 @@
         const konfirmasi = confirm(`Beli OTP seharga Rp ${harga}?`);
         if (!konfirmasi) return;
 
+        // Minta izin notifikasi ke HP User
+        if ("Notification" in window && Notification.permission !== "granted") {
+            Notification.requestPermission();
+        }
+
         document.getElementById('price-container').innerHTML = '<div style="text-align:center; padding:20px;">Memproses pesanan... ⏳</div>';
 
         // Panggil API Buat Pesanan
@@ -440,6 +448,23 @@
         intervalCekSMS = setInterval(() => cekSMS(data.order_id, true), 5000);
     }
 
+    // --- FUNGSI NOTIFIKASI HP ---
+    function kirimNotifikasi(judul, pesan) {
+        if (!("Notification" in window)) return;
+        if (Notification.permission === "granted") {
+            navigator.serviceWorker.ready.then(function(registration) {
+                registration.showNotification(judul, {
+                    body: pesan,
+                    icon: "https://upload.wikimedia.org/wikipedia/commons/f/fe/Shopee.svg",
+                    vibrate: [200, 100, 200] // HP Bergetar
+                });
+            }).catch(function() {
+                // Fallback jika service worker tidak ada
+                new Notification(judul, { body: pesan });
+            });
+        }
+    }
+
     // --- CEK SMS ---
     async function cekSMS(orderId, isAuto = false) {
         const resSMS = await callCodeOTP('/v1/pesanan/sms', 'POST', { order_id: orderId });
@@ -453,6 +478,10 @@
                 
                 // HAPUS DARI MEMORI KARENA SUDAH SELESAI
                 localStorage.removeItem('pesananAktif'); 
+
+                // KIRIM NOTIFIKASI KE HP
+                kirimNotifikasi("✅ OTP Berhasil Masuk!", `Kode OTP Anda: ${resSMS.data.sms_code}`);
+                
             } else if (!isAuto) {
                 alert("SMS belum masuk, silakan tunggu sebentar lagi.");
             }
