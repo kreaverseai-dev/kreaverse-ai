@@ -2,18 +2,26 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <title>Beli OTP</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard OTP Saya</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; line-height: 1.6; }
+        button { padding: 8px 12px; cursor: pointer; margin-top: 5px; }
+        input { padding: 8px; margin-right: 10px; }
+        .error { color: red; font-weight: bold; }
+        .success { color: green; font-weight: bold; }
+    </style>
 </head>
 <body>
     <h1>Dashboard OTP Saya</h1>
     
     <!-- Menampilkan Profil & Saldo -->
-    <div id="profil-info">Loading saldo...</div>
+    <div id="profil-info"><i>Loading saldo...</i></div>
     <button onclick="cekProfil()">Refresh Saldo</button>
 
     <hr>
 
-    <!-- Contoh Tombol Beli Langsung (Asumsi Anda sudah tahu price_id nya) -->
+    <!-- Form Beli Nomor -->
     <h3>Beli Nomor Cepat</h3>
     <input type="number" id="input-price-id" placeholder="Masukkan Price ID (Contoh: 12)">
     <button onclick="buatPesanan()">Beli Nomor Sekarang</button>
@@ -21,6 +29,89 @@
     <div id="hasil-pesanan" style="margin-top: 20px; font-weight: bold; color: blue;"></div>
     <div id="status-sms" style="margin-top: 10px; color: green;"></div>
 
-    <script src="script.js"></script>
+    <!-- SCRIPT JAVASCRIPT DISATUKAN DI SINI -->
+    <script>
+        // Fungsi utama untuk menembak API Vercel (Backend)
+        async function callCodeOTP(endpoint, payload = null) {
+            try {
+                const response = await fetch('/api/codeotp', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        endpoint: endpoint, 
+                        payload: payload 
+                    })
+                });
+                
+                // Jika Vercel error (misal file api/codeotp.js tidak ada / error 404 / 500)
+                if (!response.ok) {
+                    const errText = await response.text();
+                    throw new Error(`Sistem Error (${response.status}): ${errText}`);
+                }
+                
+                return await response.json();
+            } catch (error) {
+                console.error("Error Fetch:", error);
+                return { status: false, message: error.message };
+            }
+        }
+
+        // 1. Fungsi Cek Profil & Saldo
+        async function cekProfil() {
+            const infoDiv = document.getElementById('profil-info');
+            infoDiv.innerHTML = "<i>Sedang mengecek saldo ke server...</i>";
+            
+            const result = await callCodeOTP('/v1/profil');
+            
+            if (result.status) {
+                infoDiv.innerHTML = `<span class="success">Halo ${result.data.name}, Saldo Anda: Rp ${result.data.balance}</span>`;
+            } else {
+                infoDiv.innerHTML = `<span class="error">Gagal memuat saldo: ${result.message}</span>`;
+            }
+        }
+
+        // 2. Fungsi Buat Pesanan
+        async function buatPesanan() {
+            const priceId = document.getElementById('input-price-id').value;
+            if (!priceId) return alert("Masukkan Price ID dulu!");
+
+            document.getElementById('hasil-pesanan').innerText = "Sedang memesan nomor...";
+            document.getElementById('status-sms').innerText = "";
+            
+            const result = await callCodeOTP('/v1/pesanan', { price_id: parseInt(priceId) });
+
+            if (result.status) {
+                const orderData = result.data;
+                document.getElementById('hasil-pesanan').innerText = 
+                    `Berhasil! Nomor Anda: ${orderData.phone} (Order ID: ${orderData.order_id})`;
+                
+                // Mulai mengecek SMS
+                cekSmsBerkala(orderData.order_id);
+            } else {
+                document.getElementById('hasil-pesanan').innerHTML = `<span class="error">Gagal: ${result.message}</span>`;
+            }
+        }
+
+        // 3. Fungsi Cek SMS Otomatis
+        let intervalCekSms;
+        async function cekSmsBerkala(orderId) {
+            document.getElementById('status-sms').innerText = "Menunggu SMS masuk... ⏳";
+            
+            intervalCekSms = setInterval(async () => {
+                const result = await callCodeOTP('/v1/pesanan/sms', { order_id: orderId });
+                
+                if (result.status && result.data.status === "success") {
+                    document.getElementById('status-sms').innerText = 
+                        `🎉 SMS MASUK! Kode OTP Anda: ${result.data.sms_code}`;
+                    clearInterval(intervalCekSms); // Hentikan pengecekan
+                }
+            }, 5000); // Cek setiap 5 detik
+        }
+
+        // Jalankan cek profil otomatis saat halaman web selesai dimuat
+        window.onload = () => {
+            cekProfil();
+        };
+    </script>
 </body>
 </html>
