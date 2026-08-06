@@ -288,10 +288,10 @@
     }
 
     function getBendera(namaNegara) {
-        const flags = { "indonesia": "🇮🇩", "malaysia": "🇲🇾", "thailand": "🇹🇭", "vietnam": "🇻🇳", "philippines": "🇵🇭", "singapore": "🇸🇬", "usa": "🇺🇸", "united kingdom": "🇬🇧", "china": "🇨🇳", "japan": "🇯🇵", "korea": "🇰🇷", "india": "🇮🇳", "brazil": "🇧🇷", "russia": "🇷🇺", "germany": "🇩🇪", "france": "🇫🇷" };
+        const flags = { "indonesia":"🇮🇩","malaysia":"🇲🇾","thailand":"🇹🇭","vietnam":"🇻🇳","philippines":"🇵🇭","singapore":"🇸🇬","usa":"🇺🇸","united kingdom":"🇬🇧","china":"🇨🇳","japan":"🇯🇵","korea":"🇰🇷","india":"🇮🇳","brazil":"🇧🇷","russia":"🇷🇺","germany":"🇩🇪","france":"🇫🇷","albania":"🇦🇱","algeria":"🇩🇿","angola":"🇦🇴","argentina":"🇦🇷","armenia":"🇦🇲","australia":"🇦🇺","austria":"🇦🇹","bangladesh":"🇧🇩","belgium":"🇧🇪","benin":"🇧🇯","bolivia":"🇧🇴","bosnia":"🇧🇦","chad":"🇹🇩","chile":"🇨🇱","colombia":"🇨🇴","congo":"🇨🇬","croatia":"🇭🇷","burkina faso":"🇧🇫","dominican republic":"🇩🇴","egypt":"🇪🇬","finland":"🇫🇮","greece":"🇬🇷","hong kong":"🇭🇰","hungary":"🇭🇺","iran":"🇮🇷","iraq":"🇮🇶","ireland":"🇮🇪","israel":"🇮🇱","italy":"🇮🇹","jamaica":"🇯🇲","kazakhstan":"🇰🇿","kenya":"🇰🇪","kuwait":"🇰🇼","laos":"🇱🇦","macau":"🇲🇴","madagascar":"🇲🇬","mexico":"🇲🇽","morocco":"🇲🇦","myanmar":"🇲🇲","nepal":"🇳🇵","netherlands":"🇳🇱","new zealand":"🇳🇿","nigeria":"🇳🇬","norway":"🇳🇴","pakistan":"🇵🇰","paraguay":"🇵🇾","peru":"🇵🇪","poland":"🇵🇱","portugal":"🇵🇹","qatar":"🇶🇦","romania":"🇷🇴","saudi arabia":"🇸🇦","senegal":"🇸🇳","serbia":"🇷🇸","south africa":"🇿🇦","spain":"🇪🇸","sri lanka":"🇱🇰","sweden":"🇸🇪","switzerland":"🇨🇭","taiwan":"🇹🇼","tanzania":"🇹🇿","tunisia":"🇹🇳","turkey":"🇹🇷","uganda":"🇺🇬","ukraine":"🇺🇦","united arab emirates":"🇦🇪","uruguay":"🇺🇾","uzbekistan":"🇺🇿","venezuela":"🇻🇪","yemen":"🇾🇪","zambia":"🇿🇲","zimbabwe":"🇿🇼","cambodia":"🇰🇭","canada":"🇨🇦" };
         const n = namaNegara.toLowerCase();
         for (let key in flags) { if (n.includes(key)) return flags[key]; }
-        return "🌐";
+        return "🏳️"; 
     }
 
     function filterNegara() {
@@ -356,15 +356,8 @@
     let negaraIdAktif = null;
 
     function getOperatorLogo(namaOperator) {
-        const op = namaOperator.toLowerCase();
-        if (op.includes('telkomsel') || op.includes('tsel')) return 'https://upload.wikimedia.org/wikipedia/commons/b/b4/Telkomsel_2021_icon.svg';
-        if (op.includes('indosat') || op.includes('isat')) return 'https://upload.wikimedia.org/wikipedia/commons/9/9d/Logo_Indosat_Ooredoo_Hutchison.svg';
-        if (op.includes('three') || op.includes('tri') || op === '3') return 'https://upload.wikimedia.org/wikipedia/commons/4/40/Three_logo.svg';
-        if (op.includes('axis')) return 'https://upload.wikimedia.org/wikipedia/commons/8/83/Axis_logo_2015.svg';
-        if (op.includes('smartfren')) return 'https://upload.wikimedia.org/wikipedia/commons/e/eb/Smartfren_Logo.svg';
-        if (op.includes('xl')) return 'https://upload.wikimedia.org/wikipedia/en/5/55/XL_Axiata_logo_2016.svg';
-        if (op.includes('by.u') || op.includes('byu')) return 'https://upload.wikimedia.org/wikipedia/commons/1/10/By.U_logo.svg';
-        return 'https://upload.wikimedia.org/wikipedia/commons/d/d5/Globe_icon.svg'; // Default logo internet
+        // Menggunakan UI Avatars agar logo selalu muncul, rapi, berwarna-warni, dan tidak error (broken image)
+        return `https://ui-avatars.com/api/?name=${encodeURIComponent(namaOperator)}&background=random&color=fff&rounded=true&bold=true&size=128`;
     }
     
     async function bukaLayanan(namaLayanan, iconUrl) {
@@ -390,7 +383,8 @@
         if (result.status && result.data) {
             gridServer.innerHTML = '';
             result.data.forEach(server => { 
-                gridServer.innerHTML += `<div class="grid-btn" id="btn-server-${server.id}" onclick="pilihServer('${server.id}')">🖥️ ${server.name}</div>`; 
+                // Mengganti logo server menjadi roket agar lebih keren
+                gridServer.innerHTML += `<div class="grid-btn" id="btn-server-${server.id}" onclick="pilihServer('${server.id}')">🚀 ${server.name}</div>`; 
             });
         } else { gridServer.innerHTML = 'Gagal memuat server'; }
     }
@@ -433,6 +427,73 @@
         });
     }
 
+    let currentHargaData = [];
+    let currentSortOrder = 'asc';
+
+    function ubahSortHarga(order) {
+        currentSortOrder = order;
+        renderHargaList();
+    }
+
+    function renderHargaList() {
+        const priceContainer = document.getElementById('price-container');
+        if (currentHargaData.length === 0) {
+            priceContainer.innerHTML = '<span style="color:red;">Stok nomor untuk negara ini sedang kosong.</span>';
+            return;
+        }
+
+        // Proses Sorting (Urutkan Harga)
+        let sortedHarga = [...currentHargaData];
+        if (currentSortOrder === 'asc') {
+            sortedHarga.sort((a, b) => parseFloat(a.price) - parseFloat(b.price));
+        } else {
+            sortedHarga.sort((a, b) => parseFloat(b.price) - parseFloat(a.price));
+        }
+
+        let html = `
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px; margin-bottom: 10px;">
+                <div style="font-weight:bold; color:#333; font-size:13px;">Pilih Operator:</div>
+                <select id="sort-harga" onchange="ubahSortHarga(this.value)" style="padding:4px 8px; border-radius:6px; border:1px solid #ee4d2d; color:#ee4d2d; font-size:12px; background:#fff; outline:none; font-weight:bold; cursor:pointer;">
+                    <option value="asc" ${currentSortOrder === 'asc' ? 'selected' : ''}>⬇️ Termurah</option>
+                    <option value="desc" ${currentSortOrder === 'desc' ? 'selected' : ''}>⬆️ Termahal</option>
+                </select>
+            </div>
+            <div id="operator-list"></div>
+        `;
+        priceContainer.innerHTML = html;
+        
+        const opList = document.getElementById('operator-list');
+        
+        sortedHarga.forEach(harga => {
+            const rp = new Intl.NumberFormat('id-ID').format(harga.price);
+            const idHargaYgBenar = harga.id || harga.price_id || harga.operator_id;
+            const namaOperator = harga.operator_name || harga.name || 'Operator';
+            
+            // Perbaikan Bug Success Rate (Mencegah 2000%)
+            let rawRate = parseFloat(harga.success_rate || 0);
+            let successRate = rawRate > 1 ? rawRate.toFixed(0) : (rawRate * 100).toFixed(0);
+            
+            const logoOp = getOperatorLogo(namaOperator);
+
+            const div = document.createElement('div');
+            div.className = 'op-card';
+            div.innerHTML = `
+                <div style="display:flex; align-items:center; gap:12px;">
+                    <img src="${logoOp}" class="op-logo">
+                    <div>
+                        <div style="font-weight:bold; color:#333; font-size:14px;">${namaOperator}</div>
+                        <div style="font-size:11px; color:#888;">Stok: ${parseInt(harga.stock)} | Sukses: ${successRate}%</div>
+                    </div>
+                </div>
+                <div style="text-align:right;">
+                    <div style="color:#ee4d2d; font-weight:bold; margin-bottom:5px; font-size:14px;">Rp ${rp}</div>
+                    <button style="background:#ee4d2d; color:#fff; border:none; padding:6px 16px; border-radius:6px; font-size:12px; cursor:pointer; font-weight:bold;" onclick="beliOTP('${idHargaYgBenar}', '${harga.price}')">Beli</button>
+                </div>
+            `;
+            opList.appendChild(div);
+        });
+    }
+
     async function pilihNegara(negaraId) {
         negaraIdAktif = negaraId;
         const serverId = document.getElementById('grid-server').dataset.selected;
@@ -447,32 +508,12 @@
 
         const resHarga = await callCodeOTP('/v1/harga', 'POST', { server_id: parseInt(serverId), negara_id: parseInt(negaraId), layanan_id: parseInt(layananIdAktif) });
         if (resHarga.status && resHarga.data && resHarga.data.length > 0) {
-            priceContainer.innerHTML = '<div style="text-align:left; margin-top:10px; font-weight:bold; margin-bottom: 5px; color:#333;">Pilih Operator:</div>';
-            resHarga.data.forEach(harga => {
-                const rp = new Intl.NumberFormat('id-ID').format(harga.price);
-                const idHargaYgBenar = harga.id || harga.price_id || harga.operator_id;
-                const namaOperator = harga.operator_name || harga.name || 'Operator';
-                const successRate = harga.success_rate ? (parseFloat(harga.success_rate) * 100).toFixed(0) : 0;
-                const logoOp = getOperatorLogo(namaOperator);
-
-                const div = document.createElement('div');
-                div.className = 'op-card';
-                div.innerHTML = `
-                    <div style="display:flex; align-items:center; gap:12px;">
-                        <img src="${logoOp}" class="op-logo">
-                        <div>
-                            <div style="font-weight:bold; color:#333; font-size:14px;">${namaOperator}</div>
-                            <div style="font-size:11px; color:#888;">Stok: ${parseInt(harga.stock)} | Sukses: ${successRate}%</div>
-                        </div>
-                    </div>
-                    <div style="text-align:right;">
-                        <div style="color:#ee4d2d; font-weight:bold; margin-bottom:5px; font-size:14px;">Rp ${rp}</div>
-                        <button style="background:#ee4d2d; color:#fff; border:none; padding:6px 16px; border-radius:6px; font-size:12px; cursor:pointer; font-weight:bold;" onclick="beliOTP('${idHargaYgBenar}', '${harga.price}')">Beli</button>
-                    </div>
-                `;
-                priceContainer.appendChild(div);
-            });
-        } else { priceContainer.innerHTML = '<span style="color:red;">Stok nomor untuk negara ini sedang kosong.</span>'; }
+            currentHargaData = resHarga.data;
+            renderHargaList(); // Panggil fungsi render yang sudah diurutkan
+        } else { 
+            currentHargaData = [];
+            priceContainer.innerHTML = '<span style="color:red;">Stok nomor untuk negara ini sedang kosong.</span>'; 
+        }
     }
 
     function beliOTP(idHarga, harga) {
@@ -481,7 +522,7 @@
                 <h3 style="margin-bottom:10px; color:#856404; font-size:16px;">Konfirmasi Pembelian</h3>
                 <p style="color:#856404; margin-bottom:15px; font-size:14px;">Beli OTP <b>${layananAktif}</b> seharga <b>Rp ${harga}</b>?</p>
                 <div style="display:flex; gap:10px; justify-content:center;">
-                    <button onclick="pilihNegara(negaraIdAktif)" style="flex:1; padding:10px; border:1px solid #ccc; background:#fff; border-radius:8px; font-weight:bold;">Batal</button>
+                    <button onclick="renderHargaList()" style="flex:1; padding:10px; border:1px solid #ccc; background:#fff; border-radius:8px; font-weight:bold;">Batal</button>
                     <button onclick="eksekusiBeli('${idHarga}')" style="flex:1; padding:10px; border:none; background:#ee4d2d; color:#fff; border-radius:8px; font-weight:bold;">Ya, Beli</button>
                 </div>
             </div>
@@ -523,7 +564,7 @@
             if (errorText.toLowerCase().includes("provider error") || errorText.toLowerCase().includes("stok")) {
                 errorText = "Maaf, stok nomor ini sedang kosong dari pusat. Silakan coba operator/server lain.";
             }
-            container.innerHTML = `<div style="color:red; text-align:center; padding:20px; background:#ffe6e6; border-radius:10px; margin-top:10px;"><b style="font-size:16px;">Gagal Memesan</b><br><br><span style="font-size:13px;">${errorText}</span><br><br><button onclick="pilihNegara(negaraIdAktif)" style="padding:8px 20px; background:#fff; border:1px solid red; color:red; border-radius:5px; font-weight:bold;">Kembali</button></div>`;
+            container.innerHTML = `<div style="color:red; text-align:center; padding:20px; background:#ffe6e6; border-radius:10px; margin-top:10px;"><b style="font-size:16px;">Gagal Memesan</b><br><br><span style="font-size:13px;">${errorText}</span><br><br><button onclick="renderHargaList()" style="padding:8px 20px; background:#fff; border:1px solid red; color:red; border-radius:5px; font-weight:bold;">Kembali</button></div>`;
         }
     }
 
