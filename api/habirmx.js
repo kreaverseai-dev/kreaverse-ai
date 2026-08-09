@@ -1074,9 +1074,16 @@ ATURAN MUTLAK:
 
             if (!activeProvider) return res.status(500).json({ error: 'Provider tidak dikenali.' });
 
-            const keysQuery = await db.collection("api_keys").where("provider", "==", provider).where("status", "==", "aktif").limit(1).get();
-            if (keysQuery.empty) return res.status(502).json({ error: 'Tidak ada API Key aktif.' });
-            const apiKey = keysQuery.docs[0].data().key;
+            // PERMINTAAN USER: Izinkan Key Mati untuk cek status lagu yang sedang berjalan
+            const keysQuery = await db.collection("api_keys").where("provider", "==", provider).get();
+            if (keysQuery.empty) return res.status(502).json({ error: 'Tidak ada API Key terdaftar.' });
+            
+            const sortedKeys = keysQuery.docs.sort((a, b) => {
+                if (a.data().status === 'aktif' && b.data().status !== 'aktif') return -1;
+                if (a.data().status !== 'aktif' && b.data().status === 'aktif') return 1;
+                return (a.data().priority || 1) - (b.data().priority || 1);
+            });
+            const apiKey = sortedKeys[0].data().key;
 
             const statusUrl = activeProvider.statusUrlTemplate?.replace("{baseUrl}", activeProvider.baseUrl).replace("{taskId}", taskId) || `${activeProvider.baseUrl}/v1/tasks/${taskId}`;
             const finalStatusUrl = statusUrl + (statusUrl.includes('?') ? `&_t=${Date.now()}` : `?_t=${Date.now()}`);
@@ -1116,14 +1123,16 @@ ATURAN MUTLAK:
                 if (lowerErr.includes('copyright') || lowerErr.includes('lyrics contain') || lowerErr.includes('artist name') || lowerErr.includes('catalog') || lowerErr.includes('matches an existing')) {
                     // MENGGUNAKAN PESAN ERROR ASLI PROVIDER UNTUK COPY/LIRIK
                     translatedError = `Moderasi AI / Hak Cipta Terdeteksi: ${errMsg}`;
-                } else if (lowerErr.includes('insufficient') || lowerErr.includes('balance') || lowerErr.includes('credit') || lowerErr.includes('quota') || lowerErr.includes('fund')) {
-                    // MENYEMBUNYIKAN ERROR SALDO HABIS DARI USER (Hanya ditunjukkan sebagai error sistem/sibuk)
-                    translatedError = "Server AI internal sedang penuh/maintenance. Silakan coba provider lain atau hubungi Admin.";
                 } else if (lowerErr.includes('too long') || lowerErr.includes('exceed')) {
                     translatedError = `Durasi/Batas Karakter Terlampaui: ${errMsg}`;
                 }
                 
-                if (resData.code === 413 || resData.code === 400 || resData.code === 403 || lowerErr.includes('artist name') || lowerErr.includes('copyright') || lowerErr.includes('fail') || lowerErr.includes('error') || lowerErr.includes('reject') || lowerErr.includes('tags') || lowerErr.includes('matches an existing') || lowerErr.includes('catalog') || lowerErr.includes('insufficient') || lowerErr.includes('balance') || isKieFailed) {
+                // PERMINTAAN USER: Jangan gagalkan lagu yang sedang berjalan jika saldo tiba-tiba habis saat cek status!
+                if (lowerErr.includes('insufficient') || lowerErr.includes('balance') || lowerErr.includes('credit') || lowerErr.includes('quota') || lowerErr.includes('fund')) {
+                    return res.status(200).json({ status: "processing", audioUrl: null, reason: "Menunggu sinkronisasi server...", raw: resData });
+                }
+                
+                if (resData.code === 413 || resData.code === 400 || resData.code === 403 || lowerErr.includes('artist name') || lowerErr.includes('copyright') || lowerErr.includes('fail') || lowerErr.includes('error') || lowerErr.includes('reject') || lowerErr.includes('tags') || lowerErr.includes('matches an existing') || lowerErr.includes('catalog') || isKieFailed) {
                     if (email && taskId) {
                         try {
                             const refundLockRef = db.collection("credit_refunds").doc(taskId);
