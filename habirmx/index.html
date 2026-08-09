@@ -10967,6 +10967,11 @@ window.startDspBypassAndUpload = async function() {
 
                 const data = await response.json();
                 if (!response.ok) throw new Error(data.error || "Gagal menghubungi API gateway");
+                
+                // FIX: TANGKAP ERROR LANGSUNG DARI RESPON PERTAMA AGAR TIDAK MASUK POLLING!
+                if (data.status === "failed" || data.status === "error") {
+                    throw new Error(data.error || data.message || data.reason || "Ditolak oleh sistem AI (Moderasi/Copyright).");
+                }
 
                 if (!isAdmin && currentUserData && currentUserData.tier !== 'max_lifetime' && currentUserData.tier !== 'max_monthly' && currentUserData.tier !== 'max') {
                     showIphoneToast("Memproses", "Permintaan dikirim ke server...", "fa-cloud-arrow-up");
@@ -11029,7 +11034,6 @@ window.startDspBypassAndUpload = async function() {
                             // 1. UPDATE DINAMIS: Jika track sudah muncul di API, langsung masukkan ke kotaknya masing-masing
                             if (pollData.tracks && pollData.tracks.length > 0) {
                                 for (let i = 0; i < createdDocIds.length; i++) {
-                                    // PEMETAAN KETAT: Track 1 ke Kotak 1, Track 2 ke Kotak 2. DILARANG DUPLIKAT!
                                     const trackData = pollData.tracks[i];
                                     
                                     if (trackData && trackData.audioUrl) {
@@ -11055,18 +11059,19 @@ window.startDspBypassAndUpload = async function() {
                             if (pollData.status === 'completed' || pollData.status === 'success') {
                                 clearInterval(pollInterval);
                                 
-                                // PEMBERSIHAN: Jika API sudah selesai tapi ternyata cuma ngasih 1 lagu, hapus kotak loading ke-2 agar tidak nyangkut
-                                if (pollData.tracks && pollData.tracks.length < createdDocIds.length) {
-                                    for (let i = pollData.tracks.length; i < createdDocIds.length; i++) {
-                                        await deleteDoc(doc(db, "render_gallery", createdDocIds[i]));
+                                try {
+                                    if (pollData.tracks && pollData.tracks.length < createdDocIds.length) {
+                                        for (let i = pollData.tracks.length; i < createdDocIds.length; i++) {
+                                            await deleteDoc(doc(db, "render_gallery", createdDocIds[i]));
+                                        }
                                     }
-                                }
+                                } catch(e) {}
                                 
                                 if (typeof showIphoneToast === 'function') {
                                     showIphoneToast("Selesai", "Lagu berhasil dibuat!", "fa-check-circle");
                                 }
                                 
-                                // FIX: Buka kunci tombol HANYA setelah proses benar-benar selesai
+                                // FIX: Buka kunci tombol dengan aman
                                 window.isGeneratingSong = false;
                                 generateBtn.disabled = false;
                                 generateBtn.innerHTML = originalBtnHtml;
@@ -11079,14 +11084,16 @@ window.startDspBypassAndUpload = async function() {
                                     finalErrorMsg = "Dibatalkan oleh AI (Durasi audio referensi melebihi batas 60 detik atau melanggar hak cipta).";
                                 }
 
-                                for (let i = 0; i < createdDocIds.length; i++) {
-                                    await updateDoc(doc(db, "render_gallery", createdDocIds[i]), {
-                                        status: "failed",
-                                        error: finalErrorMsg
-                                    });
-                                }
+                                try {
+                                    for (let i = 0; i < createdDocIds.length; i++) {
+                                        await updateDoc(doc(db, "render_gallery", createdDocIds[i]), {
+                                            status: "failed",
+                                            error: finalErrorMsg
+                                        });
+                                    }
+                                } catch(e) {}
                                 
-                                // FIX: Buka kunci tombol HANYA setelah proses benar-benar selesai
+                                // FIX: Buka kunci tombol dengan aman
                                 window.isGeneratingSong = false;
                                 generateBtn.disabled = false;
                                 generateBtn.innerHTML = originalBtnHtml;
@@ -11094,20 +11101,23 @@ window.startDspBypassAndUpload = async function() {
                             
                             if (pollCount >= maxPolls) {
                                 clearInterval(pollInterval);
-                                for (let i = 0; i < createdDocIds.length; i++) {
-                                    await updateDoc(doc(db, "render_gallery", createdDocIds[i]), {
-                                        status: "failed",
-                                        error: "Timeout: Server AI terlalu lama merespons (Lebih dari 15 Menit)."
-                                    });
-                                }
+                                try {
+                                    for (let i = 0; i < createdDocIds.length; i++) {
+                                        await updateDoc(doc(db, "render_gallery", createdDocIds[i]), {
+                                            status: "failed",
+                                            error: "Timeout: Server AI terlalu lama merespons (Lebih dari 15 Menit)."
+                                        });
+                                    }
+                                } catch(e) {}
                                 
-                                // FIX: Buka kunci tombol HANYA setelah proses benar-benar selesai
+                                // FIX: Buka kunci tombol dengan aman
                                 window.isGeneratingSong = false;
                                 generateBtn.disabled = false;
                                 generateBtn.innerHTML = originalBtnHtml;
                             }
                         } catch (e) {
                             console.error("Polling error:", e);
+                            // Jangan buka kunci di sini, biarkan interval mencoba lagi di detik berikutnya
                         }
                     }, 5000); 
                 }
