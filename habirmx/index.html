@@ -5244,33 +5244,36 @@
                         if(typeof updateTopProgress === 'function') updateTopProgress(45, "Mengacak fingerprint sidik jari baru...");
                         
                         // =================================================================
-                        // FITUR BARU: ACAK FINGERPRINT AMAN (TANPA MERUSAK NADA/TEMPO)
+                        // PERMINTAAN USER: SETINGAN PITCH/SPEED TETAP, BYPASS DIMAKSIMALKAN
                         // =================================================================
                         const activeTab = localStorage.getItem('krea_dsp_tab') || 'v1';
                         const masterToggle = document.getElementById('globalMasterToggle');
                         if (masterToggle) masterToggle.checked = true;
                         
                         if (activeTab === 'v1') {
-                            // V1 AGRESIF: Paksa maksimal tanpa merusak Nada & Tempo
+                            // V1: Maksimalkan Stego & Timbre secara absolut
                             const timbreEl = document.getElementById('sliderTimbreV1');
                             const stegoEl = document.getElementById('sliderStegoV1');
                             
-                            // Stego (Noise Pelindung) dinaikkan drastis ke 80-95% agar bot AI buta
-                            if (timbreEl) { timbreEl.value = 60; document.getElementById('valTimbreV1').innerText = '60%'; }
-                            if (stegoEl) { stegoEl.value = Math.floor(Math.random() * 15) + 80; document.getElementById('valStegoV1').innerText = stegoEl.value + '%'; }
+                            if (timbreEl) { timbreEl.value = 75; document.getElementById('valTimbreV1').innerText = '75%'; }
+                            if (stegoEl) { stegoEl.value = 95; document.getElementById('valStegoV1').innerText = '95%'; }
                             
-                            // PAKSA NYALA SEMUA ALGORITMA V1 (100% ON, Jangan diacak)
-                            const v1Toggles = ['tgTemporalV1', 'tgMirageV1', 'tgAntiMonoV1', 'tgSpectralV1', 'tgPhoneticV1'];
+                            // Nyalakan semua algoritma bypass V1
+                            const v1Toggles = ['tgTemporalV1', 'tgMirageV1', 'tgAntiMonoV1', 'tgSpectralV1', 'tgQuantumV1', 'tgPhoneticV1'];
                             v1Toggles.forEach(id => {
                                 const el = document.getElementById(id);
                                 if (el) el.checked = true; 
                             });
                         } else {
-                            // V2: Acak 20-Layer Algorithms (Aman, tidak merusak nada)
-                            const v2Toggles = ['chkPhase', 'chkWarp', 'chkFormant', 'chkSpatial', 'chkMasking', 'chkNullifier'];
+                            // V2: Maksimalkan Stego V2
+                            const stegoV2 = document.getElementById('sliderStegoV2');
+                            if (stegoV2) { stegoV2.value = 95; document.getElementById('valStegoV2').innerText = '95%'; }
+
+                            // Nyalakan SEMUA layer krusial secara absolut (Double up, tidak diacak)
+                            const v2Toggles = ['chkPhase', 'chkWarp', 'chkFormant', 'chkSpatial', 'chkMasking', 'chkNullifier', 'chkObfuscator', 'chkFlux', 'chkMirage', 'chkLayering', 'chkChroma'];
                             v2Toggles.forEach(id => {
                                 const el = document.getElementById(id);
-                                if (el) el.checked = Math.random() > 0.2; // 80% kemungkinan ON
+                                if (el) el.checked = true; 
                             });
                             if(typeof window.updateDSPStatusVisual === 'function') window.updateDSPStatusVisual(true);
                         }
@@ -7436,13 +7439,8 @@
             // FIX BUG NOISE: Ambil durasi asli lagu baru dan Reset kotak pemotong lagu (Trimmer)
             originalPlayer.onloadedmetadata = () => {
                 if (isFinite(originalPlayer.duration)) {
-                    // AUTO-TRIM 20 DETIK PERTAMA (JURUS PAMUNGKAS ANTI-COPYRIGHT)
-                    // Jika lagu lebih panjang dari 30 detik, otomatis potong 20 detik pertama.
-                    if (originalPlayer.duration > 30) {
-                        document.getElementById('trimStartInput').value = "00:20";
-                    } else {
-                        document.getElementById('trimStartInput').value = "00:00";
-                    }
+                    // PERMINTAAN USER: Kembalikan ke 00:00 agar Suno AI tidak bingung
+                    document.getElementById('trimStartInput').value = "00:00";
                     
                     const m = Math.floor(originalPlayer.duration / 60).toString().padStart(2, '0');
                     const s = Math.floor(originalPlayer.duration % 60).toString().padStart(2, '0');
