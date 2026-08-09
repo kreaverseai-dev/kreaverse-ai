@@ -5187,8 +5187,15 @@
         };
 
         window.autoRemixFailedAudio = async function(docId) {
+            // KUNCI ABSOLUT: Cegah user klik berkali-kali yang menyebabkan 4 lagu muncul
+            if (window.isGeneratingSong) {
+                showIphoneToast("Sabar", "Sistem sedang memproses lagu. Mohon tunggu...", "fa-hand-paper");
+                return;
+            }
+            window.isGeneratingSong = true; // Kunci sistem sekarang
+
             const docData = window.globalLibraryDocs.find(d => d.id === docId);
-            if (!docData) return;
+            if (!docData) { window.isGeneratingSong = false; return; }
 
             // 1. Matikan audio error player jika sedang menyala
             const errPlayer = document.getElementById('errorAudioPlayer');
