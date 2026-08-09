@@ -10965,8 +10965,6 @@ window.startDspBypassAndUpload = async function() {
                 const data = await response.json();
                 if (!response.ok) throw new Error(data.error || "Gagal menghubungi API gateway");
 
-                // [KEAMANAN DIPERBAIKI]: Pemotongan saldo dihapus dari Frontend.
-                // Biarkan Backend (/api/habirmx) yang memotong saldo di database untuk mencegah eksploitasi.
                 if (!isAdmin && currentUserData && currentUserData.tier !== 'max_lifetime' && currentUserData.tier !== 'max_monthly' && currentUserData.tier !== 'max') {
                     showIphoneToast("Memproses", "Permintaan dikirim ke server...", "fa-cloud-arrow-up");
                 }
@@ -10983,6 +10981,9 @@ window.startDspBypassAndUpload = async function() {
                 
                 if (data.status === "completed" && data.tracks && data.tracks.length > 0) {
                     // Jika API Synchronous (Langsung Selesai)
+                    window.isGeneratingSong = false;
+                    generateBtn.disabled = false;
+                    generateBtn.innerHTML = originalBtnHtml;
                 } else {
                     let createdDocIds = []; 
                     
@@ -10997,7 +10998,7 @@ window.startDspBypassAndUpload = async function() {
                             type: "audio",
                             status: "processing",
                             taskId: safeTaskId,
-                            audioId: "-", // FIX: Beri nilai default agar tidak kosong saat loading
+                            audioId: "-", 
                             sessionGroup: sessionGroupId, 
                             provider: data.provider || providerId,
                             model: modelLabel,
@@ -11061,6 +11062,11 @@ window.startDspBypassAndUpload = async function() {
                                 if (typeof showIphoneToast === 'function') {
                                     showIphoneToast("Selesai", "Lagu berhasil dibuat!", "fa-check-circle");
                                 }
+                                
+                                // FIX: Buka kunci tombol HANYA setelah proses benar-benar selesai
+                                window.isGeneratingSong = false;
+                                generateBtn.disabled = false;
+                                generateBtn.innerHTML = originalBtnHtml;
                             } 
                             else if (pollData.status === 'failed' || pollData.status === 'error') {
                                 clearInterval(pollInterval);
@@ -11076,8 +11082,11 @@ window.startDspBypassAndUpload = async function() {
                                         error: finalErrorMsg
                                     });
                                 }
-                                // [KEAMANAN DIPERBAIKI]: Refund saldo dihapus dari Frontend.
-                                // Backend harus mendeteksi kegagalan dan mengembalikan saldo secara otomatis.
+                                
+                                // FIX: Buka kunci tombol HANYA setelah proses benar-benar selesai
+                                window.isGeneratingSong = false;
+                                generateBtn.disabled = false;
+                                generateBtn.innerHTML = originalBtnHtml;
                             }
                             
                             if (pollCount >= maxPolls) {
@@ -11088,6 +11097,11 @@ window.startDspBypassAndUpload = async function() {
                                         error: "Timeout: Server AI terlalu lama merespons (Lebih dari 15 Menit)."
                                     });
                                 }
+                                
+                                // FIX: Buka kunci tombol HANYA setelah proses benar-benar selesai
+                                window.isGeneratingSong = false;
+                                generateBtn.disabled = false;
+                                generateBtn.innerHTML = originalBtnHtml;
                             }
                         } catch (e) {
                             console.error("Polling error:", e);
@@ -11098,9 +11112,6 @@ window.startDspBypassAndUpload = async function() {
                 document.getElementById('miniLibraryContainer').scrollIntoView({ behavior: 'smooth' });
 
             } catch (err) {
-                // [KEAMANAN DIPERBAIKI]: Celah Refund eksploitasi ditutup.
-                // Frontend hanya menampilkan pesan error. Backend yang bertanggung jawab atas refund.
-
                 let displayError = err.message;
                 if (!isAdmin && (displayError.toLowerCase().includes('habis') || displayError.toLowerCase().includes('insufficient') || displayError.toLowerCase().includes('api'))) {
                     displayError = "Trafik server sedang penuh atau dalam perbaikan. Silakan coba beberapa saat lagi.";
@@ -11112,8 +11123,8 @@ window.startDspBypassAndUpload = async function() {
                 } else {
                     showIphoneToast("Gagal", displayError, "fa-triangle-exclamation");
                 }
-            } finally {
-                // 3. BUKA KUNCI TOMBOL APAPUN YANG TERJADI (Sukses/Gagal)
+                
+                // FIX: Buka kunci tombol jika terjadi error di awal (sebelum polling)
                 window.isGeneratingSong = false;
                 generateBtn.disabled = false;
                 generateBtn.innerHTML = originalBtnHtml;
