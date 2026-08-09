@@ -10913,6 +10913,319 @@ window.startDspBypassAndUpload = async function() {
             }
 
             // =================================================================
+            // FUNGSI RESET PAKSA (Menjamin tombol selalu kembali normal)
+            // =================================================================
+            const resetUI = () => {
+                window.isGeneratingSong = false;
+                if (generateBtn) {
+                    generateBtn.disabled = false;
+                    generateBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M12 0L14.59 9.41L24 12L14.59 14.59L12 24L9.41 14.59L0 12L9.41 9.41L12 0Z" /></svg><span style="font-weight: 800; font-size: 1.05rem; letter-spacing: 0.5px;">Buat Lagu</span> <span style="opacity: 0.6; margin: 0 2px; font-size: 1.2rem;">•</span> <span id="generateCostBadge" style="font-weight: 700; font-size: 0.85rem; background: rgba(255,255,255,0.2); padding: 4px 10px; border-radius: 8px;">50 Kredit</span>`;
+                }
+            };
+
+            window.isGeneratingSong = true;
+            generateBtn.disabled = true;
+            generateBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Menyiapkan Antrean...';
+
+            try {
+                // Proses Upload Audio (Jika Mode Cover & Belum ada URL)
+                if (currentMode === 'cover' && !selectedAudioUrl && rawAudioFile) {
+                    generateBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Mengunggah Audio...';
+                    let finalDurStr = "0:00";
+                    const origPlayer = document.getElementById('originalAudioPlayer');
+                    if (origPlayer && isFinite(origPlayer.duration) && origPlayer.duration > 0) {
+                        finalDurStr = formatTime(origPlayer.duration);
+                    }
+                    await uploadBlobToCloudinary(rawAudioFile, rawAudioFile.name, false, finalDurStr);
+                }
+
+                let title = document.getElementById('titleInput').value.trim();
+                if (!title && (selectedAudioUrl || rawAudioFile)) {
+                    let rawName = document.getElementById('uploadedMiniFileName').innerText;
+                    if (rawName && rawName !== '-' && !rawName.startsWith('http')) {
+                        let cleanName = rawName.replace(/\.(mp3|wav|ogg|m4a|flac|aac)$/i, '');
+                        cleanName = cleanName.replace(/[\[\]\(\)\|\-_]/g, ' ').replace(/\s+/g, ' ').trim();
+                        let finalTitle = `Flixa AI - ${cleanName}`;
+                        if (finalTitle.length > 99) finalTitle = finalTitle.substring(0, 99);
+                        title = finalTitle;
+                        document.getElementById('titleInput').value = title; 
+                    }
+                }
+
+                const lyrics = document.getElementById('lyricsInput').value.trim();
+                const instrumental = document.getElementById('instrumentalToggle').checked;
+
+                const options = {
+                    negativeTags: document.getElementById('negativeTagsInput').value.trim(),
+                    vocalGender: document.getElementById('vocalGenderSelect').value,
+                    styleWeight: document.getElementById('styleWeightSlider').value,
+                    weirdness: document.getElementById('weirdnessSlider').value,
+                    audioWeight: document.getElementById('audioWeightSlider').value,
+                    personaId: document.getElementById('personaIdInput').value.trim()
+                };
+
+                generateBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Menghubungi AI...';
+
+                // =================================================================
+                // SISTEM TIMEOUT (Mencegah tombol nyangkut jika server AI mati)
+                // =================================================================
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 20000); // Batas waktu 20 detik
+
+                let response;
+                try {
+                    response = await fetch('/api/habirmx', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ email: currentUser.email, providerId, modelId, title, prompt: style, instrumental, lyrics, audioUrl: selectedAudioUrl, options }),
+                        signal: controller.signal
+                    });
+                    clearTimeout(timeoutId);
+                } catch (fetchErr) {
+                    clearTimeout(timeoutId);
+                    if (fetchErr.name === 'AbortError') {
+                        throw new Error("Server AI terlalu lama merespons (Timeout). Silakan coba lagi.");
+                    }
+                    throw fetchErr;
+                }
+
+                const data = await response.json();
+                if (!response.ok) throw new Error(data.error || "Gagal menghubungi API gateway");
+                
+                if (data.status === "failed" || data.status === "error") {
+                    throw new Error(data.error || data.message || data.reason || "Ditolak oleh sistem AI (Moderasi/Copyright).");
+                }
+
+                if (!isAdmin && currentUserData && currentUserData.tier !== 'max_lifetime' && currentUserData.tier !== 'max_monthly' && currentUserData.tier !== 'max') {
+                    showIphoneToast("Memproses", "Permintaan dikirim ke server...", "fa-cloud-arrow-up");
+                }
+
+                let modelLabelText = modelId;
+                const activeSunoModelNameEl = document.getElementById('activeSunoModelName');
+                if (activeSunoModelNameEl) {
+                    modelLabelText = activeSunoModelNameEl.innerText.replace(/Pro/g, '').trim();
+                }
+                const modelLabel = modelLabelText;
+                
+                const safeTaskId = data.taskId || `task_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
+                const sessionGroupId = `sg_${Date.now()}`;
+                
+                if (data.status === "completed" && data.tracks && data.tracks.length > 0) {
+                    // Jika API Synchronous (Langsung Selesai)
+                    resetUI();
+                } else {
+                    let createdDocIds = []; 
+                    
+                    for (let i = 0; i < 2; i++) {
+                        const docRef = await addDoc(collection(db, "render_gallery"), {
+                            email: currentUser.email,
+                            url: "",
+                            prompt: style,
+                            lyrics: lyrics,
+                            title: `${title || "Untitled Song"} - Versi ${i + 1}`,
+                            tool: "Habi RMX",
+                            type: "audio",
+                            status: "processing",
+                            taskId: safeTaskId,
+                            audioId: "-", 
+                            sessionGroup: sessionGroupId, 
+                            provider: data.provider || providerId,
+                            model: modelLabel,
+                            timestamp: Date.now() - i,
+                            mode: currentMode,
+                            personaId: options.personaId || "",
+                            vocalGender: options.vocalGender || "",
+                            styleWeight: options.styleWeight || "",
+                            weirdness: options.weirdness || "",
+                            audioWeight: options.audioWeight || "",
+                            originalAudioUrl: currentMode === 'cover' ? selectedAudioUrl : ""
+                        });
+                        createdDocIds.push(docRef.id);
+                    }
+
+                    let pollCount = 0;
+                    const maxPolls = 180; 
+                    
+                    const pollInterval = setInterval(async () => {
+                        pollCount++;
+                        try {
+                            const pollRes = await fetch(`/api/habirmx?taskId=${safeTaskId}&provider=${providerId}`);
+                            const pollData = await pollRes.json();
+
+                            if (pollData.tracks && pollData.tracks.length > 0) {
+                                for (let i = 0; i < createdDocIds.length; i++) {
+                                    const trackData = pollData.tracks[i];
+                                    if (trackData && trackData.audioUrl) {
+                                        let finalDur = trackData.duration || "--:--";
+                                        if (typeof finalDur === 'number') {
+                                            const m = Math.floor(finalDur / 60).toString().padStart(2, '0');
+                                            const s = Math.floor(finalDur % 60).toString().padStart(2, '0');
+                                            finalDur = `${m}:${s}`;
+                                        }
+                                        await updateDoc(doc(db, "render_gallery", createdDocIds[i]), {
+                                            status: "complete",
+                                            url: trackData.audioUrl || trackData.url || "",
+                                            imageUrl: trackData.imageUrl || trackData.cover || "",
+                                            duration: finalDur,
+                                            audioId: trackData.audioId || trackData.id || safeTaskId
+                                        });
+                                    }
+                                }
+                            }
+
+                            if (pollData.status === 'completed' || pollData.status === 'success') {
+                                clearInterval(pollInterval);
+                                try {
+                                    if (pollData.tracks && pollData.tracks.length < createdDocIds.length) {
+                                        for (let i = pollData.tracks.length; i < createdDocIds.length; i++) {
+                                            await deleteDoc(doc(db, "render_gallery", createdDocIds[i]));
+                                        }
+                                    }
+                                } catch(e) {}
+                                if (typeof showIphoneToast === 'function') showIphoneToast("Selesai", "Lagu berhasil dibuat!", "fa-check-circle");
+                                resetUI();
+                            } 
+                            else if (pollData.status === 'failed' || pollData.status === 'error') {
+                                clearInterval(pollInterval);
+                                let finalErrorMsg = pollData.reason || pollData.error || pollData.message || "Gagal diproses oleh server AI.";
+                                if (finalErrorMsg.toLowerCase() === 'success' || finalErrorMsg.toLowerCase() === 'ok') {
+                                    finalErrorMsg = "Dibatalkan oleh AI (Durasi audio referensi melebihi batas 60 detik atau melanggar hak cipta).";
+                                }
+                                try {
+                                    for (let i = 0; i < createdDocIds.length; i++) {
+                                        await updateDoc(doc(db, "render_gallery", createdDocIds[i]), {
+                                            status: "failed",
+                                            error: finalErrorMsg
+                                        });
+                                    }
+                                } catch(e) {}
+                                resetUI();
+                            }
+                            
+                            if (pollCount >= maxPolls) {
+                                clearInterval(pollInterval);
+                                try {
+                                    for (let i = 0; i < createdDocIds.length; i++) {
+                                        await updateDoc(doc(db, "render_gallery", createdDocIds[i]), {
+                                            status: "failed",
+                                            error: "Timeout: Server AI terlalu lama merespons (Lebih dari 15 Menit)."
+                                        });
+                                    }
+                                } catch(e) {}
+                                resetUI();
+                            }
+                        } catch (e) {
+                            console.error("Polling error:", e);
+                        }
+                    }, 5000); 
+                }
+                
+                document.getElementById('miniLibraryContainer').scrollIntoView({ behavior: 'smooth' });
+
+            } catch (err) {
+                let displayError = err.message;
+                if (!isAdmin && (displayError.toLowerCase().includes('habis') || displayError.toLowerCase().includes('insufficient') || displayError.toLowerCase().includes('api'))) {
+                    displayError = "Trafik server sedang penuh atau dalam perbaikan. Silakan coba beberapa saat lagi.";
+                }
+                
+                if (displayError.toLowerCase().includes('karakter suara') || displayError.toLowerCase().includes('kadaluarsa')) {
+                    showIphoneToast("Suara Kadaluarsa", displayError, "fa-user-astronaut", 6000);
+                    document.getElementById('personaIdInput').value = '';
+                } else {
+                    showIphoneToast("Gagal", displayError, "fa-triangle-exclamation");
+                }
+                
+                resetUI();
+            }
+        };
+
+            // BLOKIR JIKA MAINTENANCE AKTIF
+            if (window.isMaintenanceModeActive) {
+                window.showMaintenanceScreen();
+                return; 
+            }
+
+            if (!isLoggedIn || !currentUser) {
+                showIphoneToast("Akses Ditolak", "Silakan login terlebih dahulu untuk membuat lagu.", "fa-lock");
+                setTimeout(() => { window.location.href = "/login/index.html"; }, 2000);
+                return;
+            }
+
+            const generateBtn = document.getElementById('generateBtn');
+            let providerId = document.getElementById('providerSelect').value;
+            let modelId = document.getElementById('modelSelect').value;
+
+            if (!modelId) {
+                providerId = 'auto_pool';
+                modelId = 'v5.5';
+                document.getElementById('providerSelect').value = providerId;
+                document.getElementById('modelSelect').value = modelId;
+            }
+
+            if (!providerId || !modelId) {
+                window.scrollToGenerate = function() {
+                    const genBtn = document.getElementById('generateBtn');
+                    genBtn.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    const origShadow = genBtn.style.boxShadow;
+                    genBtn.style.boxShadow = "0 0 0 6px rgba(0, 122, 255, 0.3)";
+                    setTimeout(() => { genBtn.style.boxShadow = origShadow; }, 2000);
+                    const helper = document.getElementById('helperPopup');
+                    if (helper) {
+                        helper.style.opacity = '0';
+                        helper.style.transform = 'translateX(-50%) translateY(100px)';
+                        helper.style.pointerEvents = 'none';
+                    }
+                };
+
+                const engineWrapper = document.getElementById('engineSettingsWrapper');
+                const engineBody = document.getElementById('engineSettingsBody');
+                if (engineBody && engineBody.classList.contains('hidden')) {
+                    window.toggleAccordion('engineSettingsBody');
+                }
+                engineWrapper.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                const helperPop = document.getElementById('helperPopup');
+                if (helperPop) {
+                    helperPop.style.opacity = '1';
+                    helperPop.style.transform = 'translateX(-50%) translateY(0)';
+                    helperPop.style.pointerEvents = 'auto';
+                }
+                engineWrapper.style.transition = "box-shadow 0.3s";
+                engineWrapper.style.boxShadow = "0 0 0 4px rgba(0, 122, 255, 0.3)";
+                setTimeout(() => { engineWrapper.style.boxShadow = "0 8px 24px rgba(0,0,0,0.04)"; }, 2000);
+                return;
+            }
+            
+            const helperPopActive = document.getElementById('helperPopup');
+            if (helperPopActive) {
+                helperPopActive.style.opacity = '0';
+                helperPopActive.style.transform = 'translateX(-50%) translateY(100px)';
+                helperPopActive.style.pointerEvents = 'none';
+            }
+
+            const currentMode = document.getElementById('modeGenerateBtn').classList.contains('active') ? 'generate' : 'cover';
+            
+            if (currentMode === 'cover') {
+                if (!selectedAudioUrl && !rawAudioFile) {
+                    showIphoneToast("Error", "Mode Cover memerlukan file audio referensi. Silakan unggah audio terlebih dahulu!", "fa-triangle-exclamation");
+                    return;
+                }
+            }
+
+            if (!isAdmin && currentUserData && currentUserData.tier !== 'max_lifetime' && currentUserData.tier !== 'max_monthly' && currentUserData.tier !== 'max') {
+                const currentKredit = currentUserData.kredit !== undefined ? currentUserData.kredit : (currentUserData.dailyQuota || 0);
+                if (currentKredit < 50) {
+                    showIphoneToast("Kredit Tidak Cukup", "Anda membutuhkan minimal 50 kredit. Silakan upgrade paket Anda.", "fa-coins");
+                    return;
+                }
+            }
+
+            const style = document.getElementById('styleInput').value.trim();
+            if (!style) {
+                showIphoneToast("Error", "Gaya musik (Style of Music) wajib diisi!", "fa-triangle-exclamation");
+                return;
+            }
+
+            // =================================================================
             // 2. KUNCI TOMBOL SEKARANG JUGA (Karena semua validasi sudah lolos)
             // =================================================================
             window.isGeneratingSong = true;
