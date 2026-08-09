@@ -5114,7 +5114,7 @@
                     let playingOverlay = isPlaying ? `<div style="position:absolute; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); display:flex; align-items:center; justify-content:center; border-radius:10px; z-index: 5;"><img src="https://i.gifer.com/origin/b4/b4d657e7ef262b88eb5f7ac021edda87.gif" style="width:20px; height:20px; opacity:0.9;"></div>` : '';
 
                     html += `
-                        <div class="suno-lib-item ${selectionClass}" style="border-radius: 16px; background: linear-gradient(145deg, #f0f8ff, #e0f2fe); border: 1px solid #bae6fd; box-shadow: none; transition: transform 0.2s, background 0.2s; padding: 14px;">
+                        <div class="suno-lib-item ${selectionClass}" style="border-radius: 16px; background: #ffffff; border: 1px solid #e2e8f0; box-shadow: 0 4px 15px rgba(0,0,0,0.03); transition: transform 0.2s, box-shadow 0.2s; padding: 14px;" onmouseover="this.style.boxShadow='0 8px 25px rgba(0,0,0,0.06)'; this.style.borderColor='#cbd5e1';" onmouseout="this.style.boxShadow='0 4px 15px rgba(0,0,0,0.03)'; this.style.borderColor='#e2e8f0';">
                             ${checkboxHtml}
                             <div class="suno-thumb-wrapper" onclick="if(!window.isSelectionMode) window.playLibraryTrack('${d.id}')" style="border-radius: 10px; width: 60px; height: 60px; position: relative;">
                                 <img src="${safeThumb}" alt="Cover" style="border-radius: 10px; width: 100%; height: 100%; object-fit: cover;">
@@ -10989,33 +10989,44 @@ window.startDspBypassAndUpload = async function() {
                             const pollRes = await fetch(`/api/habirmx?taskId=${safeTaskId}&provider=${providerId}`);
                             const pollData = await pollRes.json();
 
+                            // 1. UPDATE DINAMIS: Jika track sudah muncul di API, langsung masukkan ke kotaknya masing-masing
+                            if (pollData.tracks && pollData.tracks.length > 0) {
+                                for (let i = 0; i < createdDocIds.length; i++) {
+                                    // PEMETAAN KETAT: Track 1 ke Kotak 1, Track 2 ke Kotak 2. DILARANG DUPLIKAT!
+                                    const trackData = pollData.tracks[i];
+                                    
+                                    if (trackData && trackData.audioUrl) {
+                                        let finalDur = trackData.duration || "--:--";
+                                        if (typeof finalDur === 'number') {
+                                            const m = Math.floor(finalDur / 60).toString().padStart(2, '0');
+                                            const s = Math.floor(finalDur % 60).toString().padStart(2, '0');
+                                            finalDur = `${m}:${s}`;
+                                        }
+
+                                        await updateDoc(doc(db, "render_gallery", createdDocIds[i]), {
+                                            status: "complete",
+                                            url: trackData.audioUrl || trackData.url || "",
+                                            imageUrl: trackData.imageUrl || trackData.cover || "",
+                                            duration: finalDur,
+                                            audioId: trackData.audioId || trackData.id || safeTaskId
+                                        });
+                                    }
+                                }
+                            }
+
+                            // 2. CEK STATUS FINAL API
                             if (pollData.status === 'completed' || pollData.status === 'success') {
                                 clearInterval(pollInterval);
                                 
-                                if (pollData.tracks && pollData.tracks.length > 0) {
-                                    for (let i = 0; i < createdDocIds.length; i++) {
-                                        const trackData = pollData.tracks[i] || pollData.tracks[pollData.tracks.length - 1];
-                                        
-                                        if (trackData) {
-                                            let finalDur = trackData.duration || "--:--";
-                                            if (typeof finalDur === 'number') {
-                                                const m = Math.floor(finalDur / 60).toString().padStart(2, '0');
-                                                const s = Math.floor(finalDur % 60).toString().padStart(2, '0');
-                                                finalDur = `${m}:${s}`;
-                                            }
-
-                                            await updateDoc(doc(db, "render_gallery", createdDocIds[i]), {
-                                                status: "complete",
-                                                url: trackData.audioUrl || trackData.url || "",
-                                                imageUrl: trackData.imageUrl || trackData.cover || "",
-                                                duration: finalDur,
-                                                audioId: trackData.audioId || trackData.id || safeTaskId
-                                            });
-                                        }
+                                // PEMBERSIHAN: Jika API sudah selesai tapi ternyata cuma ngasih 1 lagu, hapus kotak loading ke-2 agar tidak nyangkut
+                                if (pollData.tracks && pollData.tracks.length < createdDocIds.length) {
+                                    for (let i = pollData.tracks.length; i < createdDocIds.length; i++) {
+                                        await deleteDoc(doc(db, "render_gallery", createdDocIds[i]));
                                     }
-                                    if (typeof showIphoneToast === 'function') {
-                                        showIphoneToast("Selesai", "Lagu berhasil dibuat!", "fa-check-circle");
-                                    }
+                                }
+                                
+                                if (typeof showIphoneToast === 'function') {
+                                    showIphoneToast("Selesai", "Lagu berhasil dibuat!", "fa-check-circle");
                                 }
                             } 
                             else if (pollData.status === 'failed' || pollData.status === 'error') {
