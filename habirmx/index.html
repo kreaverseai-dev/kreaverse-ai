@@ -5244,17 +5244,27 @@
                         if(typeof updateTopProgress === 'function') updateTopProgress(45, "Mengacak fingerprint sidik jari baru...");
                         
                         // =================================================================
-                        // PERMINTAAN USER: SETINGAN PITCH/SPEED TETAP, BYPASS DIMAKSIMALKAN
+                        // LOGIKA BARU: ABSOLUT DSP (NADA, TEMPO, & DURASI TETAP ASLI 100%)
                         // =================================================================
+                        
+                        // 1. KEMBALIKAN DURASI UTUH (TIDAK ADA POTONGAN SAMA SEKALI)
+                        const trimStartEl = document.getElementById('trimStartInput');
+                        if (trimStartEl) trimStartEl.value = "00:00"; 
+
                         const activeTab = localStorage.getItem('krea_dsp_tab') || 'v1';
                         const masterToggle = document.getElementById('globalMasterToggle');
                         if (masterToggle) masterToggle.checked = true;
                         
                         if (activeTab === 'v1') {
-                            // V1: Maksimalkan Stego & Timbre secara absolut
+                            // KUNCI NADA & TEMPO KE ASLI (0 dan 1.0x)
+                            const pitchEl = document.getElementById('sliderPitchV1');
+                            if (pitchEl) { pitchEl.value = 0; document.getElementById('valPitchV1').innerText = '0'; }
+                            const tempoEl = document.getElementById('sliderTempoV1');
+                            if (tempoEl) { tempoEl.value = 1.0; document.getElementById('valTempoV1').innerText = '1.00x'; }
+
+                            // MAKSIMALKAN EFEK PENYAMARAN (TANPA MERUSAK SUARA)
                             const timbreEl = document.getElementById('sliderTimbreV1');
                             const stegoEl = document.getElementById('sliderStegoV1');
-                            
                             if (timbreEl) { timbreEl.value = 75; document.getElementById('valTimbreV1').innerText = '75%'; }
                             if (stegoEl) { stegoEl.value = 95; document.getElementById('valStegoV1').innerText = '95%'; }
                             
@@ -5265,7 +5275,14 @@
                                 if (el) el.checked = true; 
                             });
                         } else {
-                            // V2: Maksimalkan Stego V2
+                            // KUNCI NADA & TEMPO KE ASLI (0 dan 1.0x)
+                            const pitchV2 = document.getElementById('pitchSlider');
+                            if (pitchV2) { pitchV2.value = 0; document.getElementById('valKreaversePitchText').innerText = '0'; }
+                            const speedV2 = document.getElementById('kreaverseSpeed');
+                            if (speedV2) { speedV2.value = 1.0; document.getElementById('valKreaverseSpeedText').innerText = '1.00x'; }
+                            if(typeof window.updateKreaverseVal === 'function') window.updateKreaverseVal();
+
+                            // Maksimalkan Stego V2
                             const stegoV2 = document.getElementById('sliderStegoV2');
                             if (stegoV2) { stegoV2.value = 95; document.getElementById('valStegoV2').innerText = '95%'; }
 
