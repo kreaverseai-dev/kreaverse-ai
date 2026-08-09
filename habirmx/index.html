@@ -12170,8 +12170,7 @@ window.startDspBypassAndUpload = async function() {
                                 // SMART TEMPO ANALYZER LOGIC
                                 mstLiveSource.preservesPitch = true; 
                                 if (window.isTempoNormalized) {
-                                    // REVISI: 0.85 terlalu ekstrem dan bikin fales/letoy. 0.95 jauh lebih natural untuk vokal.
-                                    mstLiveSource.playbackRate.value = 0.95; 
+                                    mstLiveSource.playbackRate.value = window.suggestedPlaybackRate || 1.0; 
                                 } else {
                                     mstLiveSource.playbackRate.value = 1.0;
                                 }
@@ -12189,30 +12188,30 @@ window.startDspBypassAndUpload = async function() {
                                     return curve;
                                 };
                                 mstLiveNodes.noiseGate = mstLiveAudioCtx.createWaveShaper();
-                                mstLiveNodes.noiseGate.curve = makeMstGate(0.015); // Threshold diperbesar untuk menangkap noise Suno AI yang tebal
+                                mstLiveNodes.noiseGate.curve = makeMstGate(0.015); 
                                 
                                 mstLiveNodes.hissFilter = mstLiveAudioCtx.createBiquadFilter();
                                 mstLiveNodes.hissFilter.type = 'lowpass';
-                                mstLiveNodes.hissFilter.frequency.value = 10500; // Frekuensi potong diturunkan agar desis tajam hilang
+                                mstLiveNodes.hissFilter.frequency.value = 10500; 
 
                                 mstLiveNodes.deHarsher = mstLiveAudioCtx.createBiquadFilter();
                                 mstLiveNodes.deHarsher.type = 'peaking';
                                 mstLiveNodes.deHarsher.frequency.value = 4500; 
-                                mstLiveNodes.deHarsher.Q.value = 1.0; // FIX: Lebarkan jangkauan agar lebih natural
-                                mstLiveNodes.deHarsher.gain.value = -9.0; // FIX: Potong lebih dalam agar telinga tidak sakit
+                                mstLiveNodes.deHarsher.Q.value = 1.0; 
+                                mstLiveNodes.deHarsher.gain.value = -9.0; 
 
                                 // --- UPGRADED: REAL BASS & KICK ENHANCER ---
                                 mstLiveNodes.bassBoost = mstLiveAudioCtx.createBiquadFilter();
                                 mstLiveNodes.bassBoost.type = 'lowshelf';
                                 mstLiveNodes.bassBoost.frequency.value = 75; 
-                                mstLiveNodes.bassBoost.gain.value = 2.5; // FIX: Turunkan lagi agar musik tidak sember
+                                mstLiveNodes.bassBoost.gain.value = 2.5; 
 
                                 // --- UPGRADED: VOCAL & MELODY CLARITY ---
                                 mstLiveNodes.vocalPresence = mstLiveAudioCtx.createBiquadFilter();
                                 mstLiveNodes.vocalPresence.type = 'peaking';
                                 mstLiveNodes.vocalPresence.frequency.value = 3200; 
                                 mstLiveNodes.vocalPresence.Q.value = 1.2;
-                                mstLiveNodes.vocalPresence.gain.value = 1.5; // FIX: Kurangi clarity agar vokal tidak terlalu tajam
+                                mstLiveNodes.vocalPresence.gain.value = 1.5; 
 
                                 mstLiveNodes.eqLow = mstLiveAudioCtx.createBiquadFilter(); mstLiveNodes.eqLow.type = 'lowshelf'; mstLiveNodes.eqLow.frequency.value = 60;
                                 mstLiveNodes.eqLMid = mstLiveAudioCtx.createBiquadFilter(); mstLiveNodes.eqLMid.type = 'peaking'; mstLiveNodes.eqLMid.frequency.value = 300; mstLiveNodes.eqLMid.Q.value = 1.0;
@@ -12225,24 +12224,24 @@ window.startDspBypassAndUpload = async function() {
                                 
                                 mstLiveNodes.makeUp = mstLiveAudioCtx.createGain();
                                 
+                                // --- ANTI-CLIPPING BRICKWALL LIMITER ---
                                 mstLiveNodes.limiter = mstLiveAudioCtx.createDynamicsCompressor();
-                                mstLiveNodes.limiter.threshold.value = -1.0;
+                                mstLiveNodes.limiter.threshold.value = -0.3; // Batas absolut agar tidak pecah
                                 mstLiveNodes.limiter.knee.value = 0.0;
                                 mstLiveNodes.limiter.ratio.value = 20.0;
                                 mstLiveNodes.limiter.attack.value = 0.001;
-                                mstLiveNodes.limiter.release.value = 0.15; // REVISI: Dilambatkan (150ms) agar audio tidak terasa "ketarik" / pumping
+                                mstLiveNodes.limiter.release.value = 0.05; 
 
-                                // --- REVERB KHUSUS VOKAL (REVISI EXTREME: ANTI GEMA INSTRUMEN) ---
+                                // --- REVERB KHUSUS VOKAL ---
                                 const revLen = mstLiveAudioCtx.sampleRate * 0.5; 
                                 const impulse = mstLiveAudioCtx.createBuffer(2, revLen, mstLiveAudioCtx.sampleRate);
                                 for (let i = 0; i < 2; i++) {
                                     const ch = impulse.getChannelData(i);
-                                    for (let j = 0; j < revLen; j++) ch[j] = (Math.random() * 2 - 1) * Math.pow(1 - j / revLen, 3); // REVISI: Ekor reverb lebih natural (pangkat 3)
+                                    for (let j = 0; j < revLen; j++) ch[j] = (Math.random() * 2 - 1) * Math.pow(1 - j / revLen, 3); 
                                 }
                                 mstLiveNodes.convolver = mstLiveAudioCtx.createConvolver();
                                 mstLiveNodes.convolver.buffer = impulse;
                                 
-                                // CASCADE HIGHPASS FILTER (-24dB/oct)
                                 mstLiveNodes.revHPF = mstLiveAudioCtx.createBiquadFilter();
                                 mstLiveNodes.revHPF.type = 'highpass';
                                 mstLiveNodes.revHPF.frequency.value = 1600; 
@@ -12253,18 +12252,29 @@ window.startDspBypassAndUpload = async function() {
 
                                 mstLiveNodes.revLPF = mstLiveAudioCtx.createBiquadFilter();
                                 mstLiveNodes.revLPF.type = 'lowpass';
-                                mstLiveNodes.revLPF.frequency.value = 3000; // REVISI: Potong frekuensi tinggi reverb agar tidak metallic
+                                mstLiveNodes.revLPF.frequency.value = 3000; 
                                 
-                                // PRE-DELAY: Mencegah Transient/Pukulan Instrumen menjadi bergema
                                 mstLiveNodes.revPreDelay = mstLiveAudioCtx.createDelay();
                                 mstLiveNodes.revPreDelay.delayTime.value = 0.005; 
                                 
                                 mstLiveNodes.wetGain = mstLiveAudioCtx.createGain();
-                                mstLiveNodes.wetGain.gain.value = 0.00; // FIX: Jadikan 0 agar gema hilang total dan jernih
+                                mstLiveNodes.wetGain.gain.value = 0.00; 
                                 
                                 mstLiveNodes.dryGain = mstLiveAudioCtx.createGain();
                                 mstLiveNodes.dryGain.gain.value = 1.0;
 
+                                // --- A/B TESTING ROUTING LOGIC (FIXED) ---
+                                mstLiveNodes.masterOutGain = mstLiveAudioCtx.createGain();
+                                mstLiveNodes.masterOutGain.gain.value = 1.0; 
+
+                                mstLiveNodes.rawOutGain = mstLiveAudioCtx.createGain();
+                                mstLiveNodes.rawOutGain.gain.value = 0.0; 
+
+                                // Jalur Raw (Bypass)
+                                mstLiveSource.connect(mstLiveNodes.rawOutGain); 
+                                mstLiveNodes.rawOutGain.connect(mstLiveAudioCtx.destination);
+
+                                // Jalur Mastered
                                 mstLiveSource.connect(mstLiveNodes.inGain);
                                 mstLiveNodes.inGain.connect(mstLiveNodes.noiseGate);
                                 mstLiveNodes.noiseGate.connect(mstLiveNodes.hissFilter);
@@ -12278,36 +12288,31 @@ window.startDspBypassAndUpload = async function() {
                                 mstLiveNodes.eqHMid.connect(mstLiveNodes.eqHigh);
                                 mstLiveNodes.eqHigh.connect(mstLiveNodes.comp);
                                 
-                                // Split ke Reverb (Hanya Vokal) & Dry (Semua Suara)
                                 mstLiveNodes.comp.connect(mstLiveNodes.dryGain);
                                 mstLiveNodes.comp.connect(mstLiveNodes.revHPF);
-                                mstLiveNodes.revHPF.connect(mstLiveNodes.revHPF2); // Filter 1 ke Filter 2
-                                mstLiveNodes.revHPF2.connect(mstLiveNodes.revLPF); // Filter 2 ke Lowpass
-                                mstLiveNodes.revLPF.connect(mstLiveNodes.revPreDelay); // Masuk Delay dulu
-                                mstLiveNodes.revPreDelay.connect(mstLiveNodes.convolver); // Baru di-reverb
+                                mstLiveNodes.revHPF.connect(mstLiveNodes.revHPF2); 
+                                mstLiveNodes.revHPF2.connect(mstLiveNodes.revLPF); 
+                                mstLiveNodes.revLPF.connect(mstLiveNodes.revPreDelay); 
+                                mstLiveNodes.revPreDelay.connect(mstLiveNodes.convolver); 
                                 mstLiveNodes.convolver.connect(mstLiveNodes.wetGain);
                                 
                                 mstLiveNodes.dryGain.connect(mstLiveNodes.makeUp);
                                 mstLiveNodes.wetGain.connect(mstLiveNodes.makeUp);
                                 
                                 mstLiveNodes.makeUp.connect(mstLiveNodes.limiter);
-                                
-                                // --- A/B TESTING ROUTING LOGIC ---
-                                mstLiveNodes.masterOutGain = mstLiveAudioCtx.createGain();
-                                mstLiveNodes.masterOutGain.gain.value = 1.0; 
                                 mstLiveNodes.limiter.connect(mstLiveNodes.masterOutGain);
                                 mstLiveNodes.masterOutGain.connect(mstLiveAudioCtx.destination);
-
-                                mstLiveNodes.rawOutGain = mstLiveAudioCtx.createGain();
-                                mstLiveNodes.rawOutGain.gain.value = 0.0; 
-                                mstLiveSource.connect(mstLiveNodes.rawOutGain); 
-                                mstLiveNodes.rawOutGain.connect(mstLiveAudioCtx.destination);
 
                                 mstLiveNodes.analyser = mstLiveAudioCtx.createAnalyser();
                                 mstLiveNodes.analyser.fftSize = 1024;
                                 mstLiveNodes.masterOutGain.connect(mstLiveNodes.analyser);
                                 mstLiveNodes.rawOutGain.connect(mstLiveNodes.analyser);
 
+                                // Set nilai awal dari UI
+                                document.getElementById('mstGenreVal').value = autoGenre;
+                                document.getElementById('mstGenreLabel').innerText = autoGenreLabel;
+                                document.getElementById('mstDynVal').value = autoDyn;
+                                document.getElementById('mstDynLabel').innerText = autoDynLabel;
                                 window.updateLiveNodes(); 
                                 
                                 mstLiveSource.start(0, mstPauseTime);
@@ -12327,18 +12332,19 @@ window.startDspBypassAndUpload = async function() {
                                             btnRaw.classList.remove('active-raw');
                                         }
                                     }
-                                    if (mstLiveNodes && mstLiveNodes.bypassGain && mstLiveNodes.masterGain && mstLiveAudioCtx) {
+                                    if (mstLiveNodes && mstLiveNodes.rawOutGain && mstLiveNodes.masterOutGain && mstLiveAudioCtx) {
                                         const t = mstLiveAudioCtx.currentTime;
                                         if (mode === 'raw') {
-                                            mstLiveNodes.bypassGain.gain.setTargetAtTime(1.0, t, 0.03);
-                                            mstLiveNodes.masterGain.gain.setTargetAtTime(0.0, t, 0.03);
+                                            mstLiveNodes.rawOutGain.gain.setTargetAtTime(1.0, t, 0.03);
+                                            mstLiveNodes.masterOutGain.gain.setTargetAtTime(0.0, t, 0.03);
                                         } else {
-                                            mstLiveNodes.bypassGain.gain.setTargetAtTime(0.0, t, 0.03);
-                                            mstLiveNodes.masterGain.gain.setTargetAtTime(1.0, t, 0.03);
+                                            mstLiveNodes.rawOutGain.gain.setTargetAtTime(0.0, t, 0.03);
+                                            mstLiveNodes.masterOutGain.gain.setTargetAtTime(1.0, t, 0.03);
                                         }
                                     }
                                 };
                                 window.currentABMode = 'v6';
+                            };
 
                                 function drawABVisualizer() {
                                     if (!mstIsPlaying || !mstLiveNodes.analyser) return;
