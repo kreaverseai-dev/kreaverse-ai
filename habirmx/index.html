@@ -11577,6 +11577,28 @@ window.startDspBypassAndUpload = async function() {
                 return;
             }
 
+            // 1. AUTO-DETECT GENRE & DYNAMICS BERDASARKAN PROMPT/JUDUL
+            let autoGenre = 'pop';
+            let autoGenreLabel = 'Pop / Balanced';
+            let autoDyn = 'balanced';
+            let autoDynLabel = 'Balanced (Pop/Dangdut)';
+            
+            const combinedText = ((docData.prompt || "") + " " + (docData.title || "")).toLowerCase();
+            
+            if (combinedText.includes('dangdut') || combinedText.includes('koplo')) { 
+                autoGenre = 'dangdut'; autoGenreLabel = 'Dangdut / Koplo'; autoDyn = 'balanced'; autoDynLabel = 'Balanced (Pop/Dangdut)';
+            } else if (combinedText.includes('sholawat') || combinedText.includes('religi') || combinedText.includes('islamic') || combinedText.includes('arab')) { 
+                autoGenre = 'sholawat'; autoGenreLabel = 'Sholawat / Religi'; autoDyn = 'clean'; autoDynLabel = 'Clean (Acoustic/Religi)';
+            } else if (combinedText.includes('dj') || combinedText.includes('remix') || combinedText.includes('edm') || combinedText.includes('house')) { 
+                autoGenre = 'dj'; autoGenreLabel = 'EDM / House'; autoDyn = 'loud'; autoDynLabel = 'Loud (EDM/Rock)';
+            } else if (combinedText.includes('horeg') || combinedText.includes('bass') || combinedText.includes('phonk')) { 
+                autoGenre = 'dj_horeg'; autoGenreLabel = 'DJ Horeg / BassBoost'; autoDyn = 'extreme'; autoDynLabel = 'Extreme (Horeg/Phonk)';
+            } else if (combinedText.includes('rock') || combinedText.includes('metal')) { 
+                autoGenre = 'rock'; autoGenreLabel = 'Rock / Metal'; autoDyn = 'loud'; autoDynLabel = 'Loud (EDM/Rock)';
+            } else if (combinedText.includes('acoustic') || combinedText.includes('folk') || combinedText.includes('lofi')) { 
+                autoGenre = 'acoustic'; autoGenreLabel = 'Acoustic / Folk'; autoDyn = 'clean'; autoDynLabel = 'Clean (Acoustic/Religi)';
+            }
+
             // Buat Modal UI Mastering Profesional secara Dinamis
             let overlay = document.getElementById('masteringProModal');
             if (!overlay) {
@@ -14378,143 +14400,7 @@ window.startDspBypassAndUpload = async function() {
     };
 </script>
 <script>
-// OVERRIDE MASTERING PLAYER & A/B TOGGLE (100% STREAMING MOBILE FIX)
-(function() {
-    let liveAudio = null;
-    let liveCtx = null;
-    let liveSource = null;
-    let bypassGain = null;
-    let masterGain = null;
-
-    window.toggleABMastering = function(mode) {
-        window.currentABMode = mode;
-        const btnRaw = document.getElementById('btnRawSuno');
-        const btnV6 = document.getElementById('btnV6Pro');
-        if (btnRaw && btnV6) {
-            if (mode === 'raw') {
-                btnRaw.classList.add('active-raw');
-                btnV6.classList.remove('active-v6');
-            } else {
-                btnRaw.classList.remove('active-raw');
-                btnV6.classList.add('active-v6');
-            }
-        }
-        if (bypassGain && masterGain && liveCtx) {
-            const t = liveCtx.currentTime;
-            if (mode === 'raw') {
-                bypassGain.gain.setTargetAtTime(1.0, t, 0.02);
-                masterGain.gain.setTargetAtTime(0.0, t, 0.02);
-            } else {
-                bypassGain.gain.setTargetAtTime(0.0, t, 0.02);
-                masterGain.gain.setTargetAtTime(1.0, t, 0.02);
-            }
-        }
-    };
-
-    document.addEventListener('click', function(e) {
-        const btn = e.target.closest('#mstPlayBtn');
-        if (!btn) return;
-        
-        e.preventDefault();
-        e.stopPropagation();
-
-        const titleEl = document.getElementById('mstAudioName');
-        if (!titleEl) return;
-
-        const currentDoc = window.globalLibraryDocs ? window.globalLibraryDocs.find(d => {
-            const clean = (d.title || "Untitled").replace(/\s*\(Part\s*\d+\)/gi, '').replace(/\s*-\s*Versi\s*\d+/gi, '').trim();
-            return clean === titleEl.innerText.trim();
-        }) : null;
-
-        const targetUrl = currentDoc ? currentDoc.url : null;
-        if (!targetUrl) return;
-
-        if (!liveAudio) {
-            liveAudio = new Audio();
-            liveAudio.crossOrigin = "anonymous";
-        }
-
-        const proxyUrl = "https://kreaverse-proxy.kreaverse-ai.workers.dev/?targetUrl=" + encodeURIComponent(targetUrl);
-
-        if (liveAudio.src !== proxyUrl && liveAudio.src !== targetUrl) {
-            liveAudio.src = proxyUrl;
-        }
-
-        const timeEl = document.getElementById('mstLiveTime');
-
-        liveAudio.ontimeupdate = function() {
-            if (timeEl && isFinite(liveAudio.duration)) {
-                const curM = Math.floor(liveAudio.currentTime / 60);
-                const curS = Math.floor(liveAudio.currentTime % 60).toString().padStart(2, '0');
-                const durM = Math.floor(liveAudio.duration / 60);
-                const durS = Math.floor(liveAudio.duration % 60).toString().padStart(2, '0');
-                timeEl.innerText = curM + ":" + curS + " / " + durM + ":" + durS;
-            }
-        };
-
-        liveAudio.onended = function() {
-            btn.innerHTML = '<i class="fa-solid fa-play" style="margin-left: 3px;"></i>';
-        };
-
-        if (!liveCtx) {
-            try {
-                liveCtx = new (window.AudioContext || window.webkitAudioContext)();
-                liveSource = liveCtx.createMediaElementSource(liveAudio);
-
-                bypassGain = liveCtx.createGain();
-                masterGain = liveCtx.createGain();
-
-                const mode = window.currentABMode || 'v6';
-                bypassGain.gain.value = (mode === 'raw') ? 1.0 : 0.0;
-                masterGain.gain.value = (mode === 'raw') ? 0.0 : 1.0;
-
-                const eqLow = liveCtx.createBiquadFilter(); eqLow.type = 'lowshelf'; eqLow.frequency.value = 80; eqLow.gain.value = 3.0;
-                const eqHigh = liveCtx.createBiquadFilter(); eqHigh.type = 'highshelf'; eqHigh.frequency.value = 10000; eqHigh.gain.value = 2.5;
-                const comp = liveCtx.createDynamicsCompressor(); comp.threshold.value = -12; comp.ratio.value = 3.0;
-
-                liveSource.connect(bypassGain);
-                bypassGain.connect(liveCtx.destination);
-
-                liveSource.connect(eqLow);
-                eqLow.connect(eqHigh);
-                eqHigh.connect(comp);
-                comp.connect(masterGain);
-                masterGain.connect(liveCtx.destination);
-            } catch(err) {
-                console.warn("AudioContext Setup:", err);
-            }
-        }
-
-        if (liveCtx && liveCtx.state === 'suspended') {
-            liveCtx.resume();
-        }
-
-        if (liveAudio.paused) {
-            liveAudio.play().then(() => {
-                btn.innerHTML = '<i class="fa-solid fa-pause"></i>';
-            }).catch(() => {
-                liveAudio.src = targetUrl;
-                liveAudio.play().then(() => {
-                    btn.innerHTML = '<i class="fa-solid fa-pause"></i>';
-                });
-            });
-        } else {
-            liveAudio.pause();
-            btn.innerHTML = '<i class="fa-solid fa-play" style="margin-left: 3px;"></i>';
-        }
-    });
-
-    document.addEventListener('click', function(e) {
-        if (e.target.closest('.mst-close') || e.target.classList.contains('mst-close')) {
-            if (liveAudio) {
-                liveAudio.pause();
-                liveAudio.currentTime = 0;
-            }
-            const btn = document.getElementById('mstPlayBtn');
-            if (btn) btn.innerHTML = '<i class="fa-solid fa-play" style="margin-left: 3px;"></i>';
-        }
-    });
-})();
+// OVERRIDE DIHAPUS KARENA MERUSAK WEB AUDIO API DAN A/B TESTING
 </script>
 </body>
 </html>
