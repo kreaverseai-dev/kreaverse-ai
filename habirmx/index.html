@@ -5348,6 +5348,9 @@
 
             if(typeof hideTopProgress === 'function') hideTopProgress();
             
+            // FIX: Buka kunci sistem sebelum memanggil generateAudioSong agar tidak terblokir "Sabar"
+            window.isGeneratingSong = false;
+            
             // 4. Langsung eksekusi tombol Generate Otomatis!
             setTimeout(() => {
                 if (typeof window.generateAudioSong === 'function') {
