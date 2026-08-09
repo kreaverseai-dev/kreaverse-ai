@@ -12372,11 +12372,10 @@ window.startDspBypassAndUpload = async function() {
                                     ctx.stroke();
                                 }
                                 drawABVisualizer();
-                            };
 
-                            playBtn.innerHTML = '<i class="fa-solid fa-play" style="margin-left: 3px;"></i>';
-                            timeEl.innerText = "0:00 / " + formatTime(audioBuffer.duration);
-                            fetchSuccess = true;
+                                playBtn.innerHTML = '<i class="fa-solid fa-play" style="margin-left: 3px;"></i>';
+                                timeEl.innerText = "0:00 / " + formatTime(audioBuffer.duration);
+                                fetchSuccess = true;
 
                             // FUNGSI PLAY/PAUSE YANG HILANG DIKEMBALIKAN
                             playBtn.onclick = () => {
