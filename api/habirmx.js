@@ -1186,19 +1186,30 @@ ATURAN MUTLAK:
                     tracks.push({ audioId: resData.id || resData.audio_id || resData.audioId || taskId, audioUrl: audioUrlVal, imageUrl: findImageUrlRecursively(resData) || "https://i.postimg.cc/Jh211FTG/46cc61ec-de7f-4c62-8245-946e22312d2b.jpg" });
                 }
 
-                // REVISI BACKEND: Gunakan pelacak pintar untuk menemukan array lagu sedalam apapun
-                let searchTargets = findTracksArrayRecursively(resData) || [];
+                // REVISI BACKEND: Ekstraksi Track Super Ketat (Anti Lagu Kembar)
+                let searchTargets = [];
+                if (Array.isArray(resData.data)) searchTargets = resData.data;
+                else if (Array.isArray(resData.result)) searchTargets = resData.result;
+                else if (Array.isArray(resData.tracks)) searchTargets = resData.tracks;
+                else if (Array.isArray(resData)) searchTargets = resData;
+                else searchTargets = findTracksArrayRecursively(resData) || [];
+
+                const seenUrls = new Set(); // Kunci utama pencegah duplikat
 
                 if (searchTargets.length > 0) {
                     searchTargets.forEach(item => {
-                        let url = findAudioUrlRecursively(item);
-                        if (url) {
-                            let img = findImageUrlRecursively(item) || "https://i.postimg.cc/Jh211FTG/46cc61ec-de7f-4c62-8245-946e22312d2b.jpg";
+                        // Cari URL HANYA di dalam item ini, jangan bocor ke item lain
+                        let url = item.audio_url || item.audioUrl || item.url || item.download_url || findAudioUrlRecursively(item);
+                        
+                        if (url && typeof url === 'string' && url.startsWith('http') && !seenUrls.has(url)) {
+                            seenUrls.add(url); // Catat URL agar tidak dimasukkan 2 kali
+                            
+                            let img = item.image_url || item.imageUrl || item.cover_url || item.coverUrl || findImageUrlRecursively(item) || "https://i.postimg.cc/Jh211FTG/46cc61ec-de7f-4c62-8245-946e22312d2b.jpg";
                             let dur = item.duration || item.play_time || null;
                             let finalAudioId = item.id || item.audio_id || item.audioId || taskId;
+                            
                             tracks.push({ 
                                 audioId: finalAudioId, 
-                                audio_id: finalAudioId, // Fallback aman untuk frontend
                                 audioUrl: url, 
                                 imageUrl: img,
                                 duration: dur 
@@ -1207,14 +1218,13 @@ ATURAN MUTLAK:
                     });
                 }
 
-                // Jika gagal ekstrak array dan tracks masih kosong, cari 1 URL secara rekursif global
+                // Fallback jika API hanya mengembalikan 1 lagu tanpa array
                 if (tracks.length === 0) {
-                    audioUrlVal = findAudioUrlRecursively(resData) || audioUrlVal;
-                    if (audioUrlVal) {
+                    audioUrlVal = resData.audio_url || resData.audioUrl || resData.url || resData.download_url || findAudioUrlRecursively(resData) || audioUrlVal;
+                    if (audioUrlVal && !seenUrls.has(audioUrlVal)) {
                         let finalAudioId = resData.id || resData.audio_id || resData.audioId || taskId;
                         tracks.push({ 
                             audioId: finalAudioId, 
-                            audio_id: finalAudioId, // Fallback aman untuk frontend
                             audioUrl: audioUrlVal, 
                             imageUrl: findImageUrlRecursively(resData) || "https://i.postimg.cc/Jh211FTG/46cc61ec-de7f-4c62-8245-946e22312d2b.jpg" 
                         });
@@ -1223,17 +1233,6 @@ ATURAN MUTLAK:
                 
                 if (tracks.length > 0) audioUrlVal = tracks[0].audioUrl;
                 if (!audioUrlVal) { isCompleted = false; isProcessing = true; }
-
-                // Mencegah duplikasi track dari respons API
-                const uniqueTracks = [];
-                const seenUrls = new Set();
-                for (const t of tracks) {
-                    if (t.audioUrl && !seenUrls.has(t.audioUrl)) {
-                        seenUrls.add(t.audioUrl);
-                        uniqueTracks.push(t);
-                    }
-                }
-                tracks = uniqueTracks;
 
                 // FIX BUG 4 TRACK: Logika Auto-Split Backend DIHAPUS TOTAL.
                 // Penyimpanan ke Firebase sekarang 100% ditangani oleh Frontend (Sistem Polling)
