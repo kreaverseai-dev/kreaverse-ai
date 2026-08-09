@@ -3163,36 +3163,36 @@
                                 styleInput.value = currentStyle ? currentStyle + ", " + targetMantra : targetMantra;
                             };
 
-                            // OPTIMASI NEGATIVE TAGS (Dibatasi agar tidak error API)
+                            // OPTIMASI NEGATIVE TAGS & SLIDER (Mencegah DSP Noise ikut ter-copy)
                             if (type === 'clone') {
-                                negTags.value = "altered melody, different vocals, bad quality, noise";
-                                audioW.value = 0.95; // Sangat tinggi agar identik
-                                styleW.value = 0.1;  // Rendah agar tidak merubah gaya
+                                negTags.value = "altered melody, different vocals, bad quality, noise, hiss, static, lo-fi";
+                                audioW.value = 0.45; // Diturunkan agar kresek DSP tidak ikut, tapi melodi tetap sama
+                                styleW.value = 0.8;  // Dinaikkan agar AI fokus membangun ulang audio yang jernih
                                 weirdW.value = 0.0;  // Nol improvisasi
                                 safeAppendMantra(mantra);
-                                showIphoneToast("Preset Aktif", "Mode Clone Identik diterapkan. Nada & Vokal dikunci 100%.", "fa-copy");
+                                showIphoneToast("Preset Aktif", "Mode Clone Identik diterapkan. Melodi dikunci, noise difilter.", "fa-copy");
                             } 
                             else if (type === 'genre_swap') {
-                                negTags.value = "altered vocal melody, off-key, bad mixing, noise";
-                                audioW.value = 0.85; // Tinggi agar cengkok vokal asli tetap terkunci
-                                styleW.value = 0.5;  // Sedang agar genre baru bisa masuk
-                                weirdW.value = 0.1;  // Sangat rendah agar tidak lari nadanya
+                                negTags.value = "altered vocal melody, off-key, bad mixing, noise, hiss";
+                                audioW.value = 0.3;  // Sesuai permintaan user (Gambar 1)
+                                styleW.value = 0.9;  // Sesuai permintaan user (Gambar 1)
+                                weirdW.value = 0.1;  // Sesuai permintaan user (Gambar 1)
                                 safeAppendMantra(remixMantra);
                                 showIphoneToast("Preset Aktif", "Mode Ganti Genre diterapkan. Vokal dikunci, musik menyesuaikan.", "fa-guitar");
                             } 
                             else if (type === 'persona') {
-                                negTags.value = "original singer voice, altered melody, bad mixing, noise";
-                                audioW.value = 0.85; // Tinggi agar nada asli terkunci
-                                styleW.value = 0.4;  // Sedang
+                                negTags.value = "original singer voice, altered melody, bad mixing, noise, hiss";
+                                audioW.value = 0.4;  // Diturunkan agar kresek DSP tidak ikut
+                                styleW.value = 0.8;  // Dinaikkan agar karakter Persona lebih kuat
                                 weirdW.value = 0.1;
                                 safeAppendMantra(personaMantra);
                                 showIphoneToast("Preset Aktif", "Mode Pakai SuaraMu diterapkan. Vokal berhasil diganti.", "fa-microphone-lines");
                             }
                             else if (type === 'remix') {
-                                negTags.value = "bad mixing, noise, low quality";
-                                audioW.value = 0.3;  // Rendah agar AI bebas
-                                styleW.value = 0.8;  // Tinggi agar genre baru sangat dominan
-                                weirdW.value = 0.7;  // Tinggi agar AI berimprovisasi
+                                negTags.value = "bad mixing, noise, low quality, hiss";
+                                audioW.value = 0.2;  // Sangat rendah agar AI bebas
+                                styleW.value = 0.9;  // Sangat tinggi agar genre baru dominan
+                                weirdW.value = 0.8;  // Sangat tinggi agar AI berimprovisasi
                                 styleInput.value = currentStyle; // Hapus mantra untuk mode bebas
                                 showIphoneToast("Preset Aktif", "Mode Remix Bebas diterapkan. AI bebas berimprovisasi.", "fa-shuffle");
                             }
