@@ -8803,7 +8803,7 @@ window.startDspBypassAndUpload = async function() {
         };
 
 // ============================================================
-        // SMART LYRIC ENCRYPTOR (AMAN UNTUK ARAB, CENGKOK, & NADA TINGGI)
+        // ULTIMATE LYRIC ENCRYPTOR (ANTI-COPYRIGHT & AMAN UNTUK CENGKOK/ARAB)
         // ============================================================
         window.encryptLyrics = function() {
             const lyricsEl = document.getElementById('lyricsInput');
@@ -8814,32 +8814,39 @@ window.startDspBypassAndUpload = async function() {
                 return;
             }
 
-            // 1. Bersihkan karakter tak kasat mata lama agar tidak menumpuk
-            text = text.replace(/[\u200B-\u200D\uFEFF\u200E\u200F]/g, '');
-
-            // 2. Deteksi apakah ada huruf Arab di dalam lirik
-            const hasArabic = /[\u0600-\u06FF]/.test(text);
+            // 1. Bersihkan karakter pengecoh lama agar tidak menumpuk
+            text = text.replace(/[\u200B-\u200D\uFEFF\u200E\u200F\u0640]/g, '');
 
             let encryptedText = "";
+            let inBracket = false;
 
-            if (hasArabic) {
-                // JIKA ARAB: DILARANG KERAS menyisipkan karakter apapun karena akan merusak tajwid/sambungan huruf.
-                // Kita hanya mengandalkan Meta-Tag pelindung.
-                encryptedText = text;
-            } else {
-                // JIKA LATIN: Sisipkan Zero-Width Space (\u200B) HANYA di spasi antar kata, BUKAN di tengah kata!
-                // Ini memecah deteksi kalimat bot Hak Cipta, tapi AI tetap membaca kata secara utuh sehingga cengkok aman.
-                let inBracket = false;
-                for (let i = 0; i < text.length; i++) {
-                    let char = text[i];
-                    if (char === '\x5B') inBracket = true;
-                    if (char === '\x5D') inBracket = false;
+            for (let i = 0; i < text.length; i++) {
+                let char = text[i];
 
-                    encryptedText += char;
+                if (char === '\x5B') inBracket = true;
+                if (char === '\x5D') inBracket = false;
+
+                encryptedText += char;
+
+                // Jangan enkripsi teks di dalam kurung siku [Verse] atau spasi/enter
+                if (!inBracket && char !== ' ' && char !== '\n') {
                     
-                    // Sisipkan pengecoh HANYA setelah spasi, dan di luar kurung [Verse]
-                    if (char === ' ' && !inBracket && Math.random() > 0.2) {
-                        encryptedText += '\u200B';
+                    // DETEKSI HURUF ARAB
+                    if (/[\u0600-\u06FF]/.test(char)) {
+                        // Gunakan Kashida (Tatweel) untuk Arab. Memanjangkan garis huruf tanpa merusak suara/tajwid.
+                        if (Math.random() > 0.4) {
+                            encryptedText += '\u0640';
+                        }
+                    } else {
+                        // UNTUK HURUF LATIN/INDONESIA
+                        // 1. Gunakan Zero-Width Joiner (\u200D) agar AI tetap membaca kata secara menyambung (Cengkok aman)
+                        if (Math.random() > 0.4) {
+                            encryptedText += '\u200D';
+                        }
+                        // 2. Gandakan huruf vokal secara acak (Sangat ampuh mengecoh bot & bagus untuk nada tinggi)
+                        if (/[aiueo]/i.test(char) && Math.random() > 0.7) {
+                            encryptedText += char;
+                        }
                     }
                 }
             }
@@ -8847,19 +8854,13 @@ window.startDspBypassAndUpload = async function() {
             // 3. TRIK RAHASIA: Suntikkan Meta-Tag Paksaan Cengkok & Emosi Manusia
             const cengkokTags = "[Exact Original Melody]\n[Keep Vocal Cadence]\n[Raw Human Emotion]\n\n";
             
-            // Pastikan tag belum ada agar tidak dobel
             if (!encryptedText.includes("[Exact Original Melody]")) {
                 encryptedText = cengkokTags + encryptedText;
             }
 
             lyricsEl.value = encryptedText;
             updateCounter('lyricsInput', 'lyricsCounter', 5000);
-            
-            if (hasArabic) {
-                showIphoneToast("Smart Bypass", "Lirik Arab diamankan. Meta-Tag Cengkok berhasil disuntikkan!", "fa-shield-halved");
-            } else {
-                showIphoneToast("Smart Bypass", "Spasi kata dienkripsi. Meta-Tag Cengkok berhasil disuntikkan!", "fa-shield-halved");
-            }
+            showIphoneToast("Bypass Maksimal", "Lirik dienkripsi tingkat tinggi. Aman untuk pelafalan & cengkok!", "fa-shield-halved");
         };
 
         // OPTIMASI: Inline Web Worker untuk MP3 Encoder (Mencegah UI Freeze/Lag & OOM Crash)
