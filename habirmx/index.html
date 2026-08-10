@@ -5056,7 +5056,7 @@
                                 <div class="suno-prompt" style="color:#DC2626; margin-top:2px; display:-webkit-box; -webkit-line-clamp:1; -webkit-box-orient:vertical; overflow:hidden; font-weight: 500;">Alasan: ${displayError}</div>
                                 <div style="margin-top: 4px; display: flex; gap: 6px; flex-wrap: wrap;">
                                     <button onclick="if(!window.isSelectionMode) window.openErrorDetail('${d.id}')" style="background:#EF4444; color:#fff; border:none; padding:4px 10px; border-radius:6px; font-size:0.7rem; font-weight:800; cursor:pointer; transition:0.2s;"><i class="fa-solid fa-magnifying-glass"></i> Lihat Alasan</button>
-                                    <button onclick="if(!window.isSelectionMode) window.autoRemixFailedAudio('${d.id}')" style="background:#f59e0b; color:#fff; border:none; padding:4px 10px; border-radius:6px; font-size:0.7rem; font-weight:800; cursor:pointer; transition:0.2s; box-shadow: 0 2px 4px rgba(245,158,11,0.3);"><i class="fa-solid fa-rotate-right"></i> Edit Audio</button>
+                                    <button onclick="if(!window.isSelectionMode) { this.disabled=true; this.innerHTML='<i class=\\'fa-solid fa-spinner fa-spin\\'></i> Proses...'; window.autoRemixFailedAudio('${d.id}'); }" style="background:#f59e0b; color:#fff; border:none; padding:4px 10px; border-radius:6px; font-size:0.7rem; font-weight:800; cursor:pointer; transition:0.2s; box-shadow: 0 2px 4px rgba(245,158,11,0.3);"><i class="fa-solid fa-rotate-right"></i> Edit Audio</button>
                                 </div>
                             </div>
                         </div>
