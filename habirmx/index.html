@@ -10884,13 +10884,34 @@ window.startDspBypassAndUpload = async function() {
 
                 generateBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Menghubungi AI...';
 
-                const response = await fetch('/api/habirmx', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email: currentUser.email, providerId, modelId, title, prompt: style, instrumental, lyrics, audioUrl: selectedAudioUrl, options })
-                });
+                // SISTEM TIMEOUT KETAT (Maksimal 15 Detik)
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 15000);
 
-                const data = await response.json();
+                let response;
+                try {
+                    response = await fetch('/api/habirmx', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ email: currentUser.email, providerId, modelId, title, prompt: style, instrumental, lyrics, audioUrl: selectedAudioUrl, options }),
+                        signal: controller.signal
+                    });
+                    clearTimeout(timeoutId);
+                } catch (fetchErr) {
+                    clearTimeout(timeoutId);
+                    if (fetchErr.name === 'AbortError') {
+                        throw new Error("Server AI sedang sibuk/down (Timeout). Silakan coba lagi.");
+                    }
+                    throw fetchErr;
+                }
+
+                let data;
+                try {
+                    data = await response.json();
+                } catch (parseErr) {
+                    throw new Error("Server API mengalami gangguan (Invalid Response).");
+                }
+
                 if (!response.ok) throw new Error(data.error || "Gagal menghubungi API gateway");
                 
                 // FIX: TANGKAP ERROR LANGSUNG DARI RESPON PERTAMA AGAR TIDAK MASUK POLLING!
@@ -11062,10 +11083,14 @@ window.startDspBypassAndUpload = async function() {
                     showIphoneToast("Gagal", displayError, "fa-triangle-exclamation");
                 }
                 
-                // FIX: Buka kunci tombol jika terjadi error di awal (sebelum polling)
-                window.isGeneratingSong = false;
-                generateBtn.disabled = false;
-                generateBtn.innerHTML = originalBtnHtml;
+                // FIX: Kembalikan tombol ke bentuk semula secara paksa
+                if (typeof resetUI === 'function') {
+                    resetUI();
+                } else {
+                    window.isGeneratingSong = false;
+                    generateBtn.disabled = false;
+                    generateBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M12 0L14.59 9.41L24 12L14.59 14.59L12 24L9.41 14.59L0 12L9.41 9.41L12 0Z" /></svg><span style="font-weight: 800; font-size: 1.05rem; letter-spacing: 0.5px;">Buat Lagu</span> <span style="opacity: 0.6; margin: 0 2px; font-size: 1.2rem;">•</span> <span id="generateCostBadge" style="font-weight: 700; font-size: 0.85rem; background: rgba(255,255,255,0.2); padding: 4px 10px; border-radius: 8px;">50 Kredit</span>`;
+                }
             }
         };
 
