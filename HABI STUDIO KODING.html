@@ -741,14 +741,19 @@ Karena output AI memiliki batasan karakter, ikuti aturan ini secara ketat:
       c.innerHTML = html;
     }
 
+    // ==================== SISTEM ANTI-LAG (DEBOUNCE) ====================
+    let statsTimeout;
     function updateCodeStats(textareaId, statsId) {
-      const textarea = document.getElementById(textareaId);
-      const stats = document.getElementById(statsId);
-      if (!textarea || !stats) return;
-      const text = textarea.value;
-      const chars = text.length;
-      const lines = text === '' ? 0 : text.split('\n').length;
-      stats.textContent = `${chars} karakter | ${lines} baris`;
+      clearTimeout(statsTimeout);
+      statsTimeout = setTimeout(() => {
+          const textarea = document.getElementById(textareaId);
+          const stats = document.getElementById(statsId);
+          if (!textarea || !stats) return;
+          const text = textarea.value;
+          const chars = text.length;
+          const lines = text === '' ? 0 : text.split('\n').length;
+          stats.textContent = `${chars} karakter | ${lines} baris`;
+      }, 300); // Delay 0.3 detik agar tidak lag saat paste kode besar
     }
 
     function clearArea(id, statId) {
@@ -1018,91 +1023,37 @@ KODE BARU:
         statusBox.style.background = 'transparent';
     }
 
-    // ==================== MESIN PENCARI CERDAS ANTI-SHIFT ====================
+    // ==================== MESIN PENCARI CERDAS ANTI-SHIFT (VERSI OPTIMASI SUPER RINGAN) ====================
     function findSmartMatch(editorText, searchText) {
-        const isIgnored = (char) => char === ' ' || char === '\n' || char === '\t' || char === '\r' || /[\u200B-\u200D\uFEFF]/.test(char);
-        const normalizeChar = (char) => {
-            if (char === '‘' || char === '’' || char === '`') return "'";
-            if (char === '“' || char === '”') return '"';
-            return char;
-        };
+        const isIgnored = (c) => c <= ' ' || c === '\u200B' || c === '\u200C' || c === '\u200D' || c === '\uFEFF';
+        const norm = (c) => (c === '‘' || c === '’' || c === '`') ? "'" : (c === '“' || c === '”') ? '"' : c;
 
-        let edCleanArr = [];
-        let edMap = [];
-        const len = editorText.length;
-        
-        for (let i = 0; i < len; i++) {
-            const char = editorText[i];
-            if (!isIgnored(char)) {
-                edCleanArr.push(normalizeChar(char));
-                edMap.push(i);
-            }
+        let stClean = '';
+        for (let i = 0; i < searchText.length; i++) {
+            if (!isIgnored(searchText[i])) stClean += norm(searchText[i]);
         }
-
-        let stCleanArr = [];
-        const sLen = searchText.length;
-        for (let i = 0; i < sLen; i++) {
-            const char = searchText[i];
-            if (!isIgnored(char)) {
-                stCleanArr.push(normalizeChar(char));
-            }
-        }
-
-        let edClean = edCleanArr.join('');
-        let stClean = stCleanArr.join('');
-
         if (!stClean) return null;
 
-        let matchIdx = edClean.indexOf(stClean);
-        if (matchIdx !== -1) {
-            return { 
-                start: edMap[matchIdx], 
-                end: edMap[matchIdx + stClean.length - 1] 
-            };
-        }
+        let matchStart = -1;
+        let stIdx = 0;
 
-        return null;
-    }
+        for (let i = 0; i < editorText.length; i++) {
+            let c = editorText[i];
+            if (isIgnored(c)) continue;
+            c = norm(c);
 
-    function findSuggestion(editorText, oldCode) {
-        let codeWithoutComments = oldCode.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/.*$/gm, '').trim();
-
-        const lines = codeWithoutComments.split('\n').map(l => l.trim()).filter(l => l.length > 5);
-        if (lines.length === 0) return null;
-
-        const editorLines = editorText.split('\n');
-        
-        const firstLineNorm = lines[0].replace(/\s+/g, '').toLowerCase();
-        let startIdx = -1;
-        for (let i = 0; i < editorLines.length; i++) {
-            if (editorLines[i].replace(/\s+/g, '').toLowerCase().includes(firstLineNorm)) {
-                startIdx = i;
-                break;
+            if (c === stClean[stIdx]) {
+                if (stIdx === 0) matchStart = i;
+                stIdx++;
+                if (stIdx === stClean.length) return { start: matchStart, end: i };
+            } else {
+                if (stIdx > 0) {
+                    i = matchStart; 
+                    stIdx = 0;
+                }
             }
         }
-        
-        const lastLineNorm = lines[lines.length-1].replace(/\s+/g, '').toLowerCase();
-        let endIdx = -1;
-        for (let i = editorLines.length - 1; i >= 0; i--) {
-            if (editorLines[i].replace(/\s+/g, '').toLowerCase().includes(lastLineNorm)) {
-                endIdx = i;
-                break;
-            }
-        }
-
-        if (startIdx !== -1 && endIdx !== -1 && startIdx <= endIdx) {
-            let start = Math.max(0, startIdx - 1);
-            let end = Math.min(editorLines.length, endIdx + 2);
-            return editorLines.slice(start, end).join('\n');
-        }
         return null;
-    }
-
-    function acceptSuggestion() {
-        const suggestedCode = document.getElementById('suggestedCode').value;
-        document.getElementById('aiOldCode').value = suggestedCode;
-        updateCodeStats('aiOldCode','aiOldStats');
-        autoCheckOldCode(); 
     }
 
     function autoCheckOldCode() {
@@ -1127,26 +1078,12 @@ KODE BARU:
                 ✅ <strong>Kode ditemukan!</strong> Aman untuk diganti.
             </div>`;
       } else {
-        const suggestion = findSuggestion(editor.value, oldCode);
-        
-        if (suggestion) {
-            // Mencegah kode HTML/JS dari 'suggestion' merusak tampilan
-            statusBox.innerHTML = `
-                <div style="background:#ff9800; color:white; padding:0.8rem; border-radius:8px; border-left:4px solid #e65100;">
-                    <strong style="font-size:0.9rem;">⚠️ Kode persis tidak ditemukan!</strong>
-                    <p style="font-size:0.75rem; margin:0.4rem 0;">Sistem menemukan kode serupa tanpa komentar palsu AI. Apakah ini yang Anda maksud?</p>
-                    <textarea id="suggestedCode" style="width:100%; height:80px; margin-top:0.3rem; font-size:0.7rem; color:black; border-radius:4px; padding:0.3rem;" readonly>${escapeHTML(suggestion)}</textarea>
-                    <button onclick="acceptSuggestion()" style="width:100%; margin-top:0.4rem; padding:0.5rem; background:white; color:#ff9800; font-weight:bold; border:none; border-radius:4px; cursor:pointer;">✨ Ya, Gunakan Kode Ini!</button>
-                </div>
-            `;
-        } else {
-            const strictPrompt = STRICT_AI_PROTOCOL + `\n1. REVISI TIDAK DAPAT DITERAPKAN: Potongan "KODE LAMA" yang kamu berikan tidak ditemukan di dalam berkas saat ini. Pastikan menuliskan potongan KODE LAMA yang persis sama tanpa mengubah spasi atau komentar bawaan!`;
-            showStatusError(
-                "KODE TIDAK DITEMUKAN", 
-                "Sistem gagal mencari bahkan dengan Auto-Suggest. AI mungkin salah memberikan file atau memotong kode di tengah.",
-                strictPrompt
-            );
-        }
+        const strictPrompt = STRICT_AI_PROTOCOL + `\n1. REVISI TIDAK DAPAT DITERAPKAN: Potongan "KODE LAMA" yang kamu berikan tidak ditemukan di dalam berkas saat ini. Pastikan menuliskan potongan KODE LAMA yang persis sama tanpa mengubah spasi atau komentar bawaan!`;
+        showStatusError(
+            "KODE TIDAK DITEMUKAN", 
+            "Pastikan potongan KODE LAMA persis sama dengan yang ada di file.",
+            strictPrompt
+        );
       }
     }
 
@@ -1178,24 +1115,16 @@ KODE BARU:
 
         const updatedContent = fullContent.substring(0, match.start) + newCode + fullContent.substring(match.end + 1);
 
+        // LOGIKA KURUNG YANG JAUH LEBIH AMAN (TIDAK GAMPANG ERROR MERAH)
         const checkBracketBalance = (str) => {
-            // Hapus komentar dan isi string (kutip) agar tidak dianggap bracket nyasar
-            const cleanStr = str.replace(/\/\*[\s\S]*?\*\/|([^\\:]|^)\/\/.*$/gm, '')
-                                .replace(/(['"`])(?:(?=(\\?))\2.)*?\1/g, ''); 
-            const stack = [];
-            const pairs = { '}': '{', ')': '(', ']': '[' };
-            for (let char of cleanStr) {
-                if (['{', '(', '['].includes(char)) stack.push(char);
-                else if (['}', ')', ']'].includes(char)) {
-                    if (stack.pop() !== pairs[char]) return false;
-                }
-            }
-            return stack.length === 0;
+            let open = (str.match(/\{/g) || []).length;
+            let close = (str.match(/\}/g) || []).length;
+            return open === close;
         };
 
         let warning = null;
         if (!checkBracketBalance(newCode)) {
-            warning = "Sistem mendeteksi jumlah tanda kurung {} / () / [] tidak seimbang pada Kode Baru Anda.";
+            warning = "Sistem mendeteksi jumlah tanda kurung { } tidak seimbang pada Kode Baru Anda.";
         }
 
         return { success: true, updatedContent, warning, match };
@@ -1247,22 +1176,10 @@ KODE BARU:
 
       const checkAndProceed = () => {
           if (safeCheck.warning) {
-              const bracketPrompt = STRICT_AI_PROTOCOL + `\n1. KESALAHAN SINTAKS/KURUNG: Potongan KODE BARU yang kamu berikan memiliki tanda kurung {}, [], atau () yang TIDAK SEIMBANG. Ini akan memicu Fatal Error / Syntax Error pada website (terutama backend/API). Tolong periksa dan berikan versi KODE BARU yang tanda kurungnya seimbang sempurna!`;
-              
-              // Tampilan Merah (Bahaya) dan Pemblokiran Total (TIDAK ADA TOMBOL PAKSA)
-              statusBox.innerHTML = `
-                <div style="background:var(--danger); color:white; padding:0.9rem; border-radius:8px; border-left:4px solid #b71c1c; box-shadow: 0 4px 12px rgba(229,57,53,0.3);">
-                    <strong style="font-size:0.9rem;">❌ BLOKIR OTOMATIS: SINTAKS ERROR</strong>
-                    <p style="font-size:0.75rem; margin:0.4rem 0;">Sistem mendeteksi tanda kurung <b>{}</b>, <b>[]</b>, atau <b>()</b> pada Kode Baru Anda tidak seimbang. <b>Tindakan diblokir permanen</b> untuk mencegah website Anda mengalami error fatal!</p>
-                    
-                    <textarea id="bracketAiPrompt" style="width:100%; height:110px; margin-top:0.3rem; border-radius:6px; padding:0.4rem; font-size:0.7rem; color:#000; border:none; resize:none;" readonly>${escapeHTML(bracketPrompt)}</textarea>
-                    
-                    <div style="display:flex; gap:0.4rem; margin-top:0.5rem;">
-                        <button onclick="navigator.clipboard.writeText(document.getElementById('bracketAiPrompt').value); toast('Pesan disalin! Kirim ke AI', 'success');" style="width:100%; padding:0.6rem; background:white; color:var(--danger); font-weight:bold; border:none; border-radius:6px; cursor:pointer; font-size:0.8rem; box-shadow: 0 2px 6px rgba(0,0,0,0.15);">📋 Salin Pesan untuk Minta AI Perbaiki</button>
-                    </div>
-                </div>`;
-                
-              // Fungsi Terhenti di sini. Tidak melanjutkan proses penyisipan kode.
+              // Ubah dari Hard Block menjadi Warning Confirm
+              confirm(`⚠️ PERINGATAN SINTAKS!<br><br>${safeCheck.warning}<br><br>Ini bisa menyebabkan error pada website. Apakah Anda yakin kode dari AI ini sudah benar dan ingin tetap melanjutkannya?`, () => {
+                  proceedReplace();
+              });
           } else {
               proceedReplace();
           }
