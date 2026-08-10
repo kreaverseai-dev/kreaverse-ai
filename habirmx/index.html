@@ -969,7 +969,7 @@
             box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.3);
             opacity: 0;
             transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.15);
-            z-index: 100000;
+            z-index: 9999999999; /* FIX: Z-Index dinaikkan agar selalu di atas Modal Mastering */
             width: max-content;
             max-width: 85vw;
             pointer-events: none;
@@ -3884,26 +3884,6 @@
             }
         };
 
-        // --- FUNGSI HAPUS SEMUA MASTERING ---
-        window.deleteAllMasteredTracks = function() {
-            window.kreaConfirm("Hapus Semua", "Yakin ingin menghapus SEMUA lagu mastering dari perangkat dan server?", async () => {
-                showIphoneToast("Memproses", "Sedang menghapus data...", "fa-spinner fa-spin");
-                try {
-                    const masteredDocs = window.globalLibraryDocs.filter(d => d.isMastered === true);
-                    for (let docData of masteredDocs) {
-                        await deleteDoc(doc(db, "render_gallery", docData.id));
-                        if (window.localAudioDB && docData.isLocalMastered) {
-                            await window.localAudioDB.delete(docData.id).catch(e=>e);
-                        }
-                    }
-                    showIphoneToast("Sukses", "Semua lagu mastering berhasil dihapus.", "fa-trash");
-                    window.renderMasteringGalleryUI();
-                } catch(e) {
-                    showIphoneToast("Error", "Gagal menghapus data.", "fa-triangle-exclamation");
-                }
-            });
-        };
-
         // INISIALISASI VARIABEL GLOBAL
         window.globalPlaylistQueue = [];
         window.masteredGalleryQueue = window.masteredGalleryQueue || [];
@@ -5096,6 +5076,9 @@
                     
                     const modeText = d.mode === 'cover' ? 'Cover Lagu' : 'Lagu Sendiri';
                     const modeIcon = d.mode === 'cover' ? '<i class="fa-solid fa-microphone-lines"></i>' : '<i class="fa-solid fa-music"></i>';
+                    
+                    // BADGE MASTERING
+                    const masteringBadge = d.isMastered ? `<span class="suno-badge" style="background: rgba(14, 165, 233, 0.1); border: 1px solid rgba(14, 165, 233, 0.2); color: #0ea5e9; padding: 2px 8px; border-radius: 6px; font-size: 0.65rem; font-weight: 800;"><i class="fa-solid fa-wand-magic-sparkles"></i> Hasil Mastering</span>` : '';
 
                     // Tentukan Track 1 atau Track 2 berdasarkan kelompok waktu
                     const siblings = docs.filter(doc => {
@@ -5133,9 +5116,10 @@
                                     <button onclick="event.stopPropagation(); const s = document.getElementById('title-short-${d.id}'); const f = document.getElementById('title-full-${d.id}'); if(f.classList.contains('hidden')){ f.classList.remove('hidden'); s.classList.add('hidden'); this.innerHTML='<i class=\\'fa-solid fa-chevron-up\\'></i>'; } else { f.classList.add('hidden'); s.classList.remove('hidden'); this.innerHTML='<i class=\\'fa-solid fa-chevron-down\\'></i>'; }" style="background: rgba(0, 122, 255, 0.1); border: none; color: var(--accent-color); border-radius: 6px; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; font-size: 0.7rem;"><i class="fa-solid fa-chevron-down"></i></button>
                                 </div>
                                 
-                                <div style="display: flex; align-items: center; gap: 6px; width: 100%; margin-top: 2px;">
+                                <div style="display: flex; align-items: center; gap: 6px; width: 100%; margin-top: 2px; flex-wrap: wrap;">
                                     <span class="suno-badge" style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.2); color: #059669; padding: 2px 8px; border-radius: 6px; font-size: 0.65rem; font-weight: 800;">${modeIcon} ${modeText}</span>
                                     <span class="suno-badge" style="background: #ffffff; border: 1px solid #bfdbfe; color: var(--text-primary); padding: 2px 8px; border-radius: 6px; font-size: 0.65rem; font-weight: 800; box-shadow: 0 2px 4px rgba(0,0,0,0.02);"><i class="fa-solid fa-compact-disc" style="color: var(--accent-color); margin-right: 4px;"></i>Track ${trackNum}</span>
+                                    ${masteringBadge}
                                 </div>
 
                                 <div class="suno-prompt" style="font-size: 0.75rem; font-weight: 500; color: #334155; margin-top: 2px; display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden;">${displayPrompt}</div>
@@ -5182,6 +5166,27 @@
                     window.showIphoneToast("Dihapus", "Lagu berhasil dihapus.", "fa-trash");
                 } catch(e) {
                     window.showIphoneToast("Error", "Gagal menghapus lagu.", "fa-triangle-exclamation");
+                }
+            });
+        };
+
+        // --- FUNGSI HAPUS SEMUA MASTERING (DIPINDAHKAN KE DALAM MODULE AGAR BISA AKSES DATABASE) ---
+        window.deleteAllMasteredTracks = function() {
+            window.kreaConfirm("Hapus Semua", "Yakin ingin menghapus SEMUA lagu mastering dari perangkat dan server?", async () => {
+                window.showIphoneToast("Memproses", "Sedang menghapus data...", "fa-spinner fa-spin");
+                try {
+                    const masteredDocs = window.globalLibraryDocs.filter(d => d.isMastered === true);
+                    for (let docData of masteredDocs) {
+                        await deleteDoc(doc(db, "render_gallery", docData.id));
+                        if (window.localAudioDB && docData.isLocalMastered) {
+                            await window.localAudioDB.delete(docData.id).catch(e=>e);
+                        }
+                    }
+                    window.showIphoneToast("Sukses", "Semua lagu mastering berhasil dihapus.", "fa-trash");
+                    window.renderMasteringGalleryUI();
+                } catch(e) {
+                    console.error(e);
+                    window.showIphoneToast("Error", "Gagal menghapus data.", "fa-triangle-exclamation");
                 }
             });
         };
