@@ -5192,13 +5192,6 @@
         };
 
         window.autoRemixFailedAudio = async function(docId) {
-            // KUNCI ABSOLUT: Cegah user klik berkali-kali yang menyebabkan 4 lagu muncul
-            if (window.isGeneratingSong) {
-                showIphoneToast("Sabar", "Sistem sedang memproses lagu. Mohon tunggu...", "fa-hand-paper");
-                return;
-            }
-            window.isGeneratingSong = true; // Kunci sistem sekarang
-
             const docData = window.globalLibraryDocs.find(d => d.id === docId);
             if (!docData) { window.isGeneratingSong = false; return; }
 
@@ -5352,9 +5345,6 @@
             }
 
             if(typeof hideTopProgress === 'function') hideTopProgress();
-            
-            // FIX: Buka kunci sistem sebelum memanggil generateAudioSong agar tidak terblokir "Sabar"
-            window.isGeneratingSong = false;
             
             // 4. Langsung eksekusi tombol Generate Otomatis!
             setTimeout(() => {
@@ -10745,12 +10735,6 @@ window.startDspBypassAndUpload = async function() {
         // PROSES PEMICU PEMBUATAN ARANSEMEN LAGU (GENERATE SONG)
         // ============================================================
         window.generateAudioSong = async function() {
-            // 1. KUNCI ABSOLUT: Cek Double Click di detik pertama!
-            if (window.isGeneratingSong) {
-                showIphoneToast("Sabar", "Sistem sedang memproses antrean Anda sebelumnya.", "fa-hand-paper");
-                return;
-            }
-
             // BLOKIR JIKA MAINTENANCE AKTIF
             if (window.isMaintenanceModeActive) {
                 window.showMaintenanceScreen();
@@ -10840,7 +10824,6 @@ window.startDspBypassAndUpload = async function() {
             // =================================================================
             // 2. KUNCI TOMBOL SEKARANG JUGA (Karena semua validasi sudah lolos)
             // =================================================================
-            window.isGeneratingSong = true;
             const originalBtnHtml = generateBtn.innerHTML;
             generateBtn.disabled = true;
             generateBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Menyiapkan Antrean...';
@@ -10935,7 +10918,6 @@ window.startDspBypassAndUpload = async function() {
                 
                 if (data.status === "completed" && data.tracks && data.tracks.length > 0) {
                     // Jika API Synchronous (Langsung Selesai)
-                    window.isGeneratingSong = false;
                     generateBtn.disabled = false;
                     generateBtn.innerHTML = originalBtnHtml;
                 } else {
@@ -11014,15 +10996,13 @@ window.startDspBypassAndUpload = async function() {
                                 } catch(e) {}
                                 
                                 if (typeof showIphoneToast === 'function') {
-                                    showIphoneToast("Selesai", "Lagu berhasil dibuat!", "fa-check-circle");
-                                }
-                                
-                                // FIX: Buka kunci tombol dengan aman
-                                window.isGeneratingSong = false;
-                                generateBtn.disabled = false;
-                                generateBtn.innerHTML = originalBtnHtml;
-                            } 
-                            else if (pollData.status === 'failed' || pollData.status === 'error') {
+                                showIphoneToast("Selesai", "Lagu berhasil dibuat!", "fa-check-circle");
+                            }
+                            
+                            generateBtn.disabled = false;
+                            generateBtn.innerHTML = originalBtnHtml;
+                        } 
+                        else if (pollData.status === 'failed' || pollData.status === 'error') {
                                 clearInterval(pollInterval);
                                 
                                 let finalErrorMsg = pollData.reason || pollData.error || pollData.message || "Gagal diproses oleh server AI.";
@@ -11032,36 +11012,32 @@ window.startDspBypassAndUpload = async function() {
 
                                 try {
                                     for (let i = 0; i < createdDocIds.length; i++) {
-                                        await updateDoc(doc(db, "render_gallery", createdDocIds[i]), {
-                                            status: "failed",
-                                            error: finalErrorMsg
-                                        });
-                                    }
-                                } catch(e) {}
-                                
-                                // FIX: Buka kunci tombol dengan aman
-                                window.isGeneratingSong = false;
-                                generateBtn.disabled = false;
-                                generateBtn.innerHTML = originalBtnHtml;
-                            }
+                                    await updateDoc(doc(db, "render_gallery", createdDocIds[i]), {
+                                        status: "failed",
+                                        error: finalErrorMsg
+                                    });
+                                }
+                            } catch(e) {}
                             
-                            if (pollCount >= maxPolls) {
+                            generateBtn.disabled = false;
+                            generateBtn.innerHTML = originalBtnHtml;
+                        }
+                        
+                        if (pollCount >= maxPolls) {
                                 clearInterval(pollInterval);
                                 try {
                                     for (let i = 0; i < createdDocIds.length; i++) {
-                                        await updateDoc(doc(db, "render_gallery", createdDocIds[i]), {
-                                            status: "failed",
-                                            error: "Timeout: Server AI terlalu lama merespons (Lebih dari 15 Menit)."
-                                        });
-                                    }
-                                } catch(e) {}
-                                
-                                // FIX: Buka kunci tombol dengan aman
-                                window.isGeneratingSong = false;
-                                generateBtn.disabled = false;
-                                generateBtn.innerHTML = originalBtnHtml;
-                            }
-                        } catch (e) {
+                                    await updateDoc(doc(db, "render_gallery", createdDocIds[i]), {
+                                        status: "failed",
+                                        error: "Timeout: Server AI terlalu lama merespons (Lebih dari 15 Menit)."
+                                    });
+                                }
+                            } catch(e) {}
+                            
+                            generateBtn.disabled = false;
+                            generateBtn.innerHTML = originalBtnHtml;
+                        }
+                    } catch (e) {
                             console.error("Polling error:", e);
                             // Jangan buka kunci di sini, biarkan interval mencoba lagi di detik berikutnya
                         }
@@ -11084,15 +11060,14 @@ window.startDspBypassAndUpload = async function() {
                 }
                 
                 // FIX: Kembalikan tombol ke bentuk semula secara paksa
-                if (typeof resetUI === 'function') {
-                    resetUI();
-                } else {
-                    window.isGeneratingSong = false;
-                    generateBtn.disabled = false;
-                    generateBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M12 0L14.59 9.41L24 12L14.59 14.59L12 24L9.41 14.59L0 12L9.41 9.41L12 0Z" /></svg><span style="font-weight: 800; font-size: 1.05rem; letter-spacing: 0.5px;">Buat Lagu</span> <span style="opacity: 0.6; margin: 0 2px; font-size: 1.2rem;">•</span> <span id="generateCostBadge" style="font-weight: 700; font-size: 0.85rem; background: rgba(255,255,255,0.2); padding: 4px 10px; border-radius: 8px;">50 Kredit</span>`;
-                }
+            if (typeof resetUI === 'function') {
+                resetUI();
+            } else {
+                generateBtn.disabled = false;
+                generateBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M12 0L14.59 9.41L24 12L14.59 14.59L12 24L9.41 14.59L0 12L9.41 9.41L12 0Z" /></svg><span style="font-weight: 800; font-size: 1.05rem; letter-spacing: 0.5px;">Buat Lagu</span> <span style="opacity: 0.6; margin: 0 2px; font-size: 1.2rem;">•</span> <span id="generateCostBadge" style="font-weight: 700; font-size: 0.85rem; background: rgba(255,255,255,0.2); padding: 4px 10px; border-radius: 8px;">50 Kredit</span>`;
             }
-        };
+        }
+    };
 
         // ============================================================
         // DISPLAY HASIL LAGU DAN SIMPAN KE USER GALLERY
