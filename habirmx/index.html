@@ -11886,9 +11886,12 @@ window.startDspBypassAndUpload = async function() {
                             <button class="mst-btn-submit" id="btnMulaiManual">Mulai Mastering</button>
                         </div>
                         
-                        <div class="mst-bottom-tabs" style="gap: 12px; padding: 15px 20px; background: #f8fafc;">
-                            <button class="mst-tab-btn active" id="btnTabAuto" onclick="window.switchMstTab('auto')" style="background: #0ea5e9; color: #fff; border-radius: 12px; box-shadow: 0 4px 10px rgba(14,165,233,0.3);"><i class="fa-solid fa-wand-magic-sparkles"></i> Auto Master</button>
-                            <button class="mst-tab-btn" id="btnTabManual" onclick="window.switchMstTab('manual')" style="background: #ffffff; color: #475569; border-radius: 12px; border: 1.5px solid #cbd5e1;"><i class="fa-solid fa-sliders"></i> Live EQ & Mixer</button>
+                        <div style="background: #f8fafc; padding: 10px 20px 15px 20px; border-top: 1px solid #e2e8f0;">
+                            <div style="text-align: center; font-size: 0.7rem; font-weight: 800; color: #94a3b8; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px;">Pilih Mode Mastering</div>
+                            <div style="display: flex; gap: 12px;">
+                                <button class="mst-tab-btn active" id="btnTabAuto" onclick="window.switchMstTab('auto')" style="background: #0ea5e9; color: #fff; border-radius: 12px; box-shadow: 0 4px 10px rgba(14,165,233,0.3);"><i class="fa-solid fa-wand-magic-sparkles"></i> Mode Auto</button>
+                                <button class="mst-tab-btn" id="btnTabManual" onclick="window.switchMstTab('manual')" style="background: #ffffff; color: #475569; border-radius: 12px; border: 1.5px solid #cbd5e1;"><i class="fa-solid fa-sliders"></i> Mode Manual</button>
+                            </div>
                         </div>
                     </div>
                 `;
@@ -12043,8 +12046,8 @@ window.startDspBypassAndUpload = async function() {
                 document.getElementById('mstBodyAuto').style.display = 'none';
                 document.getElementById('mstBodyManual').style.display = 'none';
                 
-                // Pindahkan Live Preview Card ke tab yang aktif
-                const previewCard = document.querySelector('.mst-card:first-child');
+                // Pindahkan Live Preview Card (A/B Testing) ke tab yang aktif
+                const previewCard = document.getElementById('abTestingCard');
                 
                 if (tab === 'auto') {
                     btnAuto.style.background = '#0ea5e9'; btnAuto.style.color = '#fff'; btnAuto.style.border = 'none'; btnAuto.style.boxShadow = '0 4px 10px rgba(14,165,233,0.3)';
@@ -12052,14 +12055,14 @@ window.startDspBypassAndUpload = async function() {
                     
                     document.getElementById('mstBodyAuto').style.display = 'block';
                     document.getElementById('mstMainTitle').innerText = 'Auto Mastering';
-                    document.getElementById('mstBodyAuto').insertBefore(previewCard, document.getElementById('mstBodyAuto').firstChild);
+                    if (previewCard) document.getElementById('mstBodyAuto').insertBefore(previewCard, document.getElementById('mstBodyAuto').firstChild);
                 } else {
                     btnManual.style.background = '#0ea5e9'; btnManual.style.color = '#fff'; btnManual.style.border = 'none'; btnManual.style.boxShadow = '0 4px 10px rgba(14,165,233,0.3)';
                     btnAuto.style.background = '#ffffff'; btnAuto.style.color = '#475569'; btnAuto.style.border = '1.5px solid #cbd5e1'; btnAuto.style.boxShadow = 'none';
                     
                     document.getElementById('mstBodyManual').style.display = 'block';
                     document.getElementById('mstMainTitle').innerText = 'Live EQ & Mixer';
-                    document.getElementById('mstBodyManual').insertBefore(previewCard, document.getElementById('mstBodyManual').firstChild);
+                    if (previewCard) document.getElementById('mstBodyManual').insertBefore(previewCard, document.getElementById('mstBodyManual').firstChild);
                 }
                 window.updateLiveNodes();
             };
@@ -12214,10 +12217,10 @@ window.startDspBypassAndUpload = async function() {
 
                                 // --- A/B TESTING ROUTING LOGIC (FIXED) ---
                                 mstLiveNodes.masterOutGain = mstLiveAudioCtx.createGain();
-                                mstLiveNodes.masterOutGain.gain.value = 1.0; 
+                                mstLiveNodes.masterOutGain.gain.value = window.currentABMode === 'raw' ? 0.0 : 1.0; 
 
                                 mstLiveNodes.rawOutGain = mstLiveAudioCtx.createGain();
-                                mstLiveNodes.rawOutGain.gain.value = 0.0; 
+                                mstLiveNodes.rawOutGain.gain.value = window.currentABMode === 'raw' ? 1.0 : 0.0; 
 
                                 // Jalur Raw (Bypass)
                                 mstLiveSource.connect(mstLiveNodes.rawOutGain); 
