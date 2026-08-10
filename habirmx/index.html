@@ -10826,7 +10826,6 @@ window.startDspBypassAndUpload = async function() {
             // =================================================================
             const originalBtnHtml = generateBtn.innerHTML;
             generateBtn.disabled = true;
-            generateBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Menyiapkan Antrean...';
 
             try {
                 // Proses Upload Audio (Jika Mode Cover & Belum ada URL)
@@ -10950,6 +10949,10 @@ window.startDspBypassAndUpload = async function() {
                     let pollCount = 0;
                     const maxPolls = 180; 
                     
+                    // KEMBALIKAN TOMBOL KE AWAL DETIK INI JUGA AGAR BISA KLIK LAGI
+                    generateBtn.disabled = false;
+                    generateBtn.innerHTML = originalBtnHtml;
+
                     const pollInterval = setInterval(async () => {
                         pollCount++;
                         try {
