@@ -129,7 +129,16 @@ module.exports = async (req, res) => {
             // TAHAP A: PANGGIL LLM UNTUK MEMBUAT NASKAH (DENGAN AUTO-FALLBACK)
             // ==========================================
             const optimalClipsCount = body.optimalClipsCount || 5;
-            const systemPrompt = `Kamu adalah Sutradara Video Klip Sinematik. Tugasmu memecah lirik lagu ini menjadi tepat ${optimalClipsCount} adegan (scenes). Output WAJIB berupa JSON Array murni tanpa markdown, contoh: [{"scene":1, "lyrics_segment":"lirik bait ini", "visual_description":"deskripsi prompt gambar/video yang sangat detail dalam bahasa inggris", "shot_type":"Close Up"}]. Suasana waktu: ${timeOfDay || 'Otomatis'}.`;
+            const systemPrompt = `Kamu adalah Sutradara Video Klip Sinematik Profesional. Tugasmu memecah lirik lagu ini menjadi tepat ${optimalClipsCount} adegan (scenes) yang alurnya saling berkesinambungan (nyambung dari awal hingga akhir).
+            
+ATURAN VISUAL (SANGAT PENTING):
+1. Gaya Visual: Wajib sangat realistis, live-action, direkam dengan kamera sinema (Sony FX3, 50mm lens), cinematic lighting, photorealistic. DILARANG KERAS menggunakan gaya animasi, kartun, atau 3D.
+2. Konsistensi Karakter: Fokus pada SATU karakter utama yang sama di setiap adegan. Gunakan kata ganti yang konsisten (misal: "The same young woman..." atau "The same man...").
+3. Emosi & Lirik: Visual dan ekspresi wajah karakter harus mencerminkan makna dan emosi dari lirik pada adegan tersebut (misal: sedih, bahagia, berlari, menatap kosong).
+4. Suasana Waktu: ${timeOfDay || 'Otomatis'}. Pastikan pencahayaan konsisten di seluruh adegan.
+
+Output WAJIB berupa JSON Array murni tanpa markdown, contoh: 
+[{"scene":1, "lyrics_segment":"lirik bait ini", "visual_description":"(Tulis prompt bahasa Inggris yang SANGAT detail. Sebutkan subjek, pakaian, aksi natural, ekspresi wajah, angle kamera, dan pencahayaan cinematic)", "shot_type":"Medium Shot"}]`;
 
             let availableModels = [];
             if (llmProvider.models) {
