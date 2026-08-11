@@ -86,6 +86,54 @@ module.exports = async (req, res) => {
 
         const { email, lyrics, providerId, providerNaskahId, modelNaskah, modelVideo, ratio, duration, timeOfDay, characterImage } = body;
 
+        // LOGIKA KHUSUS GENERATE ULANG 1 KLIP (TANPA LLM)
+        if (body.isRegenerate) {
+            const { email, prompt, providerId, modelVideo, ratio, duration, characterImage } = body;
+            try {
+                const usersRef = db.collection("users");
+                const userQuery = await usersRef.where("email", "==", email).get();
+                if (userQuery.empty) return res.status(403).json({ error: 'Akses ditolak: Klien tidak terdaftar!' });
+                const userDoc = userQuery.docs[0];
+                const userData = userDoc.data();
+
+                const providersDoc = await db.collection("settings").doc("api_providers").get();
+                const allProviders = providersDoc.data().list || [];
+                const videoProvider = allProviders.find(p => p.value === providerId);
+                if (!videoProvider) return res.status(500).json({ error: 'Provider Video tidak ditemukan.' });
+
+                const videoKeys = await db.collection("api_keys").where("provider", "==", videoProvider.value).where("status", "==", "aktif").get();
+                if (videoKeys.empty) return res.status(502).json({ error: 'API Key Video habis / tidak aktif.' });
+                const videoApiKey = videoKeys.docs.sort((a, b) => (a.data().priority || 1) - (b.data().priority || 1))[0].data().key;
+
+                if (userData.dailyQuota > 0 && (userData.generateCount + 1) > userData.dailyQuota) {
+                    return res.status(403).json({ error: 'Kredit tidak cukup untuk generate ulang.' });
+                }
+
+                let isImageToVideo = characterImage && videoProvider.endpointCover;
+                let endpointPath = isImageToVideo ? videoProvider.endpointCover : videoProvider.endpoint;
+                let rawPayloadTemplate = isImageToVideo ? videoProvider.payloadCoverTemplate : videoProvider.payloadTemplate;
+                
+                const videoVariables = { model: modelVideo || "default", prompt: prompt, ratio: ratio || "16:9", duration: duration || 5, imageUrl: characterImage || "" };
+                const videoPayloadStr = renderTemplate(rawPayloadTemplate || "{}", videoVariables);
+                let parsedVideoPayload = JSON.parse(videoPayloadStr);
+
+                const videoHeaders = { "Content-Type": "application/json" };
+                videoHeaders[videoProvider.headerName || "Authorization"] = (videoProvider.headerValue || "Bearer {apiKey}").replace("{apiKey}", videoApiKey);
+
+                const vidResponse = await fetch(`${videoProvider.baseUrl}${endpointPath}`, { method: 'POST', headers: videoHeaders, body: JSON.stringify(parsedVideoPayload) });
+                if (!vidResponse.ok) return res.status(vidResponse.status).json({ error: `API Video Error: ${await vidResponse.text()}` });
+
+                const vidData = await vidResponse.json();
+                let taskId = getValueByPath(vidData, videoProvider.responsePath || "id") || vidData.id || vidData.task_id || vidData.job_id || (vidData.data && vidData.data.id);
+                if (!taskId) return res.status(500).json({ error: 'Task ID tidak ditemukan.' });
+
+                await userDoc.ref.update({ generateCount: FieldValue.increment(1) });
+                return res.status(200).json({ task_id: taskId, status: "pending" });
+            } catch (err) {
+                return res.status(500).json({ error: err.message });
+            }
+        }
+
         if (!email || !lyrics || !providerId || !providerNaskahId) {
             return res.status(400).json({ error: 'Parameter email, lirik, dan ID Provider wajib diisi!' });
         }
