@@ -2649,7 +2649,8 @@
                                     </div>
                                     <div class="error-card-content">
                                         <h4 class="error-card-title">GAGAL MEMPROSES VIDEO</h4>
-                                        <p class="error-card-text" style="color: #fca5a5; font-family: monospace; font-size: 0.65rem; word-break: break-word;">${realErrorMsg}</p>
+                                        <p class="error-card-text" style="color: #fca5a5; font-family: monospace; font-size: 0.65rem; word-break: break-word; margin-bottom: 10px;">${realErrorMsg}</p>
+                                        <button onclick="regenerateVideo(${item.scene}, '${base64Prompt}', '${firestoreId}')" style="background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.4); color: #fca5a5; padding: 8px 14px; border-radius: 8px; font-size: 0.75rem; font-weight: 700; cursor: pointer; transition: all 0.2s;"><i class="fa-solid fa-rotate-right"></i> Generate Ulang Klip Ini</button>
                                     </div>
                                 </div>
                             `;
@@ -2694,7 +2695,7 @@
                                     <i class="fa-solid fa-copy"></i> Salin Prompt Visual
                                 </button>
                                 <hr style="border:0; border-top:1px solid var(--border-color); margin:12px 0;">
-                                <div class="${boxClass}" id="video-box-${item.scene}">
+                                <div class="${boxClass}" id="video-box-${item.scene}" data-prompt="${base64Prompt}" data-firestore-id="${firestoreId}">
                                     ${mediaElement}
                                 </div>
                                 <a href="${item.video_url || '#'}" target="_blank" download="Klip-${item.scene}.mp4" id="download-btn-${item.scene}" class="${downloadClass}">Unduh Klip ${item.scene}</a>
@@ -2753,6 +2754,76 @@
                 fullEl.classList.add('hidden');
                 shortEl.classList.remove('hidden');
                 btnEl.innerHTML = `<i class="fa-solid fa-chevron-down"></i> Lihat Semua Prompt`;
+            }
+        };
+
+        window.regenerateVideo = async function(scene, base64Prompt, firestoreId) {
+            const videoBox = document.getElementById(`video-box-${scene}`);
+            if (!videoBox) return;
+
+            videoBox.classList.add('loading-state');
+            videoBox.innerHTML = `
+                <div class="video-loader-container" id="loader-${scene}" data-scene="${scene}" data-firestore-id="${firestoreId}">
+                    <div class="ai-glow-ring"></div>
+                    <div class="ai-glow-orb"><i class="fa-solid fa-wand-magic-sparkles"></i></div>
+                    <div class="loader-title">Melukis Ulang Adegan ${scene}</div>
+                    <div class="loader-progress-box">
+                        <div class="loader-progress-bar"><div class="loader-progress-fill" id="progress-fill-${scene}" style="width: 15%;"></div></div>
+                        <div class="loader-progress-label" id="progress-label-${scene}">Menghubungkan ulang... (15%)</div>
+                    </div>
+                    <div class="loader-subtitle"><i class="fa-solid fa-circle-notch fa-spin"></i> Memulai ulang...</div>
+                </div>
+            `;
+
+            try {
+                const prompt = decodeURIComponent(escape(atob(base64Prompt)));
+                const providerId = document.getElementById('providerSelect').value;
+                const modelVideo = document.getElementById('modelVideoSelect').value;
+                const ratioVal = document.getElementById('ratioSelect').value;
+                const [ratio, quality] = ratioVal.split('|');
+                const duration = window.selectedDuration || 10;
+                
+                let characterImage = null;
+                const charInput = document.getElementById('characterInput');
+                if (charInput && charInput.files && charInput.files.length > 0) {
+                    characterImage = await getBase64(charInput.files[0]);
+                }
+
+                const payload = {
+                    isRegenerate: true,
+                    email: localStorage.getItem('kreaverse_user_email') || "anon@kreaverse.ai",
+                    prompt, providerId, modelVideo, ratio, quality, duration, characterImage
+                };
+
+                const response = await fetch('/api/lyricshot', {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.task_id) {
+                    const loader = document.getElementById(`loader-${scene}`);
+                    loader.setAttribute('data-task-id', data.task_id);
+                    loader.setAttribute('data-provider', providerId);
+                    startStatusPolling();
+                    window.showIphoneNotif("Generate Ulang", "Berhasil mengirim ulang permintaan video.", "fa-rotate-right");
+                } else {
+                    throw new Error(data.error || "Gagal mengirim ulang.");
+                }
+            } catch (err) {
+                console.error(err);
+                videoBox.classList.remove('loading-state');
+                videoBox.innerHTML = `
+                    <div class="premium-error-card">
+                        <div class="error-card-icon"><i class="fa-solid fa-triangle-exclamation"></i></div>
+                        <div class="error-card-content">
+                            <h4 class="error-card-title">GAGAL MEMPROSES VIDEO</h4>
+                            <p class="error-card-text" style="color: #fca5a5; font-family: monospace; font-size: 0.65rem; word-break: break-word; margin-bottom: 10px;">${err.message}</p>
+                            <button onclick="regenerateVideo(${scene}, '${base64Prompt}', '${firestoreId}')" style="background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.4); color: #fca5a5; padding: 8px 14px; border-radius: 8px; font-size: 0.75rem; font-weight: 700; cursor: pointer; transition: all 0.2s;"><i class="fa-solid fa-rotate-right"></i> Coba Lagi</button>
+                        </div>
+                    </div>
+                `;
             }
         };
 
@@ -2863,8 +2934,19 @@ function startStatusPolling() {
                                 clearInterval(interval);
                                 const videoBox = document.getElementById(`video-box-${scene}`);
                                 if (videoBox) {
+                                    const promptB64 = videoBox.getAttribute('data-prompt');
+                                    const fId = videoBox.getAttribute('data-firestore-id');
                                     videoBox.classList.remove('loading-state');
-                                    videoBox.innerHTML = `<div style="padding: 40px 20px; text-align: center; color: var(--danger-color); font-size: 0.85rem; font-weight: 700; background: #fff0f0; border-radius: 12px; width: 100%; border: 1px solid #fca5a5; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; height: 100%;"><i class="fa-solid fa-circle-exclamation" style="font-size: 1.5rem;"></i> Gagal merender adegan ini.</div>`;
+                                    videoBox.innerHTML = `
+                                        <div class="premium-error-card">
+                                            <div class="error-card-icon"><i class="fa-solid fa-triangle-exclamation"></i></div>
+                                            <div class="error-card-content">
+                                                <h4 class="error-card-title">GAGAL MEMPROSES VIDEO</h4>
+                                                <p class="error-card-text" style="color: #fca5a5; font-family: monospace; font-size: 0.65rem; word-break: break-word; margin-bottom: 10px;">Gagal saat proses rendering di server AI.</p>
+                                                <button onclick="regenerateVideo(${scene}, '${promptB64}', '${fId}')" style="background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.4); color: #fca5a5; padding: 8px 14px; border-radius: 8px; font-size: 0.75rem; font-weight: 700; cursor: pointer; transition: all 0.2s;"><i class="fa-solid fa-rotate-right"></i> Generate Ulang Klip Ini</button>
+                                            </div>
+                                        </div>
+                                    `;
                                 }
 
                                 if (firestoreId && window.db && window.doc && window.updateDoc) {
