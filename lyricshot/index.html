@@ -2588,27 +2588,31 @@
                             storyboardGrid.appendChild(sectionHeader);
                         }
 
-                        // Mendaftarkan berkas secara instan di sisi frontend menggunakan hak otorisasi user yang aktif
+                        // Mendaftarkan berkas secara instan di sisi frontend (BACKGROUND PROCESS AGAR TIDAK MACET)
                         if (!firestoreId && window.db && window.collection && window.addDoc) {
-                            try {
-                                const docRef = await window.addDoc(window.collection(window.db, "render_gallery"), {
-                                    email: localStorage.getItem('kreaverse_user_email') || "anon@kreaverse.ai",
-                                    tool: "LyricShot AI",
-                                    status: item.status || "pending",
-                                    task_id: item.task_id || "",
-                                    provider: item.provider || "",
-                                    model: modelVideo || "default",
-                                    lyrics_segment: item.lyrics_segment || "",
-                                    prompt: item.visual_description || "",
-                                    url: item.video_url || "",
-                                    timestamp: Date.now(),
-                                    type: "video"
-                                });
+                            window.addDoc(window.collection(window.db, "render_gallery"), {
+                                email: localStorage.getItem('kreaverse_user_email') || "anon@kreaverse.ai",
+                                tool: "LyricShot AI",
+                                status: item.status || "pending",
+                                task_id: item.task_id || "",
+                                provider: item.provider || "",
+                                model: modelVideo || "default",
+                                lyrics_segment: item.lyrics_segment || "",
+                                prompt: item.visual_description || "",
+                                url: item.video_url || "",
+                                timestamp: Date.now(),
+                                type: "video"
+                            }).then(docRef => {
                                 firestoreId = docRef.id;
                                 item.firestore_id = firestoreId;
-                            } catch (e) {
+                                // Update ID di elemen HTML yang sudah dirender
+                                const box = document.getElementById(`video-box-${item.scene}`);
+                                if (box) box.setAttribute('data-firestore-id', firestoreId);
+                                const loader = document.getElementById(`loader-${item.scene}`);
+                                if (loader) loader.setAttribute('data-firestore-id', firestoreId);
+                            }).catch(e => {
                                 console.error("Gagal mendaftarkan tugas ke database:", e);
-                            }
+                            });
                         }
 
                         const card = document.createElement('div');
