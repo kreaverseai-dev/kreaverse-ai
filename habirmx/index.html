@@ -4656,19 +4656,44 @@
             if (!currentUser || !currentUser.email) return;
             const q = query(collection(db, "render_gallery"), where("email", "==", currentUser.email));
             onSnapshot(q, (snap) => {
-                const allDocs = [];
-                snap.forEach(d => allDocs.push({id: d.id, ...d.data()}));
-                allDocs.sort((a, b) => b.timestamp - a.timestamp);
+                let rawDocs = [];
+                snap.forEach(d => rawDocs.push({id: d.id, ...d.data()}));
+                rawDocs.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
                 
-                window.globalLibraryDocs = allDocs; // Simpan ke global agar bisa dibaca Pop-Up
+                // =================================================================
+                // FILTER 2 LAPIS (ANTI-DOBLE KETAT)
+                // =================================================================
+                const uniqueDocs = [];
+                const seenKeys = new Set(); // Lapis 1: Mencegah spam loading (TaskID + Versi)
+                const seenUrls = new Set(); // Lapis 2: Mencegah lagu kembar (URL sama persis)
+
+                rawDocs.forEach(d => {
+                    let versionMatch = d.title ? d.title.match(/Versi \d+/) : null;
+                    let version = versionMatch ? versionMatch[0] : 'Versi 1';
+                    const key = `${d.taskId}_${version}`;
+
+                    let isDuplicateUrl = false;
+                    if (d.status === 'complete' && d.url) {
+                        if (seenUrls.has(d.url)) isDuplicateUrl = true;
+                        else seenUrls.add(d.url);
+                    }
+
+                    if (!seenKeys.has(key) && !isDuplicateUrl) {
+                        seenKeys.add(key);
+                        uniqueDocs.push(d);
+                    }
+                });
+
+                window.globalLibraryDocs = uniqueDocs; // Simpan ke global agar bisa dibaca Pop-Up
 
                 // OPTIMASI UI: Gunakan Debounce agar UI tidak freeze saat Firebase mengirim banyak update sekaligus
                 if (libraryRenderTimeout) clearTimeout(libraryRenderTimeout);
                 libraryRenderTimeout = setTimeout(() => {
-                    const processingDocs = allDocs.filter(d => d.status === 'processing' || d.status === 'pending');
-                    const completeDocs = allDocs.filter(d => d.status === 'complete' || d.status === 'failed'); 
+                    const processingDocs = uniqueDocs.filter(d => d.status === 'processing' || d.status === 'pending');
+                    const completeDocs = uniqueDocs.filter(d => d.status === 'complete' || d.status === 'failed'); 
                     
-                    renderActiveProgress(processingDocs);
+                    // BATASI MAKSIMAL 6 ITEM TERBARU
+                    renderActiveProgress(processingDocs.slice(0, 6));
                     renderMiniLibrary(completeDocs); 
                     
                     // SELALU TAMPILKAN CONTAINER JIKA SUDAH LOGIN
@@ -4959,8 +4984,8 @@
                 return d.status === 'failed';
             });
 
-            // Tampilkan 10 lagu agar user bisa melihat garis pemisahnya bekerja
-            const displayDocs = filteredDocs.slice(0, 10); 
+            // Tampilkan maksimal 6 lagu terbaru agar rapi
+            const displayDocs = filteredDocs.slice(0, 6); 
 
             if(displayDocs.length === 0) { 
                 if (currentLibraryTab === 'berhasil') {
