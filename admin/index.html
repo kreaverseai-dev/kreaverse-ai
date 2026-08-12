@@ -290,6 +290,19 @@
     <div class="loading-spinner"></div>
     <div style="font-weight:700; font-size:1.1rem;">Memuat Dashboard Admin...</div>
 </div>
+<script>
+    // PENGAMAN TIMEOUT INDEPENDEN: Tutup loading screen jika Firebase tidak merespon dalam 3 detik
+    window.adminLoadingTimeout = setTimeout(function() {
+        var loader = document.getElementById('loading-screen');
+        var authGuard = document.getElementById('auth-guard');
+        if (loader && !loader.classList.contains('hidden')) {
+            loader.classList.add('hidden');
+            if (authGuard && localStorage.getItem('krea_admin_logged_in') !== 'true') {
+                authGuard.classList.remove('hidden');
+            }
+        }
+    }, 3000);
+</script>
 
 <!-- PREMIUM AUTH GUARD (GOOGLE LOGIN) -->
 <div id="auth-guard" class="hidden">
