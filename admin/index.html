@@ -2667,17 +2667,17 @@ function showAuthGuard() {
     if (authGuard) authGuard.classList.remove('hidden');
 }
 
-// TIMEOUT PENGAMAN (ANTI MUTER-MUTER): Jika dalam 2.5 detik Firebase lambat merespon, paksa buka dashboard!
+// TIMEOUT PENGAMAN CERDAS: Cek status login resmi dari Firebase
 setTimeout(() => {
     const loadingScreen = document.getElementById('loading-screen');
     if (loadingScreen && !loadingScreen.classList.contains('hidden')) {
-        if (localStorage.getItem('krea_admin_logged_in') === 'true') {
+        if (auth.currentUser) {
             showDashboard();
         } else {
             showAuthGuard();
         }
     }
-}, 2500);
+}, 2000);
 
 document.getElementById('btnGoogleAdmin').addEventListener('click', async () => {
     const errEl = document.getElementById('login-error');
