@@ -1662,8 +1662,8 @@
             btnMasukList.forEach(btn => {
                 btn.addEventListener('click', (e) => {
                     e.preventDefault();
-                    showIphoneNotif('Arahkan ke Login', 'Membuka halaman masuk dengan aman...', 'fa-shield-halved');
-                    setTimeout(() => { window.location.href = '/login/index.html'; }, 1500);
+                    // BUKA LOGIN DI DALAM IFRAME (NATIVE FEEL)
+                    openTool('/login/index.html', 0, 'Masuk ke Flixa AI');
                 });
             });
 
