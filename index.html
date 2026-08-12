@@ -863,6 +863,12 @@
                 <div class="profile-menu-item hidden-menu" id="admin-clean-stuck-btn" onclick="window.cleanStuckSongs()" style="color: #FF3B30; background: #FEF2F2; padding: 12px 16px; border-radius: 12px; margin-bottom: 10px; border: 1px solid #FECACA;">
                     <div class="profile-menu-left"><i class="fa-solid fa-broom" style="color: #FF3B30;"></i> Bersihkan Lagu Nyangkut (Admin)</div>
                 </div>
+                
+                <!-- TOMBOL CEK KUOTA FIREBASE KHUSUS ADMIN -->
+                <a href="https://console.firebase.google.com/project/kreaverse-ai0107/firestore/usage" target="_blank" class="profile-menu-item hidden-menu" id="admin-check-quota-btn" style="color: #0EA5E9; background: #F0F9FF; padding: 12px 16px; border-radius: 12px; margin-bottom: 10px; border: 1px solid #BAE6FD; text-decoration: none;">
+                    <div class="profile-menu-left"><i class="fa-solid fa-chart-pie" style="color: #0EA5E9;"></i> Cek Limit Kuota Firebase</div>
+                    <div class="profile-menu-right"><i class="fa-solid fa-arrow-up-right-from-square" style="font-size: 0.8rem;"></i></div>
+                </a>
 
                 <a href="/berkas/" class="profile-menu-item" style="text-decoration:none;">
                     <div class="profile-menu-left"><i class="fa-solid fa-folder-open"></i> Berkas Saya</div>
@@ -1625,6 +1631,9 @@
                                     
                                     const cleanBtn = document.getElementById('admin-clean-stuck-btn');
                                     if(cleanBtn) cleanBtn.classList.remove('hidden-menu');
+                                    
+                                    const quotaBtn = document.getElementById('admin-check-quota-btn');
+                                    if(quotaBtn) quotaBtn.classList.remove('hidden-menu');
                                 }
                                 
                                 listenToNotifications(realDocId);
