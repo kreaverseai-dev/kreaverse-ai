@@ -2604,6 +2604,7 @@ document.getElementById('prompt-confirm-btn').addEventListener('click', () => {
 let isDashboardLoaded = false;
 
 function showDashboard() {
+    if (window.adminLoadingTimeout) clearTimeout(window.adminLoadingTimeout);
     const loadingScreen = document.getElementById('loading-screen');
     const authGuard = document.getElementById('auth-guard');
     if (loadingScreen) loadingScreen.classList.add('hidden');
@@ -2626,6 +2627,7 @@ function showDashboard() {
 }
 
 function showAuthGuard() {
+    if (window.adminLoadingTimeout) clearTimeout(window.adminLoadingTimeout);
     const loadingScreen = document.getElementById('loading-screen');
     const authGuard = document.getElementById('auth-guard');
     if (loadingScreen) loadingScreen.classList.add('hidden');
