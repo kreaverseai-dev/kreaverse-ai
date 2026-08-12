@@ -93,9 +93,11 @@
         .sleek-toast {
             position: fixed; top: -100px; left: 50%; transform: translateX(-50%);
             background: rgba(255,255,255,0.95); color: #000; padding: 12px 20px;
-            border-radius: 99px; font-size: 14px; font-weight: 600; display: flex; align-items: center; gap: 10px;
+            border-radius: 99px; font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 10px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.2); transition: top 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            z-index: 9999; pointer-events: none; white-space: nowrap;
+            z-index: 9999; pointer-events: none; 
+            width: max-content; max-width: 85vw; /* Mencegah nabrak layar */
+            white-space: normal; text-align: center; line-height: 1.4;
         }
         .sleek-toast.show { top: 40px; }
         .sleek-toast.error { background: #FF3B30; color: #FFF; }
@@ -312,7 +314,13 @@
                 setLoading('btnGoogle', false);
             }
         } catch (error) {
-            showToast(error.message, 'error');
+            console.error(error);
+            let errorMsg = error.message;
+            // Tangkap error limit kuota Firebase
+            if (error.code === 'resource-exhausted' || error.message.includes('quota') || error.message.includes('Quota')) {
+                errorMsg = 'Server sedang penuh/limit. Silakan coba lagi besok.';
+            }
+            showToast(errorMsg, 'error');
             setLoading('btnGoogle', false);
         }
     });
@@ -358,7 +366,13 @@
             handleLoginSuccess({ email, uid, name: data.nama || '', role: 'user', tier, credits });
 
         } catch (err) {
-            showToast('Gagal terhubung ke server.', 'error');
+            console.error('Login error:', err);
+            let errorMsg = 'Gagal terhubung ke server.';
+            // Tangkap error limit kuota Firebase
+            if (err.code === 'resource-exhausted' || err.message.includes('quota') || err.message.includes('Quota')) {
+                errorMsg = 'Server sedang penuh/limit. Silakan coba lagi besok.';
+            }
+            showToast(errorMsg, 'error');
             setLoading('btnSubmitEmail', false);
         }
     });
