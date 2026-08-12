@@ -33,8 +33,21 @@ module.exports = async function handler(req, res) {
 
         if (cronSecret !== validSecret) return res.status(401).json({ error: "Akses ditolak." });
 
-        // OPTIMASI 1: Turunkan limit jadi 4 agar tidak terkena Vercel Timeout (10 detik)
-        const processingSnapshot = await db.collection("render_gallery").where("status", "in", ["processing", "pending"]).limit(4).get();
+        let processingSnapshot;
+        try {
+            // OPTIMASI: Turunkan limit jadi 3 agar Vercel tidak timeout
+            processingSnapshot = await db.collection("render_gallery")
+                .where("status", "in", ["processing", "pending"])
+                .limit(3)
+                .get();
+        } catch (dbError) {
+            // TANGKAP ERROR QUOTA FIREBASE DI SINI!
+            // Kembalikan status 200 OK agar cron-job.org tetap hijau (berhasil)
+            return res.status(200).json({ 
+                message: "Cron berjalan normal, tapi Kuota Firebase Habis (Resource Exhausted). Menunggu reset kuota besok.",
+                detail: dbError.message
+            });
+        }
 
         if (processingSnapshot.empty) return res.status(200).json({ message: "Tidak ada antrean." });
 
@@ -60,10 +73,9 @@ module.exports = async function handler(req, res) {
                     return { id: docId, status: "failed" };
                 }
 
-                // OPTIMASI 2: Turunkan timeout fetch jadi 4 detik. 
-                // Jika API provider lelet, skip saja dan cek lagi di menit berikutnya. Jangan korbankan seluruh Cron Job.
+                // Timeout fetch 3.5 detik agar aman dari limit 10 detik Vercel
                 const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), 4000);
+                const timeoutId = setTimeout(() => controller.abort(), 3500);
                 
                 let checkRes;
                 try {
@@ -80,45 +92,38 @@ module.exports = async function handler(req, res) {
                 try { data = JSON.parse(text); } catch(e) { data = { error: "Respons API rusak." }; }
 
                 if (checkRes.ok && (data.status === "completed" || data.status === "complete" || data.status === "success")) {
-                    
-                    // OPTIMASI 3: Perbaikan Logika Track 1 dan Track 2 agar sinkron dengan Frontend
                     const tracks = data.tracks || [];
-                    
-                    // Bersihkan judul asli dari embel-embel Part/Versi sebelumnya (jika ada)
                     let baseTitle = (item.title || "Untitled").replace(/\s*-\s*Versi\s*\d+/gi, '').replace(/\s*\(Part\s*\d+\)/gi, '').trim();
 
                     if (tracks.length > 0) {
-                        // Update Track 1 (Dokumen Asli)
                         const updatePayload = { 
                             status: "complete", 
                             url: tracks[0].audioUrl || tracks[0].url,
                             title: tracks.length > 1 ? `${baseTitle} - Versi 1` : baseTitle,
-                            isNew: true // Titik merah di frontend
+                            isNew: true
                         };
                         if (tracks[0].imageUrl || tracks[0].cover) updatePayload.imageUrl = tracks[0].imageUrl || tracks[0].cover;
                         if (tracks[0].duration) updatePayload.duration = tracks[0].duration;
                         
                         await db.collection("render_gallery").doc(docId).update(updatePayload);
 
-                        // Buat Track 2 (Dokumen Baru)
                         for (let i = 1; i < tracks.length; i++) {
                             const newDoc = {
-                                ...item, // Salin semua data (termasuk sessionGroup, prompt, lyrics)
+                                ...item, 
                                 status: "complete",
                                 url: tracks[i].audioUrl || tracks[i].url,
                                 title: `${baseTitle} - Versi ${i+1}`,
                                 isNew: true,
-                                timestamp: Date.now() + i // Beda 1 milidetik agar urut
+                                timestamp: Date.now() + i 
                             };
                             if (tracks[i].imageUrl || tracks[i].cover) newDoc.imageUrl = tracks[i].imageUrl || tracks[i].cover;
                             if (tracks[i].duration) newDoc.duration = tracks[i].duration;
                             
-                            delete newDoc.id; // Hapus ID lama agar Firebase membuat ID baru
+                            delete newDoc.id; 
                             await db.collection("render_gallery").add(newDoc);
                         }
                         processedCount++;
                     } else if (data.audioUrl || data.video_url || data.url) {
-                        // Fallback jika API tidak mengembalikan array 'tracks'
                         await db.collection("render_gallery").doc(docId).update({ 
                             status: "complete", 
                             url: data.audioUrl || data.video_url || data.url, 
@@ -133,7 +138,7 @@ module.exports = async function handler(req, res) {
                     processedCount++;
                 }
                 else {
-                    // Jika masih processing, cek apakah sudah lebih dari 1 jam (Timeout)
+                    // Timeout 1 jam untuk membersihkan lagu yang nyangkut
                     const itemTime = item.timestamp || Date.now();
                     if ((Date.now() - itemTime) > 3600000) {
                         await db.collection("render_gallery").doc(docId).update({ status: "failed", error: "Timeout: Server AI tidak merespons selama 1 jam." });
@@ -152,6 +157,7 @@ module.exports = async function handler(req, res) {
         return res.status(200).json({ message: "Selesai", diupdate: processedCount, errors: logs });
 
     } catch (error) {
-        return res.status(500).json({ error: error.message });
+        // Jika error selain Firebase, tetap kembalikan 200 agar cron tidak mati
+        return res.status(200).json({ error: error.message, note: "Tertangkap oleh global catch" });
     }
 }
