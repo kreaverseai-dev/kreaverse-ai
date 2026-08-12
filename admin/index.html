@@ -2599,9 +2599,15 @@ document.getElementById('prompt-confirm-btn').addEventListener('click', () => {
     });
 
 // ============================================================
-// SISTEM AUTENTIKASI GOOGLE LOGIN KHUSUS ADMIN
+// SISTEM AUTENTIKASI GOOGLE LOGIN KHUSUS ADMIN (PERMANEN)
 // ============================================================
 let isDashboardLoaded = false;
+
+// Cegah layar login muncul sesaat saat refresh jika akun sudah pernah login
+if (localStorage.getItem('krea_admin_logged_in') === 'true') {
+    document.getElementById('auth-guard').classList.add('hidden');
+    document.getElementById('loading-screen').classList.remove('hidden');
+}
 
 function showDashboard() {
     document.getElementById('loading-screen').classList.add('hidden');
@@ -2625,7 +2631,6 @@ document.getElementById('btnGoogleAdmin').addEventListener('click', async () => 
     const errEl = document.getElementById('login-error');
     errEl.innerText = 'Memproses login...';
     try {
-        // Paksa set persistence abadi sebelum memanggil popup
         await setPersistence(auth, browserLocalPersistence);
         const result = await signInWithPopup(auth, googleProvider);
         
@@ -2634,8 +2639,11 @@ document.getElementById('btnGoogleAdmin').addEventListener('click', async () => 
         
         if (!allowed.includes(userEmail)) {
             await signOut(auth);
+            localStorage.removeItem('krea_admin_logged_in');
             errEl.innerText = 'Akses ditolak: Akun Anda bukan pengelola sistem (Admin).';
         } else {
+            localStorage.setItem('krea_admin_logged_in', 'true');
+            localStorage.setItem('krea_admin_email', userEmail);
             errEl.innerText = '';
         }
     } catch (error) { 
@@ -3024,6 +3032,10 @@ function loadAllModules() {
     setupRealtimeGSuiteLogs();
     setupRealtimePrompts();
     window.setupRealtimeLayanan();
+
+    // Pulihkan tab tersimpan (misal: Audio) agar tidak kembali ke Chat saat di-refresh
+    const savedSubTab = localStorage.getItem('kreaverse_engine_tab') || 'llm';
+    window.filterEngine(savedSubTab);
 }
 
 // ============================================================
@@ -3199,17 +3211,36 @@ window.deleteAllLogs = async () => { try { let total = 0; while(true) { const sn
 // ============================================================
 let customApiProviders = [];
 let currentEngineTab = localStorage.getItem('kreaverse_engine_tab') || 'llm';
+let currentApiKeyTab = localStorage.getItem('kreaverse_apikey_tab') || currentEngineTab;
 
 window.filterEngine = function(tab) {
     currentEngineTab = tab;
+    currentApiKeyTab = tab;
     localStorage.setItem('kreaverse_engine_tab', tab);
+    localStorage.setItem('kreaverse_apikey_tab', tab);
+
+    // Aktifkan tombol tab pada Parameter Engine AI
     document.querySelectorAll('#engine-tabs .tab-sort-btn').forEach(btn => {
         btn.classList.remove('active');
         if (btn.getAttribute('onclick') && btn.getAttribute('onclick').includes("'" + tab + "'")) {
             btn.classList.add('active');
         }
     });
+
+    // Aktifkan tombol tab pada Database API Key
+    document.querySelectorAll('#apikey-tabs .tab-sort-btn').forEach(btn => {
+        btn.classList.remove('active');
+        if (btn.getAttribute('onclick') && btn.getAttribute('onclick').includes("'" + tab + "'")) {
+            btn.classList.add('active');
+        }
+    });
+
     window.renderEngineTable();
+    window.renderApiKeysTable();
+};
+
+window.filterApiKeys = function(tab) {
+    window.filterEngine(tab);
 };
 
 window.renderEngineTable = function() {
