@@ -2220,28 +2220,48 @@ const ALLOWED_ADMINS = [
 let clientSortOrder = 'terbaru';
 
 // ============================================================
-// SISTEM NAVIGASI & MEMORI TAB
+// SISTEM NAVIGASI & MEMORI TAB (ANTI-BEKU / SAFE VERSION)
 // ============================================================
 window.toggleSidebar = () => {
-    document.getElementById('sidebar').classList.toggle('open');
-    document.getElementById('overlay').classList.toggle('open');
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('overlay');
+    if (sidebar) sidebar.classList.toggle('open');
+    if (overlay) overlay.classList.toggle('open');
 };
 
 window.nav = id => {
-    document.querySelectorAll('.section').forEach(el => el.classList.remove('active'));
-    document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-    document.getElementById('tab-' + id).classList.add('active');
-    const navEl = document.querySelector(`.nav-item[onclick="nav('${id}')"]`);
-    if (navEl) {
-        navEl.classList.add('active');
-        document.getElementById('pageTitle').innerText = navEl.childNodes[navEl.childNodes.length - 1].textContent.trim();
-    }
-    if (window.innerWidth <= 1023 && document.getElementById('sidebar').classList.contains('open')) toggleSidebar();
-    localStorage.setItem('kreaverse_admin_tab', id);
-    
-    // Aktifkan modul Email Sementara hanya ketika menu diklik secara aktif (Bypass Layar Loading)
-    if (id === 'tempmail') {
-        setupRealtimeTempMail();
+    try {
+        const sections = document.querySelectorAll('.section');
+        const navItems = document.querySelectorAll('.nav-item');
+        
+        sections.forEach(el => el.classList.remove('active'));
+        navItems.forEach(el => el.classList.remove('active'));
+        
+        const targetTab = document.getElementById('tab-' + id);
+        if (targetTab) targetTab.classList.add('active');
+        
+        const navEl = document.querySelector(`.nav-item[onclick="nav('${id}')"]`);
+        if (navEl) {
+            navEl.classList.add('active');
+            const pageTitle = document.getElementById('pageTitle');
+            if (pageTitle) {
+                const textNodes = Array.from(navEl.childNodes).filter(node => node.nodeType === Node.TEXT_NODE);
+                if (textNodes.length > 0) pageTitle.innerText = textNodes[textNodes.length - 1].textContent.trim();
+            }
+        }
+        
+        if (window.innerWidth <= 1023) {
+            const sidebar = document.getElementById('sidebar');
+            if (sidebar && sidebar.classList.contains('open')) window.toggleSidebar();
+        }
+        
+        localStorage.setItem('kreaverse_admin_tab', id);
+        
+        if (id === 'tempmail' && typeof setupRealtimeTempMail === 'function') {
+            setupRealtimeTempMail();
+        }
+    } catch(err) {
+        console.warn("Navigasi berhasil diselamatkan dari crash:", err);
     }
 };
 
