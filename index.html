@@ -395,6 +395,55 @@
         .mp-title { font-size: 14px; font-weight: 700; color: #111; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .mp-artist { font-size: 12px; color: #71717A; display: flex; justify-content: space-between; align-items: center; margin-top: 2px; }
         .mp-controls { display: flex; align-items: center; gap: 16px; color: #111; font-size: 20px; padding-right: 8px; }
+
+        /* =================================================== */
+        /* UI RECENT PROJECTS & GENERATIONS (REAL-TIME)        */
+        /* =================================================== */
+        .project-list-container { display: flex; flex-direction: column; gap: 12px; padding: 0 20px 30px 20px; }
+        
+        /* Card Loading */
+        .krea-process-card {
+            background: #111111; border-radius: 16px; padding: 16px; display: flex; align-items: center; gap: 14px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1); border: 1px solid #27272A; position: relative; overflow: hidden;
+        }
+        .krea-process-card::before {
+            content: ''; position: absolute; top: 0; left: -100%; width: 50%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.05), transparent);
+            animation: shimmerProcess 2s infinite; pointer-events: none;
+        }
+        @keyframes shimmerProcess { 100% { left: 200%; } }
+        .krea-process-icon {
+            width: 46px; height: 46px; border-radius: 50%; background: rgba(255,255,255,0.1); color: #FFF;
+            display: flex; align-items: center; justify-content: center; font-size: 1.2rem; flex-shrink: 0;
+        }
+        .krea-process-info { flex: 1; min-width: 0; }
+        .krea-process-title { font-size: 0.9rem; font-weight: 800; color: #FFF; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 4px; }
+        .krea-process-status { font-size: 0.7rem; color: #A1A1AA; margin-bottom: 8px; font-weight: 500; }
+        .krea-process-bar-bg { width: 100%; height: 4px; background: #27272A; border-radius: 10px; overflow: hidden; }
+        .krea-process-bar-fill { width: 60%; height: 100%; background: linear-gradient(90deg, #38bdf8, #8b5cf6); border-radius: 10px; animation: pulseBar 1.5s infinite alternate; }
+        @keyframes pulseBar { 0% { opacity: 0.6; } 100% { opacity: 1; } }
+
+        /* Card Selesai */
+        .krea-result-card {
+            background: #FFFFFF; border-radius: 16px; padding: 12px; display: flex; align-items: center; gap: 14px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.03); border: 1px solid #F4F4F5; cursor: pointer; transition: 0.2s;
+        }
+        .krea-result-card:active { transform: scale(0.98); }
+        .krea-result-thumb {
+            width: 55px; height: 55px; border-radius: 10px; background-size: cover; background-position: center;
+            position: relative; flex-shrink: 0; border: 1px solid rgba(0,0,0,0.05);
+        }
+        .krea-result-play {
+            position: absolute; inset: 0; background: rgba(0,0,0,0.3); border-radius: 10px;
+            display: flex; align-items: center; justify-content: center; color: #FFF; font-size: 1.2rem;
+        }
+        .krea-result-info { flex: 1; min-width: 0; }
+        .krea-result-title { font-size: 0.95rem; font-weight: 800; color: #111; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 2px; }
+        .krea-result-desc { font-size: 0.75rem; color: #71717A; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 500; }
+        .krea-result-badge {
+            background: rgba(0, 122, 255, 0.1); color: #007AFF; padding: 2px 6px; border-radius: 6px;
+            font-size: 0.6rem; font-weight: 800; margin-top: 4px; display: inline-block;
+        }
     </style>
 </head>
 <body>
@@ -509,8 +558,11 @@
         </div>
 
         <!-- Grid Recent Projects -->
-        <div class="empty-state" style="margin-top: 60px;">
-            No projects yet. Start creating!
+        <div id="home-recent-projects" class="project-list-container">
+            <div class="empty-state" style="margin-top: 40px;">
+                <i class="fa-solid fa-compact-disc" style="font-size: 2rem; color: #D4D4D8; margin-bottom: 10px; display: block;"></i>
+                Belum ada project. Mulai buat lagu pertamamu!
+            </div>
         </div>
     </div>
 
@@ -704,12 +756,14 @@
         <!-- GENERATIONS SECTION -->
         <div class="section-title" style="padding: 0; margin-bottom: 20px;">Generations</div>
         
-        <div class="creator-empty">
-            <h4>Nothing created yet</h4>
-            <p>Start creating your first idea now</p>
-            <button class="btn-create-black" onclick="switchView('view-new', document.querySelectorAll('.nav-item')[1])">
-                <i class="fa-solid fa-plus"></i> Create
-            </button>
+        <div id="creator-generations-list" style="display: flex; flex-direction: column; gap: 12px; padding-bottom: 30px;">
+            <div class="creator-empty">
+                <h4>Belum ada karya</h4>
+                <p>Mulai ciptakan ide pertamamu sekarang</p>
+                <button class="btn-create-black" onclick="switchView('view-new', document.querySelectorAll('.nav-item')[1])">
+                    <i class="fa-solid fa-plus"></i> Buat Baru
+                </button>
+            </div>
         </div>
     </div>
 
@@ -1567,6 +1621,9 @@
                                 listenToNotifications(realDocId);
                                 listenToRealtimeBroadcasts(realDocId);
                                 manageUserPresence(realDocId);
+                                
+                                // PANGGIL FUNGSI REAL-TIME RECENT PROJECTS
+                                initRecentProjects(userEmail);
                             }
                         }, (err) => { 
                             console.error("Gagal sinkron data user:", err); 
@@ -1624,6 +1681,129 @@
             safeBindClick('btn-trigger-help', () => { helpModal.classList.add('active'); });
             safeBindClick('btn-close-help-modal', () => { helpModal.classList.remove('active'); });
         });
+
+        // =================================================================
+        // SISTEM REAL-TIME RECENT PROJECTS & GENERATIONS (ANTI-DOBLE KETAT)
+        // =================================================================
+        function initRecentProjects(email) {
+            if (!email || !db) return;
+            
+            // Ambil 20 data terbaru milik user ini
+            const q = query(collection(db, 'render_gallery'), where('email', '==', email), orderBy('timestamp', 'desc'), limit(20));
+            
+            onSnapshot(q, (snapshot) => {
+                const rawDocs = [];
+                snapshot.forEach(docSnap => rawDocs.push({ id: docSnap.id, ...docSnap.data() }));
+                
+                const uniqueDocs = [];
+                const seenKeys = new Set(); // Lapis 1: Mencegah spam loading (TaskID + Versi)
+                const seenUrls = new Set(); // Lapis 2: Mencegah lagu kembar (URL sama persis)
+                
+                rawDocs.forEach(d => {
+                    // Ekstrak versi dari judul (Versi 1 / Versi 2)
+                    let versionMatch = d.title ? d.title.match(/Versi \d+/) : null;
+                    let version = versionMatch ? versionMatch[0] : 'Versi 1';
+                    const key = `${d.taskId}_${version}`;
+
+                    // Cek apakah URL lagu ini sudah ada sebelumnya (Duplikat API)
+                    let isDuplicateUrl = false;
+                    if (d.status === 'complete' && d.url) {
+                        if (seenUrls.has(d.url)) {
+                            isDuplicateUrl = true; // URL ini kembar! Buang!
+                        } else {
+                            seenUrls.add(d.url);
+                        }
+                    }
+
+                    // Hanya masukkan jika Key belum ada DAN URL tidak kembar
+                    if (!seenKeys.has(key) && !isDuplicateUrl) {
+                        seenKeys.add(key);
+                        uniqueDocs.push(d);
+                    }
+                });
+
+                renderProjectsUI(uniqueDocs);
+            });
+        }
+
+        function renderProjectsUI(docs) {
+            const homeContainer = document.getElementById('home-recent-projects');
+            const creatorContainer = document.getElementById('creator-generations-list');
+            
+            if (!homeContainer || !creatorContainer) return;
+
+            if (docs.length === 0) {
+                const emptyHtml = `
+                    <div class="empty-state" style="margin-top: 40px;">
+                        <i class="fa-solid fa-compact-disc" style="font-size: 2rem; color: #D4D4D8; margin-bottom: 10px; display: block;"></i>
+                        Belum ada project. Mulai buat lagu pertamamu!
+                    </div>`;
+                homeContainer.innerHTML = emptyHtml;
+                creatorContainer.innerHTML = `
+                    <div class="creator-empty">
+                        <h4>Belum ada karya</h4>
+                        <p>Mulai ciptakan ide pertamamu sekarang</p>
+                        <button class="btn-create-black" onclick="switchView('view-new', document.querySelectorAll('.nav-item')[1])">
+                            <i class="fa-solid fa-plus"></i> Buat Baru
+                        </button>
+                    </div>`;
+                return;
+            }
+
+            let html = '';
+            docs.forEach(d => {
+                const cleanTitle = (d.title || "Untitled").replace(/\s*\(Part\s*\d+\)/gi, '').trim();
+                const promptText = d.prompt || "Auto Generated Style";
+                
+                if (d.status === 'processing' || d.status === 'pending') {
+                    html += `
+                        <div class="krea-process-card">
+                            <div class="krea-process-icon"><i class="fa-solid fa-circle-notch fa-spin"></i></div>
+                            <div class="krea-process-info">
+                                <div class="krea-process-title">${cleanTitle}</div>
+                                <div class="krea-process-status">AI sedang meracik aransemen...</div>
+                                <div class="krea-process-bar-bg"><div class="krea-process-bar-fill"></div></div>
+                            </div>
+                        </div>
+                    `;
+                } else if (d.status === 'complete') {
+                    const safeThumb = d.imageUrl || "https://i.postimg.cc/Jh211FTG/46cc61ec-de7f-4c62-8245-946e22312d2b.jpg";
+                    const safeUrl = d.url ? d.url.replace(/'/g, "\\'") : '';
+                    const safeTitleJs = cleanTitle.replace(/'/g, "\\'");
+                    
+                    let trackNum = "Track 1";
+                    if (d.title && d.title.includes("Versi 2")) trackNum = "Track 2";
+
+                    html += `
+                        <div class="krea-result-card" onclick="playSong('${safeTitleJs}', '${safeUrl}', '${safeThumb}')">
+                            <div class="krea-result-thumb" style="background-image: url('${safeThumb}');">
+                                <div class="krea-result-play"><i class="fa-solid fa-play"></i></div>
+                            </div>
+                            <div class="krea-result-info">
+                                <div class="krea-result-title">${cleanTitle}</div>
+                                <div class="krea-result-desc">${promptText}</div>
+                                <div class="krea-result-badge"><i class="fa-solid fa-music"></i> ${trackNum}</div>
+                            </div>
+                        </div>
+                    `;
+                } else if (d.status === 'failed') {
+                    html += `
+                        <div class="krea-result-card" style="border-color: #FECACA; background: #FEF2F2;">
+                            <div class="krea-result-thumb" style="background: #FCA5A5; display: flex; align-items: center; justify-content: center; color: #DC2626; font-size: 1.5rem;">
+                                <i class="fa-solid fa-triangle-exclamation"></i>
+                            </div>
+                            <div class="krea-result-info">
+                                <div class="krea-result-title" style="color: #991B1B;">${cleanTitle}</div>
+                                <div class="krea-result-desc" style="color: #DC2626;">Gagal: ${d.error || 'Terkena Copyright'}</div>
+                            </div>
+                        </div>
+                    `;
+                }
+            });
+
+            homeContainer.innerHTML = html;
+            creatorContainer.innerHTML = html;
+        }
 
         window.installPWA = async () => {
             if (deferredPrompt) {
