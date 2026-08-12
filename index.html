@@ -1489,7 +1489,8 @@
 
                     if (userEmail && db) {
                         const q = query(collection(db, 'users'), where('email', '==', userEmail), limit(1));
-                        getDocs(q).then((snapshot) => {
+                        // UBAH getDocs MENJADI onSnapshot AGAR REAL-TIME
+                        onSnapshot(q, (snapshot) => {
                             if (!snapshot.empty) {
                                 const userDoc = snapshot.docs[0];
                                 const data = userDoc.data();
@@ -1500,6 +1501,20 @@
                                 const photoVal = data.photo || '';
                                 const tierVal = data.tier || 'basic';
                                 
+                                // --- LOGIKA KREDIT REAL-TIME SINKRON DENGAN FIREBASE ---
+                                const isMaxOrAdmin = (data.role === 'admin' || tierVal === 'max_lifetime' || tierVal === 'max_monthly' || tierVal === 'max');
+                                const creditTextEl = document.getElementById('creator-credits-text');
+                                
+                                if (creditTextEl) {
+                                    if (isMaxOrAdmin) {
+                                        creditTextEl.innerText = "Unlimited";
+                                    } else {
+                                        const kredit = data.kredit !== undefined ? data.kredit : (data.dailyQuota || 0);
+                                        creditTextEl.innerText = kredit.toLocaleString('id-ID');
+                                    }
+                                }
+                                // -------------------------------------------------------
+
                                 localStorage.setItem('kreaverse_user_name', nameVal);
                                 localStorage.setItem('kreaverse_user_id', realDocId); 
                                 localStorage.setItem('kreaverse_tier', tierVal);
@@ -1517,7 +1532,9 @@
                                 listenToRealtimeBroadcasts(realDocId);
                                 manageUserPresence(realDocId);
                             }
-                        }).catch((err) => { console.error("Gagal sinkron data user:", err); });
+                        }, (err) => { 
+                            console.error("Gagal sinkron data user:", err); 
+                        });
                     }
                 } else {
                     if(topAuthBtn) topAuthBtn.classList.remove('hidden');
