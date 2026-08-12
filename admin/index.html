@@ -130,6 +130,14 @@
         input:focus, textarea:focus { border-color: var(--accent); }
         input[readonly] { background: #F4F5F7; cursor: not-allowed; }
 
+        /* TOGGLE SWITCH SAKLAR */
+        .switch { position: relative; display: inline-block; width: 40px; height: 22px; vertical-align: middle; flex-shrink: 0; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #E5E5EA; transition: .3s; border-radius: 22px; }
+        .slider:before { position: absolute; content: ""; height: 16px; width: 16px; left: 3px; bottom: 3px; background-color: white; transition: .3s; border-radius: 50%; box-shadow: 0 1px 3px rgba(0,0,0,0.2); }
+        input:checked + .slider { background-color: var(--success); }
+        input:checked + .slider:before { transform: translateX(18px); }
+
         /* BUTTONS */
         .btn { padding: 13px 22px; border-radius: 12px; font-weight: 700; font-size: 0.9rem; cursor: pointer; border: none; transition: all 0.2s; display: inline-flex; align-items: center; gap: 8px; justify-content: center; }
         .btn:disabled { opacity: 0.5; cursor: not-allowed; }
@@ -3770,13 +3778,24 @@ window.toggleKeyVisibility = function(id, fullKey) {
     }
 };
 
+window.toggleApiKeyStatus = async function(id, isChecked) {
+    const newStatus = isChecked ? "aktif" : "nonaktif";
+    try {
+        await updateDoc(doc(db, "api_keys", id), { status: newStatus });
+        showToast(isChecked ? "API Key berhasil diaktifkan!" : "API Key dinonaktifkan sementara!", isChecked ? "success" : "info");
+        await createLog({ type: 'info', host: 'Admin', request: 'TOGGLE_API_KEY', message: `Ubah status API Key (${id}) -> ${newStatus}` });
+    } catch(e) {
+        showToast("Gagal mengubah status API Key", "danger");
+    }
+};
+
 window.renderApiKeysTable = function() {
     let html = "", deadHtml = "", countOn = 0, countOff = 0;
     const rows = [], deadRows = [];
     let no = 1;
 
     globalApiKeysData.forEach(d => {
-        const isActive = d.status !== "mati" && d.status !== "nonaktif";
+        const isDead = d.status === "mati";
         
         // Cari tipe layanan dari customApiProviders
         const matchedProv = customApiProviders.find(p => p.value === d.provider);
@@ -3792,8 +3811,14 @@ window.renderApiKeysTable = function() {
         }
         const safeFullKey = fullKey.replace(/'/g, "\\'").replace(/"/g, "&quot;");
 
-        if (isActive) {
-            countOn++;
+        if (!isDead) {
+            const isKeyActive = d.status !== "nonaktif";
+            if (isKeyActive) countOn++; else countOff++;
+
+            const statusBadgeHtml = isKeyActive 
+                ? `<div style="display:flex; align-items:center; gap:8px;"><label class="switch" title="Klik untuk menonaktifkan"><input type="checkbox" checked onchange="window.toggleApiKeyStatus('${d.id}', this.checked)"><span class="slider"></span></label><span class="badge badge-green"><span class="status-dot green"></span>Aktif</span></div>`
+                : `<div style="display:flex; align-items:center; gap:8px;"><label class="switch" title="Klik untuk mengaktifkan"><input type="checkbox" onchange="window.toggleApiKeyStatus('${d.id}', this.checked)"><span class="slider"></span></label><span class="badge badge-gray"><span class="status-dot gray"></span>Nonaktif</span></div>`;
+
             rows.push({ priority: d.priority || 1, html: `
                 <tr>
                     <td style="font-weight:700; color:var(--text-sec);">${no++}</td>
@@ -3803,8 +3828,8 @@ window.renderApiKeysTable = function() {
                         <button class="btn btn-sm" style="background:none; padding:4px; color:var(--text-sec);" onclick="window.toggleKeyVisibility('${d.id}', '${safeFullKey}')"><i id="key-icon-${d.id}" class="fa-solid fa-eye"></i></button>
                     </td>
                     <td><span class="badge badge-gray" style="font-size:0.75rem;">#${d.priority || 1}</span></td>
-                    <td><span class="badge badge-green"><span class="status-dot green"></span>Aktif</span></td>
-                    <td><button class="btn btn-sm btn-danger" onclick="window.triggerDeleteApi('${d.id}')"><i class="fa-solid fa-trash"></i></button></td>
+                    <td>${statusBadgeHtml}</td>
+                    <td><button class="btn btn-sm btn-danger" onclick="window.triggerDeleteApi('${d.id}')" title="Pindahkan ke riwayat mati"><i class="fa-solid fa-trash"></i></button></td>
                 </tr>`
             });
         } else {
@@ -3815,7 +3840,7 @@ window.renderApiKeysTable = function() {
 
     rows.sort((a,b) => a.priority - b.priority);
     html = rows.map(r => r.html).join('');
-    if (!html) html = `<tr><td colspan="6" style="text-align:center; padding:40px; color:var(--text-sec);"><i class="fa-solid fa-folder-open" style="font-size:2rem; display:block; margin-bottom:10px; opacity:0.3;"></i>Tidak ada API Key aktif di kategori ini.</td></tr>`;
+    if (!html) html = `<tr><td colspan="6" style="text-align:center; padding:40px; color:var(--text-sec);"><i class="fa-solid fa-folder-open" style="font-size:2rem; display:block; margin-bottom:10px; opacity:0.3;"></i>Tidak ada API Key di kategori ini.</td></tr>`;
 
     let deadNo = 1;
     deadRows.forEach((r) => {
@@ -3828,7 +3853,7 @@ window.renderApiKeysTable = function() {
                     <button class="btn btn-sm" style="background:none; padding:4px; color:var(--text-sec);" onclick="window.toggleKeyVisibility('${r.id}', '${r.safeFullKey}')"><i id="key-icon-${r.id}" class="fa-solid fa-eye"></i></button>
                 </td>
                 <td><span class="badge badge-red"><i class="fa-solid fa-circle-xmark"></i> Saldo Habis</span></td>
-                <td><button class="btn btn-sm btn-danger" onclick="window.triggerDeleteApi('${r.id}')"><i class="fa-solid fa-trash"></i></button></td>
+                <td><button class="btn btn-sm btn-danger" onclick="window.triggerDeleteApi('${r.id}')" title="Hapus Permanen"><i class="fa-solid fa-trash"></i></button></td>
             </tr>
         `;
     });
@@ -3861,15 +3886,19 @@ function setupRealtimeApis() {
         const badge = document.getElementById('api-count-badge'); if (badge) badge.innerText = total;
     });
 }
-window.triggerDeleteApi = (id) => confirmAction('Hapus API Key ini permanen?', () => window.delApi(id));
+window.triggerDeleteApi = (id) => confirmAction('Proses API Key ini?', () => window.delApi(id));
 window.delApi = async function(id) { 
     try { 
-        // Ubah status menjadi mati, bukan langsung dihapus
-        await updateDoc(doc(db, "api_keys", id), { status: "mati" }); 
-        await createLog({ type: 'warning', host: 'Admin', request: 'KILL_API_KEY', message: "Memindahkan 1 API Key ke Riwayat Mati" }); 
-        showToast("Dipindahkan ke riwayat!", "success"); 
+        const keyDoc = globalApiKeysData.find(k => k.id === id);
+        if (keyDoc && keyDoc.status === "mati") {
+            await deleteDoc(doc(db, "api_keys", id));
+            showToast("API Key dihapus permanen!", "success");
+        } else {
+            await updateDoc(doc(db, "api_keys", id), { status: "mati" }); 
+            await createLog({ type: 'warning', host: 'Admin', request: 'KILL_API_KEY', message: "Memindahkan 1 API Key ke Riwayat Mati" }); 
+            showToast("Dipindahkan ke riwayat mati!", "success"); 
+        }
     } catch(e) { 
-        // Jika gagal update (misal karena data sudah tidak ada), coba hapus
         try {
             await deleteDoc(doc(db, "api_keys", id));
             showToast("Berhasil dihapus permanen!", "success");
