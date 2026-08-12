@@ -130,14 +130,6 @@
         input:focus, textarea:focus { border-color: var(--accent); }
         input[readonly] { background: #F4F5F7; cursor: not-allowed; }
 
-        /* TOGGLE SWITCH SAKLAR */
-        .switch { position: relative; display: inline-block; width: 40px; height: 22px; vertical-align: middle; flex-shrink: 0; }
-        .switch input { opacity: 0; width: 0; height: 0; }
-        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #E5E5EA; transition: .3s; border-radius: 22px; }
-        .slider:before { position: absolute; content: ""; height: 16px; width: 16px; left: 3px; bottom: 3px; background-color: white; transition: .3s; border-radius: 50%; box-shadow: 0 1px 3px rgba(0,0,0,0.2); }
-        input:checked + .slider { background-color: var(--success); }
-        input:checked + .slider:before { transform: translateX(18px); }
-
         /* BUTTONS */
         .btn { padding: 13px 22px; border-radius: 12px; font-weight: 700; font-size: 0.9rem; cursor: pointer; border: none; transition: all 0.2s; display: inline-flex; align-items: center; gap: 8px; justify-content: center; }
         .btn:disabled { opacity: 0.5; cursor: not-allowed; }
@@ -290,19 +282,6 @@
     <div class="loading-spinner"></div>
     <div style="font-weight:700; font-size:1.1rem;">Memuat Dashboard Admin...</div>
 </div>
-<script>
-    // PENGAMAN TIMEOUT INDEPENDEN: Tutup loading screen jika Firebase tidak merespon dalam 3 detik
-    window.adminLoadingTimeout = setTimeout(function() {
-        var loader = document.getElementById('loading-screen');
-        var authGuard = document.getElementById('auth-guard');
-        if (loader && !loader.classList.contains('hidden')) {
-            loader.classList.add('hidden');
-            if (authGuard && localStorage.getItem('krea_admin_logged_in') !== 'true') {
-                authGuard.classList.remove('hidden');
-            }
-        }
-    }, 3000);
-</script>
 
 <!-- PREMIUM AUTH GUARD (GOOGLE LOGIN) -->
 <div id="auth-guard" class="hidden">
@@ -2220,48 +2199,28 @@ const ALLOWED_ADMINS = [
 let clientSortOrder = 'terbaru';
 
 // ============================================================
-// SISTEM NAVIGASI & MEMORI TAB (ANTI-BEKU / SAFE VERSION)
+// SISTEM NAVIGASI & MEMORI TAB
 // ============================================================
 window.toggleSidebar = () => {
-    const sidebar = document.getElementById('sidebar');
-    const overlay = document.getElementById('overlay');
-    if (sidebar) sidebar.classList.toggle('open');
-    if (overlay) overlay.classList.toggle('open');
+    document.getElementById('sidebar').classList.toggle('open');
+    document.getElementById('overlay').classList.toggle('open');
 };
 
 window.nav = id => {
-    try {
-        const sections = document.querySelectorAll('.section');
-        const navItems = document.querySelectorAll('.nav-item');
-        
-        sections.forEach(el => el.classList.remove('active'));
-        navItems.forEach(el => el.classList.remove('active'));
-        
-        const targetTab = document.getElementById('tab-' + id);
-        if (targetTab) targetTab.classList.add('active');
-        
-        const navEl = document.querySelector(`.nav-item[onclick="nav('${id}')"]`);
-        if (navEl) {
-            navEl.classList.add('active');
-            const pageTitle = document.getElementById('pageTitle');
-            if (pageTitle) {
-                const textNodes = Array.from(navEl.childNodes).filter(node => node.nodeType === Node.TEXT_NODE);
-                if (textNodes.length > 0) pageTitle.innerText = textNodes[textNodes.length - 1].textContent.trim();
-            }
-        }
-        
-        if (window.innerWidth <= 1023) {
-            const sidebar = document.getElementById('sidebar');
-            if (sidebar && sidebar.classList.contains('open')) window.toggleSidebar();
-        }
-        
-        localStorage.setItem('kreaverse_admin_tab', id);
-        
-        if (id === 'tempmail' && typeof setupRealtimeTempMail === 'function') {
-            setupRealtimeTempMail();
-        }
-    } catch(err) {
-        console.warn("Navigasi berhasil diselamatkan dari crash:", err);
+    document.querySelectorAll('.section').forEach(el => el.classList.remove('active'));
+    document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+    document.getElementById('tab-' + id).classList.add('active');
+    const navEl = document.querySelector(`.nav-item[onclick="nav('${id}')"]`);
+    if (navEl) {
+        navEl.classList.add('active');
+        document.getElementById('pageTitle').innerText = navEl.childNodes[navEl.childNodes.length - 1].textContent.trim();
+    }
+    if (window.innerWidth <= 1023 && document.getElementById('sidebar').classList.contains('open')) toggleSidebar();
+    localStorage.setItem('kreaverse_admin_tab', id);
+    
+    // Aktifkan modul Email Sementara hanya ketika menu diklik secara aktif (Bypass Layar Loading)
+    if (id === 'tempmail') {
+        setupRealtimeTempMail();
     }
 };
 
@@ -2632,57 +2591,33 @@ document.getElementById('prompt-confirm-btn').addEventListener('click', () => {
     });
 
 // ============================================================
-// SISTEM AUTENTIKASI GOOGLE LOGIN KHUSUS ADMIN (ANTI-STUCK / ANTI-MUTER)
+// SISTEM AUTENTIKASI GOOGLE LOGIN KHUSUS ADMIN
 // ============================================================
 let isDashboardLoaded = false;
 
 function showDashboard() {
-    if (window.adminLoadingTimeout) clearTimeout(window.adminLoadingTimeout);
-    const loadingScreen = document.getElementById('loading-screen');
-    const authGuard = document.getElementById('auth-guard');
-    if (loadingScreen) loadingScreen.classList.add('hidden');
-    if (authGuard) authGuard.classList.add('hidden');
+    document.getElementById('loading-screen').classList.add('hidden');
+    document.getElementById('auth-guard').classList.add('hidden');
     
+    // Cegah reload modul berkali-kali jika Firebase me-refresh token di background
     if (!isDashboardLoaded) {
         isDashboardLoaded = true;
-        try {
-            loadAllModules();
-        } catch(err) {
-            console.warn("Modul dimuat dengan peringatan:", err);
-        }
-        try {
-            const savedTab = localStorage.getItem('kreaverse_admin_tab') || 'dash';
-            nav(savedTab);
-        } catch(err) {
-            nav('dash');
-        }
+        loadAllModules();
+        const savedTab = localStorage.getItem('kreaverse_admin_tab') || 'dash';
+        nav(savedTab);
     }
 }
 
 function showAuthGuard() {
-    if (window.adminLoadingTimeout) clearTimeout(window.adminLoadingTimeout);
-    const loadingScreen = document.getElementById('loading-screen');
-    const authGuard = document.getElementById('auth-guard');
-    if (loadingScreen) loadingScreen.classList.add('hidden');
-    if (authGuard) authGuard.classList.remove('hidden');
+    document.getElementById('loading-screen').classList.add('hidden');
+    document.getElementById('auth-guard').classList.remove('hidden');
 }
-
-// TIMEOUT PENGAMAN CERDAS: Cek status login resmi dari Firebase
-setTimeout(() => {
-    const loadingScreen = document.getElementById('loading-screen');
-    if (loadingScreen && !loadingScreen.classList.contains('hidden')) {
-        if (auth.currentUser) {
-            showDashboard();
-        } else {
-            showAuthGuard();
-        }
-    }
-}, 2000);
 
 document.getElementById('btnGoogleAdmin').addEventListener('click', async () => {
     const errEl = document.getElementById('login-error');
     errEl.innerText = 'Memproses login...';
     try {
+        // Paksa set persistence abadi sebelum memanggil popup
         await setPersistence(auth, browserLocalPersistence);
         const result = await signInWithPopup(auth, googleProvider);
         
@@ -2691,11 +2626,8 @@ document.getElementById('btnGoogleAdmin').addEventListener('click', async () => 
         
         if (!allowed.includes(userEmail)) {
             await signOut(auth);
-            localStorage.removeItem('krea_admin_logged_in');
             errEl.innerText = 'Akses ditolak: Akun Anda bukan pengelola sistem (Admin).';
         } else {
-            localStorage.setItem('krea_admin_logged_in', 'true');
-            localStorage.setItem('krea_admin_email', userEmail);
             errEl.innerText = '';
         }
     } catch (error) { 
@@ -3084,10 +3016,6 @@ function loadAllModules() {
     setupRealtimeGSuiteLogs();
     setupRealtimePrompts();
     window.setupRealtimeLayanan();
-
-    // Pulihkan tab tersimpan (misal: Audio) agar tidak kembali ke Chat saat di-refresh
-    const savedSubTab = localStorage.getItem('kreaverse_engine_tab') || 'llm';
-    window.filterEngine(savedSubTab);
 }
 
 // ============================================================
@@ -3263,36 +3191,17 @@ window.deleteAllLogs = async () => { try { let total = 0; while(true) { const sn
 // ============================================================
 let customApiProviders = [];
 let currentEngineTab = localStorage.getItem('kreaverse_engine_tab') || 'llm';
-let currentApiKeyTab = localStorage.getItem('kreaverse_apikey_tab') || currentEngineTab;
 
 window.filterEngine = function(tab) {
     currentEngineTab = tab;
-    currentApiKeyTab = tab;
     localStorage.setItem('kreaverse_engine_tab', tab);
-    localStorage.setItem('kreaverse_apikey_tab', tab);
-
-    // Aktifkan tombol tab pada Parameter Engine AI
     document.querySelectorAll('#engine-tabs .tab-sort-btn').forEach(btn => {
         btn.classList.remove('active');
         if (btn.getAttribute('onclick') && btn.getAttribute('onclick').includes("'" + tab + "'")) {
             btn.classList.add('active');
         }
     });
-
-    // Aktifkan tombol tab pada Database API Key
-    document.querySelectorAll('#apikey-tabs .tab-sort-btn').forEach(btn => {
-        btn.classList.remove('active');
-        if (btn.getAttribute('onclick') && btn.getAttribute('onclick').includes("'" + tab + "'")) {
-            btn.classList.add('active');
-        }
-    });
-
     window.renderEngineTable();
-    window.renderApiKeysTable();
-};
-
-window.filterApiKeys = function(tab) {
-    window.filterEngine(tab);
 };
 
 window.renderEngineTable = function() {
@@ -3861,24 +3770,13 @@ window.toggleKeyVisibility = function(id, fullKey) {
     }
 };
 
-window.toggleApiKeyStatus = async function(id, isChecked) {
-    const newStatus = isChecked ? "aktif" : "nonaktif";
-    try {
-        await updateDoc(doc(db, "api_keys", id), { status: newStatus });
-        showToast(isChecked ? "API Key berhasil diaktifkan!" : "API Key dinonaktifkan sementara!", isChecked ? "success" : "info");
-        await createLog({ type: 'info', host: 'Admin', request: 'TOGGLE_API_KEY', message: `Ubah status API Key (${id}) -> ${newStatus}` });
-    } catch(e) {
-        showToast("Gagal mengubah status API Key", "danger");
-    }
-};
-
 window.renderApiKeysTable = function() {
     let html = "", deadHtml = "", countOn = 0, countOff = 0;
     const rows = [], deadRows = [];
     let no = 1;
 
     globalApiKeysData.forEach(d => {
-        const isDead = d.status === "mati";
+        const isActive = d.status !== "mati" && d.status !== "nonaktif";
         
         // Cari tipe layanan dari customApiProviders
         const matchedProv = customApiProviders.find(p => p.value === d.provider);
@@ -3894,14 +3792,8 @@ window.renderApiKeysTable = function() {
         }
         const safeFullKey = fullKey.replace(/'/g, "\\'").replace(/"/g, "&quot;");
 
-        if (!isDead) {
-            const isKeyActive = d.status !== "nonaktif";
-            if (isKeyActive) countOn++; else countOff++;
-
-            const statusBadgeHtml = isKeyActive 
-                ? `<div style="display:flex; align-items:center; gap:8px;"><label class="switch" title="Klik untuk menonaktifkan"><input type="checkbox" checked onchange="window.toggleApiKeyStatus('${d.id}', this.checked)"><span class="slider"></span></label><span class="badge badge-green"><span class="status-dot green"></span>Aktif</span></div>`
-                : `<div style="display:flex; align-items:center; gap:8px;"><label class="switch" title="Klik untuk mengaktifkan"><input type="checkbox" onchange="window.toggleApiKeyStatus('${d.id}', this.checked)"><span class="slider"></span></label><span class="badge badge-gray"><span class="status-dot gray"></span>Nonaktif</span></div>`;
-
+        if (isActive) {
+            countOn++;
             rows.push({ priority: d.priority || 1, html: `
                 <tr>
                     <td style="font-weight:700; color:var(--text-sec);">${no++}</td>
@@ -3911,8 +3803,8 @@ window.renderApiKeysTable = function() {
                         <button class="btn btn-sm" style="background:none; padding:4px; color:var(--text-sec);" onclick="window.toggleKeyVisibility('${d.id}', '${safeFullKey}')"><i id="key-icon-${d.id}" class="fa-solid fa-eye"></i></button>
                     </td>
                     <td><span class="badge badge-gray" style="font-size:0.75rem;">#${d.priority || 1}</span></td>
-                    <td>${statusBadgeHtml}</td>
-                    <td><button class="btn btn-sm btn-danger" onclick="window.triggerDeleteApi('${d.id}')" title="Pindahkan ke riwayat mati"><i class="fa-solid fa-trash"></i></button></td>
+                    <td><span class="badge badge-green"><span class="status-dot green"></span>Aktif</span></td>
+                    <td><button class="btn btn-sm btn-danger" onclick="window.triggerDeleteApi('${d.id}')"><i class="fa-solid fa-trash"></i></button></td>
                 </tr>`
             });
         } else {
@@ -3923,7 +3815,7 @@ window.renderApiKeysTable = function() {
 
     rows.sort((a,b) => a.priority - b.priority);
     html = rows.map(r => r.html).join('');
-    if (!html) html = `<tr><td colspan="6" style="text-align:center; padding:40px; color:var(--text-sec);"><i class="fa-solid fa-folder-open" style="font-size:2rem; display:block; margin-bottom:10px; opacity:0.3;"></i>Tidak ada API Key di kategori ini.</td></tr>`;
+    if (!html) html = `<tr><td colspan="6" style="text-align:center; padding:40px; color:var(--text-sec);"><i class="fa-solid fa-folder-open" style="font-size:2rem; display:block; margin-bottom:10px; opacity:0.3;"></i>Tidak ada API Key aktif di kategori ini.</td></tr>`;
 
     let deadNo = 1;
     deadRows.forEach((r) => {
@@ -3936,7 +3828,7 @@ window.renderApiKeysTable = function() {
                     <button class="btn btn-sm" style="background:none; padding:4px; color:var(--text-sec);" onclick="window.toggleKeyVisibility('${r.id}', '${r.safeFullKey}')"><i id="key-icon-${r.id}" class="fa-solid fa-eye"></i></button>
                 </td>
                 <td><span class="badge badge-red"><i class="fa-solid fa-circle-xmark"></i> Saldo Habis</span></td>
-                <td><button class="btn btn-sm btn-danger" onclick="window.triggerDeleteApi('${r.id}')" title="Hapus Permanen"><i class="fa-solid fa-trash"></i></button></td>
+                <td><button class="btn btn-sm btn-danger" onclick="window.triggerDeleteApi('${r.id}')"><i class="fa-solid fa-trash"></i></button></td>
             </tr>
         `;
     });
@@ -3969,19 +3861,15 @@ function setupRealtimeApis() {
         const badge = document.getElementById('api-count-badge'); if (badge) badge.innerText = total;
     });
 }
-window.triggerDeleteApi = (id) => confirmAction('Proses API Key ini?', () => window.delApi(id));
+window.triggerDeleteApi = (id) => confirmAction('Hapus API Key ini permanen?', () => window.delApi(id));
 window.delApi = async function(id) { 
     try { 
-        const keyDoc = globalApiKeysData.find(k => k.id === id);
-        if (keyDoc && keyDoc.status === "mati") {
-            await deleteDoc(doc(db, "api_keys", id));
-            showToast("API Key dihapus permanen!", "success");
-        } else {
-            await updateDoc(doc(db, "api_keys", id), { status: "mati" }); 
-            await createLog({ type: 'warning', host: 'Admin', request: 'KILL_API_KEY', message: "Memindahkan 1 API Key ke Riwayat Mati" }); 
-            showToast("Dipindahkan ke riwayat mati!", "success"); 
-        }
+        // Ubah status menjadi mati, bukan langsung dihapus
+        await updateDoc(doc(db, "api_keys", id), { status: "mati" }); 
+        await createLog({ type: 'warning', host: 'Admin', request: 'KILL_API_KEY', message: "Memindahkan 1 API Key ke Riwayat Mati" }); 
+        showToast("Dipindahkan ke riwayat!", "success"); 
     } catch(e) { 
+        // Jika gagal update (misal karena data sudah tidak ada), coba hapus
         try {
             await deleteDoc(doc(db, "api_keys", id));
             showToast("Berhasil dihapus permanen!", "success");
