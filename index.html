@@ -677,8 +677,8 @@
         
         <!-- TOP BAR -->
         <div class="creator-top-bar">
-            <div class="creator-credits">
-                <i class="fa-solid fa-sparkles"></i> <span id="creator-credits-text">9.960</span>
+            <div class="creator-credits" id="creator-credits-box">
+                <i class="fa-solid fa-spinner fa-spin"></i>
             </div>
             <div class="creator-actions">
                 <div class="creator-icon-btn" onclick="shareProfile()"><i class="fa-solid fa-arrow-up-from-bracket"></i></div>
@@ -1503,14 +1503,28 @@
                                 
                                 // --- LOGIKA KREDIT REAL-TIME SINKRON DENGAN FIREBASE ---
                                 const isMaxOrAdmin = (data.role === 'admin' || tierVal === 'max_lifetime' || tierVal === 'max_monthly' || tierVal === 'max');
-                                const creditTextEl = document.getElementById('creator-credits-text');
+                                const creditBox = document.getElementById('creator-credits-box');
                                 
-                                if (creditTextEl) {
+                                if (creditBox) {
                                     if (isMaxOrAdmin) {
-                                        creditTextEl.innerText = "Unlimited";
+                                        // Tampilan Premium (Gold) untuk Unlimited / Admin
+                                        creditBox.style.background = 'linear-gradient(135deg, #FBBF24, #F59E0B)';
+                                        creditBox.style.color = '#ffffff';
+                                        creditBox.style.border = 'none';
+                                        creditBox.style.boxShadow = '0 4px 15px rgba(245, 158, 11, 0.3)';
+                                        creditBox.innerHTML = `<i class="fa-solid fa-crown"></i> <span style="font-weight: 800; letter-spacing: 0.5px;">Unlimited</span>`;
                                     } else {
+                                        // Tampilan Normal untuk Basic / Pro
                                         const kredit = data.kredit !== undefined ? data.kredit : (data.dailyQuota || 0);
-                                        creditTextEl.innerText = kredit.toLocaleString('id-ID');
+                                        creditBox.style.background = 'rgba(255,255,255,0.9)';
+                                        creditBox.style.color = '#111111';
+                                        creditBox.style.boxShadow = '0 4px 15px rgba(0,0,0,0.05)';
+                                        
+                                        // Berubah merah jika kredit mau habis (<= 50)
+                                        const iconColor = kredit <= 50 ? '#ef4444' : '#0ea5e9';
+                                        const textColor = kredit <= 50 ? '#ef4444' : '#111111';
+                                        
+                                        creditBox.innerHTML = `<i class="fa-solid fa-bolt" style="color: ${iconColor};"></i> <span style="color: ${textColor}; font-weight: 800;">${kredit.toLocaleString('id-ID')}</span> <span style="font-size: 0.7rem; color: #71717A; font-weight: 600; margin-left: 2px;">Kredit</span>`;
                                     }
                                 }
                                 // -------------------------------------------------------
