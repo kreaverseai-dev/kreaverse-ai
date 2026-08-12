@@ -33,7 +33,8 @@ module.exports = async function handler(req, res) {
 
         if (cronSecret !== validSecret) return res.status(401).json({ error: "Akses ditolak." });
 
-        const processingSnapshot = await db.collection("render_gallery").where("status", "in", ["processing", "pending"]).limit(8).get();
+        // OPTIMASI 1: Turunkan limit jadi 4 agar tidak terkena Vercel Timeout (10 detik)
+        const processingSnapshot = await db.collection("render_gallery").where("status", "in", ["processing", "pending"]).limit(4).get();
 
         if (processingSnapshot.empty) return res.status(200).json({ message: "Tidak ada antrean." });
 
@@ -59,8 +60,10 @@ module.exports = async function handler(req, res) {
                     return { id: docId, status: "failed" };
                 }
 
+                // OPTIMASI 2: Turunkan timeout fetch jadi 4 detik. 
+                // Jika API provider lelet, skip saja dan cek lagi di menit berikutnya. Jangan korbankan seluruh Cron Job.
                 const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), 7000);
+                const timeoutId = setTimeout(() => controller.abort(), 4000);
                 
                 let checkRes;
                 try {
@@ -76,49 +79,64 @@ module.exports = async function handler(req, res) {
                 let data = {};
                 try { data = JSON.parse(text); } catch(e) { data = { error: "Respons API rusak." }; }
 
-                if (checkRes.ok && (data.status === "completed" || data.status === "complete")) {
-                    // FITUR MENGAMBIL 2 LAGU SEKALIGUS & TITIK MERAH (isNew)
+                if (checkRes.ok && (data.status === "completed" || data.status === "complete" || data.status === "success")) {
+                    
+                    // OPTIMASI 3: Perbaikan Logika Track 1 dan Track 2 agar sinkron dengan Frontend
                     const tracks = data.tracks || [];
+                    
+                    // Bersihkan judul asli dari embel-embel Part/Versi sebelumnya (jika ada)
+                    let baseTitle = (item.title || "Untitled").replace(/\s*-\s*Versi\s*\d+/gi, '').replace(/\s*\(Part\s*\d+\)/gi, '').trim();
+
                     if (tracks.length > 0) {
+                        // Update Track 1 (Dokumen Asli)
                         const updatePayload = { 
                             status: "complete", 
-                            url: tracks[0].audioUrl,
-                            isNew: true // Titik merah
+                            url: tracks[0].audioUrl || tracks[0].url,
+                            title: tracks.length > 1 ? `${baseTitle} - Versi 1` : baseTitle,
+                            isNew: true // Titik merah di frontend
                         };
-                        if (tracks[0].imageUrl) updatePayload.imageUrl = tracks[0].imageUrl;
-                        if (tracks.length > 1) updatePayload.title = `${item.title} (Part 1)`;
+                        if (tracks[0].imageUrl || tracks[0].cover) updatePayload.imageUrl = tracks[0].imageUrl || tracks[0].cover;
+                        if (tracks[0].duration) updatePayload.duration = tracks[0].duration;
                         
                         await db.collection("render_gallery").doc(docId).update(updatePayload);
 
-                        // Buat lagu kedua jika ada
+                        // Buat Track 2 (Dokumen Baru)
                         for (let i = 1; i < tracks.length; i++) {
                             const newDoc = {
-                                ...item,
+                                ...item, // Salin semua data (termasuk sessionGroup, prompt, lyrics)
                                 status: "complete",
-                                url: tracks[i].audioUrl,
-                                title: `${item.title} (Part ${i+1})`,
-                                isNew: true, // Titik merah
-                                timestamp: Date.now() + i
+                                url: tracks[i].audioUrl || tracks[i].url,
+                                title: `${baseTitle} - Versi ${i+1}`,
+                                isNew: true,
+                                timestamp: Date.now() + i // Beda 1 milidetik agar urut
                             };
-                            if (tracks[i].imageUrl) newDoc.imageUrl = tracks[i].imageUrl;
-                            delete newDoc.id; 
+                            if (tracks[i].imageUrl || tracks[i].cover) newDoc.imageUrl = tracks[i].imageUrl || tracks[i].cover;
+                            if (tracks[i].duration) newDoc.duration = tracks[i].duration;
+                            
+                            delete newDoc.id; // Hapus ID lama agar Firebase membuat ID baru
                             await db.collection("render_gallery").add(newDoc);
                         }
                         processedCount++;
-                    } else if (data.audioUrl || data.video_url) {
-                        await db.collection("render_gallery").doc(docId).update({ status: "complete", url: data.audioUrl || data.video_url, isNew: true });
+                    } else if (data.audioUrl || data.video_url || data.url) {
+                        // Fallback jika API tidak mengembalikan array 'tracks'
+                        await db.collection("render_gallery").doc(docId).update({ 
+                            status: "complete", 
+                            url: data.audioUrl || data.video_url || data.url, 
+                            isNew: true 
+                        });
                         processedCount++;
                     }
                 }
-                else if (data.status === "failed" || !checkRes.ok) {
+                else if (data.status === "failed" || data.status === "error" || !checkRes.ok) {
                     const errorMsg = data.reason || data.error || data.message || "Dibatalkan oleh server AI";
                     await db.collection("render_gallery").doc(docId).update({ status: "failed", error: errorMsg });
                     processedCount++;
                 }
                 else {
+                    // Jika masih processing, cek apakah sudah lebih dari 1 jam (Timeout)
                     const itemTime = item.timestamp || Date.now();
                     if ((Date.now() - itemTime) > 3600000) {
-                        await db.collection("render_gallery").doc(docId).update({ status: "failed", error: "Timeout: KIE AI tidak merespons selama 1 jam." });
+                        await db.collection("render_gallery").doc(docId).update({ status: "failed", error: "Timeout: Server AI tidak merespons selama 1 jam." });
                         processedCount++;
                     }
                 }
