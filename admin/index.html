@@ -2599,33 +2599,50 @@ document.getElementById('prompt-confirm-btn').addEventListener('click', () => {
     });
 
 // ============================================================
-// SISTEM AUTENTIKASI GOOGLE LOGIN KHUSUS ADMIN (PERMANEN)
+// SISTEM AUTENTIKASI GOOGLE LOGIN KHUSUS ADMIN (ANTI-STUCK / ANTI-MUTER)
 // ============================================================
 let isDashboardLoaded = false;
 
-// Cegah layar login muncul sesaat saat refresh jika akun sudah pernah login
-if (localStorage.getItem('krea_admin_logged_in') === 'true') {
-    document.getElementById('auth-guard').classList.add('hidden');
-    document.getElementById('loading-screen').classList.remove('hidden');
-}
-
 function showDashboard() {
-    document.getElementById('loading-screen').classList.add('hidden');
-    document.getElementById('auth-guard').classList.add('hidden');
+    const loadingScreen = document.getElementById('loading-screen');
+    const authGuard = document.getElementById('auth-guard');
+    if (loadingScreen) loadingScreen.classList.add('hidden');
+    if (authGuard) authGuard.classList.add('hidden');
     
-    // Cegah reload modul berkali-kali jika Firebase me-refresh token di background
     if (!isDashboardLoaded) {
         isDashboardLoaded = true;
-        loadAllModules();
-        const savedTab = localStorage.getItem('kreaverse_admin_tab') || 'dash';
-        nav(savedTab);
+        try {
+            loadAllModules();
+        } catch(err) {
+            console.warn("Modul dimuat dengan peringatan:", err);
+        }
+        try {
+            const savedTab = localStorage.getItem('kreaverse_admin_tab') || 'dash';
+            nav(savedTab);
+        } catch(err) {
+            nav('dash');
+        }
     }
 }
 
 function showAuthGuard() {
-    document.getElementById('loading-screen').classList.add('hidden');
-    document.getElementById('auth-guard').classList.remove('hidden');
+    const loadingScreen = document.getElementById('loading-screen');
+    const authGuard = document.getElementById('auth-guard');
+    if (loadingScreen) loadingScreen.classList.add('hidden');
+    if (authGuard) authGuard.classList.remove('hidden');
 }
+
+// TIMEOUT PENGAMAN (ANTI MUTER-MUTER): Jika dalam 2.5 detik Firebase lambat merespon, paksa buka dashboard!
+setTimeout(() => {
+    const loadingScreen = document.getElementById('loading-screen');
+    if (loadingScreen && !loadingScreen.classList.contains('hidden')) {
+        if (localStorage.getItem('krea_admin_logged_in') === 'true') {
+            showDashboard();
+        } else {
+            showAuthGuard();
+        }
+    }
+}, 2500);
 
 document.getElementById('btnGoogleAdmin').addEventListener('click', async () => {
     const errEl = document.getElementById('login-error');
