@@ -1399,8 +1399,11 @@
 
     <!-- NAVBAR PREMIUM -->
     <nav class="navbar">
-        <button onclick="window.openSidebar()" class="back-btn" title="Menu" style="font-size: 1rem;"><i class="fa-solid fa-bars"></i></button>
-        <a href="/" class="logo-container" title="Kembali ke Beranda" style="text-decoration: none; pointer-events: auto;">
+        <!-- KIRI: Tombol Back Mulus ke Beranda Induk -->
+        <button onclick="if(window.parent && window.parent.closeTool) { window.parent.closeTool(); } else { window.location.href='/'; }" class="back-btn" title="Kembali" style="font-size: 1rem; margin-left: 0;"><i class="fa-solid fa-arrow-left"></i></button>
+        
+        <!-- TENGAH: Logo (Klik logo juga akan kembali dengan mulus) -->
+        <a href="#" onclick="if(window.parent && window.parent.closeTool) { window.parent.closeTool(); return false; } else { window.location.href='/'; }" class="logo-container" title="Kembali ke Beranda" style="text-decoration: none; pointer-events: auto;">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 60" class="krea-logo-svg">
                 <defs>
                     <linearGradient id="flixaMiniNav" x1="0%" y1="100%" x2="100%" y2="0%">
@@ -1415,7 +1418,9 @@
                 <text x="60" y="36" font-family="'Plus Jakarta Sans', sans-serif" font-weight="900" font-size="24" fill="#0f172a" dominant-baseline="middle" letter-spacing="-0.5px">Flixa AI</text>
             </svg>
         </a>
-        <div class="nav-right" style="width: 32px;"></div>
+        
+        <!-- KANAN: Tombol Menu Sidebar dipindah ke kanan -->
+        <button onclick="window.openSidebar()" class="back-btn" title="Menu" style="font-size: 1rem; margin-left: 0;"><i class="fa-solid fa-bars"></i></button>
     </nav>
 
     <!-- SIDEBAR MENU (APIFRAME STYLE) -->
@@ -1439,7 +1444,7 @@
         </div>
         <div class="sidebar-content">
             <span class="sidebar-section-title">Overview</span>
-            <a href="/" class="sidebar-link"><i class="fa-solid fa-house"></i> Beranda</a>
+            <a href="#" onclick="if(window.parent && window.parent.closeTool) { window.parent.closeTool(); return false; } else { window.location.href='/'; }" class="sidebar-link"><i class="fa-solid fa-house"></i> Beranda</a>
             <a href="/media-ai/" class="sidebar-link active"><i class="fa-solid fa-music"></i> Habi RMX Studio</a>
             
             <span class="sidebar-section-title">Manage Account</span>
@@ -3463,7 +3468,7 @@
                         100% { left: 200%; }
                     }
                 </style>
-                <a href="/" class="footer-shimmer" style="display: block; width: 100%; height: 100%; text-decoration: none; position: relative;" title="Kembali ke Beranda">
+                <a href="#" onclick="if(window.parent && window.parent.closeTool) { window.parent.closeTool(); return false; } else { window.location.href='/'; }" class="footer-shimmer" style="display: block; width: 100%; height: 100%; text-decoration: none; position: relative;" title="Kembali ke Beranda">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 60" style="width: 100%; height: 100%;">
                         <defs>
                             <linearGradient id="flixaMiniFooter" x1="0%" y1="100%" x2="100%" y2="0%">
@@ -3483,7 +3488,7 @@
             </div>
             <div class="footer-links">
                 <div class="footer-links-row">
-                    <a href="/">Beranda</a>
+                    <a href="#" onclick="if(window.parent && window.parent.closeTool) { window.parent.closeTool(); return false; } else { window.location.href='/'; }">Beranda</a>
                     <a href="/media-ai/">Studio Media</a>
                 </div>
                 <div class="footer-links-row">
@@ -12939,7 +12944,7 @@ window.startDspBypassAndUpload = async function() {
 
         <!-- Fixed Bottom Navigation Bar -->
         <div style="position: absolute; bottom: 0; left: 0; width: 100%; height: 65px; background: #000; border-top: 1px solid rgba(255,255,255,0.05); display: flex; justify-content: space-around; align-items: center; z-index: 30; padding: 0 10px;">
-            <a href="/" style="color: #fff; text-decoration: none; font-size: 1.2rem; display: flex; flex-direction: column; align-items: center; opacity: 0.5;"><i class="fa-solid fa-house"></i></a>
+            <a href="#" onclick="if(window.parent && window.parent.closeTool) { window.parent.closeTool(); return false; } else { window.location.href='/'; }" style="color: #fff; text-decoration: none; font-size: 1.2rem; display: flex; flex-direction: column; align-items: center; opacity: 0.5;"><i class="fa-solid fa-house"></i></a>
             <a href="/media-ai/" style="color: #fff; text-decoration: none; font-size: 1.2rem; display: flex; flex-direction: column; align-items: center; opacity: 0.5;"><i class="fa-solid fa-compass"></i></a>
             <a href="#" style="color: var(--accent-color); text-decoration: none; font-size: 1.2rem; display: flex; flex-direction: column; align-items: center; opacity: 1;"><i class="fa-solid fa-circle-play"></i></a>
             <a href="/login/index.html" style="color: #fff; text-decoration: none; font-size: 1.2rem; display: flex; flex-direction: column; align-items: center; opacity: 0.5;"><i class="fa-solid fa-lines-leaning"></i></a>
